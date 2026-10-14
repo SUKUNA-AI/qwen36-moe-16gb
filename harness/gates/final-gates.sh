@@ -284,27 +284,8 @@ qualify_one() {  # qualify_one CANDIDATE
     | grep -i -E 'groups of|cuda.gdn|fp8|gather|DISABLE_JIT|jit|Traceback' | tail -12 | cut -c1-240 | tee -a "$LOG"
   "$PY" "$N/check-candidate-metrics.py" --candidate "$c" >> "$LOG" 2>&1; note "check-candidate-metrics $c rc=$? (informational)"
   local st=PASS
-  if [ "$rc" = 0 ] && [ "$q" != 0 ] && [ "$c" = long256-release ]; then
-    # Parent rule (driver 23, 12:53Z): every 262144-context profile deviates from the 128K teacher-bf128 reference at
-    # long-120000 only; the R1b-qualified long256-final-cuda2048 shows the identical deviation to the last digit. Accept
-    # long256-release as PASS_EQUIV_R1B256 only if quality/PPL gates pass, no new functional failure, all other cases
-    # are exactly 0, and max_abs / max_relative_l2 / per-case NLL deltas equal the R1b 256K profile's exactly.
-    if "$PY" -I - "$N/reports/quality-$c.json" "$N/reports/quality-long256-final-cuda2048.json" <<'PYEOF' 2>&1 | tee -a "$LOG"
-import json, sys
-a, b = (json.load(open(p)) for p in sys.argv[1:3])
-la, lb = a['logit_comparisons'], b['logit_comparisons']
-da = {r['case']: r['mean_nll_delta'] for r in a['rows']}; db = {r['case']: r['mean_nll_delta'] for r in b['rows']}
-ok = (a.get('quality_gate_pass') is True and a.get('ppl_gate_pass') is True and a.get('forced_targets_complete') is True
-      and not a.get('new_functional_failures') and la.get('expected') == la.get('observed') == lb.get('observed') > 0
-      and la.get('max_abs') == lb.get('max_abs') and la.get('max_relative_l2') == lb.get('max_relative_l2')
-      and da == db and {k for k, v in da.items() if v} == {'long-120000'}
-      and a.get('relative_perplexity_growth') == b.get('relative_perplexity_growth'))
-print(json.dumps({'equiv_r1b256': ok, 'max_abs': la.get('max_abs'), 'r1b_max_abs': lb.get('max_abs'),
-                  'nonzero': {k: v for k, v in da.items() if v}}))
-sys.exit(0 if ok else 3)
-PYEOF
-    then st=PASS_EQUIV_R1B256; q=0; fi
-  fi
+  # R1b equivalence was a historical f1 decision (docs/METHODOLOGY.md section 1.2).
+  # New runs require the complete run-bound byte-exact gate; no equivalence override.
   if [ "$rc" != 0 ] || [ "$q" != 0 ]; then record "B.$c" FAIL "qualify_rc=$rc qcheck_rc=$q t=$((SECONDS-t0))s"; stop "teacher/quality gate failed for $c"; fi
   "$PY" -I "$HELP" extract-run --report "$N/reports/teacher-$c.json" --profile "teacher-$c" --config "$O/$c.json" --teacher \
     --out "$N/reports/$T-qrun-teacher-$c.json" >> "$LOG" 2>&1 || { record "B.$c" FAIL "teacher run receipt"; stop "teacher run receipt of $c does not match its config"; }

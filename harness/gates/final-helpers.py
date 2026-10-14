@@ -216,24 +216,28 @@ def cmd_mapping(a):
 
 # ------------------------------------------------------------------------------------------------ qcheck
 def cmd_qcheck(a):
-    d = load_json(a.report)
-    lc = d.get('logit_comparisons') or {}
-    out = {'candidate': d.get('candidate'), 'baseline': d.get('baseline'), 'expected': lc.get('expected'),
-           'observed': lc.get('observed'), 'finite_and_complete': lc.get('finite_and_complete'),
-           'max_abs': lc.get('max_abs'), 'max_relative_l2': lc.get('max_relative_l2'),
-           'forced_targets_complete': d.get('forced_targets_complete'), 'ppl_gate_pass': d.get('ppl_gate_pass'),
-           'quality_gate_pass': d.get('quality_gate_pass'), 'new_functional_failures': d.get('new_functional_failures'),
-           'relative_perplexity_growth': d.get('relative_perplexity_growth')}
-    ok = (d.get('baseline') == 'teacher-bf128' and isinstance(d.get('candidate'), str)
-          and d['candidate'].startswith('teacher-') and d['candidate'] != 'teacher-bf128'
-          and type(lc.get('expected')) is int and lc['expected'] > 0 and lc.get('observed') == lc['expected']
-          and lc.get('finite_and_complete') is True
-          and lc.get('max_abs') == 0 and lc.get('max_relative_l2') == 0
-          and d.get('forced_targets_complete') is True and d.get('ppl_gate_pass') is True
-          and d.get('quality_gate_pass') is True and d.get('new_functional_failures') == [])
-    out['pass'] = ok
+    here = pathlib.Path(__file__).resolve().parent
+    mq_path = here.parent/'make-qualification.py'
+    if not mq_path.is_file():mq_path = here/'make-qualification.py'
+    mq = load_module('quality_gate_contract', mq_path)
+    try:
+        d = mq.quality_evidence_module().strict_json(pathlib.Path(a.report).read_text())
+        if type(d) is not dict:raise ValueError('quality report must be an object')
+        mq.check_quality_bitexact_report(d)
+        need(d.get('ppl_gate_pass') is True, 'PPL gate failed')
+    except (OSError, ValueError, TypeError, KeyError) as error:
+        print(json.dumps({'pass':False,'validation_error':str(error)}))
+        need(False, 'teacher/quality gate failed')
+    lc = d['logit_comparisons']
+    out = {'candidate': d['candidate'], 'baseline': d['baseline'], 'expected': lc['expected'],
+           'observed': lc['observed'], 'finite_and_complete': lc['finite_and_complete'],
+           'max_abs': lc['max_abs'], 'max_relative_l2': lc['max_relative_l2'],
+           'forced_targets_complete': d['forced_targets_complete'], 'ppl_gate_pass': d['ppl_gate_pass'],
+           'quality_gate_pass': d['quality_gate_pass'], 'new_functional_failures': d['new_functional_failures'],
+           'relative_perplexity_growth': d.get('relative_perplexity_growth'),
+           'evidence_valid':d['evidence_valid'], 'bit_exact_pass':d['bit_exact_pass'],
+           'all_byte_equal':lc['all_byte_equal'], 'pass':True}
     print(json.dumps(out))
-    need(ok, 'teacher/quality gate failed')
 
 
 # ------------------------------------------------------------------------------------------------ extract-run

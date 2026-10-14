@@ -213,8 +213,8 @@ QUALITY_REPORT_KEYS = frozenset({'baseline', 'candidate', 'logit_comparisons', '
 def quality_evidence_module():
     source = HERE/'python/freetoken/quality_evidence.py'
     if not source.is_file():
-        from repo_paths import FREETOKEN
-        source = FREETOKEN/'python/freetoken/quality_evidence.py'
+        fork = pathlib.Path(os.environ.get('QWEN36_FREETOKEN_SOURCE', HERE.parent/'freetoken'))
+        source = fork/'python/freetoken/quality_evidence.py'
     return load_module('quality_evidence_checks', source)
 
 

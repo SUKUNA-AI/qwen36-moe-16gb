@@ -180,6 +180,25 @@ class QualityEvidence(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError,'refusing'):source.prepare(None,create=True)
                 self.assertEqual(path.read_bytes(),before)
 
+    def test_final_qcheck_uses_the_same_gate_under_isolation_and_optimization(self):
+        import subprocess, sys
+        helper=pathlib.Path(__file__).parent/'gates/final-helpers.py'
+        good=self.compare(fixtures())
+        with tempfile.TemporaryDirectory() as d:
+            path=pathlib.Path(d)/'quality.json'
+            for mode in ('good','legacy','byte-mismatch','missing-cases','nonzero'):
+                report=copy.deepcopy(good)
+                if mode=='legacy':report.pop('schema')
+                elif mode=='byte-mismatch':report['logit_comparisons']['all_byte_equal']=False
+                elif mode=='missing-cases':report['rows'].pop()
+                elif mode=='nonzero':report['logit_comparisons']['max_abs']=0.1
+                path.write_text(json.dumps(report))
+                result=subprocess.run([sys.executable,'-I','-O',str(helper),'qcheck',str(path)],capture_output=True,text=True,timeout=10)
+                self.assertEqual(result.returncode,0 if mode=='good' else 3,result.stdout+result.stderr)
+                self.assertEqual(json.loads(result.stdout)['pass'],mode=='good')
+        driver=helper.with_name('final-gates.sh').read_text()
+        self.assertNotIn('then st=PASS_EQUIV_R1B256; q=0',driver)
+
     def test_context_matrices_and_distinct_verdicts(self):
         f=fixtures(); f[3]['functional_matrix']['long']=250000; f[3]['rows'][-1]['case']='long-facts-250000'
         self.assertTrue(self.compare(f)['bit_exact_pass'])
