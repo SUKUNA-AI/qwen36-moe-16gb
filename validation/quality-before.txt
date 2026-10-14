@@ -1,0 +1,2 @@
+original exit: 0
+{"quality_gate_pass": true, "new_functional_failures": [], "logit_comparisons": {"expected": 20, "observed": 20, "finite_and_complete": true, "max_abs": 0.25, "max_relative_l2": 0.01}}

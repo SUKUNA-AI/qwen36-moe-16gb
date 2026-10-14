@@ -1,0 +1,11 @@
+usage: qualify.py [-h] --candidate CANDIDATE [--baseline-teacher]
+                  [--reference-report REFERENCE_REPORT]
+                  [--functional-baseline FUNCTIONAL_BASELINE] [--name NAME]
+
+options:
+  -h, --help            show this help message and exit
+  --candidate CANDIDATE
+  --baseline-teacher
+  --reference-report REFERENCE_REPORT
+  --functional-baseline FUNCTIONAL_BASELINE
+  --name NAME           unique report prefix; profile names stay unchanged

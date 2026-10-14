@@ -1,0 +1,156 @@
+[
+  {
+    "suite": "test-analyze-model-nsys-cpu.py",
+    "exit": 0,
+    "collected": 29,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-eval-v1-cpu.py",
+    "exit": 1,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-export-release-evidence-cpu.py",
+    "exit": 1,
+    "collected": 13,
+    "failed_tests": 12,
+    "skipped": 0
+  },
+  {
+    "suite": "test-gdn-snapshot-cpu.py",
+    "exit": 1,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-keepalive-cpu.py",
+    "exit": 1,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-lookup-qualification-cpu.py",
+    "exit": 0,
+    "collected": 38,
+    "failed_tests": 0,
+    "skipped": 1
+  },
+  {
+    "suite": "test-network-acceptance-cpu.py",
+    "exit": 0,
+    "collected": 19,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-ops-live-probe-cpu.py",
+    "exit": 0,
+    "collected": 37,
+    "failed_tests": 0,
+    "skipped": 1
+  },
+  {
+    "suite": "test-paired-contract-cpu.py",
+    "exit": 1,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-prefix-quality-cpu.py",
+    "exit": 0,
+    "collected": 9,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-profile-runtime-cpu.py",
+    "exit": 1,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-readiness-transport-cpu.py",
+    "exit": 1,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-release-cpu.py",
+    "exit": 1,
+    "collected": 13,
+    "failed_tests": 2,
+    "skipped": 0
+  },
+  {
+    "suite": "test-release-qualification-cpu.py",
+    "exit": 1,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-retain-snapshot-cpu.py",
+    "exit": 1,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-soak-cpu.py",
+    "exit": 1,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-tool-choice-guard-cpu.py",
+    "exit": 2,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-tool-semantics-guard-cpu.py",
+    "exit": 2,
+    "collected": 0,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-worker-fault-v2-cpu.py",
+    "exit": 0,
+    "collected": 19,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-guard.py",
+    "exit": 0,
+    "collected": 1,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-metrics.py",
+    "exit": 0,
+    "collected": 1,
+    "failed_tests": 0,
+    "skipped": 0
+  },
+  {
+    "suite": "test-log-failure.py",
+    "exit": 0,
+    "collected": 1,
+    "failed_tests": 0,
+    "skipped": 0
+  }
+]

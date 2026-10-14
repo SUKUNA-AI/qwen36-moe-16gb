@@ -1,0 +1,21 @@
+usage: compare-quality.py [-h] [--root ROOT] [--baseline BASELINE]
+                          [--candidate CANDIDATE]
+                          [--baseline-report BASELINE_REPORT]
+                          [--candidate-report CANDIDATE_REPORT]
+                          [--functional-baseline FUNCTIONAL_BASELINE]
+                          [--functional-candidate FUNCTIONAL_CANDIDATE]
+                          [--name NAME]
+
+Compare explicit run-bound teacher and complete functional evidence (CPU
+only).
+
+options:
+  -h, --help            show this help message and exit
+  --root ROOT
+  --baseline BASELINE
+  --candidate CANDIDATE
+  --baseline-report BASELINE_REPORT
+  --candidate-report CANDIDATE_REPORT
+  --functional-baseline FUNCTIONAL_BASELINE
+  --functional-candidate FUNCTIONAL_CANDIDATE
+  --name NAME

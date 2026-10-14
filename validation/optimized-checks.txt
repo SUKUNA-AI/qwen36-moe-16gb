@@ -1,0 +1,41 @@
+COMMAND: /workspace/.venv-qwen36-cpu/bin/python -O /workspace/qwen36-moe-16gb/harness/test-quality-evidence-cpu.py
+EXIT_CODE: 0
+test_clean_restart_and_mixed_old_runs (__main__.QualityEvidence.test_clean_restart_and_mixed_old_runs) ... ok
+test_context_matrices_and_distinct_verdicts (__main__.QualityEvidence.test_context_matrices_and_distinct_verdicts) ... ok
+test_empty_incomplete_duplicate_extra_and_types_functional (__main__.QualityEvidence.test_empty_incomplete_duplicate_extra_and_types_functional) ... ok
+test_fixture_preparation_never_overwrites_or_implicitly_creates (__main__.QualityEvidence.test_fixture_preparation_never_overwrites_or_implicitly_creates) ... ok
+test_invalid_teacher_data_both_arms (__main__.QualityEvidence.test_invalid_teacher_data_both_arms) ... ok
+test_missing_case_cannot_use_historical_row (__main__.QualityEvidence.test_missing_case_cannot_use_historical_row) ... ok
+test_real_engine_reference_lookup_rotated_and_file_hash (__main__.QualityEvidence.test_real_engine_reference_lookup_rotated_and_file_hash) ... ok
+test_rotated_reference_and_duplicate_rules (__main__.QualityEvidence.test_rotated_reference_and_duplicate_rules) ... ok
+test_run_snapshots_survive_expired_rotation (__main__.QualityEvidence.test_run_snapshots_survive_expired_rotation) ... ok
+test_wrong_case_run_binding (__main__.QualityEvidence.test_wrong_case_run_binding) ... ok
+test_zero_numeric_error_without_byte_equality_is_not_bit_exact (__main__.QualityEvidence.test_zero_numeric_error_without_byte_equality_is_not_bit_exact) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 1.343s
+
+OK
+
+COMMAND: /workspace/.venv-qwen36-cpu/bin/python -O /workspace/qwen36-moe-16gb/harness/test-next-profile-cpu.py
+EXIT_CODE: 0
+test_candidate_configs_are_explicit_and_unqualified (__main__.NextProfile.test_candidate_configs_are_explicit_and_unqualified) ... ok
+test_fla_receipt_requires_separate_variant_library_and_component_binding (__main__.NextProfile.test_fla_receipt_requires_separate_variant_library_and_component_binding) ... ok
+test_fla_values_env_and_unchanged_profiles (__main__.NextProfile.test_fla_values_env_and_unchanged_profiles) ... ok
+test_raw_engine_fla_parser (__main__.NextProfile.test_raw_engine_fla_parser) ... ok
+test_threshold_schema_combinations_and_hash (__main__.NextProfile.test_threshold_schema_combinations_and_hash) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.002s
+
+OK
+
+COMMAND: /workspace/.venv-qwen36-cpu/bin/python -O /workspace/qwen36-moe-16gb/harness/test-provenance-loader-cpu.py
+EXIT_CODE: 0
+test_dev_compatibility_and_strict_no_jit_contract (__main__.Provenance.test_dev_compatibility_and_strict_no_jit_contract) ... ok
+test_strict_loader_refuses_before_load (__main__.Provenance.test_strict_loader_refuses_before_load) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.004s
+
+OK

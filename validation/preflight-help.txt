@@ -1,0 +1,17 @@
+usage: next-update-preflight.py [-h] --native NATIVE --python PYTHON --model
+                                MODEL --reference-report REFERENCE_REPORT
+                                --reference-dir REFERENCE_DIR [--wsl-interop]
+
+Read-only owner preflight. Does not start units, sync files, or create
+receipts.
+
+options:
+  -h, --help            show this help message and exit
+  --native NATIVE       reviewed experiment overlay, never production
+                        release/python
+  --python PYTHON       owner GPU venv Python
+  --model MODEL
+  --reference-report REFERENCE_REPORT
+  --reference-dir REFERENCE_DIR
+  --wsl-interop         also require Windows interop for later Windows release
+                        tooling
