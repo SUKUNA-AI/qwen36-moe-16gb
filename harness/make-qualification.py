@@ -75,7 +75,7 @@ RUN_FEATURE_ENV = frozenset({'QWEN36_PREFIX_MARGIN', 'QWEN36_FUSED_ATTN_GATE', '
                              'QWEN36_CUDA_GDN_DECODE', 'QWEN36_FP8_GEMV', 'QWEN36_FP8_GEMV_LIBRARY',
                              'QWEN36_DECODE_GATHER', 'TVM_FFI_CUDA_ARCH_LIST', 'QWEN36_LAYER_MAJOR_REFILL',
                              'QWEN36_LAYER_MAJOR_REFILL_POLICY', 'QWEN36_SYNC_LEAN', 'QWEN36_LAYER_MAJOR_ATTN_BATCH',
-                             'QWEN36_CUDA_GDN_FLA'})
+                             'QWEN36_CUDA_GDN_FLA', 'QWEN36_LAYER_MAJOR_MIN_TOKENS'})
 # Profile switch -> (run environment variable, value that switches it on).
 RUN_SWITCH_ENV = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE', '1'),
                   'fp32_gdn_snapshot': ('QWEN36_FP32_GDN_SNAPSHOT', '1'),
@@ -89,7 +89,8 @@ RUN_SWITCH_ENV = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE', '1'),
                   'sync_lean': ('QWEN36_SYNC_LEAN', '1')}
 # Profile value field -> run environment variable (validator VALUE_FIELDS give the allowed values).
 RUN_VALUE_ENV = {'cuda_gdn_fla': 'QWEN36_CUDA_GDN_FLA', 'layer_major_refill_policy': 'QWEN36_LAYER_MAJOR_REFILL_POLICY',
-                 'layer_major_attn_batch': 'QWEN36_LAYER_MAJOR_ATTN_BATCH'}
+                 'layer_major_attn_batch': 'QWEN36_LAYER_MAJOR_ATTN_BATCH',
+                 'layer_major_min_tokens': 'QWEN36_LAYER_MAJOR_MIN_TOKENS'}
 # Production bundle switches: the run must carry exactly what configure_environment exports, or nothing.
 # Another spelling FreeToken might also accept ('true', 'on', 'cta', ...) is not the qualified configuration.
 RUN_EXACT_ENV = {'QWEN36_LAYER_MAJOR_PREFILL': '1', 'QWEN36_CUDA_GDN': '1', 'QWEN36_CUDA_GDN_DECODE': 'cluster',
@@ -98,6 +99,7 @@ RUN_EXACT_ENV = {'QWEN36_LAYER_MAJOR_PREFILL': '1', 'QWEN36_CUDA_GDN': '1', 'QWE
 # Variables production exports only together with a switch (variable -> switch variable).
 RUN_COMPANION_ENV = {'QWEN36_CUDA_GDN_DECODE': 'QWEN36_CUDA_GDN', 'TVM_FFI_CUDA_ARCH_LIST': 'QWEN36_DECODE_GATHER',
                      'QWEN36_LAYER_MAJOR_REFILL_POLICY': 'QWEN36_LAYER_MAJOR_REFILL',
+                     'QWEN36_LAYER_MAJOR_MIN_TOKENS': 'QWEN36_LAYER_MAJOR_PREFILL',
                      'QWEN36_LAYER_MAJOR_ATTN_BATCH': 'QWEN36_LAYER_MAJOR_PREFILL', 'QWEN36_CUDA_GDN_FLA': 'QWEN36_CUDA_GDN'}
 # Library switches whose run must name its library explicitly (switch variable -> library variable).
 RUN_LIBRARY_ENV = {'QWEN36_CUDA_GDN': 'QWEN36_CUDA_GDN_LIBRARY', 'QWEN36_FP8_GEMV': 'QWEN36_FP8_GEMV_LIBRARY'}

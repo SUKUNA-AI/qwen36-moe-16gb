@@ -90,10 +90,11 @@ VALUE_FIELDS = {field: spec for field, spec in {
     # moe/slot_refill.py policies (FreeToken default: last_chunk).
     'layer_major_refill_policy': ('QWEN36_LAYER_MAJOR_REFILL_POLICY', ('last_chunk', 'restore'), 'layer_major_refill'),
     # Optional attention batching of layer-major prefill (QWEN36_LAYER_MAJOR_ATTN_BATCH=<k>, e.g. 2; under test).
+    'layer_major_min_tokens': ('QWEN36_LAYER_MAJOR_MIN_TOKENS', range(0, 2147483648), 'layer_major_prefill'),
     'layer_major_attn_batch': ('QWEN36_LAYER_MAJOR_ATTN_BATCH', tuple(range(1, 65)), 'layer_major_prefill'),
 }.items() if spec[2] in SWITCH_ENV}
-# switch -> flags under which it cannot take effect: FreeToken never runs layer-major prefill with
-# hit-D2D prefill (engine/layer_major.py engine_reason). layer-major + cuda_nvfp4_prefill is allowed.
+# Layer-major + hit-D2D requires a positive min-tokens threshold to separate short chunked
+# requests from epochs that borrow decode slots. Layer-major + CUDA NVFP4 remains allowed.
 SWITCH_EXCLUDED_FLAGS = {'layer_major_prefill': frozenset({'--moe-prefill-hit-d2d'})}
 REQUIRED_FIELDS = frozenset({'context', 'chunk', 'memory_ratio', 'kv_dtype', 'flags', 'qualified'})
 OPTIONAL_FIELDS = frozenset({'nvfp4_prefill', 'prefix_margin', *FEATURE_SWITCHES, *VALUE_FIELDS})
@@ -259,7 +260,8 @@ def validate_profile_schema(name, profile):
     for switch, needed in SWITCH_REQUIRES.items():
         _require(profile.get(switch) is not True or profile.get(needed) is True, switch + ' requires ' + needed)
     for switch, excluded in SWITCH_EXCLUDED_FLAGS.items():
-        _require(profile.get(switch) is not True or not excluded & set(flags),
+        separated = switch == 'layer_major_prefill' and type(profile.get('layer_major_min_tokens')) is int and profile['layer_major_min_tokens'] > 0
+        _require(profile.get(switch) is not True or not excluded & set(flags) or separated,
                  switch + ' cannot take effect with ' + ' '.join(sorted(excluded & set(flags))))
     for field, (_, allowed, switch) in VALUE_FIELDS.items():
         if field in profile:

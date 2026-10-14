@@ -96,7 +96,7 @@ GROUPS = {
         'tests/moe/test_decode_gather.py','python/freetoken/moe/slot_refill.py'],
         'switches':['QWEN36_RESIDENCY','QWEN36_CACHE_POLICY','QWEN36_CACHE_HALFLIFE',
                     'QWEN36_COMPLEMENT_TRANSPORT','QWEN36_COMPLEMENT_LIBRARY',
-                    'QWEN36_LAYER_MAJOR_PREFILL','QWEN36_LAYER_MAJOR_REFILL','QWEN36_DECODE_GATHER',
+                    'QWEN36_LAYER_MAJOR_PREFILL','QWEN36_LAYER_MAJOR_MIN_TOKENS','QWEN36_LAYER_MAJOR_REFILL','QWEN36_DECODE_GATHER',
                     'QWEN36_LAYER_MAJOR_REFILL_POLICY','QWEN36_LAYER_MAJOR_ATTN_BATCH','TVM_FFI_CUDA_ARCH_LIST'],
         'disable_note':'Unset RESIDENCY to retain full host banks. Complement/fixed remain experiment choices; exporter does not accept their RAM or speed gates. Unset LAYER_MAJOR_PREFILL (and LAYER_MAJOR_REFILL, its POLICY, ATTN_BATCH) for chunk-major prefill and DECODE_GATHER for the default fast_index_copy gather (TVM_FFI_CUDA_ARCH_LIST is only its pinned build arch); aot.py still lists the decode-gather module, so a rebuilt kernel cache ships its .so either way.'},
     'D': {'name':'kv_gdn_and_prefix_state','patterns':[

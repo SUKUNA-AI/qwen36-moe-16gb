@@ -224,10 +224,16 @@ class LayerMajorJob:
                 _LOGGED.add(reason)  # once per reason: why a long prompt stayed chunked
                 logger.info_rank0(f"layer-major prefill not used: {reason}")
             return None
-        from freetoken.engine.layer_major import attn_batch, attn_group_layers, attn_scratch_bytes, store_banks
+        from freetoken.engine.layer_major import (attn_batch, attn_group_layers, attn_scratch_bytes, min_tokens,
+                                                  store_banks)
         from freetoken.moe.layer_major import bank_row_bytes, lendable_slots, plan_store
 
         req = fi.batch.reqs[0]
+        threshold = min_tokens()
+        if threshold and sched.prefill_manager.pending_list[0].input_len - req.cached_len < threshold:
+            # Short prompt or prefix-cache hit (QWEN36_LAYER_MAJOR_MIN_TOKENS): stay chunked. Later
+            # chunks of this request have fewer uncached tokens left, so they stay chunked too.
+            return None
         extends = [req.extend_len] + plan_chunk_extends(
             req.device_len, sched.prefill_manager.pending_list[0].input_len,
             sched.prefill_budget, sched.cache_manager.prefill_chunk_align)

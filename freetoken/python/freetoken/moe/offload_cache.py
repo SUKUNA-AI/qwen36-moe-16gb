@@ -317,10 +317,18 @@ class OffloadMoeCache:
 
     def begin_layer_major_prefill(self) -> None:
         """Open ONE prefill epoch for every chunk of a layer-major prefill (before layer 0, chunk 0)."""
-        self.begin_prefill()
+        if self.layer_major_active:
+            raise RuntimeError("layer-major epoch already active")
         self.layer_major_active = True
+        try:
+            self.begin_prefill()
+        except BaseException:
+            self.layer_major_active = False
+            self._prefill_hit_d2d_active = False
+            raise
 
     def end_layer_major_prefill(self) -> None:
+        self._prefill_hit_d2d_active = False
         self.layer_major_active = False
 
     def borrow_tail_slots(self, n: int, bank_ids=None, refill_group: int | None = None) -> list[torch.Tensor]:
@@ -739,7 +747,8 @@ class OffloadMoeCache:
             # fence the first prefetch would stomp bytes a running GEMM is reading.
             self.prefill_begin_event.record(torch.cuda.current_stream(self.device))
             self.prefill_copy_stream.wait_event(self.prefill_begin_event)
-        self._prefill_hit_d2d_active = self.prefill_hit_d2d and self._hit_d2d_usable()
+        self._prefill_hit_d2d_active = (self.prefill_hit_d2d and not self.layer_major_active
+                                        and self._hit_d2d_usable())
         if self._prefill_hit_d2d_active:
             # The copy stream is fenced behind the previous decode, so the snapshot
             # observes its final slot map; one host sync per chunk, then per-layer
@@ -770,7 +779,7 @@ class OffloadMoeCache:
                 buffer[buffer_id].copy_(per_layer[layer_id], non_blocking=True)
                 self.prefill_h2d_bytes += per_layer[layer_id].numel()*per_layer[layer_id].element_size()
 
-        if self._prefill_hit_d2d_active:
+        if self._prefill_hit_d2d_active and not self.layer_major_active:
             self._prefetch_split(layer_id, buffer_id)
         elif self.prefill_copy_stream is None:
             copy()
@@ -845,6 +854,8 @@ class OffloadMoeCache:
         chunk. Hit and miss row sets are disjoint, so the streams need no
         ordering against each other.
         """
+        if self.layer_major_active:
+            raise RuntimeError("hit-D2D cannot read slots borrowed by layer-major prefill")
         import numpy as np
 
         from freetoken.kernel.fast_index_copy import fast_index_copy_multi_jit

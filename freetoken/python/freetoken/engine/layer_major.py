@@ -37,6 +37,18 @@ def enabled() -> bool:
     return os.environ.get("QWEN36_LAYER_MAJOR_PREFILL", "0").strip().lower() in _ON
 
 
+def min_tokens() -> int:
+    """QWEN36_LAYER_MAJOR_MIN_TOKENS=<T> (unset/0 = current behaviour): start layer-major only when
+    the request's uncached prompt tokens (prompt minus prefix-cache hit) are >= T, on top of the
+    >= QWEN36_LAYER_MAJOR_MIN_CHUNKS rule. When set, layer-major may also coexist with
+    --moe-prefill-hit-d2d: prefills below T stay chunked and take the hit/miss split (decode-resident
+    experts gathered D2D, only misses over PCIe); a layer-major epoch always copies full layers."""
+    try:
+        return max(0, int(os.environ.get("QWEN36_LAYER_MAJOR_MIN_TOKENS", "0")))
+    except ValueError:
+        return 0
+
+
 def engine_reason(engine) -> str | None:
     """None when this engine can run layer-major prefill, else the reason it cannot."""
     model = engine.model
@@ -62,7 +74,8 @@ def engine_reason(engine) -> str | None:
         return f"{type(cache).__name__} slot cache"
     if not cache.prefill_overlap or not cache.prefill_bank_buffers:
         return "MoE prefill overlap (double buffer) is off"
-    if cache.prefill_hit_d2d:
+    if cache.prefill_hit_d2d and not min_tokens():
+        # Epoch state suppresses hit-D2D for its entire lifetime, including delayed copies.
         return "hit-D2D prefill reads the decode residency slots the store borrows"
     return None
 
@@ -168,7 +181,7 @@ class LayerMajorExecutor:
             self._qbuf = raw[:seg].view(weight.dtype).view(n, num_q, head_dim)
             self._obuf = raw[seg:2 * seg].view(weight.dtype).view(n, num_q, head_dim)
             self._gbuf = raw[2 * seg:3 * seg].view(weight.dtype).view(n, num_q * head_dim)
-        if self.cache is not None:
+        if self.cache is not None and not self.cache.prefill_hit_d2d:
             self.cache.begin_layer_major_prefill()
         # FLA caches chunk indices per cu_seqlens object (4 entries, host sync on a miss); keep
         # every chunk of the window cached instead of thrashing (values are identical).
@@ -178,6 +191,15 @@ class LayerMajorExecutor:
         if self.cuda:
             self.begin = torch.cuda.Event(enable_timing=True)
             self.begin.record(torch.cuda.current_stream(self.device))
+        if self.cache is not None and self.cache.prefill_hit_d2d:
+            try:
+                self.cache.begin_layer_major_prefill()
+            except BaseException:
+                self.store.release()
+                if self._fla_prev is not None:
+                    _set_fla_tensor_cache(self._fla_prev)
+                self._nsys_end()
+                raise
 
     # -- tasks ------------------------------------------------------------------------------
     def _select_plan(self, batch) -> None:
@@ -421,4 +443,4 @@ class _DoneEvent:
 
 
 __all__ = ["LayerMajorExecutor", "attn_batch", "attn_group_layers", "attn_scratch_bytes", "enabled", "engine_reason",
-           "store_banks"]
+           "min_tokens", "store_banks"]
