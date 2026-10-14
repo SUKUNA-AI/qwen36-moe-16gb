@@ -208,12 +208,12 @@ CHECKPOINT_HASH_LIMIT = 64 * 1024 * 1024
 GDN_BASELINE = {'SGLANG_GDN_CHUNK_H_BV': '32',
                 'SGLANG_GDN_CHUNK_H_NUM_WARPS': '4',
                 'SGLANG_GDN_CHUNK_H_NUM_STAGES': '2'}
-# Production never JIT-compiles a kernel module at serve time. With FREETOKEN_DISABLE_JIT=1 FreeToken
-# (kernel/utils.py _load_prebuilt) loads only manifest-bound prebuilts from the venv kernel cache (no
+# Production never JIT-compiles a kernel module at serve time. STRICT_PROVENANCE enforces the
+# manifest/recipe/binary binding before loading; DISABLE_JIT alone only forbids builds. The loader loads prebuilts from the venv kernel cache (no
 # tvm-ffi build, so no CUDA arch detection) and raises instead of compiling. Inherited TVM_FFI_* build knobs
 # are cleared; only decode_gather pins TVM_FFI_CUDA_ARCH_LIST (SWITCH_ENV, inert here). Every module a
 # profile runs must therefore be a verified prebuilt (kernel provenance; KERNEL_MODULE_SWITCHES).
-KERNEL_LOADER_ENV = {'FREETOKEN_DISABLE_JIT': '1'}
+KERNEL_LOADER_ENV = {'FREETOKEN_DISABLE_JIT': '1', 'FREETOKEN_STRICT_PROVENANCE': '1'}
 # The profile is the complete behavior configuration. Inherited experiment,
 # kernel and allocator knobs are removed; only the unit's persistent key stays.
 PRESERVED_ENV = frozenset({'QWEN36_API_KEY'})

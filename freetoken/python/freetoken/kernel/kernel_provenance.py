@@ -165,11 +165,17 @@ def decide_prebuilt(
     *,
     manifest: dict[str, Any] | None,
     cache_dir: pathlib.Path | None,
+    strict: bool = False,
 ) -> dict[str, Any]:
     """Whether the prebuilt ``so_path`` may stand in for ``recipe``; raises on a replaced .so."""
     digest = recipe_digest(recipe)
+    if strict and (manifest is None or name not in manifest.get("modules", {})):
+        return {"use": False, "reason": "missing-manifest" if manifest is None else "unknown-module", "recipe_digest": digest}
     entry, origin = lookup(name, manifest, cache_dir)
     if entry is not None:
+        if strict and (not isinstance(entry, dict) or not isinstance(entry.get("recipe"), dict)
+                       or recipe_digest(entry["recipe"]) != entry.get("recipe_digest")):
+            raise ProvenanceError(f"invalid manifest recipe for {name!r}")
         if entry["recipe_digest"] != digest:
             return {"use": False, "reason": "recipe-changed", "recipe_digest": digest,
                     "manifest_digest": entry["recipe_digest"],

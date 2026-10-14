@@ -999,7 +999,7 @@ class EnvironmentTests(TempRootCase):
         self.assertEqual(runtime.GDN_BASELINE, {'SGLANG_GDN_CHUNK_H_BV': '32', 'SGLANG_GDN_CHUNK_H_NUM_WARPS': '4',
                                                 'SGLANG_GDN_CHUNK_H_NUM_STAGES': '2'})
         # Inherited FREETOKEN_* knobs are cleared; only the pinned loader policy (no serve-time JIT) is set.
-        self.assertEqual(runtime.KERNEL_LOADER_ENV, {'FREETOKEN_DISABLE_JIT': '1'})
+        self.assertEqual(runtime.KERNEL_LOADER_ENV, {'FREETOKEN_DISABLE_JIT': '1', 'FREETOKEN_STRICT_PROVENANCE': '1'})
         self.assertEqual({k: v for k, v in environ.items() if k.startswith('FREETOKEN_')}, runtime.KERNEL_LOADER_ENV)
         for key in environ:
             self.assertFalse(key.startswith(('FLA_', 'LIGHTLLM_', 'DSV4_', 'TVM_FFI_')), key)
@@ -2095,6 +2095,7 @@ class DecodeGatherLoaderTests(TempRootCase):
         # tvm-ffi build, whose first step is CUDA arch detection (the model-level crash) ...
         environ = self.production_env()
         environ.pop('FREETOKEN_DISABLE_JIT')
+        environ.pop('FREETOKEN_STRICT_PROVENANCE')
         environ.pop('TVM_FFI_CUDA_ARCH_LIST')
         result = self.run_loader('missing', environ)
         self.assertEqual([call[0] for call in result['calls']], ['check_nvcc_matches_torch', 'load_inline'])

@@ -19,6 +19,7 @@ KERNEL_CACHE_DIR_ENV = "FREETOKEN_KERNEL_CACHE_DIR"
 DISABLE_KERNEL_CACHE_ENV = "FREETOKEN_DISABLE_KERNEL_CACHE"
 DISABLE_KERNEL_CACHE_VERSION_CHECK_ENV = "FREETOKEN_DISABLE_KERNEL_CACHE_VERSION_CHECK"
 DISABLE_JIT_ENV = "FREETOKEN_DISABLE_JIT"
+STRICT_PROVENANCE_ENV = "FREETOKEN_STRICT_PROVENANCE"
 _TRUE_VALUES = {"1", "true", "yes", "on"}
 DEFAULT_INCLUDE = [str(KERNEL_PATH / "include")]
 DEFAULT_CFLAGS = ["-std=c++20", "-O3"]
@@ -175,7 +176,7 @@ def _load_prebuilt(name: str, recipe: dict) -> Module | None:
     """
     cache_dir = _kernel_cache_dir()
     if cache_dir is None:
-        if _env_enabled(DISABLE_JIT_ENV):
+        if _env_enabled(DISABLE_JIT_ENV) or _env_enabled(STRICT_PROVENANCE_ENV):
             raise RuntimeError(
                 "JIT compilation is disabled by FREETOKEN_DISABLE_JIT, "
                 f"but no prebuilt kernel cache is configured for {name!r}"
@@ -185,7 +186,8 @@ def _load_prebuilt(name: str, recipe: dict) -> Module | None:
     so_path = cache_dir / name / f"{name}.so"
     if so_path.exists():
         decision = provenance.decide_prebuilt(
-            name, recipe, so_path, manifest=provenance.load_manifest(), cache_dir=cache_dir
+            name, recipe, so_path, manifest=provenance.load_manifest(), cache_dir=cache_dir,
+            strict=_env_enabled(STRICT_PROVENANCE_ENV)
         )
         if decision["use"]:
             import tvm_ffi
@@ -193,7 +195,7 @@ def _load_prebuilt(name: str, recipe: dict) -> Module | None:
             module = tvm_ffi.load_module(str(so_path))
             provenance.note_loaded(name, {**decision, "so_path": str(so_path)})
             return module
-        if _env_enabled(DISABLE_JIT_ENV):
+        if _env_enabled(DISABLE_JIT_ENV) or _env_enabled(STRICT_PROVENANCE_ENV):
             raise provenance.ProvenanceError(
                 f"prebuilt kernel {name!r} at {so_path} was not built from the current sources "
                 f"({decision['reason']}: {decision.get('changed')}) and FREETOKEN_DISABLE_JIT forbids rebuilding it"
@@ -205,7 +207,7 @@ def _load_prebuilt(name: str, recipe: dict) -> Module | None:
         )
         return None
 
-    if _env_enabled(DISABLE_JIT_ENV):
+    if _env_enabled(DISABLE_JIT_ENV) or _env_enabled(STRICT_PROVENANCE_ENV):
         raise RuntimeError(
             "JIT compilation is disabled by FREETOKEN_DISABLE_JIT, "
             f"but prebuilt kernel {name!r} was not found at {so_path}"

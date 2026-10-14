@@ -1570,7 +1570,7 @@ class BundleWiringTests(unittest.TestCase):
             self.assertIn(library_key, library_env)
         self.assertEqual(set(maker.CUDA_DECISION_EVIDENCE), set(constants.CUDA_EVIDENCE_SWITCHES))
         self.assertTrue(set(maker.CUDA_DECISION_EVIDENCE.values()) <= maker.DECISION_OPTIONAL_KEYS)
-        self.assertEqual(constants.KERNEL_LOADER_ENV, {'FREETOKEN_DISABLE_JIT': '1'})
+        self.assertEqual(constants.KERNEL_LOADER_ENV, {'FREETOKEN_DISABLE_JIT': '1', 'FREETOKEN_STRICT_PROVENANCE': '1'})
         self.assertEqual(set(constants.KERNEL_LOADER_ENV) & maker.RUN_FEATURE_ENV, set())
 
 
