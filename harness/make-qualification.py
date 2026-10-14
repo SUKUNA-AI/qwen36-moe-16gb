@@ -102,7 +102,7 @@ RUN_COMPANION_ENV = {'QWEN36_CUDA_GDN_DECODE': 'QWEN36_CUDA_GDN', 'TVM_FFI_CUDA_
 # Library switches whose run must name its library explicitly (switch variable -> library variable).
 RUN_LIBRARY_ENV = {'QWEN36_CUDA_GDN': 'QWEN36_CUDA_GDN_LIBRARY', 'QWEN36_FP8_GEMV': 'QWEN36_FP8_GEMV_LIBRARY'}
 # Teacher fixtures only record logits for the quality comparison; anything else differs.
-RUN_DIAGNOSTIC_ENV = frozenset({'QWEN36_TEACHER_FIXTURE', 'QWEN36_LOGIT_REFERENCE'})
+RUN_DIAGNOSTIC_ENV = frozenset({'QWEN36_TEACHER_FIXTURE', 'QWEN36_LOGIT_REFERENCE', 'QWEN36_TEACHER_REFERENCE_REPORT'})
 EXPERIMENT_DEFAULT_MEMORY_RATIO = 0.75
 
 
@@ -210,18 +210,42 @@ QUALITY_REPORT_KEYS = frozenset({'baseline', 'candidate', 'logit_comparisons', '
 
 def check_quality_bitexact_report(report):
     """compare-quality.py output of a qualify.py teacher run: every in-engine logit comparison against the
+def quality_evidence_module():
+    source = HERE/'python/freetoken/quality_evidence.py'
+    if not source.is_file():
+        from repo_paths import FREETOKEN
+        source = FREETOKEN/'python/freetoken/quality_evidence.py'
+    return load_module('quality_evidence_checks', source)
+
+
     teacher-bf128 logit reference (engine/qualification.py, QWEN36_LOGIT_REFERENCE) must be exactly zero."""
     logits = report['logit_comparisons']
     _require(type(logits) is dict and report['baseline'] == 'teacher-bf128'
+    helpers = quality_evidence_module()
+    TEACHER_CASES, unique_rows, hash_valid = helpers.TEACHER_CASES, helpers.unique_rows, helpers.hash_valid
+    rows = unique_rows(report.get('rows'), TEACHER_CASES, 'quality report')
+    _require(all(type(r.get('tokens')) is int and r['tokens'] > 0 for r in rows.values()), 'quality token counts missing')
+    case_runs = report.get('case_runs')
+    _require(type(case_runs) is dict and set(case_runs) == {'baseline','candidate'} and
+             all(type(v) is dict and set(v) == set(TEACHER_CASES) and all(type(run) is str and run for run in v.values())
+                 for v in case_runs.values()), 'quality case->run bindings incomplete')
+    hashes = report.get('reports_sha256')
+    _require(type(hashes) is dict and set(hashes) == {'baseline','candidate','functional_baseline','functional_candidate'}
+             and all(hash_valid(v) for v in hashes.values()) and hash_valid(report.get('fixture_sha256')),
+             'quality source/fixture identities missing')
+    _require(type(report.get('tokens')) is int and report['tokens'] == sum(r['tokens'] for r in rows.values()),
+             'quality total token count mismatch')
              and type(report['candidate']) is str and report['candidate'].startswith('teacher-')
              and report['candidate'] != 'teacher-bf128'
-             and type(logits.get('expected')) is int and logits['expected'] > 0
+             and type(logits.get('expected')) is int and logits['expected'] == sum((r['tokens']+7)//8 for r in rows.values())
              and type(logits.get('observed')) is int and logits['observed'] == logits['expected']
-             and logits.get('finite_and_complete') is True
+             and logits.get('finite_and_complete') is True and logits.get('all_byte_equal') is True
              and all(type(logits.get(key)) in (int, float) and logits.get(key) == 0
                      for key in ('max_abs', 'max_relative_l2'))
              and report['forced_targets_complete'] is True and report['quality_gate_pass'] is True
              and report['new_functional_failures'] == [],
+             and report.get('schema') == 2 and report.get('evidence_valid') is True
+             and report.get('bit_exact_pass') is True
              'Teacher-forcing quality report does not show identical logits vs teacher-bf128')
 
 

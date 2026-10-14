@@ -65,6 +65,7 @@ OVERLAY = (
 GROUPS = {
     'A': {'name':'telemetry_api_scheduler_correctness','patterns':[
         'python/freetoken/engine/telemetry.py','python/freetoken/engine/qualification.py',
+        'python/freetoken/quality_evidence.py',
         'python/freetoken/engine/engine.py','python/freetoken/engine/sample.py','python/freetoken/core.py',
         'python/freetoken/scheduler/prefill.py','python/freetoken/scheduler/scheduler.py',
         'python/freetoken/server/*','python/freetoken/message/tokenizer.py','python/freetoken/tokenizer/*',

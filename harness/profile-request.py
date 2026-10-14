@@ -18,7 +18,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))         # bench.py lives next to this script (also under python -I)
 ROOT = pathlib.Path('/home/USER/qwen36-api/optimization')
-MODEL = '/path/to/LLM/qwen36-api/model'
+MODEL = os.environ.get('QWEN36_MODEL_DIR','/path/to/LLM/qwen36-api/model')
 QUESTION = '\nОбъясни алгоритм проверки данных.'
 OUTPUT_MARGIN = 512          # template/question tokens plus safety inside the context
 EXTRA_FORWARDS = 3           # overlap-scheduled step, prefix-margin tail chunk, alignment split
@@ -259,14 +259,38 @@ def command_ncu_config(args):
         print(json.dumps({key: value for key, value in result.items() if key != 'ncu'}, indent=1))
 
 
-def http_ready():
+def health_probe(timeout=3):
     import requests
     from bench import headers
     try:
-        response = requests.get('http://127.0.0.1:1919/v1/models', headers=headers(), timeout=5)
-        return response.status_code == 200
-    except (requests.RequestException, OSError, IndexError):
-        return False
+        response = requests.get('http://127.0.0.1:1919/health', headers=headers(), timeout=timeout)
+        body = response.json() if response.status_code == 200 else {}
+        ready = isinstance(body, dict) and body.get('status') in ('ok', 'ready')
+        return ready, f'HTTP {response.status_code}: health={body.get("status") if isinstance(body, dict) else "invalid"}'
+    except (requests.RequestException, OSError, ValueError, IndexError) as error:
+        return False, f'{type(error).__name__}: {str(error)[:160]}'
+
+
+def http_ready():
+    return health_probe()[0]
+
+
+def wait_health(timeout, *, probe=None, clock=None, sleep=None):
+    probe = health_probe if probe is None else probe
+    clock = time.monotonic if clock is None else clock
+    sleep = time.sleep if sleep is None else sleep
+    if timeout <= 0:
+        raise ValueError('health timeout must be positive')
+    deadline = clock() + timeout
+    last = 'no health response'
+    while True:
+        remaining = deadline - clock()
+        if remaining <= 0:
+            raise RuntimeError(f'experiment /health not ready after {timeout}s; last: {last}')
+        ready, last = probe(min(3, remaining))
+        if ready:
+            return
+        sleep(min(1, max(0, deadline - clock())))
 
 
 def unit_active(unit):
@@ -373,11 +397,10 @@ def command_run(args):
         raise SystemExit('config has no profile_plan')
     if unit_active('qwen36-inference.service'):
         raise SystemExit('production unit is active; profiling refuses to share the GPU')
-    deadline = time.monotonic() + args.wait_ready
-    while not http_ready():
-        if time.monotonic() > deadline:
-            raise SystemExit('experiment endpoint not ready')
-        time.sleep(5)
+    try:
+        wait_health(args.wait_ready)
+    except (ValueError, RuntimeError) as error:
+        raise SystemExit(str(error)) from None
     from bench import generate, run_receipt
     active = run_receipt()
     try:

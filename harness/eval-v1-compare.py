@@ -136,14 +136,11 @@ def paired(a, b):
 
 
 def teacher_runs(path, profile):
+    from freetoken.quality_evidence import teacher_records
     runs = {}
-    for line in pathlib.Path(path).read_text(encoding='utf-8').splitlines():
-        try:
-            row = json.loads(line)
-        except ValueError:
-            continue
-        if isinstance(row, dict) and row.get('profile') == profile and isinstance(row.get('nll'), list):
-            runs.setdefault(row.get('run_id'), {})[row.get('case')] = row['nll']
+    for (row_profile,run,case),row in teacher_records(path).items():
+        if row_profile == profile:
+            runs.setdefault(run,{})[case] = row['nll']
     return runs
 
 

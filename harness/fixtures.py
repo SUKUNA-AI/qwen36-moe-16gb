@@ -39,8 +39,17 @@ def teacher_cases(tokenizer):
     return cases
 
 
-def prepare(tokenizer):
+def prepare(tokenizer, *, create=False):
+    from freetoken.quality_evidence import strict_json, digest
     cases=teacher_cases(tokenizer)
-    (ROOT/'config/teacher-fixture.json').write_text(json.dumps({'fixture_version':1,
-        'targets':{str(c['seed']):{k:c[k] for k in ('case','ids')} for c in cases}}))
+    payload={'fixture_version':1,'targets':{str(c['seed']):{k:c[k] for k in ('case','ids')} for c in cases}}
+    path=ROOT/'config/teacher-fixture.json'
+    if path.exists():
+        if digest(strict_json(path.read_text())) != digest(payload):
+            raise RuntimeError('existing teacher fixture differs; refusing to replace reference targets')
+    elif create:
+        with path.open('x') as out:out.write(json.dumps(payload))
+        path.chmod(0o600)
+    else:
+        raise RuntimeError('teacher fixture missing; explicit --prepare is required, no implicit generation')
     return cases

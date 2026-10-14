@@ -114,7 +114,7 @@ changed.
 **Rule (harness v6, compare-ab):**
 - The metric is **full-request elapsed time** per case. TTFT and decode are reported, not gated (owner
   decision).
-- For each case, take the log ratio candidate/baseline over the 5 pairs, then a t-interval with df = 4
+- For each case, take the log speedup ratio baseline/candidate (for elapsed time) over the 5 pairs, then a t-interval with df = 4
   at 97.5%.
 - **Non-inferiority:** lower bound >= 1/1.03 on every gating case. If the upper bound is below 1/1.03,
   the result is FAIL.

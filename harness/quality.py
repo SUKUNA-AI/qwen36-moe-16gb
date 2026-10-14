@@ -1,9 +1,9 @@
 """Owner-local quality qualification; saves verdicts/losses/hashes, never responses."""
-import argparse, ast, hashlib, json, re, time
+import argparse, ast, os, hashlib, json, re, time
 import requests
-from transformers import AutoTokenizer
 from bench import ROOT, generate, headers, document, run_receipt
 from fixtures import prepare
+from freetoken.quality_evidence import teacher_records, file_digest, digest
 
 # Harness v7 teacher clean-cache step. At prefill commit the hybrid radix cache dedups a prompt's shared
 # chat header and re-points its page_table rows to KV written by EARLIER requests (rounding-different GEMM
@@ -16,14 +16,8 @@ RESTART_MAY_CHANGE=('run_id','started_utc')
 
 
 def teacher_rows(profile):
-    """The engine's reports/teacher.jsonl rows of one profile, in file order (what compare-quality.py reads)."""
-    path=ROOT/'reports/teacher.jsonl'
-    rows=[]
-    for line in (path.read_text().splitlines() if path.exists() else []):
-        try:row=json.loads(line)
-        except ValueError:continue
-        if isinstance(row,dict) and row.get('profile')==profile:rows.append(row)
-    return rows
+    """The engine's reports/teacher.jsonl rows of one profile across rotations, keyed by run/case."""
+    return [row for key,row in teacher_records(ROOT/'reports/teacher.jsonl').items() if key[0] == profile]
 
 
 def restart_clean(previous):
@@ -53,19 +47,17 @@ def teacher(tokenizer,cases):
              'clean_cache':case['case'] in CLEAN_CACHE_CASES}
         served[case['case']]=current['run_id']
         rows.append(row);print(json.dumps(row),flush=True)
-    # Bind: compare-quality.py takes the LAST teacher.jsonl row per (profile, case); it must be this run's row,
-    # and a clean-cache run must hold only its own case(s), i.e. they were its first requests.
     deadline=time.monotonic()+30
     while True:
         logged=teacher_rows(first['profile'])
-        latest={row.get('case'):row.get('run_id') for row in logged}
-        unbound={case:latest.get(case) for case,run_id in served.items() if latest.get(case)!=run_id}
-        if not unbound:break
-        if time.monotonic()>=deadline:raise RuntimeError(f'teacher.jsonl rows not bound to this run: {unbound}')
+        identities={(row['case'],row['run_id']) for row in logged}
+        missing=[case for case,run in served.items() if (case,run) not in identities]
+        if not missing:break
+        if time.monotonic()>=deadline:raise RuntimeError(f'teacher rows missing for this run: {missing}')
         time.sleep(.5)
     for receipt in clean:
-        own=[row.get('case') for row in logged if row.get('run_id')==receipt['run_id']]
-        if own!=[case for case,run_id in served.items() if run_id==receipt['run_id']]:
+        own={row['case'] for row in logged if row['run_id']==receipt['run_id']}
+        if own!={case for case,run in served.items() if run==receipt['run_id']}:
             raise RuntimeError(f"clean-cache run {receipt['run_id']} served other teacher cases: {own}")
     return rows,first,clean
 
@@ -95,6 +87,7 @@ def code_check(text):
     except Exception:return False
 
 
+
 def request(messages,**kwargs):
     payload={'model':'qwen36-35b','messages':messages,'max_tokens':512,'temperature':0,
              'seed':417,'chat_template_kwargs':{'enable_thinking':False},**kwargs}
@@ -104,10 +97,10 @@ def request(messages,**kwargs):
 
 def functional(tokenizer,long_length):
     rows=[]
-    _,text=generate([{'role':'user','content':'Ответь одним русским словом: столица России?'}],64,temperature=0)
-    rows.append({'case':'russian','pass':'москва' in text.lower()})
-    _,text=generate([{'role':'user','content':'Напиши только функцию Python rotate(a, k), циклически сдвигающую список вправо на k. Пустой список верни пустым. k может быть отрицательным. Используй срезы, без импортов, циклов, comprehensions, методов и комментариев. Только функцию.'}],256,temperature=0)
-    rows.append({'case':'executable-code','pass':code_check(text),'sha256':hashlib.sha256(text.encode()).hexdigest()})
+    result,text=generate([{'role':'user','content':'Ответь одним русским словом: столица России?'}],64,temperature=0)
+    rows.append({'case':'russian','status':result['status'],'pass':'москва' in text.lower()})
+    result,text=generate([{'role':'user','content':'Напиши только функцию Python rotate(a, k), циклически сдвигающую список вправо на k. Пустой список верни пустым. k может быть отрицательным. Используй срезы, без импортов, циклов, comprehensions, методов и комментариев. Только функцию.'}],256,temperature=0)
+    rows.append({'case':'executable-code','status':result['status'],'pass':code_check(text),'sha256':hashlib.sha256(text.encode()).hexdigest()})
     tools=[{'type':'function','function':{'name':'get_fixture_weather','description':'Return synthetic weather for a city.','parameters':{'type':'object','properties':{'city':{'type':'string'}},'required':['city'],'additionalProperties':False}}}]
     messages=[{'role':'user','content':'Вызови get_fixture_weather для города Казань, затем сообщи температуру из результата. Не придумывай результат.'}]
     first=request(messages,tools=tools)
@@ -120,7 +113,7 @@ def functional(tokenizer,long_length):
     if ok:
         second=request(messages+[msg,{'role':'tool','tool_call_id':call['id'],'content':'{"temperature_c":17,"synthetic":true}'}],tools=tools)
         ok='17' in (second['choices'][0]['message'].get('content') or '')
-    rows.append({'case':'tool-cycle','pass':ok})
+    rows.append({'case':'tool-cycle','status':200,'pass':ok})
     for length in [16384,long_length]:
         body=document(tokenizer,length,9721+length);a=len(body)//3;b=2*len(body)//3
         content='Код задачи АЛЬФА-917.\n'+body[:a]+'\nКоличество деталей: 23.\n'+body[a:b]+'\nОтветственный: Ирина.\n'+body[b:]+'\nЦена детали 14 рублей. Ответь только JSON с полями code, count, owner, total для этой задачи.'
@@ -130,7 +123,7 @@ def functional(tokenizer,long_length):
             parsed=json.loads(re.search(r'\{.*\}',text,re.S).group(0))
             ok=parsed=={'code':'АЛЬФА-917','count':23,'owner':'Ирина','total':322}
         except Exception:ok=False
-        rows.append({'case':f'long-facts-{length}','pass':ok,'usage':result.get('usage'),'ttft_content_s':result.get('ttft_content_s'),
+        rows.append({'case':f'long-facts-{length}','status':result['status'],'pass':ok,'usage':result.get('usage'),'ttft_content_s':result.get('ttft_content_s'),
             'field_equal':{k:isinstance(parsed,dict) and parsed.get(k)==v for k,v in {'code':'АЛЬФА-917','count':23,'owner':'Ирина','total':322}.items()},
             'content_sha256':hashlib.sha256(text.encode()).hexdigest(),
             'cached_prompt_tokens':result.get('cached_prompt_tokens'),'engine':result.get('engine'),
@@ -140,16 +133,23 @@ def functional(tokenizer,long_length):
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--teacher',action='store_true');p.add_argument('--prepare',action='store_true');p.add_argument('--long',type=int,default=120000)
-    args=p.parse_args();tokenizer=AutoTokenizer.from_pretrained('/path/to/LLM/qwen36-api/model',local_files_only=True)
-    cases=prepare(tokenizer)
+    from transformers import AutoTokenizer
+    args=p.parse_args();tokenizer=AutoTokenizer.from_pretrained(os.environ.get('QWEN36_MODEL_DIR','/path/to/LLM/qwen36-api/model'),local_files_only=True)
+    cases=prepare(tokenizer,create=args.prepare) if args.teacher or args.prepare else None
     if args.prepare:print('Prepared 20 fixed holdout cases');return
     extra={}
     if args.teacher:
         rows,run,clean=teacher(tokenizer,cases)
+        extra['teacher_evidence']=[r for r in teacher_rows(run['profile'])
+            if any(r['case']==row['case'] and r['run_id']==row['run_id'] for row in rows)]
+        extra['fixture_sha256']=file_digest(ROOT/'config/teacher-fixture.json')
+        extra['targets']={c['case']:{'count':len(c['ids']),'sha256':digest(c['ids'])} for c in cases}
         extra['clean_cache']={'harness':'v7','mode':'restart_same_profile','cases':list(CLEAN_CACHE_CASES),'runs':clean}
     else:
         rows=functional(tokenizer,args.long);run=run_receipt()
-    report=ROOT/'reports'/f'{args.name}.json';report.write_text(json.dumps({'fixture_version':1,'run':run,'rows':rows,**extra},indent=2))
+        extra['functional_matrix']={'version':1,'long':args.long}
+    report=ROOT/'reports'/f'{args.name}.json'
+    with report.open('x') as out:out.write(json.dumps({'fixture_version':1,'run':run,'rows':rows,**extra},indent=2,allow_nan=False))
     print(json.dumps({'report':str(report),'rows':rows}),flush=True)
 
 if __name__=='__main__':main()

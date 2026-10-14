@@ -42,12 +42,11 @@ def compare_logits(old_dir,new_dir):
 
 
 def teacher_runs(path,profile='teacher-bf128'):
+    from freetoken.quality_evidence import teacher_records
     runs={}
-    for line in path.read_text().splitlines():
-        try:row=json.loads(line)
-        except ValueError:continue
-        if isinstance(row,dict) and row.get('profile')==profile and isinstance(row.get('nll'),list):
-            runs.setdefault(row.get('run_id'),{})[row.get('case')]=row['nll']
+    for (row_profile,run,case),row in teacher_records(path).items():
+        if row_profile == profile:
+            runs.setdefault(run,{})[case] = row['nll']
     return runs
 
 

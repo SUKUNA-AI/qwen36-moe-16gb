@@ -980,11 +980,16 @@ class MakeQualificationTests(Staging):
     def test_cuda_switch_accepts_quality_teacher_report(self):
         # release-prep GAP-1: qualify.py/compare-quality.py is the only producer of candidate logit evidence.
         self.cuda_setup()
-        good = {'baseline': 'teacher-bf128', 'candidate': 'teacher-cuda-bitexact128', 'forced_targets_complete': True,
-                'logit_comparisons': {'expected': 125, 'observed': 125, 'finite_and_complete': True,
+        good = {'schema': 2, 'evidence_valid': True, 'bit_exact_pass': True, 'baseline': 'teacher-bf128', 'candidate': 'teacher-cuda-bitexact128', 'forced_targets_complete': True,
+                'logit_comparisons': {'expected': 125, 'observed': 125, 'finite_and_complete': True, 'all_byte_equal': True,
                                       'max_abs': 0.0, 'max_relative_l2': 0.0},
                 'new_functional_failures': [], 'ppl_gate_pass': True, 'quality_gate_pass': True,
                 'relative_perplexity_growth': 0.0}
+        TEACHER_CASES = maker.quality_evidence_module().TEACHER_CASES
+        good.update(rows=[{'case':case,'tokens':48 if i<19 else 88} for i,case in enumerate(TEACHER_CASES)],
+                    tokens=1000, fixture_sha256='f'*64,
+                    reports_sha256={k:'a'*64 for k in ('baseline','candidate','functional_baseline','functional_candidate')},
+                    case_runs={arm:{c:arm+'-synthetic' for c in TEACHER_CASES} for arm in ('baseline','candidate')})
         receipt = self.build(self.cuda_decision(report=good))
         self.assertEqual(receipt['profiles']['main128']['cuda_nvfp4_prefill']['bitexact_reports'],
                          ['reports/cuda-bitexact.json'])
