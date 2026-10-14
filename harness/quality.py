@@ -1,5 +1,5 @@
 """Owner-local quality qualification; saves verdicts/losses/hashes, never responses."""
-import argparse, ast, os, hashlib, json, re, time
+import argparse, os, hashlib, json, re, time
 import requests
 from bench import ROOT, generate, headers, document, run_receipt
 from fixtures import prepare
@@ -62,30 +62,7 @@ def teacher(tokenizer,cases):
     return rows,first,clean
 
 
-def code_check(text):
-    fenced=re.search(r'```(?:python)?\s*(.*?)```',text,re.S)
-    code=fenced.group(1) if fenced else text
-    try:
-        tree=ast.parse(code)
-        # This fixture needs only scalar/list arithmetic. No attributes, imports,
-        # comprehensions, loops or arbitrary calls are admitted for execution.
-        allowed=(ast.Module,ast.FunctionDef,ast.arguments,ast.arg,ast.Return,ast.Assign,
-                 ast.Name,ast.Load,ast.Store,ast.Constant,ast.If,ast.Compare,ast.Eq,
-                 ast.Lt,ast.Gt,ast.LtE,ast.GtE,ast.Not,ast.UnaryOp,ast.USub,
-                 ast.BinOp,ast.Add,ast.Sub,ast.Mult,ast.Div,ast.FloorDiv,ast.Mod,
-                 ast.Subscript,ast.Slice,ast.Call,ast.BoolOp,ast.And,ast.Or,ast.IfExp,
-                 ast.List,ast.Tuple)
-        for node in ast.walk(tree):
-            if not isinstance(node,allowed):return False
-            if isinstance(node,ast.Call) and (not isinstance(node.func,ast.Name) or node.func.id not in ('len','list')):return False
-            if isinstance(node,ast.Name) and node.id.startswith('__'):return False
-        if len(tree.body)!=1 or not isinstance(tree.body[0],ast.FunctionDef):return False
-        namespace={'__builtins__':{'len':len,'list':list}}
-        exec(compile(tree,'<restricted-fixture>','exec'),namespace)
-        f=namespace['rotate']
-        return all(f(a,k)==expected for a,k,expected in [([],3,[]),([1,2,3,4],1,[4,1,2,3]),([1,2,3],0,[1,2,3]),([1,2,3],5,[2,3,1]),([1,2,3],-1,[2,3,1])])
-    except Exception:return False
-
+from code_runner import code_check
 
 
 def request(messages,**kwargs):
