@@ -1,5 +1,5 @@
-import json,pathlib,requests,sys,time,subprocess
-root=pathlib.Path('/home/USER/qwen36-api/optimization')
+import json,os,pathlib,requests,sys,time,subprocess
+root=pathlib.Path(os.environ.get('QWEN36_DATA_ROOT','/home/USER/qwen36-api/optimization'))
 until=time.monotonic()+int(sys.argv[1] if len(sys.argv)>1 else 1)
 while True:
     try:

@@ -47,7 +47,7 @@ def load(name, path):
 soak = load('soak_under_test', HERE / 'soak.py')
 analysis = load('soak_analysis_under_test', HERE / 'soak-analysis.py')
 request_metrics = load('request_metrics_under_test', next(
-    path for path in (HERE / 'request_metrics.py', HERE.parent / 'request_metrics.py') if path.is_file()))
+    path for path in (HERE / 'request_metrics.py', __import__('repo_paths').SERVING / 'request_metrics.py') if path.is_file()))
 SOAK_SHA256 = soak.file_sha256(HERE / 'soak.py')
 
 
@@ -69,7 +69,7 @@ def extract_bench():
     generate.name = 'generate_payload'
     generate.body = [payload, ast.Return(value=ast.Name(id='payload', ctx=ast.Load()))]
     body.append(generate)
-    namespace = {'hashlib': hashlib, 'json': json, 're': re, 'pathlib': pathlib}
+    namespace = {'os':os, 'hashlib': hashlib, 'json': json, 're': re, 'pathlib': pathlib}
     module = ast.fix_missing_locations(ast.Module(body=body, type_ignores=[]))
     exec(compile(module, str(HERE / 'bench.py'), 'exec'), namespace)
     return types.SimpleNamespace(**namespace)

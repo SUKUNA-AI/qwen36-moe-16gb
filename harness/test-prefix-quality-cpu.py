@@ -178,6 +178,6 @@ if __name__ == '__main__':
     report = {'tests': result.testsRun, 'failures': len(result.failures), 'errors': len(result.errors),
               'pass': result.wasSuccessful(), 'model_requests': 0, 'gpu_launched': False,
               'script_sha256': gate.hashlib.sha256((HERE/'prefix-quality.py').read_bytes()).hexdigest()}
-    gate.write_report(HERE/'prefix-quality-cpu.json', report)
+    gate.write_report(Path(__import__('os').environ.get('QWEN36_CPU_REPORT_DIR',HERE))/'prefix-quality-cpu.json', report)
     print(json.dumps(report))
     raise SystemExit(0 if result.wasSuccessful() else 1)

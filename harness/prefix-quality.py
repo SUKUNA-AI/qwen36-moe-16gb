@@ -4,6 +4,7 @@ Fresh and cached phases MUST use separate clean runs of the same profile/source.
 Synthetic requests exist only in memory. Reports contain numeric verdicts/hashes,
 never prompts, responses, tool arguments, auth headers, or server error bodies.
 """
+import os
 import argparse
 import copy
 import hashlib
@@ -313,7 +314,7 @@ def main():
         parser.error('Distinct lengths must be in 512..250000')
     import bench
     from transformers import AutoTokenizer
-    tokenizer = AutoTokenizer.from_pretrained('/path/to/LLM/qwen36-api/model', local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(os.environ.get('QWEN36_MODEL_DIR','/path/to/LLM/qwen36-api/model'), local_files_only=True)
     cases = build_cases(tokenizer, bench.document, args.name, lengths)
     manifest = [case['manifest'] for case in cases]
     prefix = args.report_prefix or bench.ROOT/'reports'/args.name

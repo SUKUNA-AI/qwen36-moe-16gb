@@ -22,7 +22,8 @@ import unittest
 from unittest import mock
 
 HERE = pathlib.Path(__file__).resolve().parent
-SERVICE = HERE.parent
+from repo_paths import SERVING
+SERVICE = SERVING
 REAL_VALIDATOR = SERVICE / 'profile-runtime.py'
 
 

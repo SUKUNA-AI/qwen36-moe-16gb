@@ -140,7 +140,7 @@ class ReleaseLibraryTests(unittest.TestCase):
     """Each validator library switch stages exactly its library, from the file the qualification configs load."""
 
     def setUp(self):
-        self.validator = release.load_validator(HERE.parent / 'profile-runtime.py')
+        self.validator = release.load_validator(release.OUTPUT / 'profile-runtime.py')
         self.tmp = tempfile.TemporaryDirectory(prefix='qwen-release-lib-cpu-')
         self.patches = [mock.patch.object(release, 'RUNTIME_SOURCE', pathlib.Path(self.tmp.name)),
                         mock.patch.object(release, 'verify_qualified_runtime', lambda validator, sources: None)]
@@ -176,8 +176,8 @@ class ReleaseLibraryTests(unittest.TestCase):
             with self.assertRaises(RuntimeError): self.libraries(self.profiles())
 
     def test_fp8_source_is_the_build_the_runtime_module_pins(self):
-        module = release.PROJECT / 'work/FreeToken-opt/python/freetoken/kernel/cuda_fp8_gemv.py'
-        if not module.is_file(): self.skipTest('fp8-gemv patch not applied to the FreeToken runtime tree')
+        module = __import__('repo_paths').FREETOKEN / 'python/freetoken/kernel/cuda_fp8_gemv.py'
+        self.assertTrue(module.is_file(), 'required public FP8 provenance source missing')
         pinned = re.search(r'^LIBRARY_SHA256 = "([0-9a-f]{64})"', module.read_text(), re.M).group(1)
         self.assertEqual(pinned, '685c78cf89e60d0205f0db3ac2040203dec27e510a1e543cb7a7d3097414093b')
         self.assertIn(pinned[:16], release.FP8_GEMV_LIBRARY_SOURCE.name)

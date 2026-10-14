@@ -4,11 +4,11 @@ import os
 import torch
 import torch.nn.functional as F
 from freetoken.core import get_global_ctx
-from freetoken.kernel.causal_conv1d import causal_conv1d_decode, causal_conv1d_varlen
-from freetoken.layers import BaseOP, GatedRMSNorm, LinearColParallelMerged, LinearReplicated
-from freetoken.layers.quantization import QuantConfig
+from typing import TYPE_CHECKING
+from freetoken.layers.base import BaseOP
 
-from .gdn_kernels import gdn_decode_fla, gdn_prefill_chunk_fla
+if TYPE_CHECKING:
+    from freetoken.layers.quantization import QuantConfig
 
 
 class _DepthwiseConv1d(BaseOP):
@@ -33,6 +33,7 @@ class Qwen3_5GatedDeltaNet(BaseOP):
         conv_kernel_size, rms_norm_eps, layer_id, *, quant_config: QuantConfig | None = None,
         prefix: str = "",
     ):
+        from freetoken.layers import GatedRMSNorm, LinearColParallelMerged, LinearReplicated
         self.layer_id = layer_id
         self._fp32_gdn_snapshot = os.environ.get('QWEN36_FP32_GDN_SNAPSHOT') == '1'
         # Opt-in bit-exact CUDA kernels (libqwen36_gdn): fused conv+L2, gate+cumsum, gated
@@ -109,6 +110,7 @@ class Qwen3_5GatedDeltaNet(BaseOP):
         conv state in place by ``cache_indices`` slot. ``conv_in`` [total, conv_dim].
         ``cu_seqlens`` / ``cache_indices`` / ``has_initial_state`` come from FLAMetadata."""
         li = pool.local_index(self.layer_id)
+        from freetoken.kernel.causal_conv1d import causal_conv1d_varlen
         x = conv_in.transpose(0, 1).contiguous()  # [conv_dim, total]
         out = causal_conv1d_varlen(x, self._conv_weight(), pool.conv_states[li],
                                    cu_seqlens, cache_indices, has_initial_state)
@@ -119,6 +121,7 @@ class Qwen3_5GatedDeltaNet(BaseOP):
         updates conv state in place, no host loop -> CUDA-graph capturable.
         ``conv_in`` [B, conv_dim] -> silu(conv) [B, conv_dim]."""
         li = pool.local_index(self.layer_id)
+        from freetoken.kernel.causal_conv1d import causal_conv1d_decode
         return causal_conv1d_decode(conv_in, pool.conv_states[li], self._conv_weight(), table_idx)
 
     def _write_track_snapshot(self, pool, li: int, conv_in: torch.Tensor,
@@ -209,6 +212,7 @@ class Qwen3_5GatedDeltaNet(BaseOP):
                                 scale_b=weight_scale[0].reshape(()), out_dtype=torch.bfloat16)
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        from .gdn_kernels import gdn_decode_fla, gdn_prefill_chunk_fla
         ctx = get_global_ctx()
         batch = ctx.batch
         pool = ctx.linear_state_pool

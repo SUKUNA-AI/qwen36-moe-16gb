@@ -16,7 +16,7 @@ m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 
 class ExportFixture(unittest.TestCase):
     def setUp(self):
-        workspace=SCRIPT.resolve().parents[3]
+        workspace=__import__('repo_paths').CHECKOUT
         scratch=workspace/'work';scratch.mkdir(exist_ok=True)
         self.temp=tempfile.TemporaryDirectory(prefix='export-fixture-',dir=scratch)
         self.root=pathlib.Path(self.temp.name).resolve()
@@ -40,7 +40,7 @@ class ExportFixture(unittest.TestCase):
     def tearDown(self):
         self.overrides.stop()
         # The one generated fixture tree is the only recursively removed path.
-        self.assertTrue(self.root.is_relative_to(SCRIPT.resolve().parents[3]/'work'))
+        self.assertTrue(self.root.is_relative_to(__import__('repo_paths').CHECKOUT/'work'))
         self.temp.cleanup()
 
     def run_git(self,*args):
@@ -144,7 +144,7 @@ class ExportFixture(unittest.TestCase):
         self.assertTrue({'QWEN36_DECODE_GATHER','QWEN36_LAYER_MAJOR_PREFILL','QWEN36_LAYER_MAJOR_REFILL'}<=set(feature['switches']))
 
 
-PROFILE_RUNTIME=SCRIPT.resolve().parent.parent/'profile-runtime.py'
+PROFILE_RUNTIME=__import__('repo_paths').SERVING/'profile-runtime.py'
 
 
 class BundleMappingTests(unittest.TestCase):

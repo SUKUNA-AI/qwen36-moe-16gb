@@ -100,7 +100,7 @@ def _build_track_metadata(reqs, cu_host, device, pin):
     if not any(r.mamba_ping_pong is not None for r in reqs):
         return empty
     from freetoken.core import get_global_ctx
-    from freetoken.kernel.fla.chunk import CHUNK_SIZE
+    from freetoken.fla_constants import CHUNK_SIZE
     from freetoken.kernel.fla.index import prepare_chunk_offsets
 
     km1 = get_global_ctx().linear_state_pool.conv_states.shape[-1]  # conv_kernel_dim - 1

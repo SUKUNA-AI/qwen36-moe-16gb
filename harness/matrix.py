@@ -25,7 +25,7 @@ from bench import (DEFAULT_LENGTHS,HARNESS_VERSION,BENCH_FIXTURE_VERSION,VRAM_FL
                    current_run_spec,parse_lengths,validate_receipt)
 import tool_fixture_v5 as tool_fixture
 
-PY='/home/USER/qwen36-api/.venv/bin/python'
+PY=os.environ.get('QWEN36_GPU_PYTHON','/home/USER/qwen36-api/.venv/bin/python')
 NAME_PATTERN=re.compile(r'[a-z0-9][a-z0-9.-]{0,60}')
 PAIRS=5
 MIN_PILOT_REPEATS=3

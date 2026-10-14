@@ -93,7 +93,7 @@ class Profiles(unittest.TestCase):
         self.assertTrue(stripped[0] == stripped[1] == stripped[2])
 
     def test_env_parser_mirrors_freetoken(self):
-        path = HERE.parents[2]/'work/FreeToken-opt/python/freetoken/env.py'
+        path = __import__('repo_paths').FREETOKEN/'python/freetoken/env.py'
         if not path.is_file():
             self.skipTest('FreeToken fork env.py not present')
         module_spec = importlib.util.spec_from_file_location('freetoken_env_probe', path)

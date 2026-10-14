@@ -253,7 +253,7 @@ class RemoteTests(unittest.TestCase):
         self.assertGreater(8192 / 131.4, 60)
 
     def test_guard_accepts_own_long_payload_at_its_budget_cap(self):
-        guard_path = path.parent.parent / 'guard.py'
+        guard_path = __import__('repo_paths').SERVING / 'guard.py'
         if not guard_path.exists():
             self.skipTest('guard.py not present next to optimization/')
         guard_spec = importlib.util.spec_from_file_location('ops_live_guard_fixture', guard_path)

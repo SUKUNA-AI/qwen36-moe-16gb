@@ -22,9 +22,10 @@ import uuid
 BASE = 'cac247a860e316e06580d05aeb05f2e647bde214'
 CHECKPOINT = 'nvidia/Qwen3.6-35B-A3B-NVFP4'
 CHECKPOINT_REVISION = '1355db6a052410cfd62085d94b58866fd0f2c3c5'
-WORKSPACE = pathlib.Path(__file__).resolve().parents[3]
+from repo_paths import CHECKOUT, SERVING, FREETOKEN
+WORKSPACE = CHECKOUT
 PUBLIC = pathlib.Path(__file__).resolve().parent
-SERVICE = PUBLIC.parent
+SERVICE = SERVING
 SOURCE_SUFFIXES = {'.py','.cu','.cuh','.cpp','.cc','.c','.h','.hpp'}
 SOURCE_LIMIT = 4 * 1024 * 1024
 JSON_LIMIT = 32 * 1024 * 1024
@@ -101,7 +102,7 @@ GROUPS = {
         'python/freetoken/engine/engine.py','python/freetoken/core.py',
         'python/freetoken/attention/*','python/freetoken/kvcache/*',
         'python/freetoken/models/qwen3_5_moe/attention.py','python/freetoken/models/qwen3_5_moe/gdn*',
-        'python/freetoken/kernel/fla/*','python/freetoken/kernel/triton/fp8_kv.py',
+        'python/freetoken/kernel/fla/*','python/freetoken/fla_constants.py','python/freetoken/kernel/triton/fp8_kv.py',
         'python/freetoken/kernel/cuda_kv*','python/freetoken/kernel/csrc/qwen36_kv.cu',
         'python/freetoken/scheduler/prefill.py','python/freetoken/scheduler/scheduler.py',
         'tests/scheduler/test_prefix_snapshot_identity.py','python/freetoken/scheduler/cache.py',
@@ -268,7 +269,7 @@ def json_bytes(value):return (json.dumps(value,ensure_ascii=True,indent=2,allow_
 
 
 def export(args):
-    repo=(WORKSPACE/'work/FreeToken-opt').resolve()
+    repo=(FREETOKEN if WORKSPACE == CHECKOUT else WORKSPACE/'work/FreeToken-opt').resolve()
     if git(repo,'rev-parse',BASE+'^{commit}').decode().strip()!=BASE:raise ValueError('Pinned base is unavailable')
     head=git(repo,'rev-parse','HEAD').decode().strip()
     if head!=BASE:raise ValueError('HEAD moved from pinned base; review before exporting this working-tree release')

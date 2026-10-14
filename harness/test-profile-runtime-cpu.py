@@ -21,7 +21,8 @@ import unittest
 from unittest import mock
 
 HERE = pathlib.Path(__file__).resolve().parent
-SERVICE = HERE.parent
+from repo_paths import SERVING
+SERVICE = SERVING
 
 
 def load(name, path):
@@ -2056,7 +2057,7 @@ class DecodeGatherLoaderTests(TempRootCase):
         work.mkdir()
         env = {key: value for key, value in environ.items()
                if key.startswith(('QWEN36_', 'FREETOKEN_', 'TVM_FFI_', 'SGLANG_')) and key != 'QWEN36_API_KEY'}
-        env.update(PATH='/usr/bin:/bin', HOME=str(work), LC_ALL='C', CUDA_VISIBLE_DEVICES='')
+        env.update(PATH='/usr/bin:/bin', HOME=str(work), LC_ALL='C', CUDA_VISIBLE_DEVICES='', TVM_FFI_DISABLE_TORCH_C_DLPACK='1')
         done = subprocess.run([sys.executable, '-I', '-B', '-c', LOADER_PROOF, str(self.KERNEL), str(work), mode],
                               env=env, capture_output=True, text=True, timeout=120, cwd=str(work))
         self.assertEqual(done.returncode, 0, done.stderr[-3000:])
@@ -2111,8 +2112,19 @@ class CandidateTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.path = HERE / 'profiles.candidate.json'
-        cls.candidate = runtime.read_json(cls.path)
+        def entry(name):
+            path = HERE / (name+'.json')
+            profile = cls.derive(runtime.read_json(path))
+            return {'profile':profile, 'source_config':str(path.relative_to(SERVICE.parent)),
+                    'source_config_sha256':sha(path.read_bytes()),
+                    'canonical_sha256':runtime.canonical_profile_sha256(profile),
+                    'known_limitations':['60K owner GPU gate required']}
+        mains = {name:entry(name) for name in ('main-candidate','main-retain','main-retain2048')}
+        baseline, long = entry('baseline64'), entry('long256-candidate')
+        cls.candidate = {'qualified_anywhere':False, 'profiles':{'main128':mains,'baseline64':baseline,'long256':long},
+                         'documents':{name:{'schema':1,'default':'main128','profiles':{
+                             'main128':row['profile'],'baseline64':baseline['profile'],'long256':long['profile']}}
+                             for name,row in mains.items()}}
 
     @staticmethod
     def derive(config):
@@ -2148,7 +2160,7 @@ class CandidateTests(unittest.TestCase):
 
     def test_values_trace_to_existing_configs(self):
         for slot, name, entry in self.entries():
-            source = SERVICE / entry['source_config']
+            source = SERVICE.parent / entry['source_config']
             data = source.read_bytes()
             self.assertEqual(sha(data), entry['source_config_sha256'], name)
             self.assertEqual(entry['profile'], self.derive(json.loads(data)), name)

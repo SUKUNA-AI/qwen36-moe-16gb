@@ -29,7 +29,6 @@ from freetoken.utils import (
 )
 
 from .cache import CacheManager
-from .config import SchedulerConfig
 from .decode import DecodeManager
 from .io import SchedulerIOMixin
 from .mm import cut_image_spans, plan_mm_batch
@@ -38,6 +37,7 @@ from .status import SchedulerStatusReporter
 from .table import TableManager
 
 if TYPE_CHECKING:
+    from .config import SchedulerConfig
     from freetoken.engine import BatchSamplingArgs, ForwardOutput
 
 

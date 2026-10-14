@@ -8,11 +8,13 @@ import runpy
 import sys
 import time
 
+from cpu_imports import enable
+enable()
 os.environ['CUDA_VISIBLE_DEVICES'] = ''
 os.environ['QWEN36_RETAIN_CHUNK_SNAPSHOT'] = '0'
 os.environ['QWEN36_ENGINE_METRICS'] = '0'
 here = Path(__file__).resolve().parent
-source = here.parents[2] / 'work/FreeToken-opt'
+source = __import__("repo_paths").FREETOKEN
 sys.path.insert(0, str(source/'python'))
 import torch
 torch.set_num_threads(1)
@@ -53,5 +55,5 @@ report = {'status': 'CPU_PASS', 'cuda_initialized': False, 'tests': results,
                             for p in runtime},
           'test_sha256': {p: hashlib.sha256((source/'tests/scheduler'/p).read_bytes()).hexdigest()
                           for p in files}}
-(here/'retain-snapshot-cpu.json').write_text(json.dumps(report, indent=2)+'\n')
+(Path(os.environ.get('QWEN36_CPU_REPORT_DIR',here))/'retain-snapshot-cpu.json').write_text(json.dumps(report, indent=2)+'\n')
 print(json.dumps({k:v for k,v in report.items() if k not in ('tests', 'test_sha256')}, indent=2))

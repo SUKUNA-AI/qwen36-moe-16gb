@@ -1125,7 +1125,8 @@ class V6Launcher(unittest.TestCase):
             (root/'python/freetoken/a.py').write_text('x=1\n')
             for name in bench.SERVICE_FILES+bench.LAUNCHER_FILES:(root/name).write_text(name)
             (root/'config/bf128.json').write_text(json.dumps({'context':131072,'chunk':2048,'flags':[],'env':{}}))
-            spec=bench.current_run_spec(root,['bf128'],bench.DEFAULT_LENGTHS,128,5)
+            with patch('importlib.metadata.version', return_value='synthetic-cpu-test'):
+                spec=bench.current_run_spec(root,['bf128'],bench.DEFAULT_LENGTHS,128,5)
         self.assertEqual(spec['launcher_files'],{n:hashlib.sha256(n.encode()).hexdigest() for n in bench.LAUNCHER_FILES})
         # soak.py IDENTITY_KEYS == validate_receipt identity == manifest arms[profile]
         self.assertEqual(set(spec['arms']['bf128']),{'source_sha256','service_source_files','checkpoint','checkpoint_revision',

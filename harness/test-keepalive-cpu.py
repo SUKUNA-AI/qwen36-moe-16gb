@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-source=pathlib.Path(__file__).resolve().parents[1]/'keepalive.py'
+source=__import__("repo_paths").SERVING/'keepalive.py'
 spec=importlib.util.spec_from_file_location('keepalive_fixture',source)
 m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 GEN='a'*32;LEASE='b'*32;START='synthetic-owner-created'

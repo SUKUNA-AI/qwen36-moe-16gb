@@ -18,9 +18,10 @@ receipt sha256 and ABI probe. The inventory and library bindings are written to 
 import argparse,datetime,hashlib,importlib.util,json,os,pathlib,re,shutil,subprocess,uuid
 
 ROOT=pathlib.Path('/home/USER/qwen36-api')
-PROJECT=pathlib.Path('/path/to/qwen36-workspace')
-OUTPUT=PROJECT/'outputs/qwen36-api'
-RUNTIME_SOURCE=PROJECT/'work/FreeToken-opt/python/freetoken'
+from repo_paths import CHECKOUT, SERVING, FREETOKEN
+PROJECT=CHECKOUT
+OUTPUT=SERVING
+RUNTIME_SOURCE=FREETOKEN/'python/freetoken'
 # Qualification runs import this tree (run-experiment.sh: PYTHONPATH=$root/optimization/python):
 # the source tree plus native-only build products that sync keeps there. Production imports
 # release/python first (start-inference.sh PYTHONPATH), so the venv copies are never found.

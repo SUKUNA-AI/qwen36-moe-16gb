@@ -152,6 +152,12 @@ GATE_SUITES = ('test-tool-choice-guard-cpu.py', 'test-tool-semantics-guard-cpu.p
 
 def gate_wiring(script):
     """Static gate contract: errexit, and each suite on one line with --guard and no ||."""
+    if script.suffix == '.py':
+        spec = importlib.util.spec_from_file_location('cpu_gate_wiring', script)
+        runner = importlib.util.module_from_spec(spec);spec.loader.exec_module(runner)
+        wired = {name: '--guard' in runner.command_for_suite(script.with_name(name)) for name in GATE_SUITES}
+        return {'script_sha256':hashlib.sha256(script.read_bytes()).hexdigest(),
+                'suites_wired':wired,'pass':all(wired.values())}
     lines = [line.split('#', 1)[0] for line in script.read_text().splitlines()]
     errexit = any(re.match(r'\s*set\s+-\w*e', line) for line in lines)
     wired = {name: any(name in line and '--guard' in line and '||' not in line for line in lines)

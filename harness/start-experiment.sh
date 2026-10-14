@@ -7,6 +7,8 @@
 set -euo pipefail
 root=/home/USER/qwen36-api/optimization
 workspace='/path/to/qwen36-workspace/outputs/qwen36-api/optimization'
+root=${QWEN36_DATA_ROOT:-$root}
+workspace=${QWEN36_HARNESS_SOURCE:-$workspace}
 profile="${1:-baseline64}"
 if ! [[ "$profile" =~ ^[a-z0-9][a-z0-9._-]{0,120}$ ]]; then
   echo "Invalid profile name: $profile" >&2

@@ -15,7 +15,7 @@ import urllib.request
 import urllib.response
 from unittest import mock
 
-path = pathlib.Path(__file__).resolve().parents[1] / 'readiness.py'
+path = __import__("repo_paths").SERVING / 'readiness.py'
 spec = importlib.util.spec_from_file_location('readiness_transport_fixture', path)
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)

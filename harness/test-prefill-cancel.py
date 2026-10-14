@@ -1,4 +1,5 @@
 """Cancel fresh synthetic prefill, then prove the inference slot works again."""
+import os
 import argparse, asyncio, contextlib, json, time
 import httpx
 from transformers import AutoTokenizer
@@ -6,7 +7,7 @@ from bench import ROOT, document, headers, run_receipt
 
 
 async def check(length, name):
-    tokenizer = AutoTokenizer.from_pretrained('/path/to/LLM/qwen36-api/model', local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(os.environ.get('QWEN36_MODEL_DIR','/path/to/LLM/qwen36-api/model'), local_files_only=True)
     body = document(tokenizer, length, 9893431)
     payload = {'model':'qwen36-35b', 'messages':[{'role':'user','content':body}],
                'max_tokens':128, 'temperature':0, 'stream':False,

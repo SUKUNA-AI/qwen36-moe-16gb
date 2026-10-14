@@ -13,9 +13,8 @@ arm against the owner's hard floor (0.5 GiB).
 """
 import argparse, hashlib, json, math, os, pathlib, random, statistics, time, re
 import requests
-from transformers import AutoTokenizer
 
-ROOT=pathlib.Path('/home/USER/qwen36-api/optimization')
+ROOT=pathlib.Path(os.environ.get('QWEN36_DATA_ROOT','/home/USER/qwen36-api/optimization'))
 DEFAULT_LENGTHS=(64,4096,16384,65536,120000)
 SERVICE_FILES=('experiment.py','serve_guarded.py','guard.py','ingress.py','request_metrics.py')
 PACKAGES=('torch','triton','flashinfer-python','sglang-kernel','transformers')
@@ -27,12 +26,12 @@ HARNESS_VERSION=6
 BENCH_FIXTURE_VERSION=5
 # Every file whose behaviour defines a V6 matrix/pilot result; hashed into manifests.
 HARNESS_FILES=('bench.py','matrix.py','compare-ab.py','tool-task-bench.py','tool_fixture_v5.py','tool-pilot.py')
-GPU_LOCK=pathlib.Path('/home/USER/qwen36-api/run/gpu-exclusive.lock')
+GPU_LOCK=pathlib.Path(os.environ.get('QWEN36_GPU_LOCK','/home/USER/qwen36-api/run/gpu-exclusive.lock'))
 # Launchers that define every arm's process environment (V6: hashed into manifest + reports).
 LAUNCHER_FILES=('start-experiment.sh','run-experiment.sh','check-experiment.py')
 EXPERIMENT_UNIT='qwen36-experiment'
 # Workspace copy that start-experiment.sh copies the started profile's config from.
-WORKSPACE_OPT=pathlib.Path('/path/to/qwen36-workspace/outputs/qwen36-api/optimization')
+WORKSPACE_OPT=pathlib.Path(os.environ.get('QWEN36_HARNESS_SOURCE','/path/to/qwen36-workspace/outputs/qwen36-api/optimization'))
 # Launcher environment recorded per arm: these names plus these prefixes; values of
 # secret-like names are replaced by '<redacted>'.
 LAUNCHER_ENV_KEYS=('PATH','CC','CXX','CUDAHOSTCXX','NVCC_CCBIN','MAX_JOBS','HF_HUB_OFFLINE','TRANSFORMERS_OFFLINE',
@@ -410,7 +409,8 @@ def main():
         current=run_receipt()
         if current.get('run_id')!=receipt['run_id']:raise RuntimeError('Serving generation changed during benchmark')
         target.write_text(json.dumps({'name':args.name,'run':receipt,'launcher':launcher,'benchmark':benchmark,'rows':rows},indent=2))
-    tokenizer=AutoTokenizer.from_pretrained('/path/to/LLM/qwen36-api/model',local_files_only=True)
+    from transformers import AutoTokenizer
+    tokenizer=AutoTokenizer.from_pretrained(os.environ.get('QWEN36_MODEL_DIR','/path/to/LLM/qwen36-api/model'),local_files_only=True)
     rows=[]
     warm,_=generate([{'role':'user','content':'Объясни принцип двоичного поиска.'}],64)
     rows.append(dict(case='warmup',**warm))

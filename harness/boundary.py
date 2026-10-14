@@ -1,4 +1,5 @@
 """Near-limit generation and strict prompt+output admission on the same text."""
+import os
 import argparse,json
 import requests
 from transformers import AutoTokenizer
@@ -6,7 +7,7 @@ from bench import ROOT,document,generate,headers
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--context',type=int,required=True);p.add_argument('--name',required=True)
-    a=p.parse_args();t=AutoTokenizer.from_pretrained('/path/to/LLM/qwen36-api/model',local_files_only=True)
+    a=p.parse_args();t=AutoTokenizer.from_pretrained(os.environ.get('QWEN36_MODEL_DIR','/path/to/LLM/qwen36-api/model'),local_files_only=True)
     body=document(t,a.context-700,781324)
     messages=[{'role':'user','content':body+'\nОтветь кратко: какие поля имеют записи?'}]
     count=len(t.apply_chat_template(messages,tokenize=True,return_dict=False,add_generation_prompt=True,enable_thinking=False))
