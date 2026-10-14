@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="490" viewBox="0 0 980 490" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="TTFT по длине свежего промпта">
+<title>TTFT по длине свежего промпта</title>
+<rect x="0.5" y="0.5" width="979" height="489" rx="12" fill="#161b22" stroke="#30363d"/>
+<text x="24.0" y="38.0" font-size="19" fill="#e6edf3" text-anchor="start" font-weight="600">TTFT по длине свежего промпта</text>
+<text x="24.0" y="61.0" font-size="13" fill="#9198a1" text-anchor="start">Секунды до первого токена. До 120K — парная матрица main128, 250K — профиль long256.</text>
+<line x1="80.0" y1="400.0" x2="830.0" y2="400.0" stroke="#262c34" stroke-width="1"/>
+<text x="70.0" y="404.0" font-size="12" fill="#6e7681" text-anchor="end">0</text>
+<line x1="80.0" y1="358.6" x2="830.0" y2="358.6" stroke="#262c34" stroke-width="1"/>
+<text x="70.0" y="362.6" font-size="12" fill="#6e7681" text-anchor="end">20</text>
+<line x1="80.0" y1="317.1" x2="830.0" y2="317.1" stroke="#262c34" stroke-width="1"/>
+<text x="70.0" y="321.1" font-size="12" fill="#6e7681" text-anchor="end">40</text>
+<line x1="80.0" y1="275.7" x2="830.0" y2="275.7" stroke="#262c34" stroke-width="1"/>
+<text x="70.0" y="279.7" font-size="12" fill="#6e7681" text-anchor="end">60</text>
+<line x1="80.0" y1="234.3" x2="830.0" y2="234.3" stroke="#262c34" stroke-width="1"/>
+<text x="70.0" y="238.3" font-size="12" fill="#6e7681" text-anchor="end">80</text>
+<line x1="80.0" y1="192.9" x2="830.0" y2="192.9" stroke="#262c34" stroke-width="1"/>
+<text x="70.0" y="196.9" font-size="12" fill="#6e7681" text-anchor="end">100</text>
+<line x1="80.0" y1="151.4" x2="830.0" y2="151.4" stroke="#262c34" stroke-width="1"/>
+<text x="70.0" y="155.4" font-size="12" fill="#6e7681" text-anchor="end">120</text>
+<line x1="80.0" y1="110.0" x2="830.0" y2="110.0" stroke="#262c34" stroke-width="1"/>
+<text x="70.0" y="114.0" font-size="12" fill="#6e7681" text-anchor="end">140</text>
+<line x1="80.0" y1="400.0" x2="80.0" y2="405.0" stroke="#6e7681" stroke-width="1"/>
+<text x="80.0" y="422.0" font-size="12" fill="#6e7681" text-anchor="middle">0</text>
+<line x1="267.5" y1="400.0" x2="267.5" y2="405.0" stroke="#6e7681" stroke-width="1"/>
+<text x="267.5" y="422.0" font-size="12" fill="#6e7681" text-anchor="middle">64K</text>
+<line x1="455.0" y1="400.0" x2="455.0" y2="405.0" stroke="#6e7681" stroke-width="1"/>
+<text x="455.0" y="422.0" font-size="12" fill="#6e7681" text-anchor="middle">128K</text>
+<line x1="642.5" y1="400.0" x2="642.5" y2="405.0" stroke="#6e7681" stroke-width="1"/>
+<text x="642.5" y="422.0" font-size="12" fill="#6e7681" text-anchor="middle">192K</text>
+<line x1="830.0" y1="400.0" x2="830.0" y2="405.0" stroke="#6e7681" stroke-width="1"/>
+<text x="830.0" y="422.0" font-size="12" fill="#6e7681" text-anchor="middle">256K</text>
+<text x="455.0" y="444.0" font-size="12" fill="#6e7681" text-anchor="middle">токенов в промпте</text>
+<rect x="80.0" y="82.0" width="12.0" height="12.0" rx="3" fill="#4f5864"/>
+<text x="98.0" y="92.0" font-size="13" fill="#9198a1" text-anchor="start">Механика исходного FreeToken</text>
+<rect x="323.8" y="82.0" width="12.0" height="12.0" rx="3" fill="#76b900"/>
+<text x="341.8" y="92.0" font-size="13" fill="#9198a1" text-anchor="start">Выпуск f1</text>
+<polyline points="91.7,395.4 126.9,386.0 267.5,341.0 423.3,286.5 795.3,138.0" fill="none" stroke="#4f5864" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="91.7" cy="395.4" r="5" fill="#4f5864" stroke="#161b22" stroke-width="2"/>
+<circle cx="126.9" cy="386.0" r="5" fill="#4f5864" stroke="#161b22" stroke-width="2"/>
+<circle cx="267.5" cy="341.0" r="5" fill="#4f5864" stroke="#161b22" stroke-width="2"/>
+<circle cx="423.3" cy="286.5" r="5" fill="#4f5864" stroke="#161b22" stroke-width="2"/>
+<circle cx="795.3" cy="138.0" r="5" fill="#4f5864" stroke="#161b22" stroke-width="2"/>
+<polyline points="91.7,398.4 126.9,396.7 267.5,381.1 423.3,354.3 795.3,239.7" fill="none" stroke="#76b900" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="91.7" cy="398.4" r="5" fill="#76b900" stroke="#161b22" stroke-width="2"/>
+<circle cx="126.9" cy="396.7" r="5" fill="#76b900" stroke="#161b22" stroke-width="2"/>
+<circle cx="267.5" cy="381.1" r="5" fill="#76b900" stroke="#161b22" stroke-width="2"/>
+<circle cx="423.3" cy="354.3" r="5" fill="#76b900" stroke="#161b22" stroke-width="2"/>
+<circle cx="795.3" cy="239.7" r="5" fill="#76b900" stroke="#161b22" stroke-width="2"/>
+<text x="257.5" y="331.0" font-size="13" fill="#9198a1" text-anchor="end">28.46 с</text>
+<text x="277.5" y="399.1" font-size="13" fill="#8fd400" text-anchor="start" font-weight="600">9.14 с</text>
+<text x="277.5" y="366.1" font-size="15" fill="#e6edf3" text-anchor="start" font-weight="700">×3.1</text>
+<text x="413.3" y="276.5" font-size="13" fill="#9198a1" text-anchor="end">54.77 с</text>
+<text x="433.3" y="372.3" font-size="13" fill="#8fd400" text-anchor="start" font-weight="600">22.07 с</text>
+<text x="433.3" y="325.4" font-size="15" fill="#e6edf3" text-anchor="start" font-weight="700">×2.5</text>
+<text x="785.3" y="128.0" font-size="13" fill="#9198a1" text-anchor="end">126.5 с</text>
+<text x="805.3" y="257.7" font-size="13" fill="#8fd400" text-anchor="start" font-weight="600">77.4 с</text>
+<text x="805.3" y="193.8" font-size="15" fill="#e6edf3" text-anchor="start" font-weight="700">×1.6</text>
+<text x="80.0" y="476.0" font-size="11" fill="#6e7681" text-anchor="start">250K: f1 — медиана 11 прогонов; исходная механика — Triton, чанк 4096, замер 13.10. Рост нелинейный: attention квадратичен по длине.</text>
+</svg>

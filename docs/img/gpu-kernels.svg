@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="614" viewBox="0 0 1000 614" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Загрузка блоков GPU по ядрам: Nsight Compute">
+<title>Загрузка блоков GPU по ядрам: Nsight Compute</title>
+<rect x="0.5" y="0.5" width="999" height="613" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+<text x="24.0" y="38.0" font-size="19" fill="#1f2328" text-anchor="start" font-weight="600">Загрузка блоков GPU по ядрам: Nsight Compute</text>
+<text x="24.0" y="61.0" font-size="13" fill="#59636e" text-anchor="start">% от пика блока. Доля времени: prefill 120K / 16K и decode 16K / 120K.</text>
+<text x="252.0" y="106.0" font-size="12" fill="#59636e" text-anchor="start" font-weight="600">Доля времени</text>
+<text x="392.0" y="106.0" font-size="12" fill="#59636e" text-anchor="middle" font-weight="600">SM</text>
+<text x="492.0" y="106.0" font-size="12" fill="#59636e" text-anchor="middle" font-weight="600">Тензорные ядра¹</text>
+<text x="592.0" y="106.0" font-size="12" fill="#59636e" text-anchor="middle" font-weight="600">Память, max²</text>
+<text x="692.0" y="106.0" font-size="12" fill="#59636e" text-anchor="middle" font-weight="600">GDDR7</text>
+<text x="794.0" y="106.0" font-size="12" fill="#59636e" text-anchor="middle" font-weight="600">PCIe</text>
+<text x="864.0" y="106.0" font-size="12" fill="#59636e" text-anchor="start" font-weight="600">Упор в</text>
+<line x1="24.0" y1="116.0" x2="976.0" y2="116.0" stroke="#d0d7de" stroke-width="1"/>
+<text x="24.0" y="152.0" font-size="13" fill="#8c959f" text-anchor="start" font-weight="700">Prefill</text>
+<text x="36.0" y="192.0" font-size="13" fill="#1f2328" text-anchor="start">Attention, FlashInfer</text>
+<text x="252.0" y="192.0" font-size="13" fill="#59636e" text-anchor="start">65% / 19%</text>
+<rect x="346.0" y="172.0" width="96.0" height="32.0" rx="5" fill="#e15528"/>
+<text x="394.0" y="193.0" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">82%</text>
+<rect x="446.0" y="172.0" width="96.0" height="32.0" rx="5" fill="#fac07b"/>
+<text x="494.0" y="193.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">44%</text>
+<rect x="546.0" y="172.0" width="96.0" height="32.0" rx="5" fill="#fbd396"/>
+<text x="594.0" y="193.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">36%</text>
+<rect x="646.0" y="172.0" width="96.0" height="32.0" rx="5" fill="#f5f2e7"/>
+<text x="694.0" y="193.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">7% · 49 ГБ/с</text>
+<rect x="746.0" y="172.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="794.0" y="193.0" font-size="13" fill="#8c959f" text-anchor="middle">—</text>
+<text x="864.0" y="193.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">тензорные ядра</text>
+<text x="36.0" y="232.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">MoE NVFP4, наше CUDA-ядро</text>
+<text x="252.0" y="232.0" font-size="13" fill="#59636e" text-anchor="start">18% / 40%</text>
+<rect x="346.0" y="212.0" width="96.0" height="32.0" rx="5" fill="#e05328"/>
+<text x="394.0" y="233.0" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">83%</text>
+<rect x="446.0" y="212.0" width="96.0" height="32.0" rx="5" fill="#fac785"/>
+<text x="494.0" y="233.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">41%</text>
+<rect x="546.0" y="212.0" width="96.0" height="32.0" rx="5" fill="#fac481"/>
+<text x="594.0" y="233.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">42%</text>
+<rect x="646.0" y="212.0" width="96.0" height="32.0" rx="5" fill="#fbcc8c"/>
+<text x="694.0" y="233.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">39% · 346 ГБ/с</text>
+<rect x="746.0" y="212.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="794.0" y="233.0" font-size="13" fill="#8c959f" text-anchor="middle">—</text>
+<text x="864.0" y="233.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">тензорные ядра</text>
+<text x="36.0" y="272.0" font-size="13" fill="#1f2328" text-anchor="start">MoE NVFP4, Triton (было)</text>
+<text x="252.0" y="272.0" font-size="13" fill="#59636e" text-anchor="start">заменено</text>
+<rect x="346.0" y="252.0" width="96.0" height="32.0" rx="5" fill="#fceaba"/>
+<text x="394.0" y="273.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">23%</text>
+<rect x="446.0" y="252.0" width="96.0" height="32.0" rx="5" fill="#f4f2e9"/>
+<text x="494.0" y="273.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">6%</text>
+<rect x="546.0" y="252.0" width="96.0" height="32.0" rx="5" fill="#ce3322"/>
+<text x="594.0" y="273.0" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">94%</text>
+<rect x="646.0" y="252.0" width="96.0" height="32.0" rx="5" fill="#f6f1e0"/>
+<text x="694.0" y="273.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">9% · 70 ГБ/с</text>
+<rect x="746.0" y="252.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="794.0" y="273.0" font-size="13" fill="#8c959f" text-anchor="middle">—</text>
+<text x="864.0" y="273.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">кэш L1/TEX</text>
+<text x="36.0" y="312.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">GDN chunk_h, наше</text>
+<text x="252.0" y="312.0" font-size="13" fill="#59636e" text-anchor="start">4% / 8%</text>
+<rect x="346.0" y="292.0" width="96.0" height="32.0" rx="5" fill="#fac07b"/>
+<text x="394.0" y="313.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">44%</text>
+<rect x="446.0" y="292.0" width="96.0" height="32.0" rx="5" fill="#fceabd"/>
+<text x="494.0" y="313.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">22%</text>
+<rect x="546.0" y="292.0" width="96.0" height="32.0" rx="5" fill="#de5027"/>
+<text x="594.0" y="313.0" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">84%</text>
+<rect x="646.0" y="292.0" width="96.0" height="32.0" rx="5" fill="#de5027"/>
+<text x="694.0" y="313.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">84% · 753 ГБ/с</text>
+<rect x="746.0" y="292.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="794.0" y="313.0" font-size="13" fill="#8c959f" text-anchor="middle">—</text>
+<text x="864.0" y="313.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">видеопамять</text>
+<text x="24.0" y="352.0" font-size="13" fill="#8c959f" text-anchor="start" font-weight="700">Decode</text>
+<text x="36.0" y="392.0" font-size="13" fill="#1f2328" text-anchor="start">Attention, FlashInfer</text>
+<text x="252.0" y="392.0" font-size="13" fill="#59636e" text-anchor="start">7% / 31%</text>
+<rect x="346.0" y="372.0" width="96.0" height="32.0" rx="5" fill="#f8efd6"/>
+<text x="394.0" y="393.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">13%</text>
+<rect x="446.0" y="372.0" width="96.0" height="32.0" rx="5" fill="#f5f2e8"/>
+<text x="494.0" y="393.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">6%</text>
+<rect x="546.0" y="372.0" width="96.0" height="32.0" rx="5" fill="#ce3322"/>
+<text x="594.0" y="393.0" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">94%</text>
+<rect x="646.0" y="372.0" width="96.0" height="32.0" rx="5" fill="#ce3322"/>
+<text x="694.0" y="393.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">94% · 841 ГБ/с</text>
+<rect x="746.0" y="372.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="794.0" y="393.0" font-size="13" fill="#8c959f" text-anchor="middle">—</text>
+<text x="864.0" y="393.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">видеопамять</text>
+<text x="36.0" y="432.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">FP8 GEMV, наше QMMA-ядро</text>
+<text x="252.0" y="432.0" font-size="13" fill="#59636e" text-anchor="start">28% / 20%</text>
+<rect x="346.0" y="412.0" width="96.0" height="32.0" rx="5" fill="#f7f0db"/>
+<text x="394.0" y="433.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">11%</text>
+<rect x="446.0" y="412.0" width="96.0" height="32.0" rx="5" fill="#f5f2e6"/>
+<text x="494.0" y="433.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">7%</text>
+<rect x="546.0" y="412.0" width="96.0" height="32.0" rx="5" fill="#d43e24"/>
+<text x="594.0" y="433.0" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">90%</text>
+<rect x="646.0" y="412.0" width="96.0" height="32.0" rx="5" fill="#d43e24"/>
+<text x="694.0" y="433.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">90% · 808 ГБ/с</text>
+<rect x="746.0" y="412.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="794.0" y="433.0" font-size="13" fill="#8c959f" text-anchor="middle">—</text>
+<text x="864.0" y="433.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">видеопамять</text>
+<text x="36.0" y="472.0" font-size="13" fill="#1f2328" text-anchor="start">MoE decode, marlin</text>
+<text x="252.0" y="472.0" font-size="13" fill="#59636e" text-anchor="start">20% / 15%</text>
+<rect x="346.0" y="452.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="394.0" y="473.0" font-size="13" fill="#8c959f" text-anchor="middle">н/д</text>
+<rect x="446.0" y="452.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="494.0" y="473.0" font-size="13" fill="#8c959f" text-anchor="middle">н/д</text>
+<rect x="546.0" y="452.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="594.0" y="473.0" font-size="13" fill="#8c959f" text-anchor="middle">н/д</text>
+<rect x="646.0" y="452.0" width="96.0" height="32.0" rx="5" fill="#f8b167"/>
+<text x="694.0" y="473.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">≈51%³</text>
+<rect x="746.0" y="452.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="794.0" y="473.0" font-size="13" fill="#8c959f" text-anchor="middle" font-weight="600">—</text>
+<text x="864.0" y="473.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">видеопамять</text>
+<text x="36.0" y="512.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">Подкачка экспертов, наш TMA</text>
+<text x="252.0" y="512.0" font-size="13" fill="#59636e" text-anchor="start">18% / 14%</text>
+<rect x="346.0" y="492.0" width="96.0" height="32.0" rx="5" fill="#f2f5f7"/>
+<text x="394.0" y="513.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">&lt;1%</text>
+<rect x="446.0" y="492.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="494.0" y="513.0" font-size="13" fill="#8c959f" text-anchor="middle">—</text>
+<rect x="546.0" y="492.0" width="96.0" height="32.0" rx="5" fill="#eaeef2"/>
+<text x="594.0" y="513.0" font-size="13" fill="#8c959f" text-anchor="middle">—</text>
+<rect x="646.0" y="492.0" width="96.0" height="32.0" rx="5" fill="#f4f3ee"/>
+<text x="694.0" y="513.0" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">4%</text>
+<rect x="746.0" y="492.0" width="96.0" height="32.0" rx="5" fill="#cf3522"/>
+<text x="794.0" y="513.0" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="600">~42 ГБ/с</text>
+<text x="864.0" y="513.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">PCIe</text>
+<text x="24.0" y="550.0" font-size="11" fill="#8c959f" text-anchor="start">¹ HMMA, % от пика инструкций; у attention и MoE в prefill главный stall — math_pipe_throttle (конвейер тензорных ядер занят).</text>
+<text x="24.0" y="566.0" font-size="11" fill="#8c959f" text-anchor="start">² максимум по L1/TEX, L2 и DRAM.  ³ marlin ncu не снимался: байты/время из nsys.  PCIe: gather в модели ~42 ГБ/с при потолке канала 41–45 ГБ/с в WSL2.</text>
+<text x="24.0" y="582.0" font-size="11" fill="#8c959f" text-anchor="start">Ncu снят на компонентах с теми же формами и конфигурацией запуска, что в выпуске. Источник: results/nsight/ncu-component-kernels.json.</text>
+</svg>

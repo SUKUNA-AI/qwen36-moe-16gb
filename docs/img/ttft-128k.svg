@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="570" viewBox="0 0 980 570" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Время до первого токена: исходный FreeToken против f1">
+<title>Время до первого токена: исходный FreeToken против f1</title>
+<rect x="0.5" y="0.5" width="979" height="569" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+<text x="24.0" y="38.0" font-size="19" fill="#1f2328" text-anchor="start" font-weight="600">Время до первого токена: исходный FreeToken против f1</text>
+<text x="24.0" y="61.0" font-size="13" fill="#59636e" text-anchor="start">Парная матрица, контекст 128K, медианы 5 раундов, секунды. Меньше — лучше.</text>
+<rect x="24.0" y="82.0" width="12.0" height="12.0" rx="3" fill="#a8b1ba"/>
+<text x="42.0" y="92.0" font-size="13" fill="#59636e" text-anchor="start">Исходный FreeToken (bf128)</text>
+<rect x="253.3" y="82.0" width="12.0" height="12.0" rx="3" fill="#4d8c00"/>
+<text x="271.3" y="92.0" font-size="13" fill="#59636e" text-anchor="start">Выпуск f1</text>
+<text x="956.0" y="92.0" font-size="12" fill="#59636e" text-anchor="end">f1 против исходного</text>
+<line x1="250.0" y1="106.0" x2="250.0" y2="512.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="250.0" y="530.0" font-size="12" fill="#8c959f" text-anchor="middle">0</text>
+<line x1="351.7" y1="106.0" x2="351.7" y2="512.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="351.7" y="530.0" font-size="12" fill="#8c959f" text-anchor="middle">10</text>
+<line x1="453.3" y1="106.0" x2="453.3" y2="512.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="453.3" y="530.0" font-size="12" fill="#8c959f" text-anchor="middle">20</text>
+<line x1="555.0" y1="106.0" x2="555.0" y2="512.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="555.0" y="530.0" font-size="12" fill="#8c959f" text-anchor="middle">30</text>
+<line x1="656.7" y1="106.0" x2="656.7" y2="512.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="656.7" y="530.0" font-size="12" fill="#8c959f" text-anchor="middle">40</text>
+<line x1="758.3" y1="106.0" x2="758.3" y2="512.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="758.3" y="530.0" font-size="12" fill="#8c959f" text-anchor="middle">50</text>
+<line x1="860.0" y1="106.0" x2="860.0" y2="512.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="860.0" y="530.0" font-size="12" fill="#8c959f" text-anchor="middle">60</text>
+<text x="860.0" y="550.0" font-size="12" fill="#8c959f" text-anchor="end">с</text>
+<text x="24.0" y="141.0" font-size="14" fill="#1f2328" text-anchor="start">Промпт 64 токена</text>
+<rect x="250.0" y="119.0" width="7.6" height="14.0" rx="3" fill="#a8b1ba"/>
+<text x="263.6" y="130.5" font-size="12" fill="#59636e" text-anchor="start">0.75</text>
+<rect x="250.0" y="138.0" width="8.0" height="14.0" rx="3" fill="#4d8c00"/>
+<text x="264.0" y="149.5" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">0.79</text>
+<text x="956.0" y="142.0" font-size="17" fill="#59636e" text-anchor="end" font-weight="700">×0.94</text>
+<text x="956.0" y="156.0" font-size="10" fill="#8c959f" text-anchor="end">вне гейта</text>
+<rect x="12.0" y="158.0" width="956.0" height="50.0" rx="6" fill="#ffffff" fill-opacity="0.55"/>
+<text x="24.0" y="191.0" font-size="14" fill="#1f2328" text-anchor="start">Свежий промпт 4K</text>
+<rect x="250.0" y="169.0" width="22.8" height="14.0" rx="3" fill="#a8b1ba"/>
+<text x="278.8" y="180.5" font-size="12" fill="#59636e" text-anchor="start">2.24</text>
+<rect x="250.0" y="188.0" width="7.8" height="14.0" rx="3" fill="#4d8c00"/>
+<text x="263.8" y="199.5" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">0.77</text>
+<text x="956.0" y="192.0" font-size="17" fill="#3d7000" text-anchor="end" font-weight="700">×2.9</text>
+<text x="24.0" y="241.0" font-size="14" fill="#1f2328" text-anchor="start">Свежий промпт 16K</text>
+<rect x="250.0" y="219.0" width="68.9" height="14.0" rx="3" fill="#a8b1ba"/>
+<text x="324.9" y="230.5" font-size="12" fill="#59636e" text-anchor="start">6.78</text>
+<rect x="250.0" y="238.0" width="16.2" height="14.0" rx="3" fill="#4d8c00"/>
+<text x="272.2" y="249.5" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">1.59</text>
+<text x="956.0" y="242.0" font-size="17" fill="#3d7000" text-anchor="end" font-weight="700">×4.3</text>
+<rect x="12.0" y="258.0" width="956.0" height="50.0" rx="6" fill="#ffffff" fill-opacity="0.55"/>
+<text x="24.0" y="291.0" font-size="14" fill="#1f2328" text-anchor="start">Свежий промпт 64K</text>
+<rect x="250.0" y="269.0" width="289.3" height="14.0" rx="3" fill="#a8b1ba"/>
+<text x="545.3" y="280.5" font-size="12" fill="#59636e" text-anchor="start">28.46</text>
+<rect x="250.0" y="288.0" width="92.9" height="14.0" rx="3" fill="#4d8c00"/>
+<text x="348.9" y="299.5" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">9.14</text>
+<text x="956.0" y="292.0" font-size="17" fill="#3d7000" text-anchor="end" font-weight="700">×3.1</text>
+<text x="24.0" y="341.0" font-size="14" fill="#1f2328" text-anchor="start">Свежий промпт 120K</text>
+<rect x="250.0" y="319.0" width="556.8" height="14.0" rx="3" fill="#a8b1ba"/>
+<text x="812.8" y="330.5" font-size="12" fill="#59636e" text-anchor="start">54.77</text>
+<rect x="250.0" y="338.0" width="224.4" height="14.0" rx="3" fill="#4d8c00"/>
+<text x="480.4" y="349.5" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">22.07</text>
+<text x="956.0" y="342.0" font-size="17" fill="#3d7000" text-anchor="end" font-weight="700">×2.5</text>
+<rect x="12.0" y="358.0" width="956.0" height="50.0" rx="6" fill="#ffffff" fill-opacity="0.55"/>
+<text x="24.0" y="391.0" font-size="14" fill="#1f2328" text-anchor="start">Продолжение диалога, 4K</text>
+<rect x="250.0" y="369.0" width="22.4" height="14.0" rx="3" fill="#a8b1ba"/>
+<text x="278.4" y="380.5" font-size="12" fill="#59636e" text-anchor="start">2.20</text>
+<rect x="250.0" y="388.0" width="7.9" height="14.0" rx="3" fill="#4d8c00"/>
+<text x="263.9" y="399.5" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">0.78</text>
+<text x="956.0" y="392.0" font-size="17" fill="#3d7000" text-anchor="end" font-weight="700">×2.9</text>
+<text x="24.0" y="433.0" font-size="14" fill="#1f2328" text-anchor="start">Правка последнего</text>
+<text x="24.0" y="449.0" font-size="14" fill="#1f2328" text-anchor="start">сообщения, 16K</text>
+<rect x="250.0" y="419.0" width="69.6" height="14.0" rx="3" fill="#a8b1ba"/>
+<text x="325.6" y="430.5" font-size="12" fill="#59636e" text-anchor="start">6.85</text>
+<rect x="250.0" y="438.0" width="7.9" height="14.0" rx="3" fill="#4d8c00"/>
+<text x="263.9" y="449.5" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">0.78</text>
+<text x="956.0" y="442.0" font-size="17" fill="#3d7000" text-anchor="end" font-weight="700">×8.8</text>
+<rect x="12.0" y="458.0" width="956.0" height="50.0" rx="6" fill="#ffffff" fill-opacity="0.55"/>
+<text x="24.0" y="483.0" font-size="14" fill="#1f2328" text-anchor="start">Правка результата</text>
+<text x="24.0" y="499.0" font-size="14" fill="#1f2328" text-anchor="start">инструмента, 16K</text>
+<rect x="250.0" y="469.0" width="72.3" height="14.0" rx="3" fill="#a8b1ba"/>
+<text x="328.3" y="480.5" font-size="12" fill="#59636e" text-anchor="start">7.11</text>
+<rect x="250.0" y="488.0" width="7.7" height="14.0" rx="3" fill="#4d8c00"/>
+<text x="263.7" y="499.5" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">0.76</text>
+<text x="956.0" y="492.0" font-size="17" fill="#3d7000" text-anchor="end" font-weight="700">×9.4</text>
+</svg>

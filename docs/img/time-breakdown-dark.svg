@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="506" viewBox="0 0 980 506" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Куда уходит время: Nsight Systems по выпускной сборке">
+<title>Куда уходит время: Nsight Systems по выпускной сборке</title>
+<rect x="0.5" y="0.5" width="979" height="505" rx="12" fill="#161b22" stroke="#30363d"/>
+<text x="24.0" y="38.0" font-size="19" fill="#e6edf3" text-anchor="start" font-weight="600">Куда уходит время: Nsight Systems по выпускной сборке</text>
+<text x="24.0" y="61.0" font-size="13" fill="#9198a1" text-anchor="start">Доли окна prefill или шага decode, %. Сумма по строке — 100%.</text>
+<text x="24.0" y="104.0" font-size="14" fill="#e6edf3" text-anchor="start" font-weight="600">Короткий промпт, 278 токенов</text>
+<text x="257.4" y="104.0" font-size="13" fill="#9198a1" text-anchor="start">prefill 0.60 с</text>
+<text x="956.0" y="104.0" font-size="12" fill="#9198a1" text-anchor="end">GPU занят 98.5%</text>
+<rect x="24.0" y="114.0" width="0.6" height="28.0" rx="0" fill="#a371f7"/>
+<rect x="24.6" y="114.0" width="194.4" height="28.0" rx="0" fill="#3fb950"/>
+<text x="121.8" y="133.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">21%</text>
+<rect x="219.0" y="114.0" width="11.9" height="28.0" rx="0" fill="#4493f8"/>
+<rect x="230.9" y="114.0" width="3.1" height="28.0" rx="0" fill="#39c5cf"/>
+<rect x="234.0" y="114.0" width="5.1" height="28.0" rx="0" fill="#db61a2"/>
+<rect x="239.1" y="114.0" width="703.2" height="28.0" rx="0" fill="#f0883e"/>
+<text x="590.7" y="133.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">75%</text>
+<rect x="942.3" y="114.0" width="13.7" height="28.0" rx="0" fill="#3d444d"/>
+<rect x="24" y="114" width="932" height="28" rx="5" fill="none" stroke="#30363d"/>
+<text x="24.0" y="166.0" font-size="14" fill="#e6edf3" text-anchor="start" font-weight="600">Prefill 16K</text>
+<text x="121.8" y="166.0" font-size="13" fill="#9198a1" text-anchor="start">1.53 с</text>
+<text x="956.0" y="166.0" font-size="12" fill="#9198a1" text-anchor="end">GPU занят 95.5%</text>
+<rect x="24.0" y="176.0" width="177.5" height="28.0" rx="0" fill="#a371f7"/>
+<text x="112.7" y="195.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">19%</text>
+<rect x="201.5" y="176.0" width="374.1" height="28.0" rx="0" fill="#3fb950"/>
+<text x="388.5" y="195.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">40%</text>
+<rect x="575.6" y="176.0" width="139.6" height="28.0" rx="0" fill="#4493f8"/>
+<text x="645.4" y="195.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">15%</text>
+<rect x="715.1" y="176.0" width="77.1" height="28.0" rx="0" fill="#39c5cf"/>
+<text x="753.7" y="195.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">8%</text>
+<rect x="792.2" y="176.0" width="74.3" height="28.0" rx="0" fill="#db61a2"/>
+<text x="829.4" y="195.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">8%</text>
+<rect x="866.5" y="176.0" width="47.6" height="28.0" rx="0" fill="#f0883e"/>
+<text x="890.3" y="195.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">5%</text>
+<rect x="914.1" y="176.0" width="41.9" height="28.0" rx="0" fill="#3d444d"/>
+<text x="935.0" y="195.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">5%</text>
+<rect x="24" y="176" width="932" height="28" rx="5" fill="none" stroke="#30363d"/>
+<text x="24.0" y="228.0" font-size="14" fill="#e6edf3" text-anchor="start" font-weight="600">Prefill 120K</text>
+<text x="129.8" y="228.0" font-size="13" fill="#9198a1" text-anchor="start">21.9 с</text>
+<text x="956.0" y="228.0" font-size="12" fill="#9198a1" text-anchor="end">GPU занят 98.7%</text>
+<rect x="24.0" y="238.0" width="608.6" height="28.0" rx="0" fill="#a371f7"/>
+<text x="328.3" y="257.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">65%</text>
+<rect x="632.6" y="238.0" width="171.0" height="28.0" rx="0" fill="#3fb950"/>
+<text x="718.1" y="257.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">18%</text>
+<rect x="803.6" y="238.0" width="66.2" height="28.0" rx="0" fill="#4493f8"/>
+<text x="836.7" y="257.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">7%</text>
+<rect x="869.8" y="238.0" width="35.5" height="28.0" rx="0" fill="#39c5cf"/>
+<rect x="905.2" y="238.0" width="34.8" height="28.0" rx="0" fill="#db61a2"/>
+<rect x="940.0" y="238.0" width="3.4" height="28.0" rx="0" fill="#f0883e"/>
+<rect x="943.4" y="238.0" width="12.6" height="28.0" rx="0" fill="#3d444d"/>
+<rect x="24" y="238" width="932" height="28" rx="5" fill="none" stroke="#30363d"/>
+<text x="24.0" y="290.0" font-size="14" fill="#e6edf3" text-anchor="start" font-weight="600">Decode на контексте 16K</text>
+<text x="217.5" y="290.0" font-size="13" fill="#9198a1" text-anchor="start">8.1 мс на токен</text>
+<text x="956.0" y="290.0" font-size="12" fill="#9198a1" text-anchor="end">GPU занят 91.7%</text>
+<rect x="24.0" y="300.0" width="68.2" height="28.0" rx="0" fill="#a371f7"/>
+<text x="58.1" y="319.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">7%</text>
+<rect x="92.2" y="300.0" width="190.7" height="28.0" rx="0" fill="#3fb950"/>
+<text x="187.5" y="319.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">20%</text>
+<rect x="282.9" y="300.0" width="257.9" height="28.0" rx="0" fill="#4493f8"/>
+<text x="411.8" y="319.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">28%</text>
+<rect x="540.7" y="300.0" width="34.5" height="28.0" rx="0" fill="#39c5cf"/>
+<rect x="575.2" y="300.0" width="114.3" height="28.0" rx="0" fill="#db61a2"/>
+<text x="632.4" y="319.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">12%</text>
+<rect x="689.5" y="300.0" width="15.8" height="28.0" rx="0" fill="#f0883e"/>
+<rect x="705.3" y="300.0" width="171.0" height="28.0" rx="0" fill="#ff6a69"/>
+<text x="790.8" y="319.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">18%</text>
+<rect x="876.3" y="300.0" width="79.7" height="28.0" rx="0" fill="#3d444d"/>
+<text x="916.1" y="319.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">9%</text>
+<rect x="24" y="300" width="932" height="28" rx="5" fill="none" stroke="#30363d"/>
+<text x="24.0" y="352.0" font-size="14" fill="#e6edf3" text-anchor="start" font-weight="600">Decode на контексте 120K</text>
+<text x="225.5" y="352.0" font-size="13" fill="#9198a1" text-anchor="start">11.4 мс на токен</text>
+<text x="956.0" y="352.0" font-size="12" fill="#9198a1" text-anchor="end">GPU занят 92.6%</text>
+<rect x="24.0" y="362.0" width="286.4" height="28.0" rx="0" fill="#a371f7"/>
+<text x="167.2" y="381.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">31%</text>
+<rect x="310.4" y="362.0" width="136.6" height="28.0" rx="0" fill="#3fb950"/>
+<text x="378.7" y="381.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">15%</text>
+<rect x="447.0" y="362.0" width="187.7" height="28.0" rx="0" fill="#4493f8"/>
+<text x="540.9" y="381.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">20%</text>
+<rect x="634.8" y="362.0" width="25.3" height="28.0" rx="0" fill="#39c5cf"/>
+<rect x="660.1" y="362.0" width="82.6" height="28.0" rx="0" fill="#db61a2"/>
+<text x="701.4" y="381.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">9%</text>
+<rect x="742.7" y="362.0" width="12.2" height="28.0" rx="0" fill="#f0883e"/>
+<rect x="754.9" y="362.0" width="130.4" height="28.0" rx="0" fill="#ff6a69"/>
+<text x="820.1" y="381.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">14%</text>
+<rect x="885.3" y="362.0" width="70.7" height="28.0" rx="0" fill="#3d444d"/>
+<text x="920.7" y="381.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">8%</text>
+<rect x="24" y="362" width="932" height="28" rx="5" fill="none" stroke="#30363d"/>
+<rect x="24.0" y="410.0" width="12.0" height="12.0" rx="3" fill="#a371f7"/>
+<text x="42.0" y="420.0" font-size="13" fill="#9198a1" text-anchor="start">Attention</text>
+<rect x="133.5" y="410.0" width="12.0" height="12.0" rx="3" fill="#3fb950"/>
+<text x="151.5" y="420.0" font-size="13" fill="#9198a1" text-anchor="start">Эксперты MoE</text>
+<rect x="264.9" y="410.0" width="12.0" height="12.0" rx="3" fill="#4493f8"/>
+<text x="282.9" y="420.0" font-size="13" fill="#9198a1" text-anchor="start">Плотные слои FP8</text>
+<rect x="425.4" y="410.0" width="12.0" height="12.0" rx="3" fill="#39c5cf"/>
+<text x="443.4" y="420.0" font-size="13" fill="#9198a1" text-anchor="start">GDN</text>
+<rect x="24.0" y="434.0" width="12.0" height="12.0" rx="3" fill="#db61a2"/>
+<text x="42.0" y="444.0" font-size="13" fill="#9198a1" text-anchor="start">Нормы, lm_head, прочее</text>
+<rect x="228.2" y="434.0" width="12.0" height="12.0" rx="3" fill="#f0883e"/>
+<text x="246.2" y="444.0" font-size="13" fill="#9198a1" text-anchor="start">Копирование экспертов (не скрыто)</text>
+<rect x="512.4" y="434.0" width="12.0" height="12.0" rx="3" fill="#ff6a69"/>
+<text x="530.4" y="444.0" font-size="13" fill="#9198a1" text-anchor="start">Подкачка экспертов в decode</text>
+<rect x="753.0" y="434.0" width="12.0" height="12.0" rx="3" fill="#3d444d"/>
+<text x="771.0" y="444.0" font-size="13" fill="#9198a1" text-anchor="start">Простой GPU</text>
+<text x="24.0" y="490.0" font-size="11" fill="#6e7681" text-anchor="start">Источник: results/nsight/dashboard.json (критический путь; перекрытое копирование в долю не входит, длительности не суммируются).</text>
+</svg>
