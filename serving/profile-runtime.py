@@ -151,7 +151,12 @@ QUALIFICATION_KEYS = frozenset({'schema', 'checkpoint', 'profiles', 'source_file
 RECORD_KEYS = frozenset({'configuration_sha256', 'acceptance_status', 'known_limitations', 'evidence'})
 # CUDA library switches accepted only with bit-exact evidence bound to the released library bytes; the
 # receipt record key is the switch name.
-CUDA_EVIDENCE_SWITCHES = ('cuda_nvfp4_prefill', 'cuda_gdn', 'cuda_fp8_gemv')
+CUDA_EVIDENCE_SWITCHES = ('cuda_nvfp4_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'cuda_gdn_fla')
+CUDA_EVIDENCE_LIBRARIES = {**{k:v[1] for k,v in NATIVE_LIBRARIES.items()}, 'cuda_gdn_fla':GDN_LIBRARY}
+
+def cuda_evidence_enabled(profile, switch):
+    return profile.get(switch) in ('wu', 'ho') if switch == 'cuda_gdn_fla' else profile.get(switch) is True
+
 CUDA_EVIDENCE_KEY = 'cuda_nvfp4_prefill'
 CUDA_EVIDENCE_KEYS = frozenset({'library', 'library_sha256', 'run_receipts', 'bitexact_reports'})
 EVIDENCE_KEYS = frozenset({'path', 'sha256'})
@@ -580,17 +585,20 @@ def _cuda_evidence_valid(name, profile, record, manifest):
     library (else refusal); evidence for a switch the profile does not enable is refused too."""
     listed = {row['path'] for row in record['evidence']}
     for switch in CUDA_EVIDENCE_SWITCHES:
-        library = NATIVE_LIBRARIES[switch][1]
-        if profile.get(switch) is not True:
+        library = CUDA_EVIDENCE_LIBRARIES[switch]
+        if not cuda_evidence_enabled(profile, switch):
             _require(switch not in record, 'Bit-exact evidence for a switch the profile does not enable: ' + switch)
             continue
         evidence = record.get(switch)
-        _require(type(evidence) is dict and set(evidence) == CUDA_EVIDENCE_KEYS,
+        keys = CUDA_EVIDENCE_KEYS | ({'variant','component_reports'} if switch == 'cuda_gdn_fla' else set())
+        _require(type(evidence) is dict and set(evidence) == keys,
                  switch + ' needs bit-exact evidence for its library in the receipt: ' + name)
         _require(evidence['library'] == library and _hash_valid(evidence['library_sha256'])
                  and evidence['library_sha256'] == manifest.get(library),
                  switch + ' bit-exact evidence is not bound to the released library: ' + name)
-        for key in ('run_receipts', 'bitexact_reports'):
+        if switch == 'cuda_gdn_fla':
+            _require(evidence['variant'] == profile['cuda_gdn_fla'], 'FLA evidence variant mismatch')
+        for key in ('run_receipts', 'bitexact_reports') + (('component_reports',) if switch == 'cuda_gdn_fla' else ()):
             items = evidence[key]
             _require(type(items) is list and bool(items) and len(set(map(str, items))) == len(items)
                      and all(type(item) is str and item in listed for item in items),

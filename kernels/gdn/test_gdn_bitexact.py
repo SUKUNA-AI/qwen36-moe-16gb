@@ -12,6 +12,7 @@ GPU required; run under the GPU lock. Writes a JSON report (no tensors, no text 
 """
 from __future__ import annotations
 
+import hashlib
 import argparse
 import json
 import math
@@ -426,7 +427,12 @@ def main():
     if ft_root and not os.path.dirname(freetoken.__file__).startswith(os.path.abspath(ft_root)):
         raise SystemExit("reference must be the FreeToken runtime tree (PYTHONPATH=$FREETOKEN_PYTHON)")
     dev = torch.device("cuda")
-    lib = GdnLib(args.lib)
+    library_path = args.lib or os.path.join(os.path.dirname(__file__),"build/libqwen36_gdn.so")
+    with open(library_path,"rb") as source:library_sha256 = hashlib.sha256(source.read()).hexdigest()
+    lib = GdnLib(library_path)
+    with open(lib.path,"rb") as source:
+        if hashlib.sha256(source.read()).hexdigest() != library_sha256:
+            raise RuntimeError("GDN library changed while loading")
     results, t0 = [], time.time()
     gen = torch.Generator().manual_seed(4170)
     allok = True
@@ -466,7 +472,9 @@ def main():
     import freetoken
     from triton.backends.nvidia.compiler import get_ptxas
     pt = get_ptxas(120)
-    rep = {"all_pass": bool(allok), "seconds": round(time.time() - t0, 1), "library": lib.path,
+    if hashlib.sha256(open(lib.path,"rb").read()).hexdigest() != library_sha256:
+        raise RuntimeError("GDN library changed during component run")
+    rep = {"library_sha256":library_sha256, "all_pass": bool(allok), "seconds": round(time.time() - t0, 1), "library": lib.path,
            "freetoken_tree": os.path.dirname(freetoken.__file__),
            "triton_ptxas_sm120": {"path": pt.path, "version": pt.version},
            "torch": torch.__version__, "device": torch.cuda.get_device_name(),

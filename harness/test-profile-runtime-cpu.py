@@ -1510,7 +1510,7 @@ class BundleSchemaTests(unittest.TestCase):
                          ('QWEN36_FP8_GEMV_LIBRARY', 'release/lib/libqwen_fp8_gemv.so'))
         self.assertEqual(runtime.SWITCH_REQUIRES, {'layer_major_refill': 'layer_major_prefill'} if REFILL else {})
         self.assertEqual(runtime.KERNEL_MODULE_SWITCHES, {'decode_gather': (GATHER,)})
-        self.assertEqual(runtime.CUDA_EVIDENCE_SWITCHES, ('cuda_nvfp4_prefill', 'cuda_gdn', 'cuda_fp8_gemv'))
+        self.assertEqual(runtime.CUDA_EVIDENCE_SWITCHES, ('cuda_nvfp4_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'cuda_gdn_fla'))
         # Every variable a switch exports is cleared from an inherited environment when the switch is off.
         for exports in runtime.SWITCH_ENV.values():
             for key in exports:

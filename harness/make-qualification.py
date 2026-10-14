@@ -60,7 +60,7 @@ DECISION_KEYS = frozenset({'schema', 'profiles'})
 DECISION_PROFILE_KEYS = frozenset({'acceptance_status', 'known_limitations', 'evidence'})
 # CUDA library switch -> decision key of its bit-exact evidence (receipt record key: the switch name).
 CUDA_DECISION_EVIDENCE = {'cuda_nvfp4_prefill': 'cuda_nvfp4_evidence', 'cuda_gdn': 'cuda_gdn_evidence',
-                          'cuda_fp8_gemv': 'cuda_fp8_gemv_evidence'}
+                          'cuda_fp8_gemv': 'cuda_fp8_gemv_evidence', 'cuda_gdn_fla':'cuda_gdn_fla_evidence'}
 DECISION_OPTIONAL_KEYS = frozenset({'run_receipts', *CUDA_DECISION_EVIDENCE.values()})
 CUDA_DECISION_KEYS = frozenset({'run_receipts', 'bitexact_reports'})
 # Same representation as optimization/experiment.py and bench.py source receipts.
@@ -210,8 +210,6 @@ QUALITY_REPORT_KEYS = frozenset({'baseline', 'candidate', 'logit_comparisons', '
                                  'quality_gate_pass', 'new_functional_failures'})
 
 
-def check_quality_bitexact_report(report):
-    """compare-quality.py output of a qualify.py teacher run: every in-engine logit comparison against the
 def quality_evidence_module():
     source = HERE/'python/freetoken/quality_evidence.py'
     if not source.is_file():
@@ -220,9 +218,9 @@ def quality_evidence_module():
     return load_module('quality_evidence_checks', source)
 
 
+def check_quality_bitexact_report(report):
+    """compare-quality.py output of a qualify.py teacher run: every in-engine logit comparison against the
     teacher-bf128 logit reference (engine/qualification.py, QWEN36_LOGIT_REFERENCE) must be exactly zero."""
-    logits = report['logit_comparisons']
-    _require(type(logits) is dict and report['baseline'] == 'teacher-bf128'
     helpers = quality_evidence_module()
     TEACHER_CASES, unique_rows, hash_valid = helpers.TEACHER_CASES, helpers.unique_rows, helpers.hash_valid
     rows = unique_rows(report.get('rows'), TEACHER_CASES, 'quality report')
@@ -237,6 +235,8 @@ def quality_evidence_module():
              'quality source/fixture identities missing')
     _require(type(report.get('tokens')) is int and report['tokens'] == sum(r['tokens'] for r in rows.values()),
              'quality total token count mismatch')
+    logits = report['logit_comparisons']
+    _require(type(logits) is dict and report['baseline'] == 'teacher-bf128'
              and type(report['candidate']) is str and report['candidate'].startswith('teacher-')
              and report['candidate'] != 'teacher-bf128'
              and type(logits.get('expected')) is int and logits['expected'] == sum((r['tokens']+7)//8 for r in rows.values())
@@ -244,11 +244,21 @@ def quality_evidence_module():
              and logits.get('finite_and_complete') is True and logits.get('all_byte_equal') is True
              and all(type(logits.get(key)) in (int, float) and logits.get(key) == 0
                      for key in ('max_abs', 'max_relative_l2'))
-             and report['forced_targets_complete'] is True and report['quality_gate_pass'] is True
-             and report['new_functional_failures'] == [],
              and report.get('schema') == 2 and report.get('evidence_valid') is True
              and report.get('bit_exact_pass') is True
+             and report['forced_targets_complete'] is True and report['quality_gate_pass'] is True
+             and report['new_functional_failures'] == [],
              'Teacher-forcing quality report does not show identical logits vs teacher-bf128')
+
+
+def check_fla_component_report(report, variant, library_sha256):
+    rows = report.get('results') if type(report) is dict else None
+    _require(type(report) is dict and report.get('all_pass') is True and report.get('library_sha256') == library_sha256
+             and report.get('fla_fused_candidate') is True and report.get('fla_variant') == variant
+             and type(report.get('fla_fused_calls')) is int and report['fla_fused_calls'] > 0
+             and type(rows) is list and rows and type(report.get('cases')) is int and report['cases'] == len(rows)
+             and all(type(r) is dict and r.get('pass') is True for r in rows),
+             'FLA component evidence incomplete, unbound, wrong variant or non-exact')
 
 
 def check_bitexact_report(report):
@@ -370,12 +380,13 @@ def build_receipt(validator, profiles, decision, evidence_root, sources, environ
                          'acceptance_status': status, 'known_limitations': list(limits), 'evidence': rows}
         for switch, decision_key in sorted(CUDA_DECISION_EVIDENCE.items()):
             cuda = entry.get(decision_key)
-            if switch not in validator.CUDA_EVIDENCE_SWITCHES or profile.get(switch) is not True:
+            if switch not in validator.CUDA_EVIDENCE_SWITCHES or not validator.cuda_evidence_enabled(profile, switch):
                 _require(cuda is None, decision_key + ' given for a profile without ' + switch + ': ' + name)
                 continue
-            _require(type(cuda) is dict and set(cuda) == CUDA_DECISION_KEYS,
+            decision_keys = CUDA_DECISION_KEYS | ({'component_reports'} if switch == 'cuda_gdn_fla' else set())
+            _require(type(cuda) is dict and set(cuda) == decision_keys,
                      switch + ' requires ' + decision_key + ' (run_receipts, bitexact_reports): ' + name)
-            for key in sorted(CUDA_DECISION_KEYS):
+            for key in sorted(decision_keys):
                 items = cuda[key]
                 _require(type(items) is list and items and len(set(map(str, items))) == len(items)
                          and all(item in paths for item in items),
@@ -385,10 +396,20 @@ def build_receipt(validator, profiles, decision, evidence_root, sources, environ
                                   environment, kernel)
             for relative in cuda['bitexact_reports']:
                 check_bitexact_report(read_evidence(validator, paths, relative))
-            library = validator.NATIVE_LIBRARIES[switch][1]
+            library = validator.CUDA_EVIDENCE_LIBRARIES[switch]
+            if switch == 'cuda_gdn_fla':
+                for relative in cuda['component_reports']:
+                    check_fla_component_report(read_evidence(validator, paths, relative), profile['cuda_gdn_fla'], source_hashes[library])
+                runs = {read_evidence(validator, paths, rel)['run_id'] for rel in cuda['run_receipts']}
+                for relative in cuda['bitexact_reports']:
+                    quality = read_evidence(validator, paths, relative)
+                    _require(quality.get('schema') == 2 and set(quality.get('case_runs',{}).get('candidate',{}).values()) == runs,
+                             'FLA teacher report is not bound to the listed candidate runs')
             records[name][switch] = {
                 'library': library, 'library_sha256': source_hashes[library],
                 'run_receipts': list(cuda['run_receipts']), 'bitexact_reports': list(cuda['bitexact_reports'])}
+            if switch == 'cuda_gdn_fla':
+                records[name][switch].update(variant=profile['cuda_gdn_fla'], component_reports=list(cuda['component_reports']))
     receipt = {'schema': 1, 'checkpoint': dict(validator.CHECKPOINT), 'profiles': records,
                'source_files': source_hashes, 'environment': environment,
                'kernel_provenance': kernel, 'native_libraries': native}
