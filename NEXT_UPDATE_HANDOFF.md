@@ -39,6 +39,10 @@ unchanged. This is an unqualified CPU-verified candidate.
   graph capture/replay and negative-control plan is in
   `next-update/gather-prefetch/OVERLAP-DESIGN.md`.
 
+The final driver now uses the same schema-2 checker under `python -I -O`. Its
+historical R1b equivalence exception is retired for new runs; f1 records and the
+historical methodology are preserved.
+
 ## Candidates and compatibility
 
 All three configs are `qualified:false`, under `harness/`:
@@ -74,6 +78,8 @@ validation summaries; its SHA is `git rev-parse HEAD` in the delivered branch.
 | `47534d7` | invalid raw FLA env rejection |
 | `883e400` | GPU bank-layout/producers component coverage (unrun) |
 | `6d3bfad` | declared teacher fixture version gate |
+| `070eebd` | initial handoff/evidence and preflight documentation |
+| `01e5645` | shared final qcheck contract; retire R1b override for new runs |
 
 For a clean owner checkout of the same base, cherry-pick these commits in this
 order and then the documentation commit. Revert dependents in reverse order;

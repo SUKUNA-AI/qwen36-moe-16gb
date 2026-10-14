@@ -166,6 +166,8 @@ flock -w 3600 -E 75 "$LOCK" timeout 3600 "$P" "$N/qualify.py" \
   --candidate "$candidate" --name "$NAME" --reference-report "$REF" --functional-baseline "$FB"
 ```
 
+The final `final-helpers.py qcheck REPORT` delegates to the same strict checker;
+new final-driver runs no longer use the historical R1b equivalence override.
 Require `evidence_valid`, `quality_gate_pass`, `bit_exact_pass`, expected==observed,
 all checkpoint max_abs/relative_l2==0 and all_byte_equal, complete forced targets, and no new functional
 failure. Functional reports specify their context matrix and successful HTTP

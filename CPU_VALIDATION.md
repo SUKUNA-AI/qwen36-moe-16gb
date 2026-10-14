@@ -60,7 +60,9 @@ was found in `/usr/local/cuda*` or `/opt/cuda*`.
   teacher rows, `max_abs=0.25` and `relative_l2=0.01`. Synthetic public data only;
   `validation/quality-before.txt` records the result. New regressions reject those
   inputs. Other regressions exercise actual helpers/method bodies, including
-  mutants that delete/reorder the scheduler commit wait.
+  mutants that delete/reorder the scheduler commit wait. Final `qcheck` is also
+  exercised through its real isolated/optimized CLI; incomplete/legacy/byte-mismatched
+  reports fail and the historical R1b override cannot bypass it in new runs.
 
 Intermediate red runs exposed and repaired: missing public source paths,
 production-package metadata in a CPU fixture, a missing archived candidate JSON,
@@ -76,7 +78,7 @@ regressions and the original speculative CPU primitive tests:
 
 ```bash
 QWEN36_CPU_PYTHON=/workspace/.venv-qwen36-cpu/bin/python \
-  bash harness/CPU-checks.sh --output /workspace/scratch/qwen36-final-cpu-evidence
+  bash harness/CPU-checks.sh --output /workspace/scratch/qwen36-complete-cpu
 ```
 
 The full suite was also copied into a real checkout directory with spaces and
@@ -86,7 +88,7 @@ launched from `/`, with logs in a directory with spaces:
 cd /
 QWEN36_CPU_PYTHON=/workspace/.venv-qwen36-cpu/bin/python \
   bash '/workspace/scratch/qwen with spaces/harness/CPU-checks.sh' \
-  --output '/workspace/scratch/cpu final evidence logs with spaces'
+  --output '/workspace/scratch/cpu complete logs with spaces'
 ```
 
 Final exact results are recorded in `validation/cpu-final.json` and
@@ -95,7 +97,7 @@ The three legacy guard/metrics/logging scripts count as one integrated scenario
 apiece, not as a count of their assertions. Subtests and 25 killed paired-contract
 mutants are not double-counted as separate parent test methods.
 
-**Both commands: exit 0; 30 suites, 694 executed and passed, 0 failed, 2 optional archive-only skips.**
+**Both commands: exit 0; 30 suites, 695 executed and passed, 0 failed, 2 optional archive-only skips.**
 
 | Suite | Passed/executed | Skipped | Exit |
 |---|---:|---:|---:|
@@ -114,7 +116,7 @@ mutants are not double-counted as separate parent test methods.
 | `test-profile-health-cpu.py` | 4 | 0 | 0 |
 | `test-profile-runtime-cpu.py` | 88 | 0 | 0 |
 | `test-provenance-loader-cpu.py` | 2 | 0 | 0 |
-| `test-quality-evidence-cpu.py` | 11 | 0 | 0 |
+| `test-quality-evidence-cpu.py` | 12 | 0 | 0 |
 | `test-readiness-transport-cpu.py` | 8 | 0 | 0 |
 | `test-release-cpu.py` | 13 | 0 | 0 |
 | `test-release-qualification-cpu.py` | 56 | 0 | 0 |
@@ -144,7 +146,7 @@ Additional checks:
 - Built-in `compile()` over every changed/new Python file: count and filenames in
   `validation/static-checks.json`. CPU entry imports are exercised by the runner;
   GPU source files receive syntax validation only.
-- `bash -n harness/CPU-checks.sh harness/start-experiment.sh`: exit 0.
+- `bash -n harness/CPU-checks.sh harness/start-experiment.sh harness/gates/final-gates.sh`: exit 0.
 - `git diff 7c78a4824faf03c0eee6f8b3e6fa9cd4cf7df401 --check`: exit 0. Existing CRLF
   files retain their format; local `core.whitespace=trailing-space,space-before-tab,cr-at-eol`
   treats CRLF correctly. For a different checkout, use the equivalent `git -c`

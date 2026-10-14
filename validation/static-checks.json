@@ -1,5 +1,5 @@
 {
-  "syntax_passed": 63,
+  "syntax_passed": 64,
   "files": [
     "freetoken/python/freetoken/attention/linear.py",
     "freetoken/python/freetoken/engine/layer_major.py",
@@ -28,6 +28,7 @@
     "harness/eval-v1-compare.py",
     "harness/export-release-evidence.py",
     "harness/fixtures.py",
+    "harness/gates/final-helpers.py",
     "harness/make-qualification.py",
     "harness/matrix.py",
     "harness/next-update-preflight.py",
