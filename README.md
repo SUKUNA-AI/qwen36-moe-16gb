@@ -434,5 +434,4 @@ API совместим с OpenAI chat completions: стриминг, автом�
 - **[FreeToken](https://github.com/FlashML-org/FreeToken)** (FlashML-org, Apache-2.0) — движок, который дорабатывает эта работа. Копирайт и лицензия upstream сохранены в `freetoken/LICENSE`, изменения перечислены в `freetoken/MODIFICATIONS.md`.
 - Чекпойнт **`nvidia/Qwen3.6-35B-A3B-NVFP4`** опубликован NVIDIA и квантован из Qwen3.6-35B-A3B, модели **команды Qwen**. Веса сюда не входят и распространяются под своей лицензией.
 - Работа опирается на **FlashInfer, Triton, flash-linear-attention, sglang-kernel и PyTorch**.
-- Черновики issue в `docs/upstream-notes/` **не отправлялись**, они хранятся как заметки.
 - Код этого репозитория распространяется под **Apache-2.0**, см. `LICENSE` и `NOTICE`.

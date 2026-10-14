@@ -170,4 +170,3 @@ The API is OpenAI-compatible chat completions with streaming and auto tool calli
 - **NVIDIA** published the `nvidia/Qwen3.6-35B-A3B-NVFP4` checkpoint, quantized from Qwen3.6-35B-A3B
   by the **Qwen team**. The weights are not included here and keep their own license.
 - The work also builds on FlashInfer, Triton, flash-linear-attention, sglang-kernel and PyTorch.
-- The issue drafts in `docs/upstream-notes/` were **never posted**. They are kept as notes.
