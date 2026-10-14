@@ -55,6 +55,16 @@ class NextProfile(unittest.TestCase):
         q.check_fla_component_report(component,'wu','a'*64)
         for key,value in (('library_sha256','bad'),('fla_variant','ho'),('fla_fused_calls',0),('results',[])):
             with self.assertRaises(ValueError):q.check_fla_component_report(dict(component,**{key:value}),'wu','a'*64)
+    def test_raw_engine_fla_parser(self):
+        from freetoken.gdn_options import fla_variant
+        for enabled in (False,True):
+            for raw in (None,'','0'):self.assertIsNone(fla_variant(enabled,raw))
+        for raw,want in (('1','wu'),('wu','wu'),('ho','ho')):
+            self.assertEqual(fla_variant(True,raw),want)
+            with self.assertRaises(ValueError):fla_variant(False,raw)
+        for raw in ('unknown','on','WU',True,1):
+            with self.assertRaises(ValueError):fla_variant(True,raw)
+
     def test_candidate_configs_are_explicit_and_unqualified(self):
         for name in ('main-release-shortroute','main-release-fla-wu','main-release-shortroute-fla-wu'):
             cfg=json.loads((HARNESS/(name+'.json')).read_text());self.assertIs(cfg['qualified'],False)

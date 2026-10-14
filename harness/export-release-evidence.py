@@ -77,7 +77,7 @@ GROUPS = {
         'python/freetoken/engine/engine.py','python/freetoken/core.py','python/freetoken/layers/embedding.py',
         'python/freetoken/layers/quantization/moe/nvfp4.py','python/freetoken/moe/fused_nvfp4.py',
         'python/freetoken/moe/offload_cache.py','python/freetoken/moe/cuda*',
-        'python/freetoken/kernel/csrc/qwen36_*.cu','python/freetoken/kernel/cuda*',
+        'python/freetoken/kernel/csrc/qwen36_*.cu','python/freetoken/kernel/cuda*','python/freetoken/gdn_options.py',
         'python/freetoken/models/qwen3_5_moe/attention.py','python/freetoken/models/qwen3_5_moe/gdn.py',
         'python/freetoken/kernel/triton/fp8_pertensor_linear.py',
         'python/freetoken/layers/quantization/linear/fp8_tensor.py','tests/kernels/test_cuda_*'],

@@ -4,6 +4,7 @@ import os
 import torch
 import torch.nn.functional as F
 from freetoken.core import get_global_ctx
+from freetoken.gdn_options import fla_variant
 from typing import TYPE_CHECKING
 from freetoken.layers.base import BaseOP
 
@@ -47,7 +48,7 @@ class Qwen3_5GatedDeltaNet(BaseOP):
         # FLA recompute_w_u + chunk_h + chunk_o by one fused bit-exact CUDA kernel (kkt_solve stays
         # Triton); =ho replaces only chunk_h + chunk_o. Unsupported inputs use the Triton kernels.
         _fla = os.environ.get('QWEN36_CUDA_GDN_FLA', '0')
-        self._cuda_gdn_fla = None if not self._cuda_gdn or _fla in ('', '0') else ('ho' if _fla == 'ho' else 'wu')
+        self._cuda_gdn_fla = fla_variant(self._cuda_gdn, _fla)
         # The fla chunk/decode kernels read+write the recurrent state and the per-chunk h as
         # [V, K] while the LinearStatePool declares it [K, V]; these coincide (and the
         # hybrid-radix snapshot scatter h[h_row]->slot is a plain copy) only when the two head
