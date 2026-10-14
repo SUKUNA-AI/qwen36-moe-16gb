@@ -122,7 +122,7 @@ The soak ran for 7212 s: 741/741 checks passed with 0 errors and 0 stalls. Host 
 | `serving/` | API ingress/guard, profile runtime validator, service and launcher scripts |
 | `harness/` | Qualification and benchmark harness: teacher forcing, paired matrix, soak, context gates, run configs |
 | `config/` | Profile definitions |
-| `docs/` | [ARCHITECTURE](docs/ARCHITECTURE.md), [RESULTS](docs/RESULTS.md), [METHODOLOGY](docs/METHODOLOGY.md), [ROADMAP](docs/ROADMAP.md), [upstream-notes](docs/upstream-notes/00-INDEX.md) (unposted issue drafts) |
+| `docs/` | [ARCHITECTURE](docs/ARCHITECTURE.md), [RESULTS](docs/RESULTS.md), [METHODOLOGY](docs/METHODOLOGY.md), [ROADMAP](docs/ROADMAP.md), [upstream-notes](docs/upstream-notes/00-INDEX.md) |
 | `results/` | Evidence: dashboard, metrics, Nsight summaries, matrix/soak/gate JSONs, experiment results. See [docs/RESULTS.md](docs/RESULTS.md) for the file map |
 | `local/` | Machine-specific material. It is **gitignored** and not part of the public tree |
 
