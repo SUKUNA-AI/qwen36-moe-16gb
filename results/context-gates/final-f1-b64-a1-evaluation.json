@@ -1,0 +1,596 @@
+{
+  "schema": 1,
+  "tool": "evaluate-gates-r1b",
+  "profile": "baseline64-final",
+  "context": 65536,
+  "length": 60000,
+  "verdict": "PASS_WITH_KNOWN_LIMITATION",
+  "failed_checks": [],
+  "not_run": [],
+  "warnings": [
+    "fp32-basis known limitations (identical to reference): ['executable-code', 'long-facts-16384']",
+    "min GPU free 0.789 GiB is below the ~1.0 GiB target (floor 0.5 GiB holds)"
+  ],
+  "vram_reserve_class": "FLOOR",
+  "min_gpu_free_GiB": 0.7894,
+  "checks": {
+    "profile_mechanics_equal_reference_arm": {
+      "pass": true,
+      "observed": {
+        "disallowed": {},
+        "allowed": {
+          "context": [
+            131072,
+            65536
+          ],
+          "memory_ratio": [
+            null,
+            0.75
+          ],
+          "qualified": [
+            null,
+            false
+          ]
+        }
+      },
+      "expected": "only ['context', 'memory_ratio', 'qualified'] may differ from arm bf128",
+      "informational": false
+    },
+    "source_identity_functional_equals_reference_arm": {
+      "pass": true,
+      "observed": {
+        "source_sha256": "04dbae8b33be6c66",
+        "service_source_files": {
+          "experiment.py": "98e781505cf77033",
+          "serve_guarded.py": "efe562a5bbae4957",
+          "guard.py": "58007eb76e1f504e",
+          "ingress.py": "c3557dcb43fbabc0",
+          "request_metrics.py": "6aa1620679063856"
+        },
+        "packages": {
+          "torch": "2.11.0",
+          "triton": "3.6.0",
+          "flashinfer-python": "0.6.18.post1",
+          "sglang-kernel": "0.4.5",
+          "transformers": "5.16.1"
+        },
+        "checkpoint_revision": "1355db6a052410cfd62085d94b58866fd0f2c3c5"
+      },
+      "expected": {
+        "source_sha256": "04dbae8b33be6c66",
+        "service_source_files": {
+          "experiment.py": "98e781505cf77033",
+          "serve_guarded.py": "efe562a5bbae4957",
+          "guard.py": "58007eb76e1f504e",
+          "ingress.py": "c3557dcb43fbabc0",
+          "request_metrics.py": "6aa1620679063856"
+        },
+        "packages": {
+          "torch": "2.11.0",
+          "triton": "3.6.0",
+          "flashinfer-python": "0.6.18.post1",
+          "sglang-kernel": "0.4.5",
+          "transformers": "5.16.1"
+        },
+        "checkpoint_revision": "1355db6a052410cfd62085d94b58866fd0f2c3c5"
+      },
+      "informational": false
+    },
+    "native_libraries_functional_equal_reference_arm": {
+      "pass": true,
+      "observed": {},
+      "expected": {},
+      "informational": false
+    },
+    "source_identity_prefill_cancel_equals_reference_arm": {
+      "pass": true,
+      "observed": {
+        "source_sha256": "04dbae8b33be6c66",
+        "service_source_files": {
+          "experiment.py": "98e781505cf77033",
+          "serve_guarded.py": "efe562a5bbae4957",
+          "guard.py": "58007eb76e1f504e",
+          "ingress.py": "c3557dcb43fbabc0",
+          "request_metrics.py": "6aa1620679063856"
+        },
+        "packages": {
+          "torch": "2.11.0",
+          "triton": "3.6.0",
+          "flashinfer-python": "0.6.18.post1",
+          "sglang-kernel": "0.4.5",
+          "transformers": "5.16.1"
+        },
+        "checkpoint_revision": "1355db6a052410cfd62085d94b58866fd0f2c3c5"
+      },
+      "expected": {
+        "source_sha256": "04dbae8b33be6c66",
+        "service_source_files": {
+          "experiment.py": "98e781505cf77033",
+          "serve_guarded.py": "efe562a5bbae4957",
+          "guard.py": "58007eb76e1f504e",
+          "ingress.py": "c3557dcb43fbabc0",
+          "request_metrics.py": "6aa1620679063856"
+        },
+        "packages": {
+          "torch": "2.11.0",
+          "triton": "3.6.0",
+          "flashinfer-python": "0.6.18.post1",
+          "sglang-kernel": "0.4.5",
+          "transformers": "5.16.1"
+        },
+        "checkpoint_revision": "1355db6a052410cfd62085d94b58866fd0f2c3c5"
+      },
+      "informational": false
+    },
+    "native_libraries_prefill_cancel_equal_reference_arm": {
+      "pass": true,
+      "observed": {},
+      "expected": {},
+      "informational": false
+    },
+    "run_profile": {
+      "pass": true,
+      "observed": "baseline64-final",
+      "expected": "baseline64-final",
+      "informational": false
+    },
+    "run_configuration_equals_config_file": {
+      "pass": true,
+      "observed": {
+        "context": 65536,
+        "chunk": 2048,
+        "memory_ratio": 0.75,
+        "qualified": false,
+        "flags": [],
+        "env": {}
+      },
+      "expected": {
+        "context": 65536,
+        "chunk": 2048,
+        "memory_ratio": 0.75,
+        "qualified": false,
+        "flags": [],
+        "env": {}
+      },
+      "informational": false
+    },
+    "checkpoint_revision": {
+      "pass": true,
+      "observed": "1355db6a052410cfd62085d94b58866fd0f2c3c5",
+      "expected": "1355db6a052410cfd62085d94b58866fd0f2c3c5",
+      "informational": false
+    },
+    "functional_case_set": {
+      "pass": true,
+      "observed": [
+        "executable-code",
+        "long-facts-16384",
+        "long-facts-60000",
+        "russian",
+        "tool-cycle"
+      ],
+      "expected": [
+        "executable-code",
+        "long-facts-16384",
+        "long-facts-60000",
+        "russian",
+        "tool-cycle"
+      ],
+      "informational": false
+    },
+    "functional_short_failures_equal_reference": {
+      "pass": true,
+      "observed": [
+        "executable-code",
+        "long-facts-16384"
+      ],
+      "expected": [
+        "executable-code",
+        "long-facts-16384"
+      ],
+      "informational": false
+    },
+    "functional_short_hashes_identical_to_reference": {
+      "pass": true,
+      "observed": {
+        "executable-code": "2c9764299c8dcd07",
+        "long-facts-16384": "bd9aced8b836eda6"
+      },
+      "expected": {
+        "executable-code": "2c9764299c8dcd07",
+        "long-facts-16384": "bd9aced8b836eda6"
+      },
+      "informational": false
+    },
+    "functional_long_known_limitation_identical_sha": {
+      "pass": true,
+      "observed": "93e766db34450f9ae414d63d58e09ee80ffdd5f898620742657a588c909bf100",
+      "expected": "93e766db34450f9ae414d63d58e09ee80ffdd5f898620742657a588c909bf100",
+      "informational": false
+    },
+    "fresh_long_prompt_tokens": {
+      "pass": true,
+      "observed": 60069,
+      "expected": 60069,
+      "informational": false
+    },
+    "fresh_long_not_cached": {
+      "pass": true,
+      "observed": 0,
+      "expected": 0,
+      "informational": false
+    },
+    "fresh_long_ttft_below_watchdog_margin": {
+      "pass": true,
+      "observed": 25.6838109349992,
+      "expected": "<= 240.0",
+      "informational": false
+    },
+    "engine_metrics_joined": {
+      "pass": true,
+      "observed": "joined",
+      "expected": "joined",
+      "informational": false
+    },
+    "engine_run_binding": {
+      "pass": true,
+      "observed": "9faa74dbc0e94fadb6ecbedbace9ee56",
+      "expected": "9faa74dbc0e94fadb6ecbedbace9ee56",
+      "informational": false
+    },
+    "kv_bf16": {
+      "pass": true,
+      "observed": "torch.bfloat16",
+      "expected": "torch.bfloat16",
+      "informational": false
+    },
+    "gpu_expert_slots_valid": {
+      "pass": true,
+      "observed": {
+        "expert_slots": 3917,
+        "valid": 3917
+      },
+      "expected": ">0 and all valid",
+      "informational": false
+    },
+    "host_experts_fully_pinned": {
+      "pass": true,
+      "observed": {
+        "host": 18245222400,
+        "pinned": 18245222400
+      },
+      "expected": "equal and >16 GiB",
+      "informational": false
+    },
+    "gdn_pool_unchanged": {
+      "pass": true,
+      "observed": 579502080,
+      "expected": 579502080,
+      "informational": false
+    },
+    "kv_capacity_covers_context": {
+      "pass": true,
+      "observed": 1343508480,
+      "expected": ">= 1342177280",
+      "informational": false
+    },
+    "fp32_gdn_snapshot_flag_matches_env": {
+      "pass": true,
+      "observed": false,
+      "expected": false,
+      "informational": false
+    },
+    "h2d_measured": {
+      "pass": true,
+      "observed": 784544563200,
+      "expected": ">0",
+      "informational": false
+    },
+    "boundary_receipt_pass": {
+      "pass": true,
+      "observed": true,
+      "expected": true,
+      "informational": false
+    },
+    "boundary_exact_total": {
+      "pass": true,
+      "observed": {
+        "prompt": 64860,
+        "requested_output": 676
+      },
+      "expected": {
+        "prompt": 64860,
+        "requested_output": 676,
+        "sum": 65536
+      },
+      "informational": false
+    },
+    "boundary_generation_completed": {
+      "pass": true,
+      "observed": {
+        "status": 200,
+        "completion": 27,
+        "finish": "stop"
+      },
+      "expected": "200, 1..requested",
+      "informational": false
+    },
+    "boundary_plus_one_rejected": {
+      "pass": true,
+      "observed": {
+        "status": 400,
+        "code": "context_length_exceeded"
+      },
+      "expected": {
+        "status": 400,
+        "code": "context_length_exceeded"
+      },
+      "informational": false
+    },
+    "boundary_ttft_below_watchdog_margin": {
+      "pass": true,
+      "observed": 27.209037282998906,
+      "expected": "<= 240.0",
+      "informational": false
+    },
+    "boundary_same_serving_run": {
+      "pass": true,
+      "observed": "9faa74dbc0e94fadb6ecbedbace9ee56",
+      "expected": "9faa74dbc0e94fadb6ecbedbace9ee56",
+      "informational": false
+    },
+    "backend_all_pass": {
+      "pass": true,
+      "observed": [],
+      "expected": [],
+      "informational": false
+    },
+    "backend_strict_context_present": {
+      "pass": true,
+      "observed": true,
+      "expected": true,
+      "informational": false
+    },
+    "cancel_receipt_pass": {
+      "pass": true,
+      "observed": true,
+      "expected": true,
+      "informational": false
+    },
+    "cancel_length": {
+      "pass": true,
+      "observed": 60000,
+      "expected": 60000,
+      "informational": false
+    },
+    "cancel_observed_active_and_pending": {
+      "pass": true,
+      "observed": {
+        "observed_active": true,
+        "pending": true
+      },
+      "expected": true,
+      "informational": false
+    },
+    "cancel_followup_correct_fast": {
+      "pass": true,
+      "observed": {
+        "correct": true,
+        "recovery_s": 0.8024239740007033
+      },
+      "expected": "< 10 s",
+      "informational": false
+    },
+    "cancel_same_serving_run": {
+      "pass": true,
+      "observed": "9faa74dbc0e94fadb6ecbedbace9ee56",
+      "expected": "9faa74dbc0e94fadb6ecbedbace9ee56",
+      "informational": false
+    },
+    "request_log_rows_joined": {
+      "pass": true,
+      "observed": 172,
+      "expected": "> 0 rows with this run_id",
+      "informational": true
+    },
+    "request_level_min_gpu_free_floor": {
+      "pass": true,
+      "observed": 0.7894,
+      "expected": ">= 0.5 GiB",
+      "informational": false
+    },
+    "sampler_serving_min_gpu_free_floor": {
+      "pass": true,
+      "observed": 0.79,
+      "expected": ">= 0.5 GiB",
+      "informational": false
+    },
+    "sampler_coverage_1hz": {
+      "pass": true,
+      "observed": 1.003,
+      "expected": "<= 2.5 s",
+      "informational": false
+    },
+    "idle_foreign_usage_recorded": {
+      "pass": true,
+      "observed": {
+        "max_used_mib": 3265,
+        "median_used_mib": 3023,
+        "reserved_mib": 308
+      },
+      "expected": "recorded: the measured reserve is valid for foreign usage <= this value",
+      "informational": true
+    },
+    "host_nonreclaimable_anon_plus_shmem_below_MemoryHigh": {
+      "pass": true,
+      "observed": {
+        "anon_GiB": 19.543,
+        "shmem_GiB": 1.4,
+        "sum_GiB": 20.944
+      },
+      "expected": "< 32 GiB",
+      "informational": false
+    },
+    "host_anon_shmem_growth_first_to_last_request": {
+      "pass": true,
+      "observed": {
+        "service_memory_anon_bytes": {
+          "delta_MiB": 1.9,
+          "soak_threshold_MiB": 256
+        },
+        "service_memory_shmem_bytes": {
+          "delta_MiB": 0.0,
+          "soak_threshold_MiB": 64
+        }
+      },
+      "expected": "report only: leak gating is the soak (like-for-like series)",
+      "informational": true
+    },
+    "host_cgroup_total_and_file_cache_report_only": {
+      "pass": true,
+      "observed": {
+        "cgroup_peak_GiB": 27.56,
+        "file_cache_estimate_peak_GiB": 8.615
+      },
+      "expected": "report only: page cache is reclaimable (soak-analysis MEMORY_REPORT_ONLY)",
+      "informational": true
+    },
+    "wsl_swap_free_report_only": {
+      "pass": true,
+      "observed": {
+        "min": 17150623744,
+        "max": 17150623744
+      },
+      "expected": "report only: unit has MemorySwapMax=0, swap use cannot come from it",
+      "informational": true
+    }
+  },
+  "sampler": {
+    "samples": 289,
+    "total_mib": 16303,
+    "whole": {
+      "samples": 289,
+      "first": "2026-10-14T16:51:17.468000",
+      "last": "2026-10-14T16:56:05.624000",
+      "min_free_mib": 809,
+      "min_free_GiB": 0.79,
+      "max_used_mib": 15187,
+      "reserved_mib_max": 308,
+      "max_gap_s": 1.011,
+      "median_used_mib": 5994
+    },
+    "idle_before_start": {
+      "samples": 30,
+      "first": "2026-10-14T16:51:17.468000",
+      "last": "2026-10-14T16:51:46.483000",
+      "min_free_mib": 12731,
+      "min_free_GiB": 12.4326,
+      "max_used_mib": 3265,
+      "reserved_mib_max": 308,
+      "max_gap_s": 1.003,
+      "median_used_mib": 3023
+    },
+    "loading": {
+      "samples": 143,
+      "first": "2026-10-14T16:51:47.484000",
+      "last": "2026-10-14T16:54:09.570000",
+      "min_free_mib": 1295,
+      "min_free_GiB": 1.2646,
+      "max_used_mib": 14701,
+      "reserved_mib_max": 308,
+      "max_gap_s": 1.011,
+      "median_used_mib": 5986
+    },
+    "serving": {
+      "samples": 86,
+      "first": "2026-10-14T16:54:10.571000",
+      "last": "2026-10-14T16:55:35.611000",
+      "min_free_mib": 809,
+      "min_free_GiB": 0.79,
+      "max_used_mib": 15187,
+      "reserved_mib_max": 308,
+      "max_gap_s": 1.003,
+      "median_used_mib": 15007
+    },
+    "idle_after_stop": {
+      "samples": 30,
+      "first": "2026-10-14T16:55:36.611000",
+      "last": "2026-10-14T16:56:05.624000",
+      "min_free_mib": 12962,
+      "min_free_GiB": 12.6582,
+      "max_used_mib": 3034,
+      "reserved_mib_max": 308,
+      "max_gap_s": 1.001,
+      "median_used_mib": 3006
+    }
+  },
+  "targets": {
+    "floor_GiB": 0.5,
+    "target_GiB": 1.0,
+    "ttft_limit_s": 240.0
+  },
+  "inputs": {
+    "config": {
+      "path": "<workspace>/outputs/qwen36-api/optimization/baseline64-final.json",
+      "sha256": "4fa87f6fb7893bb2a9118388ceb1c25c390e4649e9cd7ab88b1067a8d9fadf69"
+    },
+    "functional": {
+      "path": "<native-harness>/reports/final-f1-b64-a1-functional.json",
+      "sha256": "d1882191af79ab3f460e84fade163a0a6981852868997b7420493071bccdb959"
+    },
+    "boundary": {
+      "path": "<native-harness>/reports/final-f1-b64-a1-boundary.json",
+      "sha256": "0a9cecec1ecbc90c5f4a7e1cb9a211077cd753e8d01daabc9bbcffe60fca7f2e"
+    },
+    "backend": {
+      "path": "<native-harness>/reports/final-f1-b64-a1-backend.json",
+      "sha256": "972624df7e488eb23e7029c692a705371b71891b8c2a9ff024b222bc97368fdb"
+    },
+    "cancel": {
+      "path": "<native-harness>/reports/final-f1-b64-a1-prefill-cancel.json",
+      "sha256": "7ee43abbdc8df792fe5954f5bccbbf3ece26792963571f128531be4ddb3e8cdc"
+    },
+    "sampler": {
+      "path": "<native-harness>/reports/final-f1-b64-a1-gpu-sampler.csv",
+      "sha256": "bd48587bb9dd32f47c11877be90b9026c471b065986af507ec5cf1a9d08af98b"
+    },
+    "phases": {
+      "path": "<native-harness>/reports/final-f1-b64-a1-phases.jsonl",
+      "sha256": "79134588861f9db69f691b46e35ef976467be9abfaf85ccdf43a64cea09f3e80"
+    },
+    "identity_manifest": {
+      "path": "<native-harness>/reports/final-f1-m-manifest.json",
+      "sha256": "742a52b0374303be016568add8537cc52bc105ccf9ab07c5323b13ea013937cb"
+    },
+    "functional_reference": {
+      "path": "<native-harness>/reports/functional-main-release.json",
+      "sha256": "96c9a3bd1704e6ca83b26d39fd557f6963630fcbde4e4f9f38ff03d4dd1fc930"
+    }
+  },
+  "reference": {
+    "arm": "bf128",
+    "identity": {
+      "source_sha256": "04dbae8b33be6c66",
+      "service_source_files": {
+        "experiment.py": "98e781505cf77033",
+        "serve_guarded.py": "efe562a5bbae4957",
+        "guard.py": "58007eb76e1f504e",
+        "ingress.py": "c3557dcb43fbabc0",
+        "request_metrics.py": "6aa1620679063856"
+      },
+      "packages": {
+        "torch": "2.11.0",
+        "triton": "3.6.0",
+        "flashinfer-python": "0.6.18.post1",
+        "sglang-kernel": "0.4.5",
+        "transformers": "5.16.1"
+      },
+      "checkpoint_revision": "1355db6a052410cfd62085d94b58866fd0f2c3c5"
+    }
+  },
+  "limits": [
+    "Fixed fixtures only; not proof of quality on arbitrary inputs.",
+    "Min free is NVML free incl. foreign Windows usage; valid for foreign usage <= the recorded idle value.",
+    "Single run; performance acceptance is the separate 5-pair matrix."
+  ]
+}

@@ -1,0 +1,1377 @@
+{
+ "kernels": [
+  {
+   "label": "FlashInfer paged prefill attention, q=2048 chunk, KV 16384",
+   "phase": "prefill",
+   "scenario": "prefill_16k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench (cuda-attention agent); same kernel/tile config as release (block 32x4, smem 49152); release batches 2 chunks per call (k=2) so its grid is [512,1,2] vs [256,1,2] here",
+   "release_library_match": "flashinfer (unchanged)",
+   "report": "<native-harness>/private-cuda-attention/profiles/bd-prefill-20261014T081844Z/fi-prefill-2048x16384.ncu-repz",
+   "parsed_from": "results/component-ncu/attn-prefill-2048x16384.json",
+   "duration_us": 7664.448,
+   "sm_throughput_pct": 81.64,
+   "memory_throughput_pct": 35.15,
+   "dram_throughput_pct": 5.87,
+   "dram_gbps": 43.88710472039,
+   "tensor_inst_hmma_pct_peak_active": 44.58,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 0.41,
+   "l2_hit_rate_pct": 96.9,
+   "achieved_occupancy_pct": 15.63,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 248.0,
+   "shared_mem_per_block_bytes": 49152.0,
+   "waves_per_sm": 3.66,
+   "top_stalls": [
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 5.66,
+     "share_pct": 56.37450199203187
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.6,
+     "share_pct": 15.93625498007968
+    },
+    {
+     "reason": "selected",
+     "cycles_per_issue": 1.0,
+     "share_pct": 9.960159362549799
+    }
+   ],
+   "roofline_class": "compute-bound",
+   "grid": [
+    256,
+    1,
+    2
+   ],
+   "block": [
+    32,
+    4,
+    1
+   ],
+   "kernel_function": "void BatchPrefillWithPagedKVCacheKernel<KernelTraits<1, 64, 1, 1, 16, 16, 4, 1, 0, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, int, DefaultAttention<0, 0, 0, 0>>, PagedParams>(T2)",
+   "family": "flashinfer_attention_paged",
+   "bucket": "full_attention",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 40,
+    "release_nsys_p50_us": 8484.008,
+    "release_block": [
+     32,
+     4,
+     1
+    ],
+    "release_smem": 49152
+   },
+   "release_grid": [
+    512,
+    1,
+    2
+   ]
+  },
+  {
+   "label": "FlashInfer paged prefill attention, q=2048 chunk, KV 120000",
+   "phase": "prefill",
+   "scenario": "prefill_120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench; release grid [512,1,2] (k=2 batching)",
+   "release_library_match": "flashinfer (unchanged)",
+   "report": "<native-harness>/private-cuda-attention/profiles/bd-prefill-20261014T081844Z/fi-prefill-2048x120000.ncu-repz",
+   "parsed_from": "results/component-ncu/attn-prefill-2048x120000.json",
+   "duration_us": 58980.064,
+   "sm_throughput_pct": 82.36,
+   "memory_throughput_pct": 35.55,
+   "dram_throughput_pct": 6.6,
+   "dram_gbps": 49.42771713506,
+   "tensor_inst_hmma_pct_peak_active": 44.42,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 0.39,
+   "l2_hit_rate_pct": 95.31,
+   "achieved_occupancy_pct": 15.59,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 248.0,
+   "shared_mem_per_block_bytes": 49152.0,
+   "waves_per_sm": 3.66,
+   "top_stalls": [
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 5.64,
+     "share_pct": 56.23130608175474
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.6,
+     "share_pct": 15.952143569292124
+    },
+    {
+     "reason": "selected",
+     "cycles_per_issue": 1.0,
+     "share_pct": 9.970089730807578
+    }
+   ],
+   "roofline_class": "compute-bound",
+   "grid": [
+    256,
+    1,
+    2
+   ],
+   "block": [
+    32,
+    4,
+    1
+   ],
+   "kernel_function": "void BatchPrefillWithPagedKVCacheKernel<KernelTraits<1, 64, 1, 1, 16, 16, 4, 1, 0, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, int, DefaultAttention<0, 0, 0, 0>>, PagedParams>(T2)",
+   "family": "flashinfer_attention_paged",
+   "bucket": "full_attention",
+   "release_launch_config_in_trace": {
+    "release_scope": "120k",
+    "release_count_in_request": 290,
+    "release_nsys_p50_us": 47812.879,
+    "release_block": [
+     32,
+     4,
+     1
+    ],
+    "release_smem": 49152
+   },
+   "release_grid": [
+    512,
+    1,
+    2
+   ]
+  },
+  {
+   "label": "FlashInfer decode attention (tensor-core path), KV 65536 (nearest to 16K available)",
+   "phase": "decode",
+   "scenario": "decode_16k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench; identical launch config to release decode graph node ([70,1,2], block 32x1x4, smem 73728); KV 64K not 16K",
+   "release_library_match": "flashinfer (unchanged)",
+   "report": "<native-harness>/private-cuda-attention/profiles/bd-decode-20261014T082709Z/fi-decode-65536.ncu-repz",
+   "parsed_from": "results/component-ncu/attn-decode-65536.json",
+   "duration_us": 174.784,
+   "sm_throughput_pct": 12.65,
+   "memory_throughput_pct": 92.6,
+   "dram_throughput_pct": 92.6,
+   "dram_gbps": 828.73819113878,
+   "tensor_inst_hmma_pct_peak_active": 6.61,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 1.72,
+   "l2_hit_rate_pct": 0.64,
+   "achieved_occupancy_pct": 8.66,
+   "theoretical_occupancy_pct": 8.33,
+   "registers_per_thread": 248.0,
+   "shared_mem_per_block_bytes": 73728.0,
+   "waves_per_sm": 2.0,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 15.03,
+     "share_pct": 67.18819848010729
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 2.58,
+     "share_pct": 11.533303531515422
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.47,
+     "share_pct": 6.57130084935181
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    70,
+    1,
+    2
+   ],
+   "block": [
+    32,
+    1,
+    4
+   ],
+   "kernel_function": "void BatchPrefillWithPagedKVCacheKernel<KernelTraits<0, 16, 1, 1, 16, 16, 1, 4, 0, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, int, DefaultAttention<0, 0, 0, 0>>, PagedParams>(T2)",
+   "family": "flashinfer_attention_paged",
+   "bucket": "full_attention",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 630,
+    "release_nsys_p50_us": 49.439,
+    "release_block": [
+     32,
+     1,
+     4
+    ],
+    "release_smem": 73728
+   },
+   "release_grid": [
+    70,
+    1,
+    2
+   ]
+  },
+  {
+   "label": "FlashInfer decode attention (tensor-core path), KV 131072",
+   "phase": "decode",
+   "scenario": "decode_120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench; identical launch config to release decode node",
+   "release_library_match": "flashinfer (unchanged)",
+   "report": "<native-harness>/private-cuda-attention/profiles/bd-decode-20261014T082709Z/fi-decode-131072.ncu-repz",
+   "parsed_from": "results/component-ncu/attn-decode-131072.json",
+   "duration_us": 342.432,
+   "sm_throughput_pct": 12.93,
+   "memory_throughput_pct": 93.98,
+   "dram_throughput_pct": 93.98,
+   "dram_gbps": 841.1931595178,
+   "tensor_inst_hmma_pct_peak_active": 6.24,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 1.61,
+   "l2_hit_rate_pct": 0.32,
+   "achieved_occupancy_pct": 7.66,
+   "theoretical_occupancy_pct": 8.33,
+   "registers_per_thread": 248.0,
+   "shared_mem_per_block_bytes": 73728.0,
+   "waves_per_sm": 2.0,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 14.62,
+     "share_pct": 64.77625166149757
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 3.17,
+     "share_pct": 14.045192733717323
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.59,
+     "share_pct": 7.044749667700487
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    70,
+    1,
+    2
+   ],
+   "block": [
+    32,
+    1,
+    4
+   ],
+   "kernel_function": "void BatchPrefillWithPagedKVCacheKernel<KernelTraits<0, 16, 1, 1, 16, 16, 1, 4, 0, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, int, DefaultAttention<0, 0, 0, 0>>, PagedParams>(T2)",
+   "family": "flashinfer_attention_paged",
+   "bucket": "full_attention",
+   "release_launch_config_in_trace": {
+    "release_scope": "120k",
+    "release_count_in_request": 630,
+    "release_nsys_p50_us": 306.621,
+    "release_block": [
+     32,
+     1,
+     4
+    ],
+    "release_smem": 73728
+   },
+   "release_grid": [
+    70,
+    1,
+    2
+   ]
+  },
+  {
+   "label": "FlashInfer split-KV merge (decode), KV 131072",
+   "phase": "decode",
+   "scenario": "decode_120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench",
+   "release_library_match": "flashinfer (unchanged)",
+   "report": "<native-harness>/private-cuda-attention/profiles/bd-decode-20261014T082709Z/fi-decode-131072.ncu-repz",
+   "parsed_from": "results/component-ncu/attn-decode-131072.json",
+   "duration_us": 4.768,
+   "sm_throughput_pct": 2.61,
+   "memory_throughput_pct": 14.99,
+   "dram_throughput_pct": 14.99,
+   "dram_gbps": 133.36912751678,
+   "tensor_inst_hmma_pct_peak_active": 0.0,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 11.35,
+   "l2_hit_rate_pct": 20.25,
+   "achieved_occupancy_pct": 8.8,
+   "theoretical_occupancy_pct": 83.33,
+   "registers_per_thread": 40.0,
+   "shared_mem_per_block_bytes": 8704.0,
+   "waves_per_sm": 0.1,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 3.8,
+     "share_pct": 39.09465020576131
+    },
+    {
+     "reason": "no_instruction",
+     "cycles_per_issue": 1.37,
+     "share_pct": 14.094650205761315
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.21,
+     "share_pct": 12.448559670781892
+    }
+   ],
+   "roofline_class": "latency/occupancy-bound (both SOL < 40%)",
+   "grid": [
+    70,
+    1,
+    1
+   ],
+   "block": [
+    32,
+    4,
+    1
+   ],
+   "kernel_function": "void PersistentVariableLengthMergeStatesKernel<8, 32, 4, 4, __nv_bfloat16, __nv_bfloat16, int>(T5 *, float *, T7 *, T6 *, float *, unsigned int, unsigned int *, unsigned int)",
+   "family": "flashinfer_merge_states",
+   "bucket": "full_attention",
+   "release_launch_config_in_trace": {
+    "release_scope": "120k",
+    "release_count_in_request": 630,
+    "release_nsys_p50_us": 3.808,
+    "release_block": [
+     32,
+     4,
+     1
+    ],
+    "release_smem": 8704
+   },
+   "release_grid": [
+    70,
+    1,
+    1
+   ]
+  },
+  {
+   "label": "CUDA NVFP4 MoE expert GEMM gate_up (M=2048 chunk)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k (position-independent)",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench with real layer weights; library build 52762dd4 (pre fp32-global rebuild); release library b7fea227: same grid/block/smem",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-nvfp4-bitexact/bitexact-compute-M2048.ncu-repz",
+   "parsed_from": "results/component-ncu/nvfp4-bitexact-M2048.json",
+   "duration_us": 1075.2,
+   "sm_throughput_pct": 82.93,
+   "memory_throughput_pct": 42.36,
+   "dram_throughput_pct": 38.68,
+   "dram_gbps": 346.29333333333,
+   "tensor_inst_hmma_pct_peak_active": 41.15,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 16.03,
+   "l2_hit_rate_pct": 70.14,
+   "achieved_occupancy_pct": 32.95,
+   "theoretical_occupancy_pct": 33.33,
+   "registers_per_thread": 110.0,
+   "shared_mem_per_block_bytes": 38784.0,
+   "waves_per_sm": 29.09,
+   "top_stalls": [
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 8.5,
+     "share_pct": 50.655542312276516
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.85,
+     "share_pct": 11.02502979737783
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 1.79,
+     "share_pct": 10.66746126340882
+    }
+   ],
+   "roofline_class": "compute-bound",
+   "grid": [
+    8,
+    509,
+    1
+   ],
+   "block": [
+    256,
+    1,
+    1
+   ],
+   "kernel_function": "void bx::fast_gemm<64, 2, 8, 3, 1, 1>(QwenNvfp4Args, int)",
+   "family": "moe_nvfp4_cuda_fast_gemm",
+   "bucket": "moe_experts",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 320,
+    "release_nsys_p50_us": 994.486,
+    "release_block": [
+     256,
+     1,
+     1
+    ],
+    "release_smem": 38784
+   },
+   "release_grid": [
+    8,
+    509,
+    1
+   ]
+  },
+  {
+   "label": "CUDA NVFP4 MoE expert GEMM down (M=2048 chunk)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k (position-independent)",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "as above",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-nvfp4-bitexact/bitexact-compute-M2048.ncu-repz",
+   "parsed_from": "results/component-ncu/nvfp4-bitexact-M2048.json",
+   "duration_us": 595.712,
+   "sm_throughput_pct": 75.4,
+   "memory_throughput_pct": 47.05,
+   "dram_throughput_pct": 47.05,
+   "dram_gbps": 421.1929522991,
+   "tensor_inst_hmma_pct_peak_active": 36.76,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 41.08,
+   "l2_hit_rate_pct": 65.35,
+   "achieved_occupancy_pct": 32.86,
+   "theoretical_occupancy_pct": 33.33,
+   "registers_per_thread": 108.0,
+   "shared_mem_per_block_bytes": 38784.0,
+   "waves_per_sm": 58.17,
+   "top_stalls": [
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 6.14,
+     "share_pct": 40.07832898172324
+    },
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 3.03,
+     "share_pct": 19.778067885117494
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.83,
+     "share_pct": 11.945169712793733
+    }
+   ],
+   "roofline_class": "compute-bound",
+   "grid": [
+    16,
+    509,
+    1
+   ],
+   "block": [
+    256,
+    1,
+    1
+   ],
+   "kernel_function": "void bx::fast_gemm<64, 2, 8, 3, 1, 0>(QwenNvfp4Args, int)",
+   "family": "moe_nvfp4_cuda_fast_gemm",
+   "bucket": "moe_experts",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 320,
+    "release_nsys_p50_us": 519.866,
+    "release_block": [
+     256,
+     1,
+     1
+    ],
+    "release_smem": 38784
+   },
+   "release_grid": [
+    16,
+    509,
+    1
+   ]
+  },
+  {
+   "label": "GDN chunk kkt_solve (T=2048)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component suite, released GDN library a8a806 (ABI 2), non-FLA path",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-gdn/fla/run-20261014T102817Z/fla.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-fla-a8a806.json",
+   "duration_us": 53.28,
+   "sm_throughput_pct": 47.99,
+   "memory_throughput_pct": 47.99,
+   "dram_throughput_pct": 36.44,
+   "dram_gbps": 325.97237237237,
+   "tensor_inst_hmma_pct_peak_active": 11.69,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 14.66,
+   "l2_hit_rate_pct": 57.72,
+   "achieved_occupancy_pct": 14.95,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 242.0,
+   "shared_mem_per_block_bytes": 7168.0,
+   "waves_per_sm": 1.83,
+   "top_stalls": [
+    {
+     "reason": "short_scoreboard",
+     "cycles_per_issue": 1.54,
+     "share_pct": 26.2350936967632
+    },
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 1.15,
+     "share_pct": 19.59114139693356
+    },
+    {
+     "reason": "selected",
+     "cycles_per_issue": 1.0,
+     "share_pct": 17.035775127768314
+    }
+   ],
+   "roofline_class": "memory-bound (L1/L2/smem)",
+   "grid": [
+    32,
+    32,
+    1
+   ],
+   "block": [
+    32,
+    1,
+    1
+   ],
+   "kernel_function": "chunk_gated_delta_rule_fwd_kkt_solve_kernel",
+   "family": "gdn_chunk_kkt_solve",
+   "bucket": "gdn",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 240,
+    "release_nsys_p50_us": 38.528,
+    "release_block": [
+     32,
+     1,
+     1
+    ],
+    "release_smem": 7168
+   },
+   "release_grid": [
+    32,
+    32,
+    1
+   ]
+  },
+  {
+   "label": "GDN recompute_w_u (T=2048)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released GDN library a8a806",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-gdn/fla/run-20261014T102817Z/fla.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-fla-a8a806.json",
+   "duration_us": 91.872,
+   "sm_throughput_pct": 30.29,
+   "memory_throughput_pct": 79.51,
+   "dram_throughput_pct": 79.51,
+   "dram_gbps": 711.2030651341,
+   "tensor_inst_hmma_pct_peak_active": 24.71,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 13.23,
+   "l2_hit_rate_pct": 15.96,
+   "achieved_occupancy_pct": 23.66,
+   "theoretical_occupancy_pct": 25.0,
+   "registers_per_thread": 163.0,
+   "shared_mem_per_block_bytes": 28672.0,
+   "waves_per_sm": 4.88,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 5.37,
+     "share_pct": 40.80547112462006
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.83,
+     "share_pct": 13.905775075987842
+    },
+    {
+     "reason": "mio_throttle",
+     "cycles_per_issue": 1.53,
+     "share_pct": 11.626139817629179
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    32,
+    32,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "recompute_w_u_fwd_kernel",
+   "family": "gdn_chunk_wu",
+   "bucket": "gdn",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 240,
+    "release_nsys_p50_us": 67.679,
+    "release_block": [
+     128,
+     1,
+     1
+    ],
+    "release_smem": 28672
+   },
+   "release_grid": [
+    32,
+    32,
+    1
+   ]
+  },
+  {
+   "label": "GDN chunk_h state recurrence (T=2048)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released GDN library a8a806",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-gdn/fla/run-20261014T102817Z/fla.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-fla-a8a806.json",
+   "duration_us": 120.608,
+   "sm_throughput_pct": 44.29,
+   "memory_throughput_pct": 84.19,
+   "dram_throughput_pct": 84.19,
+   "dram_gbps": 753.43910851685,
+   "tensor_inst_hmma_pct_peak_active": 22.36,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 1.06,
+   "l2_hit_rate_pct": 57.4,
+   "achieved_occupancy_pct": 15.06,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 168.0,
+   "shared_mem_per_block_bytes": 41220.0,
+   "waves_per_sm": 0.91,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 7.86,
+     "share_pct": 46.04569420035149
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 3.03,
+     "share_pct": 17.75043936731107
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 2.05,
+     "share_pct": 12.009373169302869
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    4,
+    32,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "chunk_gated_delta_rule_fwd_kernel_h_blockdim64",
+   "family": "gdn_chunk_h",
+   "bucket": "gdn",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 240,
+    "release_nsys_p50_us": 132.447,
+    "release_block": [
+     128,
+     1,
+     1
+    ],
+    "release_smem": 45316
+   },
+   "release_grid": [
+    4,
+    32,
+    1
+   ]
+  },
+  {
+   "label": "GDN chunk_o output (T=2048)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released GDN library a8a806",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-gdn/fla/run-20261014T102817Z/fla.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-fla-a8a806.json",
+   "duration_us": 111.872,
+   "sm_throughput_pct": 61.28,
+   "memory_throughput_pct": 84.02,
+   "dram_throughput_pct": 84.02,
+   "dram_gbps": 751.9176201373001,
+   "tensor_inst_hmma_pct_peak_active": 33.73,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 11.08,
+   "l2_hit_rate_pct": 39.38,
+   "achieved_occupancy_pct": 24.1,
+   "theoretical_occupancy_pct": 25.0,
+   "registers_per_thread": 148.0,
+   "shared_mem_per_block_bytes": 18432.0,
+   "waves_per_sm": 9.75,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 6.01,
+     "share_pct": 35.47815820543093
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 4.12,
+     "share_pct": 24.3211334120425
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 1.79,
+     "share_pct": 10.566706021251475
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    2,
+    32,
+    32
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "chunk_fwd_kernel_o",
+   "family": "gdn_chunk_o",
+   "bucket": "gdn",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 240,
+    "release_nsys_p50_us": 97.983,
+    "release_block": [
+     128,
+     1,
+     1
+    ],
+    "release_smem": 18432
+   },
+   "release_grid": [
+    2,
+    32,
+    32
+   ]
+  },
+  {
+   "label": "GDN conv_qkv (T=4096 in bench; release T=2048 grid [8,129,1])",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "earlier GDN build (pre ABI-2) of the same kernel",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-gdn/run-20261014T075357Z/gdn-components.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-components-075357.json",
+   "duration_us": 197.184,
+   "sm_throughput_pct": 35.55,
+   "memory_throughput_pct": 75.5,
+   "dram_throughput_pct": 75.5,
+   "dram_gbps": 675.75462512171,
+   "tensor_inst_hmma_pct_peak_active": 0.0,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 13.49,
+   "l2_hit_rate_pct": 14.36,
+   "achieved_occupancy_pct": 26.13,
+   "theoretical_occupancy_pct": 33.33,
+   "registers_per_thread": 105.0,
+   "shared_mem_per_block_bytes": 36.0,
+   "waves_per_sm": 7.34,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 2.43,
+     "share_pct": 32.015810276679844
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.87,
+     "share_pct": 24.63768115942029
+    },
+    {
+     "reason": "selected",
+     "cycles_per_issue": 1.0,
+     "share_pct": 13.175230566534914
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    8,
+    257,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "void <unnamed>::gdn_conv_qkv_kernel<16, 4>(<unnamed>::ConvParams)",
+   "family": "gdn_conv_qkv",
+   "bucket": "gdn"
+  },
+  {
+   "label": "GDN gated RMSNorm (T=4096 in bench)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "earlier GDN build",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-gdn/run-20261014T075357Z/gdn-components.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-components-075357.json",
+   "duration_us": 101.952,
+   "sm_throughput_pct": 32.9,
+   "memory_throughput_pct": 85.28,
+   "dram_throughput_pct": 85.28,
+   "dram_gbps": 762.96296296296,
+   "tensor_inst_hmma_pct_peak_active": 0.0,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 18.35,
+   "l2_hit_rate_pct": 0.11,
+   "achieved_occupancy_pct": 84.15,
+   "theoretical_occupancy_pct": 100.0,
+   "registers_per_thread": 40.0,
+   "shared_mem_per_block_bytes": 0,
+   "waves_per_sm": 19.5,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 22.8,
+     "share_pct": 84.50704225352112
+    },
+    {
+     "reason": "selected",
+     "cycles_per_issue": 1.0,
+     "share_pct": 3.7064492216456633
+    },
+    {
+     "reason": "not_selected",
+     "cycles_per_issue": 0.99,
+     "share_pct": 3.669384729429207
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    8192,
+    1,
+    1
+   ],
+   "block": [
+    256,
+    1,
+    1
+   ],
+   "kernel_function": "void <unnamed>::gdn_gated_norm_kernel<16>(<unnamed>::NormParams)",
+   "family": "gdn_gated_norm",
+   "bucket": "gdn"
+  },
+  {
+   "label": "GDN gate cumsum (T=4096 in bench)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "earlier GDN build",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-gdn/run-20261014T075357Z/gdn-components.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-components-075357.json",
+   "duration_us": 10.272,
+   "sm_throughput_pct": 12.54,
+   "memory_throughput_pct": 66.08,
+   "dram_throughput_pct": 17.63,
+   "dram_gbps": 157.43302180685,
+   "tensor_inst_hmma_pct_peak_active": 0.0,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 75.49,
+   "l2_hit_rate_pct": 90.12,
+   "achieved_occupancy_pct": 74.7,
+   "theoretical_occupancy_pct": 100.0,
+   "registers_per_thread": 25.0,
+   "shared_mem_per_block_bytes": 40.0,
+   "waves_per_sm": 1.24,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 18.54,
+     "share_pct": 30.604159788709147
+    },
+    {
+     "reason": "short_scoreboard",
+     "cycles_per_issue": 12.28,
+     "share_pct": 20.270716408055463
+    },
+    {
+     "reason": "mio_throttle",
+     "cycles_per_issue": 8.3,
+     "share_pct": 13.700891383294818
+    }
+   ],
+   "roofline_class": "memory-bound (L1/L2/smem)",
+   "grid": [
+    65,
+    8,
+    1
+   ],
+   "block": [
+    256,
+    1,
+    1
+   ],
+   "kernel_function": "<unnamed>::gdn_gate_cumsum_kernel(<unnamed>::GateParams)",
+   "family": "gdn_gate_cumsum",
+   "bucket": "gdn"
+  },
+  {
+   "label": "GDN decode (cluster variant, M=1)",
+   "phase": "decode",
+   "scenario": "decode_16k+120k (KV-independent)",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "earlier GDN build; same launch config as release ([128,1,1], block 32)",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-gdn/run-20261014T075357Z/gdn-components.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-components-075357.json",
+   "duration_us": 12.096,
+   "sm_throughput_pct": 5.94,
+   "memory_throughput_pct": 25.84,
+   "dram_throughput_pct": 25.84,
+   "dram_gbps": 230.62433862434,
+   "tensor_inst_hmma_pct_peak_active": 0.0,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 12.3,
+   "l2_hit_rate_pct": 54.41,
+   "achieved_occupancy_pct": 3.79,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 209.0,
+   "shared_mem_per_block_bytes": 640.0,
+   "waves_per_sm": 0.23,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 3.85,
+     "share_pct": 41.0010649627263
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 1.24,
+     "share_pct": 13.205537806176784
+    },
+    {
+     "reason": "membar",
+     "cycles_per_issue": 1.19,
+     "share_pct": 12.673056443024493
+    }
+   ],
+   "roofline_class": "latency/occupancy-bound (both SOL < 40%)",
+   "grid": [
+    128,
+    1,
+    1
+   ],
+   "block": [
+    32,
+    1,
+    1
+   ],
+   "kernel_function": "<unnamed>::gdn_decode_cluster_kernel(<unnamed>::DecodeParams)",
+   "family": "gdn_decode_cluster",
+   "bucket": "gdn",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 1890,
+    "release_nsys_p50_us": 9.408,
+    "release_block": [
+     32,
+     1,
+     1
+    ],
+    "release_smem": 640
+   },
+   "release_grid": [
+    128,
+    1,
+    1
+   ]
+  },
+  {
+   "label": "FP8 GEMV QMMA 12288x2048 (GDN in_proj, M=1)",
+   "phase": "decode",
+   "scenario": "decode_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released FP8 GEMV library 685c78cf",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-fp8-gemv/compute-main.ncu-repz",
+   "parsed_from": "results/component-ncu/fp8-gemv-compute-main.json",
+   "duration_us": 35.264,
+   "sm_throughput_pct": 11.02,
+   "memory_throughput_pct": 90.36,
+   "dram_throughput_pct": 90.36,
+   "dram_gbps": 808.15970961887,
+   "tensor_inst_hmma_pct_peak_active": 6.86,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 1.41,
+   "l2_hit_rate_pct": 0.9,
+   "achieved_occupancy_pct": 15.48,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 64.0,
+   "shared_mem_per_block_bytes": 34944.0,
+   "waves_per_sm": 1.37,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 26.84,
+     "share_pct": 84.37598239547313
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.64,
+     "share_pct": 5.1556114429424715
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.4,
+     "share_pct": 4.401131719585036
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    192,
+    1,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "void qwen_fp8::gemv_rowwise_kernel<4, 4, 4, 256, 0>(qwen_fp8::Params)",
+   "family": "fp8_gemv_qmma",
+   "bucket": "fp8_dense",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 1827,
+    "release_nsys_p50_us": 32.991,
+    "release_block": [
+     128,
+     1,
+     1
+    ],
+    "release_smem": 34944
+   },
+   "release_grid": [
+    192,
+    1,
+    1
+   ]
+  },
+  {
+   "label": "FP8 GEMV QMMA 9216x2048 (attention qkv, M=1)",
+   "phase": "decode",
+   "scenario": "decode_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released FP8 GEMV library 685c78cf",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-fp8-gemv/compute-main.ncu-repz",
+   "parsed_from": "results/component-ncu/fp8-gemv-compute-main.json",
+   "duration_us": 28.864,
+   "sm_throughput_pct": 10.1,
+   "memory_throughput_pct": 81.98,
+   "dram_throughput_pct": 81.98,
+   "dram_gbps": 732.4434589800401,
+   "tensor_inst_hmma_pct_peak_active": 5.91,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 1.23,
+   "l2_hit_rate_pct": 1.24,
+   "achieved_occupancy_pct": 16.21,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 64.0,
+   "shared_mem_per_block_bytes": 34944.0,
+   "waves_per_sm": 1.03,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 31.74,
+     "share_pct": 85.85339464430619
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.64,
+     "share_pct": 4.4360292128753045
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.38,
+     "share_pct": 3.7327562888828782
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    144,
+    1,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "void qwen_fp8::gemv_rowwise_kernel<4, 4, 4, 256, 0>(qwen_fp8::Params)",
+   "family": "fp8_gemv_qmma",
+   "bucket": "fp8_dense",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 630,
+    "release_nsys_p50_us": 26.463,
+    "release_block": [
+     128,
+     1,
+     1
+    ],
+    "release_smem": 34944
+   },
+   "release_grid": [
+    144,
+    1,
+    1
+   ]
+  },
+  {
+   "label": "FP8 GEMV QMMA 2048x4096 (out/o-proj shape; NOT used by the release: release runs this projection on cuBLAS xmma + split-K reduce)",
+   "phase": "decode",
+   "scenario": "lever evidence",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released FP8 GEMV library 685c78cf",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-fp8-gemv/compute-main.ncu-repz",
+   "parsed_from": "results/component-ncu/fp8-gemv-compute-main.json",
+   "duration_us": 13.568,
+   "sm_throughput_pct": 9.46,
+   "memory_throughput_pct": 70.76,
+   "dram_throughput_pct": 70.76,
+   "dram_gbps": 631.9056603773599,
+   "tensor_inst_hmma_pct_peak_active": 11.9,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 0.22,
+   "l2_hit_rate_pct": 2.16,
+   "achieved_occupancy_pct": 8.24,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 64.0,
+   "shared_mem_per_block_bytes": 36992.0,
+   "waves_per_sm": 0.23,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 5.97,
+     "share_pct": 56.80304471931494
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.7,
+     "share_pct": 16.175071360608943
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.21,
+     "share_pct": 11.512844909609896
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    32,
+    1,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "void qwen_fp8::gemv_rowwise_kernel<4, 4, 4, 256, 0>(qwen_fp8::Params)",
+   "family": "fp8_gemv_qmma",
+   "bucket": "fp8_dense"
+  },
+  {
+   "label": "Triton NVFP4 MoE prefill gate_up M=2048 (pre-release path; release uses it only for <512-token remainder chunks)",
+   "phase": "prefill",
+   "scenario": "reference (replaced)",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "replaced by fast_gemm for full chunks",
+   "release_library_match": "n/a",
+   "report": "<native-harness>/private-cuda-nvfp4-bitexact/bitexact-compute-M2048.ncu-repz",
+   "parsed_from": "results/component-ncu/nvfp4-bitexact-M2048.json",
+   "duration_us": 10228.032,
+   "sm_throughput_pct": 23.42,
+   "memory_throughput_pct": 94.07,
+   "dram_throughput_pct": 9.02,
+   "dram_gbps": 70.19706782302,
+   "tensor_inst_hmma_pct_peak_active": 5.53,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 90.0,
+   "l2_hit_rate_pct": 79.09,
+   "achieved_occupancy_pct": 66.27,
+   "theoretical_occupancy_pct": 66.67,
+   "registers_per_thread": 64.0,
+   "shared_mem_per_block_bytes": 22528.0,
+   "waves_per_sm": 43.49,
+   "top_stalls": [
+    {
+     "reason": "mio_throttle",
+     "cycles_per_issue": 20.02,
+     "share_pct": 34.96943231441048
+    },
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 10.87,
+     "share_pct": 18.986899563318776
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 10.06,
+     "share_pct": 17.572052401746724
+    }
+   ],
+   "roofline_class": "memory-bound (L1/L2/smem)",
+   "grid": [
+    12176,
+    1,
+    1
+   ],
+   "block": [
+    256,
+    1,
+    1
+   ],
+   "kernel_function": "_prefill_nvfp4_moe_kernel",
+   "family": "moe_nvfp4_triton_prefill",
+   "bucket": "moe_experts"
+  },
+  {
+   "label": "decode gather TMA, 1 missing expert (1.78 MB) per launch",
+   "phase": "decode",
+   "scenario": "decode_16k+120k (KV-independent; cost = misses)",
+   "provenance": "component-level ncu (wf-gather workflow; .shared::cluster build before the .shared::cta VRAM fix, which reported unchanged speed)",
+   "release_library_match": "predecessor build",
+   "report": "work/wf-gather/results/ncu-summary.json#b1-tma_8c3s16k-n1",
+   "kernel_function": "decode_gather_tma_kernel",
+   "family": "decode_gather_tma",
+   "bucket": "decode_gather",
+   "grid": [
+    8,
+    1,
+    1
+   ],
+   "block": [
+    32,
+    1,
+    1
+   ],
+   "duration_us": 59.52,
+   "sm_throughput_pct": 0.381191,
+   "dram_throughput_pct": 0.593062,
+   "sysmem_fill_pct_of_peak": 21.051378,
+   "pcie_read_gbps_under_ncu": 29.974193548387095,
+   "l1tex_hit_rate_pct": 73.913043,
+   "l2_hit_rate_pct": 3.427969,
+   "registers_per_thread": 46.0,
+   "warps_active_per_cycle": 1.0,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 7.331907
+    }
+   ],
+   "roofline_class": "PCIe/system-memory latency-bound (1 warp per CTA, 8 CTAs; ~30-33 GB/s of ~63 GB/s PCIe 5.0 x16)",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 2520,
+    "release_nsys_p50_us": 1.408,
+    "release_block": [
+     32,
+     1,
+     1
+    ],
+    "release_smem": 49408
+   }
+  },
+  {
+   "label": "decode gather TMA, 4 missing experts per launch",
+   "phase": "decode",
+   "scenario": "decode_16k+120k (KV-independent; cost = misses)",
+   "provenance": "component-level ncu (wf-gather workflow; .shared::cluster build before the .shared::cta VRAM fix, which reported unchanged speed)",
+   "release_library_match": "predecessor build",
+   "report": "work/wf-gather/results/ncu-summary.json#b1-tma_8c3s16k-n4",
+   "kernel_function": "decode_gather_tma_kernel",
+   "family": "decode_gather_tma",
+   "bucket": "decode_gather",
+   "grid": [
+    8,
+    1,
+    1
+   ],
+   "block": [
+    32,
+    1,
+    1
+   ],
+   "duration_us": 214.496,
+   "sm_throughput_pct": 0.405015,
+   "dram_throughput_pct": 3.6507,
+   "sysmem_fill_pct_of_peak": 23.324906,
+   "pcie_read_gbps_under_ncu": 33.237654781441144,
+   "l1tex_hit_rate_pct": 92.307692,
+   "l2_hit_rate_pct": 13.78796,
+   "registers_per_thread": 46.0,
+   "warps_active_per_cycle": 1.0,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 7.29712
+    }
+   ],
+   "roofline_class": "PCIe/system-memory latency-bound (1 warp per CTA, 8 CTAs; ~30-33 GB/s of ~63 GB/s PCIe 5.0 x16)",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 2520,
+    "release_nsys_p50_us": 1.408,
+    "release_block": [
+     32,
+     1,
+     1
+    ],
+    "release_smem": 49408
+   }
+  }
+ ],
+ "not_run_component_ncu": [
+  "MoE decode NVFP4 marlin (2 configs) and gemv_splitk",
+  "lm_head NVFP4 GEMV (decode) / GEMM (prefill)",
+  "cuBLAS FP8 xmma (decode out/o-proj) + split-K reduce",
+  "CUTLASS/nvjet FP8 GEMMs at M=2048 (prefill dense)",
+  "FlashInfer/cute-dsl RMSNorm kernels, moe_sum_reduce, router, LRU metadata",
+  "FlashInfer decode attention at KV 16K (64K used as nearest)"
+ ]
+}

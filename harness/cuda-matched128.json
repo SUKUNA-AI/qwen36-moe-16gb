@@ -1,0 +1,1 @@
+{"context":131072,"chunk":4096,"memory_ratio":0.73,"flags":[],"env":{"QWEN36_NVFP4_PREFILL":"cuda","QWEN36_PREFIX_MARGIN":"8","QWEN36_CUDA_NVFP4_LIBRARY":"/home/USER/qwen36-api/optimization/build/libqwen_nvfp4_matched.so"}}

@@ -1,0 +1,78 @@
+{
+ "task": "FLA fused CUDA path (QWEN36_CUDA_GDN_FLA=wu): why no model-level gain; 2-CTA dedup feasibility; .shared::cta fix for experimental bulk-copy sources",
+ "date_utc": "2026-10-14",
+ "task_a": {
+  "verdict": "NOT a defect. The fused path is taken on every full chunk and removes exactly its kernel time from the (GPU-bound) critical path. The gain is small by Amdahl and was below the resolution of the 3-round r2 A/B.",
+  "capture": {
+   "session": "one GPU session 19:25:23-19:31:04Z (5 min 41 s), both arms, release config main-release (sha 60763d5e) +/- QWEN36_CUDA_GDN_FLA=wu, nsys --trace=cuda,nvtx, timings under profiler = structure only",
+   "reports": ["$N/reports/model-final-fla-on-20261014T192523Z.{nsys-rep,sqlite,run-receipt.json,profile-receipt.json}",
+               "$N/reports/model-final-fla-off-20261014T192811Z.{nsys-rep,sqlite,run-receipt.json,profile-receipt.json}"],
+   "requests": "warmup_short 278 tok, warmup_chunk 3606, warmup_16k 16406, fresh_16k 16405, fresh_120k 120022 (all status 200, 4 output tokens, no cache hit), filler cut by capture end",
+   "analysis": "results/nsys-fla-on.json, results/nsys-fla-off.json, results/nsys-compare.json (scripts/fla_nsys.py, scripts/compare_arms.py)"
+  },
+  "fresh_16k_9_chunks": {
+   "gpu_window_ms": {"off": 1419.6, "on": 1376.6, "delta": -43.1, "ratio": 0.970},
+   "compute_stream_busy_ms": {"off": 1310.7, "on": 1279.3, "delta": -31.4},
+   "gdn_core_ms (kkt+wu+h+o | kkt+fused)": {"off": 89.5, "on": 57.0, "delta": -32.6, "share_of_window_off": 0.063},
+   "non_gdn_core_busy_ms": {"off": 1221.2, "on": 1222.3},
+   "fused_calls": "240 of 270 (30 = 21-token tail chunk, T<=32 -> Triton fallback by design, 0.4 ms total)",
+   "second_16k_prefill_same_server": {"window_off": 1425.5, "window_on": 1406.2, "core_delta_ms": -30.8}
+  },
+  "fresh_120k_59_chunks": {
+   "gpu_window_ms": {"off": 21847.2, "on": 21653.2, "delta": -194.0, "ratio": 0.991},
+   "compute_stream_busy_ms": {"off": 21497.5, "on": 21310.9, "delta": -186.6},
+   "gdn_core_ms": {"off": 617.0, "on": 407.4, "delta": -209.6, "share_of_window_off": 0.028},
+   "non_gdn_core_busy_ms": {"off": 20880.6, "on": 20903.6},
+   "fused_calls": "1770 of 1770 (1740 x T=2048 + 30 x T=1238)"
+  },
+  "per_call_in_model_T2048_median_us": {
+   "off": {"kkt_solve": 39.0, "recompute_w_u": 64.9, "chunk_h": 125.8, "chunk_o": 95.8, "sum": 325.5},
+   "on": {"kkt_solve": 38.8, "chunk_wu_ho_fused": 176.3, "sum": 215.1},
+   "speedup": 1.51,
+   "note": "component bench (no profiler) had 325 -> 185 us (x1.76): in the model the fused kernel is ~176 us instead of ~147 us, so the saving per call is ~110 us, not ~140 us"
+  },
+  "checks": {
+   "T_per_GDN_call": "one 2048-token chunk per call (kkt grid.x = 32 sub-chunks): layer-major runs for layer: for chunk: with the scheduler chunk boundaries; attention batching (k=2) groups only the 10 full-attention layers, GDN stays per chunk",
+   "fla_supported": "B=1 varlen (single prompt), Hg16/H32/K128/V128, FP32 pool, contiguous, aligned: all true; T<=32 only for the 16K tail",
+   "snapshot_track": "every chunk >= 72 tokens has a track boundary ((extend-8)//64 >= 1) and QWEN36_FP32_GDN_SNAPSHOT=1, so the fused kernel's FP32 snapshot path is used (BF16-track fallback never triggers in the release config)",
+   "has_empty_sequence": "never true (B=1); cached per cu_seqlens object, same as the base path",
+   "host_syncs": "identical in both arms: 16K 74 cudaEventSynchronize + 38 cudaStreamSynchronize, 120K 474 + 236; no extra sync/alloc per call (prepare_chunk_indices/offsets and has_empty_sequence hit the window tensor cache after layer 0; the base path calls the same helpers)",
+   "launches_per_gdn_task": {"off": 34, "on": 32},
+   "host_vs_gpu_per_gdn_task_ms_median": {"off": [1.42, 3.17], "on": [1.27, 3.07], "meaning": "host issue time < GPU time: GPU-bound, launch overhead hidden"},
+   "kkt_solve": "still Triton, 38.8 us/call = 18% of the remaining core time (upper bound of fusing it: 69 ms at 120K, 0.3%)",
+   "critical_path": "compute stream busy 92% (16K) / 98.4% (120K) of the window; H2D 18.25 GB per prompt, copy engine busy 0.50 s, overlapped (compute idle waiting on dependencies 63-67 ms at 16K, 232-245 ms at 120K, unchanged by FLA). GDN kernels are ON the critical path; nothing hides the saving.",
+   "where_the_time_is_off_arm": {"16k": "NVFP4 MoE fast_gemm 39.5%, FlashInfer prefill 20.6%, cutlass FP8 dense 13.5%, GDN core 6.8%",
+                                 "120k": "FlashInfer prefill 66.3%, NVFP4 MoE fast_gemm 17.5%, cutlass FP8 dense 5.8%, GDN core 2.9%"}
+  },
+  "expected_unprofiled_ttft_gain": {"16k": "-2.2..-3.0%", "64k": "~-1.2% (est. 960 calls x 110 us)", "120k": "-0.9%"},
+  "why_r2_ab_missed_it": {
+   "r2_prefill_gpu_ms_FLA_over_attn_per_round": {"16k": [1.188, 1.108, 0.999], "64k": [1.051, 0.972, 0.997], "120k": [1.063, 0.999, 1.022]},
+   "paired_sd": {"16k": 0.095, "64k": 0.040, "120k": 0.032},
+   "minimum_detectable_effect_with_3_pairs (t df=2, power 0.8)": {"16k": "~29%", "120k": "~10%"},
+   "pairs_needed_for_true_effect": {"16k (-3%)": 79, "120k (-0.9%)": 99},
+   "noise_source": "between server instances: the same release config gave a 16K prefill window of 1529 ms in the 17:24Z nsight-final capture vs 1420 ms here (+7.7%); within one server the two 16K prefills differ <= 2%. The attention-batched arms (r2-attn, FLA) were also 8-12% spread vs 0.8% for r2-base at 120K."
+  },
+  "ab_run": "NOT_RUN by design: the profile shows no fix to test (no fallback, no extra sync/alloc, saving fully on the critical path)",
+  "harness_finding": "profile-request.py run treats /v1/models 200 as ready; that answers before the engine is up, so the first request got 503 (attempt 17:35Z, receipt model-final-fla-on-20261014T173558Z.run-receipt.json, no capture; unit stopped by me). final-profile-example.sh would then wait forever for the capture end. Fix used here: check-experiment.py 420 (/health) before profile-request.py run."
+ },
+ "task_b": {
+  "verdict": "not worth it now (prototype not built)",
+  "dedup_math": "fused wu kernel: 360 HMMA m16n8k16 per chunk per warp; the two V-block CTAs of a head both compute w = A_wy.kb (64/warp) and A = q.k^T (40/warp), 104/360 duplicated -> 2-CTA cluster split saves 52/360 = 14.4% HMMA",
+  "upper_bound_gain": "if the kernel were HMMA-throughput bound: 0.144 x 176 us = 25 us/call -> 6 ms at 16K (0.4%), 44 ms at 120K (0.2%); it is more likely latency bound (4 warps, 1 CTA/SM, 4 CTA barriers per chunk, sequential 32-chunk recurrence), and the pair would add a cluster barrier per chunk",
+  "feasibility": "bit-exact is possible (each w/Ag element keeps its own mma chain; the peer reads the bf16 bytes via mapa + ld.shared::cluster). Must NOT use cp.async.bulk.shared::cluster (driver syscall, +1.37 GiB stack, see task C).",
+  "better_targets": "FlashInfer prefill (66% of the 120K window) and the NVFP4 MoE GEMM (40% at 16K); after FLA the whole GDN core is 4.1% (16K) / 1.9% (120K)"
+ },
+ "task_c": {
+  "verdict": "PASS (compile only, no GPU run)",
+  "patches": {
+   "taskc/qfa-prefill-shared-cta.patch": "8e81ba85c69d24754bdf7841bf9f561200aa48b1115fc0fdf85c6dcb60625b2b (11 files cuda-attention/src/qfa_prefill*.cu)",
+   "taskc/dp_common-shared-cta.patch": "f9e643abecf03c3b9a0adfe137ea6a7d9623f7f0f8e8150488d3638b5374c081",
+   "taskc/pcie_bench-shared-cta.patch": "8a04db525ea95ed22c746132ddf369d9c8c4ae9a029e24afbbf5b22b4704abb9 (CRLF preserved)"
+  },
+  "apply": "git apply -p1 from work/ (checked)",
+  "change": "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes -> cp.async.bulk.shared::cta.global... (destination is always the executing CTA's own smem; no mapa/multicast users)",
+  "verification": "taskc/verify-build.out: nvcc 13.4, same flags as each build script; before: __cuda_syscall refs 3-5 and CALL.ABS 2-15 in qfa_prefill v1-v5, decode_prefetch_bench, pcie_bench; after: 0 syscall refs, 0 CALL.ABS, UBLKCP count unchanged; qfa_prefill_v5 stack frame 416 -> 8 B. v6/v7* define bulk_g2s but never call it (0 bulk ops either way, latent fix only)."
+ },
+ "native_config_files_created (new names only)": ["$N/config/profile-final-fla-on.json (3f9b6ecc)", "$N/config/profile-final-fla-off.json (4d13cbcf)", "$N/config/fla-release-wu.json (96fe8521, A/B arm, unused)"],
+ "NOT_RUN": ["paired TTFT A/B (no fix suggested)", "Task B prototype", "Task C GPU run"]
+}

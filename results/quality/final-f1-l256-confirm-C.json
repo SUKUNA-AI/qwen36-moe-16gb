@@ -1,0 +1,58 @@
+{
+ "profile": "teacher-long256-release",
+ "run_id": "c3ba879423eb423b94ffe97b85aadfcb",
+ "cases": [
+  "long-120000"
+ ],
+ "requests": [
+  {
+   "case": "long-120000",
+   "status": 200,
+   "usage": {
+    "prompt_tokens": 120076,
+    "completion_tokens": 38,
+    "total_tokens": 120114
+   },
+   "forced_text_matches": true
+  }
+ ],
+ "vs_teacher_bf128": [
+  {
+   "case": "long-120000",
+   "first_nll_diff_position": null,
+   "mean_nll_delta": 0.0,
+   "logit_comparisons": [
+    {
+     "position": 0,
+     "max_abs": 0.0,
+     "relative_l2": 0.0,
+     "finite": true
+    },
+    {
+     "position": 8,
+     "max_abs": 0.0,
+     "relative_l2": 0.0,
+     "finite": true
+    },
+    {
+     "position": 16,
+     "max_abs": 0.0,
+     "relative_l2": 0.0,
+     "finite": true
+    },
+    {
+     "position": 24,
+     "max_abs": 0.0,
+     "relative_l2": 0.0,
+     "finite": true
+    },
+    {
+     "position": 32,
+     "max_abs": 0.0,
+     "relative_l2": 0.0,
+     "finite": true
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,25 @@
+[Unit]
+Description=Qwen3.6-35B-A3B guarded FreeToken API (local only)
+After=network-online.target
+StartLimitIntervalSec=900
+StartLimitBurst=3
+
+[Service]
+Type=simple
+WorkingDirectory=/home/USER/qwen36-api
+EnvironmentFile=/home/USER/qwen36-api/secrets/api.env
+EnvironmentFile=-/home/USER/qwen36-api/config/runtime.env
+ExecStart=/home/USER/qwen36-api/start-inference.sh
+Restart=always
+RestartSec=20
+TimeoutStopSec=30
+KillMode=control-group
+UMask=0077
+MemoryHigh=32G
+MemoryMax=36G
+MemorySwapMax=0
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,22 @@
+{
+  "pass": true,
+  "failures": [],
+  "runs": 160,
+  "taxonomy_primary": {
+    "protocol_or_transport": 29,
+    "no_call_when_required": 13,
+    "malformed_args": 13,
+    "wrong_tool": 13,
+    "loop_or_too_many_calls": 12,
+    "wrong_args": 1
+  },
+  "unsupported_400": {
+    "k": 14,
+    "n": 14,
+    "rate": 1.0,
+    "wilson95": [
+      0.7847,
+      1.0
+    ]
+  }
+}

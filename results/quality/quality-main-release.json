@@ -1,0 +1,165 @@
+{
+  "method": "paired cluster bootstrap over 20 fixed cases, 20000 resamples, equal token weights",
+  "baseline": "teacher-bf128",
+  "candidate": "teacher-main-release",
+  "tokens": 943,
+  "baseline_perplexity": 3.1764021796879747,
+  "relative_perplexity_growth": 0.0,
+  "relative_growth_ci95": [
+    0.0,
+    0.0
+  ],
+  "rows": [
+    {
+      "case": "code-0",
+      "tokens": 85,
+      "baseline_sum": 15.721363067626953,
+      "candidate_sum": 15.721363067626953,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "code-1",
+      "tokens": 87,
+      "baseline_sum": 19.266801834106445,
+      "candidate_sum": 19.266801834106445,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "code-2",
+      "tokens": 36,
+      "baseline_sum": 29.861759185791016,
+      "candidate_sum": 29.861759185791016,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "code-3",
+      "tokens": 48,
+      "baseline_sum": 26.157020568847656,
+      "candidate_sum": 26.157020568847656,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "code-4",
+      "tokens": 41,
+      "baseline_sum": 19.259157180786133,
+      "candidate_sum": 19.259157180786133,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "code-5",
+      "tokens": 42,
+      "baseline_sum": 15.806051254272461,
+      "candidate_sum": 15.806051254272461,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "json-0",
+      "tokens": 24,
+      "baseline_sum": 20.67816162109375,
+      "candidate_sum": 20.67816162109375,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "json-1",
+      "tokens": 23,
+      "baseline_sum": 20.68010902404785,
+      "candidate_sum": 20.68010902404785,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "json-2",
+      "tokens": 23,
+      "baseline_sum": 22.1090087890625,
+      "candidate_sum": 22.1090087890625,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "json-3",
+      "tokens": 23,
+      "baseline_sum": 21.148418426513672,
+      "candidate_sum": 21.148418426513672,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "long-120000",
+      "tokens": 38,
+      "baseline_sum": 25.338027954101562,
+      "candidate_sum": 25.338027954101562,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "long-16384",
+      "tokens": 38,
+      "baseline_sum": 23.89746856689453,
+      "candidate_sum": 23.89746856689453,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "long-4096",
+      "tokens": 38,
+      "baseline_sum": 23.792707443237305,
+      "candidate_sum": 23.792707443237305,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "long-65536",
+      "tokens": 38,
+      "baseline_sum": 26.134117126464844,
+      "candidate_sum": 26.134117126464844,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "ru-0",
+      "tokens": 65,
+      "baseline_sum": 103.30401802062988,
+      "candidate_sum": 103.30401802062988,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "ru-1",
+      "tokens": 55,
+      "baseline_sum": 106.63794326782227,
+      "candidate_sum": 106.63794326782227,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "ru-2",
+      "tokens": 58,
+      "baseline_sum": 79.43383979797363,
+      "candidate_sum": 79.43383979797363,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "ru-3",
+      "tokens": 64,
+      "baseline_sum": 161.05679893493652,
+      "candidate_sum": 161.05679893493652,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "ru-4",
+      "tokens": 65,
+      "baseline_sum": 191.99586486816406,
+      "candidate_sum": 191.99586486816406,
+      "mean_nll_delta": 0.0
+    },
+    {
+      "case": "ru-5",
+      "tokens": 52,
+      "baseline_sum": 137.59282684326172,
+      "candidate_sum": 137.59282684326172,
+      "mean_nll_delta": 0.0
+    }
+  ],
+  "ppl_gate_pass": true,
+  "logit_comparisons": {
+    "expected": 125,
+    "observed": 125,
+    "finite_and_complete": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+  },
+  "forced_targets_complete": true,
+  "new_functional_failures": [],
+  "quality_gate_pass": true
+}

@@ -1,0 +1,44 @@
+{
+ "main128": {
+  "run": {
+   "equal": true,
+   "diff": {}
+  },
+  "teacher": {
+   "equal": true,
+   "diff": {}
+  }
+ },
+ "long256": {
+  "run": {
+   "equal": true,
+   "diff": {}
+  },
+  "teacher": {
+   "equal": true,
+   "diff": {}
+  }
+ },
+ "baseline64": {
+  "run": {
+   "equal": true,
+   "diff": {}
+  }
+ },
+ "required_kernel_modules": {
+  "got": [],
+  "expected": []
+ },
+ "required_libraries": [
+  "release/lib/libqwen36_gdn.so",
+  "release/lib/libqwen_attention_gate.so",
+  "release/lib/libqwen_fp8_gemv.so",
+  "release/lib/libqwen_nvfp4_bitexact.so"
+ ],
+ "canonical_sha256": {
+  "baseline64": "982cd95851eaa86e69394ab17337c414c3c098df8006392d2fb6a634baca7662",
+  "main128": "c2094523e77fbc0a4072545e3ab7c7aac89b59cf8a3d5afc3fbbda2823000562",
+  "long256": "a348de2bc63394a0caf56a0dc419e0bf768f2c80d5fd17bc72aaa4f08b0f13dd"
+ },
+ "pass": true
+}

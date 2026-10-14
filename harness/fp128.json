@@ -1,0 +1,1 @@
+{"context":131072,"chunk":2048,"flags":[],"env":{"QWEN36_KV_DTYPE":"fp8","QWEN36_KV_SCALES":"/home/USER/qwen36-api/optimization/reports/kv-scales.json"}}

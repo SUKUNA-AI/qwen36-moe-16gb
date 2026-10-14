@@ -1,0 +1,117 @@
+{
+  "head_dim": 256,
+  "rotary_dim": 64,
+  "rms_norm_eps": 1e-06,
+  "layers": {
+    "11": {
+      "tensor": "model.language_model.layers.11.self_attn.k_norm.weight",
+      "max_abs_gain": 2.1875,
+      "k_abs_hard_bound": 35.0,
+      "calibrated_amax_k": 16.625,
+      "fp8_k_clip_threshold": 19.95,
+      "bound_over_clip": 1.7543859649122808,
+      "gain_p99": 1.8351562023162842,
+      "gain_median": 1.5
+    },
+    "15": {
+      "tensor": "model.language_model.layers.15.self_attn.k_norm.weight",
+      "max_abs_gain": 2.46875,
+      "k_abs_hard_bound": 39.5,
+      "calibrated_amax_k": 19.875,
+      "fp8_k_clip_threshold": 23.849999999999998,
+      "bound_over_clip": 1.6561844863731658,
+      "gain_p99": 1.8617184162139893,
+      "gain_median": 1.546875
+    },
+    "19": {
+      "tensor": "model.language_model.layers.19.self_attn.k_norm.weight",
+      "max_abs_gain": 2.59375,
+      "k_abs_hard_bound": 41.5,
+      "calibrated_amax_k": 13.1875,
+      "fp8_k_clip_threshold": 15.825,
+      "bound_over_clip": 2.622432859399684,
+      "gain_p99": 1.8976562023162842,
+      "gain_median": 1.5546875
+    },
+    "23": {
+      "tensor": "model.language_model.layers.23.self_attn.k_norm.weight",
+      "max_abs_gain": 2.25,
+      "k_abs_hard_bound": 36.0,
+      "calibrated_amax_k": 17.125,
+      "fp8_k_clip_threshold": 20.55,
+      "bound_over_clip": 1.751824817518248,
+      "gain_p99": 2.0765624046325684,
+      "gain_median": 1.578125
+    },
+    "27": {
+      "tensor": "model.language_model.layers.27.self_attn.k_norm.weight",
+      "max_abs_gain": 2.671875,
+      "k_abs_hard_bound": 42.75,
+      "calibrated_amax_k": 16.875,
+      "fp8_k_clip_threshold": 20.25,
+      "bound_over_clip": 2.111111111111111,
+      "gain_p99": 1.9046874046325684,
+      "gain_median": 1.5625
+    },
+    "3": {
+      "tensor": "model.language_model.layers.3.self_attn.k_norm.weight",
+      "max_abs_gain": 2.125,
+      "k_abs_hard_bound": 34.0,
+      "calibrated_amax_k": 12.875,
+      "fp8_k_clip_threshold": 15.449999999999998,
+      "bound_over_clip": 2.200647249190939,
+      "gain_p99": 1.7328124046325684,
+      "gain_median": 1.3203125
+    },
+    "31": {
+      "tensor": "model.language_model.layers.31.self_attn.k_norm.weight",
+      "max_abs_gain": 2.796875,
+      "k_abs_hard_bound": 44.75,
+      "calibrated_amax_k": 17.5,
+      "fp8_k_clip_threshold": 21.0,
+      "bound_over_clip": 2.130952380952381,
+      "gain_p99": 2.0214834213256836,
+      "gain_median": 1.5390625
+    },
+    "35": {
+      "tensor": "model.language_model.layers.35.self_attn.k_norm.weight",
+      "max_abs_gain": 2.875,
+      "k_abs_hard_bound": 46.0,
+      "calibrated_amax_k": 13.625,
+      "fp8_k_clip_threshold": 16.349999999999998,
+      "bound_over_clip": 2.813455657492355,
+      "gain_p99": 2.1617186069488525,
+      "gain_median": 1.5625
+    },
+    "39": {
+      "tensor": "model.language_model.layers.39.self_attn.k_norm.weight",
+      "max_abs_gain": 2.34375,
+      "k_abs_hard_bound": 37.5,
+      "calibrated_amax_k": 17.25,
+      "fp8_k_clip_threshold": 20.7,
+      "bound_over_clip": 1.8115942028985508,
+      "gain_p99": 2.066406011581421,
+      "gain_median": 1.3671875
+    },
+    "7": {
+      "tensor": "model.language_model.layers.7.self_attn.k_norm.weight",
+      "max_abs_gain": 2.234375,
+      "k_abs_hard_bound": 35.75,
+      "calibrated_amax_k": 17.75,
+      "fp8_k_clip_threshold": 21.3,
+      "bound_over_clip": 1.6784037558685445,
+      "gain_p99": 1.9066404104232788,
+      "gain_median": 1.4140625
+    },
+    "0": {
+      "tensor": "mtp.layers.0.self_attn.k_norm.weight",
+      "max_abs_gain": 2.8125,
+      "k_abs_hard_bound": 45.0,
+      "calibrated_amax_k": null,
+      "fp8_k_clip_threshold": null,
+      "bound_over_clip": null,
+      "gain_p99": 2.6062498092651367,
+      "gain_median": 1.703125
+    }
+  }
+}

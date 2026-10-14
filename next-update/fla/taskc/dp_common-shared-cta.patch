@@ -1,0 +1,11 @@
+--- a/cuda-decode-prefetch/src/dp_common.cuh
++++ b/cuda-decode-prefetch/src/dp_common.cuh
+@@ -159,7 +159,7 @@
+ // Bulk (TMA 1-D) global -> shared, completion signalled on an mbarrier (complete_tx).
+ __device__ __forceinline__ void bulk_g2s(void* smem_dst, const void* gmem_src, uint32_t bytes, uint64_t* bar) {
+     asm volatile(
+-        "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];"
++        "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];"
+         :: "r"(smem_u32(smem_dst)), "l"(to_global(gmem_src)), "r"(bytes), "r"(smem_u32(bar))
+         : "memory");
+ }

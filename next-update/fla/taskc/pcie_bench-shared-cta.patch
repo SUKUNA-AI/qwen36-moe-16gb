@@ -1,0 +1,11 @@
+--- a/pcie-transfer/pcie_bench.cu
++++ b/pcie-transfer/pcie_bench.cu
+@@ -237,7 +237,7 @@
+         const uint32_t bytes = uint32_t(min(CHUNK, ent[e].bytes - off));
+         mbar_expect(&bars[s], bytes);
+         asm volatile(
+-            "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];" ::"r"(
++            "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];" ::"r"(
+                 smem_u32(smem + size_t(s) * CHUNK)),
+             "l"(to_global(ent[e].src + off)), "r"(bytes), "r"(smem_u32(&bars[s]))
+             : "memory");

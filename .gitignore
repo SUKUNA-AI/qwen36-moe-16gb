@@ -1,0 +1,53 @@
+# ---- owner-specific / private material (kept locally, never published) ----
+/local/
+/config/local.env
+/config/*.local.*
+secrets/
+*.env
+!*.env.example
+!*.example.env
+*.pem
+*.key
+*.crt
+*.p12
+id_*
+known_hosts
+
+# private evaluation data, teacher fixture targets, raw reports with prompts/answers
+/harness/eval-v1/
+/harness/private/
+teacher-fixture*.json
+teacher*.jsonl
+/harness/reports/
+/serving/reports/
+**/raw/
+
+# large profiler traces
+*.nsys-rep
+*.qdrep
+*.sqlite
+*.ncu-rep
+*.ncu-repz
+
+# caches and build outputs
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+*.so
+*.o
+*.a
+*.cubin
+*.fatbin
+jit_cache/
+.triton/
+.cache/
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej

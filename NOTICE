@@ -1,0 +1,12 @@
+qwen36-moe-16gb
+Copyright 2026 qwen36-moe-16gb contributors
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This repository contains a modified copy of FreeToken in freetoken/
+(https://github.com/FlashML-org/FreeToken, Apache License 2.0, upstream base commit
+cac247a860e316e06580d05aeb05f2e647bde214). The upstream license is retained in
+freetoken/LICENSE; the modifications are listed in freetoken/MODIFICATIONS.md.
+
+Model weights are not included. The served checkpoint (nvidia/Qwen3.6-35B-A3B-NVFP4) is
+distributed by its owners under its own license.

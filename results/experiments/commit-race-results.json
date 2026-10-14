@@ -1,0 +1,44 @@
+{
+  "task": "prefill-commit dedup free/re-point vs in-flight overlapped decode step 1",
+  "verdict": "SAFE",
+  "source": "CPU code analysis; native $N/python hash-identical to work/FreeToken-opt for scheduler.py, cache.py, prefill.py, hybrid_radix_cache.py, linear_state_pool.py, fi.py, graph.py, engine.py, layer_major.py x2 (hashcheck.sh)",
+  "invariant": "Every GPU op lands on one of two streams that are chained at every hand-off, so they run in one total order: sched_k on self.stream (after wait @scheduler.py:241) -> B_k on engine stream (waits self.stream @249/253) -> drain_k on self.stream (waits engine @265) -> sched_{k+1}. Frees are CPU bookkeeping. A freed page or slot reaches a new owner only through an op enqueued after the drain, so it runs after every in-flight reader or writer.",
+  "q1_freed_pages_overwritten_before_step1": {
+    "answer": "no",
+    "evidence": [
+      "scheduler.py:74 current stream = self.stream; drain (scheduler.py:266 -> 422 cache_req) runs outside engine_stream_ctx after scheduler.py:265 self.stream.wait_stream(engine.stream)",
+      "cache.py:428 dedup free -> lazy_free_region (scheduler.py:342, cache.py:604-619) appends freed pages to the BACK of free_slots, and _allocate takes from the FRONT (cache.py:639-640). Even an immediate reuse (via eviction) is a page_table write and KV writes enqueued after the drain",
+      "step 1 out_loc (scheduler.py:845) and FlashInfer indices (fi.py:300) are gathered on self.stream BEFORE the drain, so step 1 reads the request's own pages, which are intact. This matches l256 results.json: decode pos1 NLL exactly equal, first diff at pos2, identical across 3 runs",
+      "engine.py:1041 complete_one: at the drain cached_len=P+1, but the dedup range is [old_handle.cached_len, prefix_len) with prefix_len<=L<=P and L page-aligned (cache.py:403-405). Step 1's KV write page (position P) is never freed",
+      "side streams (moe offload_cache/slot_refill/weight_stream/complement) never reference page_table/kv_cache/linear_state_pool (grep moe/: none). Private libs launch on torch current stream (cuda_gdn.py:127.., cuda_kv.py:77, cuda_attention_gate.py:36)",
+      "layer-major path: job.step() on engine stream after wait (scheduler.py:248-250). Final-chunk commit follows the same launch-then-drain pattern. Abort drains via engine/layer_major.py:370-371",
+      "multi-request, prefix hits, cancellations: the prefix-hit node is locked before slot/page alloc (prefill.py:87 before 96/130). In-flight aborts are deferred to the drain (scheduler.py:600-607). The extra overlapped decode step of a finished request writes its freed pages/slot before any reuser in stream order"
+    ]
+  },
+  "q2_page_table_row_mutation": {
+    "answer": "ordered",
+    "evidence": [
+      "page_table is a device tensor (engine.py:430-434). The re-point is a D2D copy_ on self.stream (cache.py:435-437, generic 330-331) issued after scheduler.py:265, so it runs after step 1's indices snapshot (fi.py:300), graph input copy (graph.py:209) and FlashInfer plan copy into capture.indices (graph.py:211 -> fi.py:159), all enqueued earlier",
+      "insert clones the row slice (hybrid_radix_cache.py:101). lazy_free clones before the re-point (cache.py:611)",
+      "step 2 is prepared after the wait at scheduler.py:241, so it sees the canonical row. Pinned plan staging is guarded by last_event.synchronize (fi.py:155-157)"
+    ]
+  },
+  "q3_gdn_state_snapshots": {
+    "answer": "ordered",
+    "evidence": [
+      "commit is zero-copy: the frozen ping-pong slot is donated (cache.py:423-425). The replacement comes from pool.alloc, which is LIFO (linear_state_pool.py:132,177), so a slot freed in the same drain can be reused at once. Its first GPU use (anchor copy cache.py:175 in _forward, COW restore scheduler.py:257) is on the engine stream after the in-flight batch",
+      "decode never touches ping-pong slots. The finish-donate of the live slot counts the in-flight extra step (cached_len after complete_one), so the snapshot matches the final GPU state"
+    ]
+  },
+  "residual_note": "Not a race: overlap step 1 reads the request's own prefix KV while steps 2+ read the canonical KV. Overlap and no-overlap runs therefore legitimately differ at step 1 when dedup fires, so their outputs are not a valid oracle for a stress test.",
+  "gpu_confirmation": {
+    "status": "RUN 2026-10-14 21:23:45-21:30:03 (one GPU session under flock, 6.3 min), source_sha256 04dbae8b... (release tree, unedited)",
+    "method": "env-gated sitecustomize shim (shim/), loaded via PYTHONPATH from new run configs commit-race-{u,p,n} (main-release env + context 16384). The configs were installed into $N/config for the session and removed afterwards. Poison = fill freed KV token slots (10 full-attn layers, bf16) and freed GDN conv+recurrent slots with NaN, on the freeing stream at free time. Oracle = client text sha256 + per-step logit checksums (int32-bit sums, non-finite count, argmax) of every sampled row. 16 sequential greedy requests (ignore_eos, 40 tokens, 38.6K prompt tokens, shared prefixes, multi-turn, layer-major 2-4 chunk prompts). Fresh server per arm.",
+    "proof_active": "P: 23 poison fills over 23925 freed KV tokens (lazy 12242 + direct 11683) and 62 GDN slots. 13 dedup commits (3698 tokens) re-pointed rows, all 13 while the engine stream was still busy with the launched step 1 (stream.query()==False). 640/640 drains overlapped.",
+    "U_vs_P": "BIT-IDENTICAL: 16/16 texts and 640/640 per-step logit checksums equal, 0 non-finite rows -> PASS",
+    "negative_control_N": "N = poison + scheduler.py:265 wait removed (shim recompiles overlap_loop: 4 -> 3 wait_stream). FAILS as expected: 13/16 texts differ. The first logit mismatch is request 2 (A-q1, the first dedup commit, old=1152 -> prefix=1206), decode step 1 = exactly the step launched before the drain. Its prefill row is identical. Logits stayed finite (NaN probably saturated to finite garbage downstream, e.g. by FP8 activation quantization), argmax 7995 -> 226284.",
+    "not_covered": "evict_full churn (0 evictions: the 16K pool never filled); concurrent multi-request batches (the harness pins --max-running-requests 1)",
+    "files": "gpu-results/{U,P,N}/ (client.json, stats-*.json, logits-*.jsonl, journal-excerpt.txt), gpu-results/compare.json, gpu-run.log"
+  },
+  "fix": "none required. Fragility: safety rests on the waits at scheduler.py:241 and 265. Keep the comment at 260-264, or add a unit test asserting the drain runs after self.stream.wait_stream(engine.stream)."
+}

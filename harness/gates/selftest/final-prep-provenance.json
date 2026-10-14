@@ -1,0 +1,1136 @@
+{
+ "schema": 1,
+ "kernel_dir": "/path/to/qwen36-workspace/work/FreeToken-opt/python/freetoken/kernel",
+ "cache_dir": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache",
+ "manifest": {
+  "path": "/path/to/qwen36-workspace/work/FreeToken-opt/python/freetoken/kernel/kernel_cache_manifest.json",
+  "sha256": "4afd6c7580f84a0cf8eee9fed04ec9268d5b87fc1393e91036258f45d22f29df",
+  "basis": {
+   "extension_source": "freetoken-0.1.3 wheel (site-packages/freetoken/kernel/_*.so); same wheel ships the csrc",
+   "freetoken_wheel": "__version__ = \"0.1.3\"",
+   "kernel_cache_record_sha256": "df55749add730baf0780d383ebe3e93af4103d6696489a712dc67860c430a154",
+   "kernel_cache_wheel": "__version__ = \"0.1.3+cu130\"",
+   "kind": "release-pair",
+   "statement": "freetoken_kernel_cache 0.1.3+cu130 and freetoken 0.1.3 are the paired wheels of release commit cac247a860e316e06580d05aeb05f2e647bde214; the installed freetoken wheel's csrc equals git cac247a8 byte-for-byte (LF-normalized); each recorded module's recipe sources equal upstream. The .so files were not rebuilt/reproduced here: the binding is the release pairing, not a reproducible build."
+  }
+ },
+ "modules": [
+  {
+   "name": "freetoken__batch_memcpy",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__batch_memcpy/freetoken__batch_memcpy.so",
+   "so_sha256": "a7c90a9668826369c8734d5c1e9bafdb109775e1062de6fbc2f852f772e82d84",
+   "manifest_so_sha256": "a7c90a9668826369c8734d5c1e9bafdb109775e1062de6fbc2f852f772e82d84",
+   "manifest_recipe_digest": "fb7ab5a9855c5e30380bc33ea1a50928493aa62cf4b02ce46149b9d89706001e",
+   "source_sha256": "fb7ab5a9855c5e30380bc33ea1a50928493aa62cf4b02ce46149b9d89706001e",
+   "sources": {
+    "jit/batch_memcpy.cuh": "1d718e2f6437980d37a01ff9d8819d39e11cd2b92ae5a25063ff1eab6cab4a94"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__decode_gather_tma_8_3_16384",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__decode_gather_tma_8_3_16384/freetoken__decode_gather_tma_8_3_16384.so",
+   "so_sha256": "ad43503a981b02a4a8b15e7ce6e3592bf2f5454512a7748321aa1fc18961a424",
+   "manifest_so_sha256": "ad43503a981b02a4a8b15e7ce6e3592bf2f5454512a7748321aa1fc18961a424",
+   "manifest_recipe_digest": "3a8377b55f3bc6fedb1bad7645860d98e5226b95f7368992674f5af188204441",
+   "source_sha256": "3a8377b55f3bc6fedb1bad7645860d98e5226b95f7368992674f5af188204441",
+   "sources": {
+    "jit/decode_gather.cuh": "549b223d437c13f4b6367de98cd24bc6da99b49f4646a74288ac78e365cc12da"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_102400_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_102400_32_2048_1024_4_1/freetoken__fast_index_copy_102400_32_2048_1024_4_1.so",
+   "so_sha256": "79344e94b05c3066fe2829e7cc447b7545de1a25a245c6f61035604738ff4c3a",
+   "manifest_so_sha256": "79344e94b05c3066fe2829e7cc447b7545de1a25a245c6f61035604738ff4c3a",
+   "manifest_recipe_digest": "5bcec7b9619473697ec9df13aa6284c857be8e2d1a727b26bbc2d2110c769621",
+   "source_sha256": "5bcec7b9619473697ec9df13aa6284c857be8e2d1a727b26bbc2d2110c769621",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_10240_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_10240_32_2048_1024_4_1/freetoken__fast_index_copy_10240_32_2048_1024_4_1.so",
+   "so_sha256": "54e9976f83887b7845b0cfc13f2a0cedcaf6e08b9cbb4eb304b73167d912adda",
+   "manifest_so_sha256": "54e9976f83887b7845b0cfc13f2a0cedcaf6e08b9cbb4eb304b73167d912adda",
+   "manifest_recipe_digest": "d97bb89e095c9022d5188b0bf8cf1ebdb90d25c1f59c953fe723d4e7020e341f",
+   "source_sha256": "d97bb89e095c9022d5188b0bf8cf1ebdb90d25c1f59c953fe723d4e7020e341f",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_1024_8_1024_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_1024_8_1024_1024_4_1/freetoken__fast_index_copy_1024_8_1024_1024_4_1.so",
+   "so_sha256": "de0d7bf28f033d77096391e2fea0aa89af4b2fb6fe029f9e59fad15402033898",
+   "manifest_so_sha256": "de0d7bf28f033d77096391e2fea0aa89af4b2fb6fe029f9e59fad15402033898",
+   "manifest_recipe_digest": "38558eab180ea5de977d2c7ffc129576cb375dd3668b659c36c607ea88c0e41a",
+   "source_sha256": "38558eab180ea5de977d2c7ffc129576cb375dd3668b659c36c607ea88c0e41a",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_1048576_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_1048576_32_2048_1024_4_1/freetoken__fast_index_copy_1048576_32_2048_1024_4_1.so",
+   "so_sha256": "d43819234613aef15dca064d723145e291242dce121754a53bc796f8ab379678",
+   "manifest_so_sha256": "d43819234613aef15dca064d723145e291242dce121754a53bc796f8ab379678",
+   "manifest_recipe_digest": "bf2c60b55a4ab6892cc513c766a94fac5d7b107e73fd9369770ceaab9f08d454",
+   "source_sha256": "bf2c60b55a4ab6892cc513c766a94fac5d7b107e73fd9369770ceaab9f08d454",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_1115136_32_1024_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_1115136_32_1024_1024_4_1/freetoken__fast_index_copy_1115136_32_1024_1024_4_1.so",
+   "so_sha256": "f4db260ad7c79069aa5e392856dff61d5f1457c5acdbda75679a3fb33d94ae09",
+   "manifest_so_sha256": "f4db260ad7c79069aa5e392856dff61d5f1457c5acdbda75679a3fb33d94ae09",
+   "manifest_recipe_digest": "fe38c3cc7c2e8cb1a31ace35d1b678809f9a1fdbf0a98d89dba2f3614b6a3dbc",
+   "source_sha256": "fe38c3cc7c2e8cb1a31ace35d1b678809f9a1fdbf0a98d89dba2f3614b6a3dbc",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_11520_32_256_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_11520_32_256_1024_4_1/freetoken__fast_index_copy_11520_32_256_1024_4_1.so",
+   "so_sha256": "119843aa25f341d44e875e2928397aae545900a6469d643387307052d86a3a58",
+   "manifest_so_sha256": "119843aa25f341d44e875e2928397aae545900a6469d643387307052d86a3a58",
+   "manifest_recipe_digest": "1c50c276e9611ccb7bbb6cc94df6ec03ff6ff9c0f940ebaa1a9aabb07717882a",
+   "source_sha256": "1c50c276e9611ccb7bbb6cc94df6ec03ff6ff9c0f940ebaa1a9aabb07717882a",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_1179648_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_1179648_32_2048_1024_4_1/freetoken__fast_index_copy_1179648_32_2048_1024_4_1.so",
+   "so_sha256": "b49e036c72d4ec90ebbf75e383816703e6f9825690f7c4623561a8c3a2bfdca6",
+   "manifest_so_sha256": "b49e036c72d4ec90ebbf75e383816703e6f9825690f7c4623561a8c3a2bfdca6",
+   "manifest_recipe_digest": "d86dc01d2ae22742603d1622698d24156afe58844c8d48b0dcbb0932d580e97a",
+   "source_sha256": "d86dc01d2ae22742603d1622698d24156afe58844c8d48b0dcbb0932d580e97a",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_12288_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_12288_32_2048_1024_4_1/freetoken__fast_index_copy_12288_32_2048_1024_4_1.so",
+   "so_sha256": "34236023619cbce461357702830d76a6a03bb5dd14c8304e491330210d2a3758",
+   "manifest_so_sha256": "34236023619cbce461357702830d76a6a03bb5dd14c8304e491330210d2a3758",
+   "manifest_recipe_digest": "e95c8baaf27bc3ae7699ee51e07590d4df751b7490c3b444b3b22b880fb71f69",
+   "source_sha256": "e95c8baaf27bc3ae7699ee51e07590d4df751b7490c3b444b3b22b880fb71f69",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_123904_32_1024_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_123904_32_1024_1024_4_1/freetoken__fast_index_copy_123904_32_1024_1024_4_1.so",
+   "so_sha256": "c2af95686c49aa0384c60c6658eb89ee5fe118a8008cb6ef76fd3355f4bebec8",
+   "manifest_so_sha256": "c2af95686c49aa0384c60c6658eb89ee5fe118a8008cb6ef76fd3355f4bebec8",
+   "manifest_recipe_digest": "63256cc54248cbc5c51dd283728db24bf44024d1164582ae9a16f1ceecff595e",
+   "source_sha256": "63256cc54248cbc5c51dd283728db24bf44024d1164582ae9a16f1ceecff595e",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_12582912_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_12582912_32_2048_1024_4_1/freetoken__fast_index_copy_12582912_32_2048_1024_4_1.so",
+   "so_sha256": "ddbb15b7884617f4bfa69ebb2d160672c79e1a40cceca984ea72f8abd7c86c2a",
+   "manifest_so_sha256": "ddbb15b7884617f4bfa69ebb2d160672c79e1a40cceca984ea72f8abd7c86c2a",
+   "manifest_recipe_digest": "ab73f599963cdadbe8ed1d545322a109c6bd2e0230c0e65145307a59186ec2ba",
+   "source_sha256": "ab73f599963cdadbe8ed1d545322a109c6bd2e0230c0e65145307a59186ec2ba",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_128_8_128_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_128_8_128_1024_4_1/freetoken__fast_index_copy_128_8_128_1024_4_1.so",
+   "so_sha256": "e69b0e11df7dba9b748f0e2c7305d6c1d8b27c12ec02758f406001970cc09815",
+   "manifest_so_sha256": "e69b0e11df7dba9b748f0e2c7305d6c1d8b27c12ec02758f406001970cc09815",
+   "manifest_recipe_digest": "7e2268d3583281ddc0ddd8066c8edc10a3b7a7d1b7785bdfcdc2e257100fa732",
+   "source_sha256": "7e2268d3583281ddc0ddd8066c8edc10a3b7a7d1b7785bdfcdc2e257100fa732",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_131072_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_131072_32_2048_1024_4_1/freetoken__fast_index_copy_131072_32_2048_1024_4_1.so",
+   "so_sha256": "f92bee7530ce9f5e0ac49713e52502056ccf3c0cb083685840e8ab38749b9056",
+   "manifest_so_sha256": "f92bee7530ce9f5e0ac49713e52502056ccf3c0cb083685840e8ab38749b9056",
+   "manifest_recipe_digest": "7577e9b850ff71a1192108e74062e2b60f5dbf5c84b891ebece042937b9b27e1",
+   "source_sha256": "7577e9b850ff71a1192108e74062e2b60f5dbf5c84b891ebece042937b9b27e1",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_15728640_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_15728640_32_2048_1024_4_1/freetoken__fast_index_copy_15728640_32_2048_1024_4_1.so",
+   "so_sha256": "fb48724d4e0c0e06afdc940defbe4d9688aaee1cf13ef4dd01dac2136664c601",
+   "manifest_so_sha256": "fb48724d4e0c0e06afdc940defbe4d9688aaee1cf13ef4dd01dac2136664c601",
+   "manifest_recipe_digest": "9cf04c6e4feb1bba416082033315a2bf494da8ddad9d7d38ee9975fbd4818ec2",
+   "source_sha256": "9cf04c6e4feb1bba416082033315a2bf494da8ddad9d7d38ee9975fbd4818ec2",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_1572864_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_1572864_32_2048_1024_4_1/freetoken__fast_index_copy_1572864_32_2048_1024_4_1.so",
+   "so_sha256": "979176f99b3c2258a5616b606d82bee6b286ea8387232f9570ddc43721767fa8",
+   "manifest_so_sha256": "979176f99b3c2258a5616b606d82bee6b286ea8387232f9570ddc43721767fa8",
+   "manifest_recipe_digest": "5be4a5d6d37ef3133a3a6d52e1fb79a7fc771d4919478b5380a785e7e710919d",
+   "source_sha256": "5be4a5d6d37ef3133a3a6d52e1fb79a7fc771d4919478b5380a785e7e710919d",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_1638400_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_1638400_32_2048_1024_4_1/freetoken__fast_index_copy_1638400_32_2048_1024_4_1.so",
+   "so_sha256": "fefd22f653581c46bcccbadf5150d309eb798dadfb1d573db7c146ee806a1391",
+   "manifest_so_sha256": "fefd22f653581c46bcccbadf5150d309eb798dadfb1d573db7c146ee806a1391",
+   "manifest_recipe_digest": "e453eef86d6222221fbbd95af5d289d9b73efb428b46303d1f939e9b077ab07e",
+   "source_sha256": "e453eef86d6222221fbbd95af5d289d9b73efb428b46303d1f939e9b077ab07e",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_16777216_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_16777216_32_2048_1024_4_1/freetoken__fast_index_copy_16777216_32_2048_1024_4_1.so",
+   "so_sha256": "2d5b58a96bd0aca08de7ab1bc674d99496578246332889db07a3fc10f4d39591",
+   "manifest_so_sha256": "2d5b58a96bd0aca08de7ab1bc674d99496578246332889db07a3fc10f4d39591",
+   "manifest_recipe_digest": "54dffd75754ac536d89350b12b1ff32eccc373e351c6abaff9da367c178d6fd0",
+   "source_sha256": "54dffd75754ac536d89350b12b1ff32eccc373e351c6abaff9da367c178d6fd0",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_18874368_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_18874368_32_2048_1024_4_1/freetoken__fast_index_copy_18874368_32_2048_1024_4_1.so",
+   "so_sha256": "0e87d72c965f4bb9de77176d4f256242f8e870b0052e09208b6966641318a18c",
+   "manifest_so_sha256": "0e87d72c965f4bb9de77176d4f256242f8e870b0052e09208b6966641318a18c",
+   "manifest_recipe_digest": "85036c946d8d7762df0c10447adc980562ef38952b7ca099c24b4a11e665b590",
+   "source_sha256": "85036c946d8d7762df0c10447adc980562ef38952b7ca099c24b4a11e665b590",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_1982464_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_1982464_32_2048_1024_4_1/freetoken__fast_index_copy_1982464_32_2048_1024_4_1.so",
+   "so_sha256": "343ef4c90e74965c9041637b627b19248cd9fdd749bf191ce1ee19a0dc9dabf2",
+   "manifest_so_sha256": "343ef4c90e74965c9041637b627b19248cd9fdd749bf191ce1ee19a0dc9dabf2",
+   "manifest_recipe_digest": "f1701f99f95b01f3dbe6e98ae8b22b7e37d26fb628cb3de852794917957566ac",
+   "source_sha256": "f1701f99f95b01f3dbe6e98ae8b22b7e37d26fb628cb3de852794917957566ac",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_204800_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_204800_32_2048_1024_4_1/freetoken__fast_index_copy_204800_32_2048_1024_4_1.so",
+   "so_sha256": "0b37836cb04eb6064102da51fc28dee420e60404fa5e0b254e2f5564c79c377e",
+   "manifest_so_sha256": "0b37836cb04eb6064102da51fc28dee420e60404fa5e0b254e2f5564c79c377e",
+   "manifest_recipe_digest": "98183d18394ab2025fa07b6a87e0078d2d13e82d0391e2393e817058e0ab5d50",
+   "source_sha256": "98183d18394ab2025fa07b6a87e0078d2d13e82d0391e2393e817058e0ab5d50",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_2048_16_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_2048_16_2048_1024_4_1/freetoken__fast_index_copy_2048_16_2048_1024_4_1.so",
+   "so_sha256": "14d5c3f64104bf11feea7ccb2a399ca5ddeadfeaf8093b56da37d41ab3b46283",
+   "manifest_so_sha256": "14d5c3f64104bf11feea7ccb2a399ca5ddeadfeaf8093b56da37d41ab3b46283",
+   "manifest_recipe_digest": "aab27eddf13d68bbe44fa797f0c112bd91f20336050a608061b72d8621d3e713",
+   "source_sha256": "aab27eddf13d68bbe44fa797f0c112bd91f20336050a608061b72d8621d3e713",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_2097152_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_2097152_32_2048_1024_4_1/freetoken__fast_index_copy_2097152_32_2048_1024_4_1.so",
+   "so_sha256": "82fa983f40b9ab5849c8fc78227ea4385185bea72d610b7953c474b9669d49fc",
+   "manifest_so_sha256": "82fa983f40b9ab5849c8fc78227ea4385185bea72d610b7953c474b9669d49fc",
+   "manifest_recipe_digest": "1459791278751543bc031c5e9b13bb242ded337f6a5041add6e6c3566354fc05",
+   "source_sha256": "1459791278751543bc031c5e9b13bb242ded337f6a5041add6e6c3566354fc05",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_2230272_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_2230272_32_2048_1024_4_1/freetoken__fast_index_copy_2230272_32_2048_1024_4_1.so",
+   "so_sha256": "930848d63e3841629667a1d92ab75938d2eff501dd357069b0b7575bfa837d01",
+   "manifest_so_sha256": "930848d63e3841629667a1d92ab75938d2eff501dd357069b0b7575bfa837d01",
+   "manifest_recipe_digest": "5bbf4ee6aabbb6e49f3074fbcd143d6f4f74013b7da8b74c658d872de43996e0",
+   "source_sha256": "5bbf4ee6aabbb6e49f3074fbcd143d6f4f74013b7da8b74c658d872de43996e0",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_2359296_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_2359296_32_2048_1024_4_1/freetoken__fast_index_copy_2359296_32_2048_1024_4_1.so",
+   "so_sha256": "6328418367811c54d1ad4f11f941ebb6b12d87a9026d8d71157038db15e8bc93",
+   "manifest_so_sha256": "6328418367811c54d1ad4f11f941ebb6b12d87a9026d8d71157038db15e8bc93",
+   "manifest_recipe_digest": "cd1352e110d6acccd24b514f1e928fc49f2880eedbd6368853f092b1bdd26b11",
+   "source_sha256": "cd1352e110d6acccd24b514f1e928fc49f2880eedbd6368853f092b1bdd26b11",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_247808_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_247808_32_2048_1024_4_1/freetoken__fast_index_copy_247808_32_2048_1024_4_1.so",
+   "so_sha256": "b8549c0e35d80b3e1764d4fb4170e7ea26329cd7c293a9f6d8d86f7d68d5a52e",
+   "manifest_so_sha256": "b8549c0e35d80b3e1764d4fb4170e7ea26329cd7c293a9f6d8d86f7d68d5a52e",
+   "manifest_recipe_digest": "0ad471a5288fa6e9d4cc7d08e2a52dabaa47730e3733baaac13de4180b05bf60",
+   "source_sha256": "0ad471a5288fa6e9d4cc7d08e2a52dabaa47730e3733baaac13de4180b05bf60",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_2560_32_512_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_2560_32_512_1024_4_1/freetoken__fast_index_copy_2560_32_512_1024_4_1.so",
+   "so_sha256": "175131637dada136a42f046f62f9e7e1592e4d762201b890d622fe5b51656137",
+   "manifest_so_sha256": "175131637dada136a42f046f62f9e7e1592e4d762201b890d622fe5b51656137",
+   "manifest_recipe_digest": "3f690a835ba4d38c0cb8f03bc2017ff7473c735c336792bbb5c2e87cc3b264f9",
+   "source_sha256": "3f690a835ba4d38c0cb8f03bc2017ff7473c735c336792bbb5c2e87cc3b264f9",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_256_8_256_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_256_8_256_1024_4_1/freetoken__fast_index_copy_256_8_256_1024_4_1.so",
+   "so_sha256": "ccd85485aade60ffc95fe11f5011b50dc626e47e077a7519b71e7d4f96e49ab7",
+   "manifest_so_sha256": "ccd85485aade60ffc95fe11f5011b50dc626e47e077a7519b71e7d4f96e49ab7",
+   "manifest_recipe_digest": "84692ed9ab4ed121069feed185c06c77488cc7891676c1504fbb9ff2fc37e33e",
+   "source_sha256": "84692ed9ab4ed121069feed185c06c77488cc7891676c1504fbb9ff2fc37e33e",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_259200_32_128_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_259200_32_128_1024_4_1/freetoken__fast_index_copy_259200_32_128_1024_4_1.so",
+   "so_sha256": "059a7b0e1aefa1a5a7cad57992478d8912a1bfff35675d6d918befb487762e29",
+   "manifest_so_sha256": "059a7b0e1aefa1a5a7cad57992478d8912a1bfff35675d6d918befb487762e29",
+   "manifest_recipe_digest": "36bedfb54b5b82805fa0d0fa31f4624bfd064b31853c8e0082bdd45c5e24efea",
+   "source_sha256": "36bedfb54b5b82805fa0d0fa31f4624bfd064b31853c8e0082bdd45c5e24efea",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_262144_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_262144_32_2048_1024_4_1/freetoken__fast_index_copy_262144_32_2048_1024_4_1.so",
+   "so_sha256": "5983ddbcce06abd3bcc1b443c57e2a87377b313af3a1286c1d85b36ded545ae6",
+   "manifest_so_sha256": "5983ddbcce06abd3bcc1b443c57e2a87377b313af3a1286c1d85b36ded545ae6",
+   "manifest_recipe_digest": "5b3f4607dd9bd779c2914237622bd93feb3852278e72ba3356d1fe2b7875065c",
+   "source_sha256": "5b3f4607dd9bd779c2914237622bd93feb3852278e72ba3356d1fe2b7875065c",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_2816_32_256_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_2816_32_256_1024_4_1/freetoken__fast_index_copy_2816_32_256_1024_4_1.so",
+   "so_sha256": "3893e3a21192a8e1040659518448c94e26ac301b8762b6fc9c572dc90dc295db",
+   "manifest_so_sha256": "3893e3a21192a8e1040659518448c94e26ac301b8762b6fc9c572dc90dc295db",
+   "manifest_recipe_digest": "eff56820326411448605ac0ab2596ccd5a2d1fe51820ecc5e05ef6eafd081968",
+   "source_sha256": "eff56820326411448605ac0ab2596ccd5a2d1fe51820ecc5e05ef6eafd081968",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_294912_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_294912_32_2048_1024_4_1/freetoken__fast_index_copy_294912_32_2048_1024_4_1.so",
+   "so_sha256": "f8a0bbae9311f282055871ba73e1814921adb031e493fbbc91670837a62fa3bc",
+   "manifest_so_sha256": "f8a0bbae9311f282055871ba73e1814921adb031e493fbbc91670837a62fa3bc",
+   "manifest_recipe_digest": "b6accb297e9626f732869d0d8284742fc5a00e64e781a4a7e7a91fee04a5f8fd",
+   "source_sha256": "b6accb297e9626f732869d0d8284742fc5a00e64e781a4a7e7a91fee04a5f8fd",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_31457280_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_31457280_32_2048_1024_4_1/freetoken__fast_index_copy_31457280_32_2048_1024_4_1.so",
+   "so_sha256": "d1d02b3d2bd94bf6b415f707858d3a72dde3a778f7e30c42b8b448697a9163fb",
+   "manifest_so_sha256": "d1d02b3d2bd94bf6b415f707858d3a72dde3a778f7e30c42b8b448697a9163fb",
+   "manifest_recipe_digest": "438808dd07708c0dcb2027d0e27a0e56553535c4c7bbf10dfbc5709b901beb8f",
+   "source_sha256": "438808dd07708c0dcb2027d0e27a0e56553535c4c7bbf10dfbc5709b901beb8f",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_3145728_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_3145728_32_2048_1024_4_1/freetoken__fast_index_copy_3145728_32_2048_1024_4_1.so",
+   "so_sha256": "a062c8d1dd62c3520420fefb4ea8ff82ce891b3a9b517d4102351c2ee6341423",
+   "manifest_so_sha256": "a062c8d1dd62c3520420fefb4ea8ff82ce891b3a9b517d4102351c2ee6341423",
+   "manifest_recipe_digest": "45c3947db9eff6037ed6f820b623aa5800f25a08dbc9f6ec8bfe20a9df7e6dbb",
+   "source_sha256": "45c3947db9eff6037ed6f820b623aa5800f25a08dbc9f6ec8bfe20a9df7e6dbb",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_3276800_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_3276800_32_2048_1024_4_1/freetoken__fast_index_copy_3276800_32_2048_1024_4_1.so",
+   "so_sha256": "16acaea074da82567733d17e79d274c6b6c6a3a958209f2b2ff86132b1fc311d",
+   "manifest_so_sha256": "16acaea074da82567733d17e79d274c6b6c6a3a958209f2b2ff86132b1fc311d",
+   "manifest_recipe_digest": "0def0b194887825e755873aeede775e65b5d87d3e425817e860231dbac13b0cb",
+   "source_sha256": "0def0b194887825e755873aeede775e65b5d87d3e425817e860231dbac13b0cb",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_3932160_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_3932160_32_2048_1024_4_1/freetoken__fast_index_copy_3932160_32_2048_1024_4_1.so",
+   "so_sha256": "7d087796819d595f28e9e6a164356e7664b9660cc17ed26399585bf4f8079c6e",
+   "manifest_so_sha256": "7d087796819d595f28e9e6a164356e7664b9660cc17ed26399585bf4f8079c6e",
+   "manifest_recipe_digest": "9573c77a9e9ac8ddc06feb7e6b5b55e3bf725f0b8c398be9a587c661de481386",
+   "source_sha256": "9573c77a9e9ac8ddc06feb7e6b5b55e3bf725f0b8c398be9a587c661de481386",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_3964928_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_3964928_32_2048_1024_4_1/freetoken__fast_index_copy_3964928_32_2048_1024_4_1.so",
+   "so_sha256": "e00b01edd07ee59297732180e522a1c8502d2e4ce163f3967a9d9adfbd89f4b2",
+   "manifest_so_sha256": "e00b01edd07ee59297732180e522a1c8502d2e4ce163f3967a9d9adfbd89f4b2",
+   "manifest_recipe_digest": "95fbf4324ae667e3f80a69520d2aaae05eb00348afc441434b2dcc8b58def09d",
+   "source_sha256": "95fbf4324ae667e3f80a69520d2aaae05eb00348afc441434b2dcc8b58def09d",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_4096_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_4096_32_2048_1024_4_1/freetoken__fast_index_copy_4096_32_2048_1024_4_1.so",
+   "so_sha256": "333f358601051519b48053d84b9f2cf86da4c6cb10f2cd0b87e4d3f90d833d38",
+   "manifest_so_sha256": "333f358601051519b48053d84b9f2cf86da4c6cb10f2cd0b87e4d3f90d833d38",
+   "manifest_recipe_digest": "4124bc01a4fe24f98c4bb429151e4d39f646a779f49f68cc47c3364fc02fcb39",
+   "source_sha256": "4124bc01a4fe24f98c4bb429151e4d39f646a779f49f68cc47c3364fc02fcb39",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_4147200_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_4147200_32_2048_1024_4_1/freetoken__fast_index_copy_4147200_32_2048_1024_4_1.so",
+   "so_sha256": "76ab148183da55bf1992817f2b379b10ab6b7add69e14b36c8c6b852041d660d",
+   "manifest_so_sha256": "76ab148183da55bf1992817f2b379b10ab6b7add69e14b36c8c6b852041d660d",
+   "manifest_recipe_digest": "157fd9ee893b6aa2694c1d4bbcc9d49db2392a0921ad1c20586ac992af503aaf",
+   "source_sha256": "157fd9ee893b6aa2694c1d4bbcc9d49db2392a0921ad1c20586ac992af503aaf",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_4194304_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_4194304_32_2048_1024_4_1/freetoken__fast_index_copy_4194304_32_2048_1024_4_1.so",
+   "so_sha256": "0d9e1a13bb049dc65966cf01d4d423ac3f6a8ee8db2b41df91070467eb95c82c",
+   "manifest_so_sha256": "0d9e1a13bb049dc65966cf01d4d423ac3f6a8ee8db2b41df91070467eb95c82c",
+   "manifest_recipe_digest": "3b7c6c8b19caa08b7b0822d55dc22b71a3b415c452e13b6bd4a697233cb73972",
+   "source_sha256": "3b7c6c8b19caa08b7b0822d55dc22b71a3b415c452e13b6bd4a697233cb73972",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_4718592_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_4718592_32_2048_1024_4_1/freetoken__fast_index_copy_4718592_32_2048_1024_4_1.so",
+   "so_sha256": "f6294695ce217fc55b58a04710fc95d83a15f7854294498732803a9511bb7e3c",
+   "manifest_so_sha256": "f6294695ce217fc55b58a04710fc95d83a15f7854294498732803a9511bb7e3c",
+   "manifest_recipe_digest": "9386d04fc6d65d6d54a4616fc9a878ed619928e4274d9e6727d2d6d116ab0be2",
+   "source_sha256": "9386d04fc6d65d6d54a4616fc9a878ed619928e4274d9e6727d2d6d116ab0be2",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_491520_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_491520_32_2048_1024_4_1/freetoken__fast_index_copy_491520_32_2048_1024_4_1.so",
+   "so_sha256": "257ae0838d6f793d267e62d978d29c3a221f9a12db773f741e14e58f3c40d0b1",
+   "manifest_so_sha256": "257ae0838d6f793d267e62d978d29c3a221f9a12db773f741e14e58f3c40d0b1",
+   "manifest_recipe_digest": "289eddaf95579e484cd512c0aff39d4c7f067d4f618605c14a382530c4398739",
+   "source_sha256": "289eddaf95579e484cd512c0aff39d4c7f067d4f618605c14a382530c4398739",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_5120_32_1024_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_5120_32_1024_1024_4_1/freetoken__fast_index_copy_5120_32_1024_1024_4_1.so",
+   "so_sha256": "d408dae6fae484d38d52d47a49a480b4db3242fe846a8ac9c31618a4085b5c7e",
+   "manifest_so_sha256": "d408dae6fae484d38d52d47a49a480b4db3242fe846a8ac9c31618a4085b5c7e",
+   "manifest_recipe_digest": "5c530d7eb71c7a7fedf70bc576ddf7c87c13a078ada31423c83e5bdc16b8de3f",
+   "source_sha256": "5c530d7eb71c7a7fedf70bc576ddf7c87c13a078ada31423c83e5bdc16b8de3f",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_512_8_512_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_512_8_512_1024_4_1/freetoken__fast_index_copy_512_8_512_1024_4_1.so",
+   "so_sha256": "64bebe2415e2573e60ebe3a738fda3c7300b59ca7ee257f9879879d3e6ce983b",
+   "manifest_so_sha256": "64bebe2415e2573e60ebe3a738fda3c7300b59ca7ee257f9879879d3e6ce983b",
+   "manifest_recipe_digest": "156d024947b50d8c0ce12e5839e7d222f5c736f9348e686223efe94102ada8cd",
+   "source_sha256": "156d024947b50d8c0ce12e5839e7d222f5c736f9348e686223efe94102ada8cd",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_518400_32_256_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_518400_32_256_1024_4_1/freetoken__fast_index_copy_518400_32_256_1024_4_1.so",
+   "so_sha256": "9b2db76d5b979ecc77786ba3a64622eed36e2f6e77b3f7e8e44aca817a44ec6a",
+   "manifest_so_sha256": "9b2db76d5b979ecc77786ba3a64622eed36e2f6e77b3f7e8e44aca817a44ec6a",
+   "manifest_recipe_digest": "69f10852f421eba2e93b4e9a625014c63871651df9c4d121bc02a8dde1fedc28",
+   "source_sha256": "69f10852f421eba2e93b4e9a625014c63871651df9c4d121bc02a8dde1fedc28",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_524288_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_524288_32_2048_1024_4_1/freetoken__fast_index_copy_524288_32_2048_1024_4_1.so",
+   "so_sha256": "b58a80ff4512882a0d8fdd873e71091ff4ac5a42cd23a4fc47415fc98208e8b4",
+   "manifest_so_sha256": "b58a80ff4512882a0d8fdd873e71091ff4ac5a42cd23a4fc47415fc98208e8b4",
+   "manifest_recipe_digest": "ae3065d6ec262eb51c4f84af1fa154b584178545d0d00916297749ae902c575e",
+   "source_sha256": "ae3065d6ec262eb51c4f84af1fa154b584178545d0d00916297749ae902c575e",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_5632_32_512_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_5632_32_512_1024_4_1/freetoken__fast_index_copy_5632_32_512_1024_4_1.so",
+   "so_sha256": "2cc3a7599810c96d4c0db91dcc6f561ca46d27a7755168bb99452b3ccf8e8ca6",
+   "manifest_so_sha256": "2cc3a7599810c96d4c0db91dcc6f561ca46d27a7755168bb99452b3ccf8e8ca6",
+   "manifest_recipe_digest": "c58b525ab8d560792265d1ed3baefb3d92828d3895f1feb749c2af94fe14f0cc",
+   "source_sha256": "c58b525ab8d560792265d1ed3baefb3d92828d3895f1feb749c2af94fe14f0cc",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_5760_32_128_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_5760_32_128_1024_4_1/freetoken__fast_index_copy_5760_32_128_1024_4_1.so",
+   "so_sha256": "71bbe0cf2e16eecee05fb352550613357de3090fbb836ceb9acbd43ced447c38",
+   "manifest_so_sha256": "71bbe0cf2e16eecee05fb352550613357de3090fbb836ceb9acbd43ced447c38",
+   "manifest_recipe_digest": "366163b23e5056bcd162098f67a77bb58c7404e5907414532c70929a285a9bd4",
+   "source_sha256": "366163b23e5056bcd162098f67a77bb58c7404e5907414532c70929a285a9bd4",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_589824_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_589824_32_2048_1024_4_1/freetoken__fast_index_copy_589824_32_2048_1024_4_1.so",
+   "so_sha256": "523fcd4ab342d45f34a0b5dd3a1ab4c464ffea2eab0214aed5beceec93f608af",
+   "manifest_so_sha256": "523fcd4ab342d45f34a0b5dd3a1ab4c464ffea2eab0214aed5beceec93f608af",
+   "manifest_recipe_digest": "8270f4da5f8e62702dce8c2b9fff774d35bf443fabd95ec2fbb1237321399947",
+   "source_sha256": "8270f4da5f8e62702dce8c2b9fff774d35bf443fabd95ec2fbb1237321399947",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_6144_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_6144_32_2048_1024_4_1/freetoken__fast_index_copy_6144_32_2048_1024_4_1.so",
+   "so_sha256": "66022ea712b721812f52ca0f5d50e10354a9102e7ad756decca5767a946a6514",
+   "manifest_so_sha256": "66022ea712b721812f52ca0f5d50e10354a9102e7ad756decca5767a946a6514",
+   "manifest_recipe_digest": "5c0895c3ac0ef53d9c9f4d34ba93327390a7bd1d0f9d27ba3f5fec177b6072e3",
+   "source_sha256": "5c0895c3ac0ef53d9c9f4d34ba93327390a7bd1d0f9d27ba3f5fec177b6072e3",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_6291456_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_6291456_32_2048_1024_4_1/freetoken__fast_index_copy_6291456_32_2048_1024_4_1.so",
+   "so_sha256": "350b5106ea23d712d0f5a6a5226615b86427f163626b2df861cbe3598b0205ef",
+   "manifest_so_sha256": "350b5106ea23d712d0f5a6a5226615b86427f163626b2df861cbe3598b0205ef",
+   "manifest_recipe_digest": "e9911246e02bf166be00349d497f18931185a9695c809aaf75a2c30b1770edab",
+   "source_sha256": "e9911246e02bf166be00349d497f18931185a9695c809aaf75a2c30b1770edab",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_65536_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_65536_32_2048_1024_4_1/freetoken__fast_index_copy_65536_32_2048_1024_4_1.so",
+   "so_sha256": "ed7a6f84a44423cb4ecd1b32013f2f31bbba70b458cab9b1f590b90e79df2ca5",
+   "manifest_so_sha256": "ed7a6f84a44423cb4ecd1b32013f2f31bbba70b458cab9b1f590b90e79df2ca5",
+   "manifest_recipe_digest": "88a3397e1e904dc17ac9e736ad20d91eca7789b411bca9fba43a952fa7584750",
+   "source_sha256": "88a3397e1e904dc17ac9e736ad20d91eca7789b411bca9fba43a952fa7584750",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_7864320_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_7864320_32_2048_1024_4_1/freetoken__fast_index_copy_7864320_32_2048_1024_4_1.so",
+   "so_sha256": "11a2e342adb8863106b797785802305ef245abe1ff67042b59041f95aa7e8977",
+   "manifest_so_sha256": "11a2e342adb8863106b797785802305ef245abe1ff67042b59041f95aa7e8977",
+   "manifest_recipe_digest": "9286b2421873d8bb32beb335f3cf54ee92e932250d3d188dd598d8afeb5cf223",
+   "source_sha256": "9286b2421873d8bb32beb335f3cf54ee92e932250d3d188dd598d8afeb5cf223",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_786432_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_786432_32_2048_1024_4_1/freetoken__fast_index_copy_786432_32_2048_1024_4_1.so",
+   "so_sha256": "d19ec2924b9b9d7d43beae1105e73239d85698a8ac8dd67dfe576841448615ff",
+   "manifest_so_sha256": "d19ec2924b9b9d7d43beae1105e73239d85698a8ac8dd67dfe576841448615ff",
+   "manifest_recipe_digest": "ec2b89897644ee16fadf3a9bec3fde690fb62b8a157ab7645704d37e62f24709",
+   "source_sha256": "ec2b89897644ee16fadf3a9bec3fde690fb62b8a157ab7645704d37e62f24709",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_7929856_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_7929856_32_2048_1024_4_1/freetoken__fast_index_copy_7929856_32_2048_1024_4_1.so",
+   "so_sha256": "b1a74a823bb26eba96df3bbf3214c0c5227e81a207277f5be79ffd59650026e1",
+   "manifest_so_sha256": "b1a74a823bb26eba96df3bbf3214c0c5227e81a207277f5be79ffd59650026e1",
+   "manifest_recipe_digest": "903e45c238813610742c3909abf9da50e1c4b8c2937224d9e23bb5ec6f01601d",
+   "source_sha256": "903e45c238813610742c3909abf9da50e1c4b8c2937224d9e23bb5ec6f01601d",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_819200_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_819200_32_2048_1024_4_1/freetoken__fast_index_copy_819200_32_2048_1024_4_1.so",
+   "so_sha256": "6f69380f7f963df14bb278f56474a2429e2b111e40a7351a3787d723643bfd59",
+   "manifest_so_sha256": "6f69380f7f963df14bb278f56474a2429e2b111e40a7351a3787d723643bfd59",
+   "manifest_recipe_digest": "3acba4b2a472bcca44213520fb3ab2374e4851dfe0dd00710784d88e18a3098b",
+   "source_sha256": "3acba4b2a472bcca44213520fb3ab2374e4851dfe0dd00710784d88e18a3098b",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_8192_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_8192_32_2048_1024_4_1/freetoken__fast_index_copy_8192_32_2048_1024_4_1.so",
+   "so_sha256": "767afb1aa55c86f74e7fb78b69b346c9c9b23c7087e7dc5f3b16900fbc62d80f",
+   "manifest_so_sha256": "767afb1aa55c86f74e7fb78b69b346c9c9b23c7087e7dc5f3b16900fbc62d80f",
+   "manifest_recipe_digest": "26d8023aaa52a0c3b97139745d4f548c22004fdc4522c366207cdb4efc1b1c8e",
+   "source_sha256": "26d8023aaa52a0c3b97139745d4f548c22004fdc4522c366207cdb4efc1b1c8e",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_8294400_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_8294400_32_2048_1024_4_1/freetoken__fast_index_copy_8294400_32_2048_1024_4_1.so",
+   "so_sha256": "7b773117b924b9fb1343e5ac11e58a4a0ddd5b4737811ec3579f05652a99af1e",
+   "manifest_so_sha256": "7b773117b924b9fb1343e5ac11e58a4a0ddd5b4737811ec3579f05652a99af1e",
+   "manifest_recipe_digest": "7c24ccc32740bf22d2617fc8b3e30a3176d86817ac6234a1772f0f922150e660",
+   "source_sha256": "7c24ccc32740bf22d2617fc8b3e30a3176d86817ac6234a1772f0f922150e660",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_8388608_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_8388608_32_2048_1024_4_1/freetoken__fast_index_copy_8388608_32_2048_1024_4_1.so",
+   "so_sha256": "1bd9059115a453c180c8a297e176e002b33bb3b281f2bbb2f72335a3286deb67",
+   "manifest_so_sha256": "1bd9059115a453c180c8a297e176e002b33bb3b281f2bbb2f72335a3286deb67",
+   "manifest_recipe_digest": "def6496945c7c7681fe244ace9e90a0477f5731440535b9564bb0fd74c42c0bc",
+   "source_sha256": "def6496945c7c7681fe244ace9e90a0477f5731440535b9564bb0fd74c42c0bc",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_9437184_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_9437184_32_2048_1024_4_1/freetoken__fast_index_copy_9437184_32_2048_1024_4_1.so",
+   "so_sha256": "9489165be303046ff2abef53e9b85504a3cb1f3844851c5e130b578244f97c37",
+   "manifest_so_sha256": "9489165be303046ff2abef53e9b85504a3cb1f3844851c5e130b578244f97c37",
+   "manifest_recipe_digest": "ada29408166126e6480bf1c9f12e3242f386d72fee16aa3ab1a6f456f93e7107",
+   "source_sha256": "ada29408166126e6480bf1c9f12e3242f386d72fee16aa3ab1a6f456f93e7107",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_983040_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_983040_32_2048_1024_4_1/freetoken__fast_index_copy_983040_32_2048_1024_4_1.so",
+   "so_sha256": "4fcd3b27751f0eb212a3062c95be98bf5082ccf0bd044d71eee1a2ca537733df",
+   "manifest_so_sha256": "4fcd3b27751f0eb212a3062c95be98bf5082ccf0bd044d71eee1a2ca537733df",
+   "manifest_recipe_digest": "2e0bd66f6271b2bcc62fd71a474b13f2756d9e5264d0ea37334d258586348b9f",
+   "source_sha256": "2e0bd66f6271b2bcc62fd71a474b13f2756d9e5264d0ea37334d258586348b9f",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_991232_32_2048_1024_4_1",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_991232_32_2048_1024_4_1/freetoken__fast_index_copy_991232_32_2048_1024_4_1.so",
+   "so_sha256": "e3d1867ce5a83df06e1fecd73d079dc796afa745f203d970542f2ee29cd964e6",
+   "manifest_so_sha256": "e3d1867ce5a83df06e1fecd73d079dc796afa745f203d970542f2ee29cd964e6",
+   "manifest_recipe_digest": "d852d3435d41bc212c1d18acff1e7f43c47ca1c8ab1c50e811842ac7976d8dea",
+   "source_sha256": "d852d3435d41bc212c1d18acff1e7f43c47ca1c8ab1c50e811842ac7976d8dea",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_multi_1024_64",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_multi_1024_64/freetoken__fast_index_copy_multi_1024_64.so",
+   "so_sha256": "c19efece694c6c852699793fa517b3df1f0a1ab688d64eca944bc3f261db0f81",
+   "manifest_so_sha256": "c19efece694c6c852699793fa517b3df1f0a1ab688d64eca944bc3f261db0f81",
+   "manifest_recipe_digest": "9dc0d2be802175827618df1249e15b49eec221e974cf80e7cc75a72330068cca",
+   "source_sha256": "9dc0d2be802175827618df1249e15b49eec221e974cf80e7cc75a72330068cca",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_multi_1024_8",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_multi_1024_8/freetoken__fast_index_copy_multi_1024_8.so",
+   "so_sha256": "7e288841579744fafe26238c72ffba04804bdf0fc7c163231b42f1d3556eccc3",
+   "manifest_so_sha256": "7e288841579744fafe26238c72ffba04804bdf0fc7c163231b42f1d3556eccc3",
+   "manifest_recipe_digest": "5524689b37a448a16c8bd0beae20b43d130341ee5c5d1d80674240cb0c964eb9",
+   "source_sha256": "5524689b37a448a16c8bd0beae20b43d130341ee5c5d1d80674240cb0c964eb9",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__fast_index_copy_update_flag",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__fast_index_copy_update_flag/freetoken__fast_index_copy_update_flag.so",
+   "so_sha256": "9f31002e84ffe2c9c559aa30a49a6c9902a612c351e7701296ff4adae38a4c74",
+   "manifest_so_sha256": "9f31002e84ffe2c9c559aa30a49a6c9902a612c351e7701296ff4adae38a4c74",
+   "manifest_recipe_digest": "83d631ecbb0237dd939d8c1b4dd7b2a086d7549c04f98f3438ee2f808a55c81c",
+   "source_sha256": "83d631ecbb0237dd939d8c1b4dd7b2a086d7549c04f98f3438ee2f808a55c81c",
+   "sources": {
+    "jit/fast_index_copy.cuh": "b39945aa62b4a9859790a3aa0dbabc3ec3ab8cd0c4b63ab3a0ad9c5aa0c2f77f"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_10240_4_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_10240_4_128_1_false/freetoken__index_10240_4_128_1_false.so",
+   "so_sha256": "86704b6086ed679c0bc2c9b35c96e560ab1a796e8b134486d270f553ff5577cd",
+   "manifest_so_sha256": "86704b6086ed679c0bc2c9b35c96e560ab1a796e8b134486d270f553ff5577cd",
+   "manifest_recipe_digest": "ccdd3d3a116abfa690a2ba6e7092641bdefa8e0cba9d5f0edb6a1116ddaec486",
+   "source_sha256": "ccdd3d3a116abfa690a2ba6e7092641bdefa8e0cba9d5f0edb6a1116ddaec486",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_10752_1_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_10752_1_128_1_false/freetoken__index_10752_1_128_1_false.so",
+   "so_sha256": "a40689da94d519015542255642fea20b5a64fb07c99ec0a9b3b036f1e99aed33",
+   "manifest_so_sha256": "a40689da94d519015542255642fea20b5a64fb07c99ec0a9b3b036f1e99aed33",
+   "manifest_recipe_digest": "a871a47f93d65b1b33ce43df96d84dc54d3a621fe3ae006e4663076d3f222f9b",
+   "source_sha256": "a871a47f93d65b1b33ce43df96d84dc54d3a621fe3ae006e4663076d3f222f9b",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_12288_4_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_12288_4_128_1_false/freetoken__index_12288_4_128_1_false.so",
+   "so_sha256": "f382760be253c64a42349e8e1d61fd827e6242641eef3d6c658de7e3c35bacf7",
+   "manifest_so_sha256": "f382760be253c64a42349e8e1d61fd827e6242641eef3d6c658de7e3c35bacf7",
+   "manifest_recipe_digest": "7e1c3b12897dfb7379c5c93741d0f8fd71eed712c7aa9c8c7f888dbd43419103",
+   "source_sha256": "7e1c3b12897dfb7379c5c93741d0f8fd71eed712c7aa9c8c7f888dbd43419103",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_13312_2_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_13312_2_128_1_false/freetoken__index_13312_2_128_1_false.so",
+   "so_sha256": "7e647306ca374dc5cbb8851d47d97c40ace3eae382440d5d66a5d702b2a13b0b",
+   "manifest_so_sha256": "7e647306ca374dc5cbb8851d47d97c40ace3eae382440d5d66a5d702b2a13b0b",
+   "manifest_recipe_digest": "dcce085180c41cb1ad4d09cc34ea2d26561f81b74d4497e9c6c7791a68024f5a",
+   "source_sha256": "dcce085180c41cb1ad4d09cc34ea2d26561f81b74d4497e9c6c7791a68024f5a",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_4096_4_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_4096_4_128_1_false/freetoken__index_4096_4_128_1_false.so",
+   "so_sha256": "06e8331149129b1d8b9babecf17e0c18a3b38924195d6f7590665b04bf42d2d2",
+   "manifest_so_sha256": "06e8331149129b1d8b9babecf17e0c18a3b38924195d6f7590665b04bf42d2d2",
+   "manifest_recipe_digest": "18a836ecefe3c9ccf7bdad2b02985d1958ee9ce80e38536472b5536a4183ae96",
+   "source_sha256": "18a836ecefe3c9ccf7bdad2b02985d1958ee9ce80e38536472b5536a4183ae96",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_5120_2_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_5120_2_128_1_false/freetoken__index_5120_2_128_1_false.so",
+   "so_sha256": "a666420327136e7dcfef3fd60a9a3e2f7f01ec4aefdf0cb40266bab48b8cc35f",
+   "manifest_so_sha256": "a666420327136e7dcfef3fd60a9a3e2f7f01ec4aefdf0cb40266bab48b8cc35f",
+   "manifest_recipe_digest": "64538f231ab9bbed86cde8f6ec070f01f4462574a37221a4c6dff01dfee3c712",
+   "source_sha256": "64538f231ab9bbed86cde8f6ec070f01f4462574a37221a4c6dff01dfee3c712",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_5632_1_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_5632_1_128_1_false/freetoken__index_5632_1_128_1_false.so",
+   "so_sha256": "b0ba7c353dcd7a79e892c512e5bfb58957f0d7c040236f97e34ce06fd4eb4dc4",
+   "manifest_so_sha256": "b0ba7c353dcd7a79e892c512e5bfb58957f0d7c040236f97e34ce06fd4eb4dc4",
+   "manifest_recipe_digest": "f5bb1b016c199eef7638dc4058e11979d81d8c29165136870b80d333fb0224c3",
+   "source_sha256": "f5bb1b016c199eef7638dc4058e11979d81d8c29165136870b80d333fb0224c3",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_5760_1_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_5760_1_128_1_false/freetoken__index_5760_1_128_1_false.so",
+   "so_sha256": "3564aa75ea546c7b9b1722fe95d593fa788176a2a1ab9854c87107390ad47bcb",
+   "manifest_so_sha256": "3564aa75ea546c7b9b1722fe95d593fa788176a2a1ab9854c87107390ad47bcb",
+   "manifest_recipe_digest": "a890852d558e6ca59f79d841ca1cd43ec08cb6f57235032cb6cef44fc1f8a866",
+   "source_sha256": "a890852d558e6ca59f79d841ca1cd43ec08cb6f57235032cb6cef44fc1f8a866",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_6144_4_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_6144_4_128_1_false/freetoken__index_6144_4_128_1_false.so",
+   "so_sha256": "79d6add9134ed151faaca364772c27c4d729fd5bb6c11dc045d678c12aa8b036",
+   "manifest_so_sha256": "79d6add9134ed151faaca364772c27c4d729fd5bb6c11dc045d678c12aa8b036",
+   "manifest_recipe_digest": "e858b68c062378632e0171eda4d38f96fa2ea511e905a8625178db82fc85c2a9",
+   "source_sha256": "e858b68c062378632e0171eda4d38f96fa2ea511e905a8625178db82fc85c2a9",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_7168_2_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_7168_2_128_1_false/freetoken__index_7168_2_128_1_false.so",
+   "so_sha256": "df3e7caf8c8083294ad183e1cdbed5707a2a345d6b942d399e7f7afd100893df",
+   "manifest_so_sha256": "df3e7caf8c8083294ad183e1cdbed5707a2a345d6b942d399e7f7afd100893df",
+   "manifest_recipe_digest": "99059e3d794dbbc6f3823becd7b666a164d88b2d65627aec812c1bdde7db2813",
+   "source_sha256": "99059e3d794dbbc6f3823becd7b666a164d88b2d65627aec812c1bdde7db2813",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_7680_1_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_7680_1_128_1_false/freetoken__index_7680_1_128_1_false.so",
+   "so_sha256": "63a50979a6bfc08437817ddae3470f8d4ce98a8bb8b764e793761b8fd40fa9ae",
+   "manifest_so_sha256": "63a50979a6bfc08437817ddae3470f8d4ce98a8bb8b764e793761b8fd40fa9ae",
+   "manifest_recipe_digest": "6437ab704b11f1b4d77f0f1760986ed26066f3732391160ce5c9456d892f38b7",
+   "source_sha256": "6437ab704b11f1b4d77f0f1760986ed26066f3732391160ce5c9456d892f38b7",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__index_8192_4_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__index_8192_4_128_1_false/freetoken__index_8192_4_128_1_false.so",
+   "so_sha256": "3171511ab7c5e7ec7f77558d0ce48812b2f607fbb286d712e972dbe93d38f614",
+   "manifest_so_sha256": "3171511ab7c5e7ec7f77558d0ce48812b2f607fbb286d712e972dbe93d38f614",
+   "manifest_recipe_digest": "79ae4f26a0930ca266688494a3bfa053959ae37d9939be39fb859c2e83e33093",
+   "source_sha256": "79ae4f26a0930ca266688494a3bfa053959ae37d9939be39fb859c2e83e33093",
+   "sources": {
+    "jit/index.cu": "8a219b5c048d9d0282d05356fa4406837736dc10bf4df1e9ec7a2c06ccd1f7c4"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__radix",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__radix/freetoken__radix.so",
+   "so_sha256": "9271781ebee6a77c7d44b38dedcc52cea0a002704879659e3e5f8ef29a93cd45",
+   "manifest_so_sha256": "9271781ebee6a77c7d44b38dedcc52cea0a002704879659e3e5f8ef29a93cd45",
+   "manifest_recipe_digest": "3764f9f38966aee91bfc2f148400687ed92bfb3fe1c270029aaa59c3dace6a35",
+   "source_sha256": "3764f9f38966aee91bfc2f148400687ed92bfb3fe1c270029aaa59c3dace6a35",
+   "sources": {
+    "src/radix.cpp": "a237ce49584503e6e0407334859e1624c80e04c8742ae19b57badaef44a5b6b9"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__store_1024_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__store_1024_128_1_false/freetoken__store_1024_128_1_false.so",
+   "so_sha256": "d72dfc2337225b36acb97e8be5d76b254ee757a55efca4e72d026fc3eee019eb",
+   "manifest_so_sha256": "d72dfc2337225b36acb97e8be5d76b254ee757a55efca4e72d026fc3eee019eb",
+   "manifest_recipe_digest": "68f8cb9ebe7ababec7555c39bb5b2d9cc06446ccc4f6e0ef6d8a7f84d9620a4e",
+   "source_sha256": "68f8cb9ebe7ababec7555c39bb5b2d9cc06446ccc4f6e0ef6d8a7f84d9620a4e",
+   "sources": {
+    "jit/store.cu": "dc6cf77551851edfe522dd96851dfbfdfa6f3709e35ff4604356a4319f7a8dc6"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__store_2048_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__store_2048_128_1_false/freetoken__store_2048_128_1_false.so",
+   "so_sha256": "53fd6f1e3d31850543be70b5b2bd2532e4367f7e4ce324001d7b86bd38bac564",
+   "manifest_so_sha256": "53fd6f1e3d31850543be70b5b2bd2532e4367f7e4ce324001d7b86bd38bac564",
+   "manifest_recipe_digest": "09a933093d188c95b688f803d959f05a8ffcf6fec5c9bd09e2f28fdf0d1a8ecf",
+   "source_sha256": "09a933093d188c95b688f803d959f05a8ffcf6fec5c9bd09e2f28fdf0d1a8ecf",
+   "sources": {
+    "jit/store.cu": "dc6cf77551851edfe522dd96851dfbfdfa6f3709e35ff4604356a4319f7a8dc6"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__store_4096_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__store_4096_128_1_false/freetoken__store_4096_128_1_false.so",
+   "so_sha256": "bd2bf8034294f45afe79459728e4e3a5200ec61b494dcb3f114db842efa1959d",
+   "manifest_so_sha256": "bd2bf8034294f45afe79459728e4e3a5200ec61b494dcb3f114db842efa1959d",
+   "manifest_recipe_digest": "db24b423a120fb913c20d52db78c49a090ab618d29a3a9ae2ddb33628c897eb6",
+   "source_sha256": "db24b423a120fb913c20d52db78c49a090ab618d29a3a9ae2ddb33628c897eb6",
+   "sources": {
+    "jit/store.cu": "dc6cf77551851edfe522dd96851dfbfdfa6f3709e35ff4604356a4319f7a8dc6"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__store_512_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__store_512_128_1_false/freetoken__store_512_128_1_false.so",
+   "so_sha256": "c5cb19155f30a27ae5341db62418685ce61c413df48a22013f037a6ad1fa9dfd",
+   "manifest_so_sha256": "c5cb19155f30a27ae5341db62418685ce61c413df48a22013f037a6ad1fa9dfd",
+   "manifest_recipe_digest": "924343327629a5cbedbba6c85a90b74e20a6fa94d8d8cf367cd7f8a18842ea28",
+   "source_sha256": "924343327629a5cbedbba6c85a90b74e20a6fa94d8d8cf367cd7f8a18842ea28",
+   "sources": {
+    "jit/store.cu": "dc6cf77551851edfe522dd96851dfbfdfa6f3709e35ff4604356a4319f7a8dc6"
+   },
+   "status": "prebuilt"
+  },
+  {
+   "name": "freetoken__store_8192_128_1_false",
+   "origin": "manifest",
+   "so_path": "/home/USER/qwen36-api/.venv/lib/python3.12/site-packages/freetoken_kernel_cache/jit_cache/freetoken__store_8192_128_1_false/freetoken__store_8192_128_1_false.so",
+   "so_sha256": "ea53c59b55dba65dcedafe7adcb77c7662a2335a9c3a94211521efc5b4b22304",
+   "manifest_so_sha256": "ea53c59b55dba65dcedafe7adcb77c7662a2335a9c3a94211521efc5b4b22304",
+   "manifest_recipe_digest": "05adbdd0e8b3b928179909dfbebf52a3493893a26fc2deab25738fed4b3426ff",
+   "source_sha256": "05adbdd0e8b3b928179909dfbebf52a3493893a26fc2deab25738fed4b3426ff",
+   "sources": {
+    "jit/store.cu": "dc6cf77551851edfe522dd96851dfbfdfa6f3709e35ff4604356a4319f7a8dc6"
+   },
+   "status": "prebuilt"
+  }
+ ],
+ "extensions": [
+  {
+   "name": "_cpu_moe",
+   "so_path": null,
+   "so_sha256": null,
+   "source_sha256": "4012f48e384932ae312bd2e643d15e8b922d76614fda25ec7fd463ec50acc560",
+   "sources": {
+    "cpu_moe/cpu_moe_ext.cpp": "48d9c8515f9ba0f48a0e35180af210e181b5dffa0e6b4b18531be82769039721"
+   },
+   "status": "absent",
+   "manifest_so_sha256": "14fc5b4b57b11421a81e59de78791f763b0e8b4bc141e9d65d5f9afab47e34b5",
+   "manifest_source_sha256": "30d40fb461381c4607952928a6ce8a63323860ce92ac7d9fe754fd72d19bd659"
+  },
+  {
+   "name": "_pinned_tensor",
+   "so_path": null,
+   "so_sha256": null,
+   "source_sha256": "7faa3082c6d5df8c9822889f137f4a095b2b1a1168e27e753eee1689aa4c61b9",
+   "sources": {
+    "pinned_tensor.cpp": "fe8e2a81654dab850b9f7366a1e8af3a5bdd10b41289537cfd7a7f2190b1e815"
+   },
+   "status": "absent",
+   "manifest_so_sha256": "0b38be0b3040accc4128b7ab958db1e7f7a3dad9188b62458569439cf2d44de9",
+   "manifest_source_sha256": "7faa3082c6d5df8c9822889f137f4a095b2b1a1168e27e753eee1689aa4c61b9"
+  },
+  {
+   "name": "_ple_store",
+   "so_path": null,
+   "so_sha256": null,
+   "source_sha256": "cfed280a5c8a68c904d63b3c6093e09d6b251c79735e84a47b25a5571abf46c7",
+   "sources": {
+    "ple_store/ple_store_ext.cpp": "488b16eb1f3d6584a79d004b7659d09a46ecb89837181596294fc249d4af6973"
+   },
+   "status": "absent",
+   "manifest_so_sha256": "e6566a704180fe99f35f42c26dd7a97dadb3ea7c38e5e9ccbd5c974709fa793e",
+   "manifest_source_sha256": "cfed280a5c8a68c904d63b3c6093e09d6b251c79735e84a47b25a5571abf46c7"
+  }
+ ]
+}

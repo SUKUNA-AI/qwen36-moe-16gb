@@ -1,0 +1,25 @@
+synclean-refill: parent steps + GPU run plan (phase 3). D = work/next-update/synclean-refill. Decision rule: prereg.json (written before any measurement).
+
+PARENT (CPU, workspace + sync; the agent may not edit FreeToken-opt / outputs / $N):
+ 1. cd work/FreeToken-opt && git apply -p1 $D/synclean-release.patch   (sha256 22564ed38611; replaces host-sync sync-lean.patch + sync-lean-fi-plans.patch)
+    after-hashes (sha256/12): attention/fi.py 7c951d332bac, attention/linear.py 935fc009a005, engine/layer_major.py ac438f1c5e45,
+    kernel/cuda_gdn.py 28b47c40c665, kernel/fla/index.py dad1dc01177e, kernel/fla/utils.py 46d1bbf57739, moe/offload_cache.py 134e37f750ed, sync_lean.py 42ad628b5d18 (new)
+    All flag-gated (QWEN36_SYNC_LEAN=1); flag-off behaviour = release (CPU suites below). Python only: no kernel-manifest change.
+ 2. cd work/FreeToken-opt && git apply -p1 $D/allowlist.patch           (sha256 fc548f747854; adds teacher-main-release-synclean, teacher-main-release-refill-restore;
+    engine/qualification.py 9ee366af5137 -> c1f2a77183e3)
+ 3. cp $D/configs/main-release-synclean.json $D/configs/main-release-refill-restore.json outputs/qwen36-api/optimization/
+    (= main-release.json 60763d5e6f1c + env delta; b2b16d4a398b / 4a20099bfdb6, same compact format)
+ 4. sync as in driver 21: sync-v5.sh --print-freeze/--dry-run/--apply/--verify --label srf1 --extra-config main-release-synclean.json --extra-config main-release-refill-restore.json
+    (refill alone needs only steps 2-4: its code is already synced, slot_refill.py c7a3e4fad2e6)
+ 5. check (CPU, no GPU): PRECHECK_ONLY=1 RUN=pc bash $D/phase3-driver.sh   -> expect "PRECHECK refill OK" and "PRECHECK synclean OK"
+    optional native CPU suites (read-only, never cleans the native tree): bash $D/run-cpu-tests.sh /home/USER/qwen36-api/optimization/python
+
+GPU (launch as a TRACKED background task; it waits for /home/USER/qwen36-api/run/phase2.done itself):
+    RUN=a1 bash $D/phase3-driver.sh refill synclean        (log: $D/results/driver-a1.log; resumable; NOT_RUN per feature if a precheck fails)
+ per feature: teacher (qualify.py --candidate main-release-<x>, ~6-7 min, one locked session)
+   -> 3 rounds x 2 outputs = 6 locked sessions (each: base + candidate in the same session, order alternating, QWEN36_BENCH_WARMUP_S=60, <= 20 min,
+      experiment unit stopped on exit), screen names srf-a1-<feature>-r<r>-o<out>
+      refill:   lengths 16384,65536,120000; outputs 1024 and 512   (~9 min/session)
+      synclean: lengths 16384,120000;       outputs 512 and 128    (~8 min/session)
+   -> evaluate.py: results/<feature>-a1.json (per-round gains, medians, decode_missing, VRAM min free, content identity, decision)
+ total ~2 h GPU for both (refill ~60 min, synclean ~55 min).

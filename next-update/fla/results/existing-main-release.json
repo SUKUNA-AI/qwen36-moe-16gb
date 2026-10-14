@@ -1,0 +1,785 @@
+{
+ "label": "release-off-phase1",
+ "sqlite": "/home/USER/qwen36-api/optimization/reports/model-final-main-release-20261014T172433Z.sqlite",
+ "timings_under_profiler": true,
+ "note": "structure only; not speed evidence",
+ "prefills": [
+  {
+   "index": 1,
+   "chunks": 2,
+   "host_range_ms": 616.341,
+   "gpu_window_ms": 625.943,
+   "compute_stream": 13,
+   "compute_busy_ms": 267.941,
+   "compute_busy_frac": 0.4281,
+   "idle_host_late_ms": 44.313,
+   "idle_host_late_gaps": 97,
+   "idle_host_late_gt50us": 48,
+   "idle_dependency_ms": 313.689,
+   "idle_dependency_gaps": 2960,
+   "idle_dependency_top_ms": [
+    14.318,
+    14.163,
+    14.12,
+    13.365,
+    12.498
+   ],
+   "idle_host_late_top_ms": [
+    14.253,
+    12.835,
+    2.673,
+    2.66,
+    1.608
+   ],
+   "launches_compute_stream": 3058,
+   "gdn_core": {
+    "kkt": {
+     "n": 60,
+     "sum_ms": 3.777,
+     "mean_us": 62.9,
+     "median_us": 38.0,
+     "p10_us": 34.6,
+     "p90_us": 38.9
+    },
+    "wu": {
+     "n": 60,
+     "sum_ms": 5.134,
+     "mean_us": 85.6,
+     "median_us": 49.2,
+     "p10_us": 36.7,
+     "p90_us": 74.1
+    },
+    "h": {
+     "n": 60,
+     "sum_ms": 8.18,
+     "mean_us": 136.3,
+     "median_us": 110.0,
+     "p10_us": 98.6,
+     "p90_us": 141.1
+    },
+    "o": {
+     "n": 60,
+     "sum_ms": 6.246,
+     "mean_us": 104.1,
+     "median_us": 93.6,
+     "p10_us": 69.9,
+     "p90_us": 107.6
+    }
+   },
+   "gdn_core_sum_ms": 23.336,
+   "gdn_cuda_other": {
+    "conv_qkv": {
+     "n": 60,
+     "sum_ms": 6.185,
+     "mean_us": 103.1,
+     "median_us": 75.5,
+     "p10_us": 56.9,
+     "p90_us": 87.3
+    },
+    "gate_cumsum": {
+     "n": 60,
+     "sum_ms": 0.248,
+     "mean_us": 4.1,
+     "median_us": 4.3,
+     "p10_us": 3.6,
+     "p90_us": 4.8
+    },
+    "gated_norm": {
+     "n": 60,
+     "sum_ms": 1.61,
+     "mean_us": 26.8,
+     "median_us": 28.6,
+     "p10_us": 20.7,
+     "p90_us": 32.9
+    }
+   },
+   "fused_calls": 0,
+   "triton_chunk_o_calls": 60,
+   "kkt_grid_x_hist (64-row chunks per GDN call)": {
+    "25": 30,
+    "32": 30
+   },
+   "gdn_layer_tasks": {
+    "n": 60,
+    "host_ms_median": 2.0,
+    "gpu_kernel_ms_median": 3.233,
+    "gpu_span_ms_median": 4.422,
+    "core_ms_median": 0.301,
+    "host_gt_gpu_tasks": 2,
+    "sum_host_ms": 163.264,
+    "sum_gpu_kernel_ms": 194.627,
+    "sum_core_ms": 23.336,
+    "launches_median": 34.5
+   },
+   "attention_layer_tasks_in_layer_nvtx": 20,
+   "host_blocking_apis": {
+    "cudaEventSynchronize_v3020": {
+     "n": 22,
+     "ms": 394.446
+    },
+    "cudaMemcpyAsync_v3020": {
+     "n": 492,
+     "ms": 6.934
+    },
+    "cudaStreamSynchronize_v3020": {
+     "n": 8,
+     "ms": 0.42
+    },
+    "cudaStreamWaitEvent_v3020": {
+     "n": 131,
+     "ms": 0.375
+    }
+   },
+   "copy_h2d": {
+    "n": 362,
+    "GB": 18.245,
+    "busy_union_ms": 560.807
+   },
+   "top_compute_kernels": [
+    {
+     "name": "void bx::fast_gemm",
+     "n": 160,
+     "sum_ms": 121.355
+    },
+    {
+     "name": "void cutlass::device_kernel",
+     "n": 78,
+     "sum_ms": 49.996
+    },
+    {
+     "name": "void cutlass::Kernel2",
+     "n": 300,
+     "sum_ms": 16.702
+    },
+    {
+     "name": "void flashinfer::BatchPrefillWithPagedKVCacheKernel",
+     "n": 20,
+     "sum_ms": 14.787
+    },
+    {
+     "name": "nvjet_sm120_qqtst_mma_128x128x64_6_64x64x64_tmaAB_bz_TNNN",
+     "n": 82,
+     "sum_ms": 12.007
+    },
+    {
+     "name": "void ",
+     "n": 162,
+     "sum_ms": 8.292
+    },
+    {
+     "name": "chunk_gated_delta_rule_fwd_kernel_h_blockdim64",
+     "n": 60,
+     "sum_ms": 8.18
+    },
+    {
+     "name": "moe_sum_reduce_kernel",
+     "n": 80,
+     "sum_ms": 6.743
+    },
+    {
+     "name": "chunk_fwd_kernel_o",
+     "n": 60,
+     "sum_ms": 6.246
+    },
+    {
+     "name": "recompute_w_u_fwd_kernel",
+     "n": 60,
+     "sum_ms": 5.134
+    },
+    {
+     "name": "chunk_gated_delta_rule_fwd_kkt_solve_kernel",
+     "n": 60,
+     "sum_ms": 3.777
+    },
+    {
+     "name": "kernel_cutlass_kernel_flashinfernormkernelsfused_add_rmsnormFusedAddRMSNormKernel_object_a",
+     "n": 159,
+     "sum_ms": 3.504
+    },
+    {
+     "name": "void at::native::elementwise_kernel",
+     "n": 298,
+     "sum_ms": 2.743
+    },
+    {
+     "name": "void at::native::vectorized_elementwise_kernel",
+     "n": 252,
+     "sum_ms": 1.935
+    },
+    {
+     "name": "_nvfp4_dequant_cols_kernel",
+     "n": 160,
+     "sum_ms": 0.601
+    },
+    {
+     "name": "std::enable_if",
+     "n": 80,
+     "sum_ms": 0.552
+    },
+    {
+     "name": "kernel_cutlass_kernel_flashinfernormkernelsrmsnormRMSNormKernel_object_at__tensorptrbf16gm",
+     "n": 42,
+     "sum_ms": 0.504
+    },
+    {
+     "name": "void moe_align_block_size_kernel",
+     "n": 80,
+     "sum_ms": 0.367
+    },
+    {
+     "name": "_nvfp4_gemv_kernel",
+     "n": 1,
+     "sum_ms": 0.365
+    },
+    {
+     "name": "_router_triton_kernel",
+     "n": 80,
+     "sum_ms": 0.336
+    },
+    {
+     "name": "_static_quant_kernel",
+     "n": 80,
+     "sum_ms": 0.305
+    },
+    {
+     "name": "void count_and_sort_expert_tokens_kernel",
+     "n": 80,
+     "sum_ms": 0.285
+    },
+    {
+     "name": "void flashinfer::BatchQKApplyRotaryPosIdsCosSinCacheHeadParallelismKernel",
+     "n": 20,
+     "sum_ms": 0.26
+    },
+    {
+     "name": "",
+     "n": 60,
+     "sum_ms": 0.248
+    },
+    {
+     "name": "void at::native::index_elementwise_kernel",
+     "n": 94,
+     "sum_ms": 0.21
+    }
+   ]
+  },
+  {
+   "index": 3,
+   "chunks": 9,
+   "host_range_ms": 1515.515,
+   "gpu_window_ms": 1529.131,
+   "compute_stream": 13,
+   "compute_busy_ms": 1386.171,
+   "compute_busy_frac": 0.9065,
+   "idle_host_late_ms": 64.845,
+   "idle_host_late_gaps": 227,
+   "idle_host_late_gt50us": 111,
+   "idle_dependency_ms": 78.116,
+   "idle_dependency_gaps": 13145,
+   "idle_dependency_top_ms": [
+    1.175,
+    0.789,
+    0.602,
+    0.588,
+    0.543
+   ],
+   "idle_host_late_top_ms": [
+    11.288,
+    8.174,
+    6.201,
+    4.932,
+    3.67
+   ],
+   "launches_compute_stream": 13373,
+   "gdn_core": {
+    "kkt": {
+     "n": 270,
+     "sum_ms": 9.744,
+     "mean_us": 36.1,
+     "median_us": 38.4,
+     "p10_us": 6.0,
+     "p90_us": 39.1
+    },
+    "wu": {
+     "n": 270,
+     "sum_ms": 17.524,
+     "mean_us": 64.9,
+     "median_us": 67.1,
+     "p10_us": 3.5,
+     "p90_us": 72.1
+    },
+    "h": {
+     "n": 270,
+     "sum_ms": 37.589,
+     "mean_us": 139.2,
+     "median_us": 131.7,
+     "p10_us": 6.7,
+     "p90_us": 141.3
+    },
+    "o": {
+     "n": 270,
+     "sum_ms": 27.799,
+     "mean_us": 103.0,
+     "median_us": 97.4,
+     "p10_us": 2.6,
+     "p90_us": 104.1
+    }
+   },
+   "gdn_core_sum_ms": 92.656,
+   "gdn_cuda_other": {
+    "conv_qkv": {
+     "n": 270,
+     "sum_ms": 23.16,
+     "mean_us": 85.8,
+     "median_us": 76.2,
+     "p10_us": 21.2,
+     "p90_us": 85.7
+    },
+    "gate_cumsum": {
+     "n": 270,
+     "sum_ms": 1.123,
+     "mean_us": 4.2,
+     "median_us": 4.4,
+     "p10_us": 1.9,
+     "p90_us": 4.7
+    },
+    "gated_norm": {
+     "n": 270,
+     "sum_ms": 9.483,
+     "mean_us": 35.1,
+     "median_us": 30.8,
+     "p10_us": 1.7,
+     "p90_us": 32.7
+    }
+   },
+   "fused_calls": 0,
+   "triton_chunk_o_calls": 270,
+   "kkt_grid_x_hist (64-row chunks per GDN call)": {
+    "1": 30,
+    "32": 240
+   },
+   "gdn_layer_tasks": {
+    "n": 270,
+    "host_ms_median": 1.404,
+    "gpu_kernel_ms_median": 3.327,
+    "gpu_span_ms_median": 3.54,
+    "core_ms_median": 0.336,
+    "host_gt_gpu_tasks": 37,
+    "sum_host_ms": 511.911,
+    "sum_gpu_kernel_ms": 848.852,
+    "sum_core_ms": 92.656,
+    "launches_median": 34.0
+   },
+   "attention_layer_tasks_in_layer_nvtx": 10,
+   "host_blocking_apis": {
+    "cudaEventSynchronize_v3020": {
+     "n": 74,
+     "ms": 814.874
+    },
+    "cudaMemcpyAsync_v3020": {
+     "n": 1299,
+     "ms": 25.476
+    },
+    "cudaStreamSynchronize_v3020": {
+     "n": 38,
+     "ms": 19.563
+    },
+    "cudaStreamWaitEvent_v3020": {
+     "n": 453,
+     "ms": 0.98
+    }
+   },
+   "copy_h2d": {
+    "n": 693,
+    "GB": 18.246,
+    "busy_union_ms": 533.957
+   },
+   "top_compute_kernels": [
+    {
+     "name": "void bx::fast_gemm",
+     "n": 640,
+     "sum_ms": 549.896
+    },
+    {
+     "name": "void flashinfer::BatchPrefillWithPagedKVCacheKernel",
+     "n": 50,
+     "sum_ms": 285.422
+    },
+    {
+     "name": "void cutlass::device_kernel",
+     "n": 351,
+     "sum_ms": 182.553
+    },
+    {
+     "name": "void cutlass::Kernel2",
+     "n": 1270,
+     "sum_ms": 69.728
+    },
+    {
+     "name": "nvjet_sm120_qqtst_mma_128x128x64_6_64x64x64_tmaAB_bz_TNNN",
+     "n": 328,
+     "sum_ms": 42.846
+    },
+    {
+     "name": "chunk_gated_delta_rule_fwd_kernel_h_blockdim64",
+     "n": 270,
+     "sum_ms": 37.589
+    },
+    {
+     "name": "void ",
+     "n": 729,
+     "sum_ms": 36.671
+    },
+    {
+     "name": "moe_sum_reduce_kernel",
+     "n": 360,
+     "sum_ms": 28.79
+    },
+    {
+     "name": "chunk_fwd_kernel_o",
+     "n": 270,
+     "sum_ms": 27.799
+    },
+    {
+     "name": "_prefill_nvfp4_moe_kernel",
+     "n": 80,
+     "sum_ms": 25.324
+    },
+    {
+     "name": "kernel_cutlass_kernel_flashinfernormkernelsfused_add_rmsnormFusedAddRMSNormKernel_object_a",
+     "n": 712,
+     "sum_ms": 17.79
+    },
+    {
+     "name": "recompute_w_u_fwd_kernel",
+     "n": 270,
+     "sum_ms": 17.524
+    },
+    {
+     "name": "void at::native::elementwise_kernel",
+     "n": 1311,
+     "sum_ms": 14.734
+    },
+    {
+     "name": "chunk_gated_delta_rule_fwd_kkt_solve_kernel",
+     "n": 270,
+     "sum_ms": 9.744
+    },
+    {
+     "name": "void at::native::vectorized_elementwise_kernel",
+     "n": 1057,
+     "sum_ms": 6.979
+    },
+    {
+     "name": "kernel_cutlass_kernel_flashinfernormkernelsrmsnormRMSNormKernel_object_at__tensorptrbf16gm",
+     "n": 189,
+     "sum_ms": 3.832
+    },
+    {
+     "name": "_nvfp4_dequant_cols_kernel",
+     "n": 640,
+     "sum_ms": 3.013
+    },
+    {
+     "name": "_static_quant_kernel",
+     "n": 360,
+     "sum_ms": 2.955
+    },
+    {
+     "name": "std::enable_if",
+     "n": 320,
+     "sum_ms": 2.433
+    },
+    {
+     "name": "void moe_align_block_size_kernel",
+     "n": 360,
+     "sum_ms": 1.963
+    },
+    {
+     "name": "void flashinfer::activation::act_and_mul_kernel",
+     "n": 400,
+     "sum_ms": 1.95
+    },
+    {
+     "name": "void flashinfer::BatchQKApplyRotaryPosIdsCosSinCacheHeadParallelismKernel",
+     "n": 90,
+     "sum_ms": 1.784
+    },
+    {
+     "name": "_router_triton_kernel",
+     "n": 360,
+     "sum_ms": 1.528
+    },
+    {
+     "name": "void count_and_sort_expert_tokens_kernel",
+     "n": 360,
+     "sum_ms": 1.306
+    },
+    {
+     "name": "",
+     "n": 270,
+     "sum_ms": 1.123
+    }
+   ]
+  },
+  {
+   "index": 4,
+   "chunks": 59,
+   "host_range_ms": 21816.634,
+   "gpu_window_ms": 21941.483,
+   "compute_stream": 13,
+   "compute_busy_ms": 21572.535,
+   "compute_busy_frac": 0.9832,
+   "idle_host_late_ms": 118.242,
+   "idle_host_late_gaps": 1218,
+   "idle_host_late_gt50us": 545,
+   "idle_dependency_ms": 250.705,
+   "idle_dependency_gaps": 85394,
+   "idle_dependency_top_ms": [
+    1.283,
+    1.213,
+    0.746,
+    0.607,
+    0.581
+   ],
+   "idle_host_late_top_ms": [
+    12.39,
+    9.094,
+    7.82,
+    3.515,
+    1.679
+   ],
+   "launches_compute_stream": 86613,
+   "gdn_core": {
+    "kkt": {
+     "n": 1770,
+     "sum_ms": 71.275,
+     "mean_us": 40.3,
+     "median_us": 38.7,
+     "p10_us": 38.1,
+     "p90_us": 39.2
+    },
+    "wu": {
+     "n": 1770,
+     "sum_ms": 125.455,
+     "mean_us": 70.9,
+     "median_us": 66.0,
+     "p10_us": 62.9,
+     "p90_us": 69.6
+    },
+    "h": {
+     "n": 1770,
+     "sum_ms": 243.165,
+     "mean_us": 137.4,
+     "median_us": 130.2,
+     "p10_us": 124.8,
+     "p90_us": 136.0
+    },
+    "o": {
+     "n": 1770,
+     "sum_ms": 183.934,
+     "mean_us": 103.9,
+     "median_us": 96.0,
+     "p10_us": 93.2,
+     "p90_us": 101.5
+    }
+   },
+   "gdn_core_sum_ms": 623.829,
+   "gdn_cuda_other": {
+    "conv_qkv": {
+     "n": 1770,
+     "sum_ms": 147.06,
+     "mean_us": 83.1,
+     "median_us": 74.3,
+     "p10_us": 71.5,
+     "p90_us": 83.4
+    },
+    "gate_cumsum": {
+     "n": 1770,
+     "sum_ms": 8.093,
+     "mean_us": 4.6,
+     "median_us": 4.6,
+     "p10_us": 4.3,
+     "p90_us": 4.8
+    },
+    "gated_norm": {
+     "n": 1770,
+     "sum_ms": 55.877,
+     "mean_us": 31.6,
+     "median_us": 30.5,
+     "p10_us": 29.5,
+     "p90_us": 31.9
+    }
+   },
+   "fused_calls": 0,
+   "triton_chunk_o_calls": 1770,
+   "kkt_grid_x_hist (64-row chunks per GDN call)": {
+    "20": 30,
+    "32": 1740
+   },
+   "gdn_layer_tasks": {
+    "n": 1770,
+    "host_ms_median": 1.412,
+    "gpu_kernel_ms_median": 3.019,
+    "gpu_span_ms_median": 3.242,
+    "core_ms_median": 0.331,
+    "host_gt_gpu_tasks": 165,
+    "sum_host_ms": 3588.767,
+    "sum_gpu_kernel_ms": 5601.836,
+    "sum_core_ms": 623.829,
+    "launches_median": 34.0
+   },
+   "attention_layer_tasks_in_layer_nvtx": 10,
+   "host_blocking_apis": {
+    "cudaEventSynchronize_v3020": {
+     "n": 474,
+     "ms": 16955.051
+    },
+    "cudaMemcpyAsync_v3020": {
+     "n": 7077,
+     "ms": 119.978
+    },
+    "cudaStreamSynchronize_v3020": {
+     "n": 236,
+     "ms": 75.749
+    },
+    "cudaStreamWaitEvent_v3020": {
+     "n": 2753,
+     "ms": 6.899
+    }
+   },
+   "copy_h2d": {
+    "n": 3221,
+    "GB": 18.251,
+    "busy_union_ms": 530.336
+   },
+   "top_compute_kernels": [
+    {
+     "name": "void flashinfer::BatchPrefillWithPagedKVCacheKernel",
+     "n": 300,
+     "sum_ms": 14285.846
+    },
+    {
+     "name": "void bx::fast_gemm",
+     "n": 4720,
+     "sum_ms": 3779.673
+    },
+    {
+     "name": "void cutlass::device_kernel",
+     "n": 2301,
+     "sum_ms": 1247.539
+    },
+    {
+     "name": "void cutlass::Kernel2",
+     "n": 8850,
+     "sum_ms": 463.029
+    },
+    {
+     "name": "nvjet_sm120_qqtst_mma_128x128x64_6_64x64x64_tmaAB_bz_TNNN",
+     "n": 2379,
+     "sum_ms": 293.674
+    },
+    {
+     "name": "chunk_gated_delta_rule_fwd_kernel_h_blockdim64",
+     "n": 1770,
+     "sum_ms": 243.165
+    },
+    {
+     "name": "void ",
+     "n": 4779,
+     "sum_ms": 234.772
+    },
+    {
+     "name": "moe_sum_reduce_kernel",
+     "n": 2360,
+     "sum_ms": 192.499
+    },
+    {
+     "name": "chunk_fwd_kernel_o",
+     "n": 1770,
+     "sum_ms": 183.934
+    },
+    {
+     "name": "kernel_cutlass_kernel_flashinfernormkernelsfused_add_rmsnormFusedAddRMSNormKernel_object_a",
+     "n": 4662,
+     "sum_ms": 127.209
+    },
+    {
+     "name": "recompute_w_u_fwd_kernel",
+     "n": 1770,
+     "sum_ms": 125.455
+    },
+    {
+     "name": "void at::native::elementwise_kernel",
+     "n": 8791,
+     "sum_ms": 95.028
+    },
+    {
+     "name": "chunk_gated_delta_rule_fwd_kkt_solve_kernel",
+     "n": 1770,
+     "sum_ms": 71.275
+    },
+    {
+     "name": "void at::native::vectorized_elementwise_kernel",
+     "n": 6854,
+     "sum_ms": 44.929
+    },
+    {
+     "name": "std::enable_if",
+     "n": 2360,
+     "sum_ms": 19.081
+    },
+    {
+     "name": "_nvfp4_dequant_cols_kernel",
+     "n": 4720,
+     "sum_ms": 18.536
+    },
+    {
+     "name": "kernel_cutlass_kernel_flashinfernormkernelsrmsnormRMSNormKernel_object_at__tensorptrbf16gm",
+     "n": 1239,
+     "sum_ms": 17.718
+    },
+    {
+     "name": "_static_quant_kernel",
+     "n": 2360,
+     "sum_ms": 13.168
+    },
+    {
+     "name": "_router_triton_kernel",
+     "n": 2360,
+     "sum_ms": 10.863
+    },
+    {
+     "name": "void moe_align_block_size_kernel",
+     "n": 2360,
+     "sum_ms": 10.054
+    },
+    {
+     "name": "void flashinfer::BatchQKApplyRotaryPosIdsCosSinCacheHeadParallelismKernel",
+     "n": 590,
+     "sum_ms": 10.027
+    },
+    {
+     "name": "",
+     "n": 1770,
+     "sum_ms": 8.093
+    },
+    {
+     "name": "void count_and_sort_expert_tokens_kernel",
+     "n": 2360,
+     "sum_ms": 7.901
+    },
+    {
+     "name": "void flashinfer::activation::act_and_mul_kernel",
+     "n": 2360,
+     "sum_ms": 6.301
+    },
+    {
+     "name": "void at::native::index_elementwise_kernel",
+     "n": 1975,
+     "sum_ms": 4.316
+    }
+   ]
+  }
+ ]
+}

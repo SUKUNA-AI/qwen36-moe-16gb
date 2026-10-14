@@ -1,0 +1,402 @@
+[
+  {
+    "repeat": 0,
+    "profile": "bf128",
+    "pair_position": 0,
+    "schedule_position": 0,
+    "report": "final-f1-m-0-bf128.json",
+    "harness_version": 6,
+    "load_ready_s": 102.72949703300037,
+    "run_id": "b6812a316843488f87d91abfa3eda742",
+    "launcher": {
+      "files": {
+        "start-experiment.sh": "90b8b08c054e992dcd6cace8cc048427f60d6d13bb4ba71f5072d8f0e297bdb7",
+        "run-experiment.sh": "a06b0b29a17838a3b24ffc364ab0ec28744b3a1ebf1b84821c1def34fee3190a",
+        "check-experiment.py": "9bb324ad9be0694f06e9af1755576327186bb14424e48b1c824e48f4968c05cc"
+      },
+      "environment_sha256": "c3dca3f0ff28c46cbb5d76cde9718d329c7e19d1dd9b186888b67f1f95236311",
+      "problems": [],
+      "main_pid": 192041,
+      "invocation_id": "803b0f68ce384754b2b3062c0d284ee5"
+    },
+    "startup_cgroup_memory_peak_bytes": 29663350784,
+    "startup_peak_scope": "unit lifetime through loaded-model readiness, before benchmark warmup; null means unavailable",
+    "tool_task_report": "final-f1-m-0-bf128-tool-task.json",
+    "whole_run_cgroup_memory_peak_bytes": 29663350784,
+    "vram": {
+      "floor_bytes": 536870912,
+      "min_gpu_free_bytes": 1072893952,
+      "gate": "PASS",
+      "code": null,
+      "pre_start_gpu": {
+        "used_bytes": 2968518656,
+        "free_bytes": 13804503040,
+        "total_bytes": 17094934528
+      },
+      "foreign_gpu_used_bytes_pre_start": 2968518656,
+      "scope": "service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active"
+    },
+    "arm_verdict": "VALID",
+    "status": "complete"
+  },
+  {
+    "repeat": 0,
+    "profile": "main-release",
+    "pair_position": 1,
+    "schedule_position": 1,
+    "report": "final-f1-m-0-main-release.json",
+    "harness_version": 6,
+    "load_ready_s": 103.7467984549985,
+    "run_id": "9b7477cabbfe43e998c62cb66ffb6d93",
+    "launcher": {
+      "files": {
+        "start-experiment.sh": "90b8b08c054e992dcd6cace8cc048427f60d6d13bb4ba71f5072d8f0e297bdb7",
+        "run-experiment.sh": "a06b0b29a17838a3b24ffc364ab0ec28744b3a1ebf1b84821c1def34fee3190a",
+        "check-experiment.py": "9bb324ad9be0694f06e9af1755576327186bb14424e48b1c824e48f4968c05cc"
+      },
+      "environment_sha256": "c3dca3f0ff28c46cbb5d76cde9718d329c7e19d1dd9b186888b67f1f95236311",
+      "problems": [],
+      "main_pid": 193222,
+      "invocation_id": "5cd27e02a01047079b07072a7d299fd6"
+    },
+    "startup_cgroup_memory_peak_bytes": 29817053184,
+    "startup_peak_scope": "unit lifetime through loaded-model readiness, before benchmark warmup; null means unavailable",
+    "tool_task_report": "final-f1-m-0-main-release-tool-task.json",
+    "whole_run_cgroup_memory_peak_bytes": 29817053184,
+    "vram": {
+      "floor_bytes": 536870912,
+      "min_gpu_free_bytes": 1242042368,
+      "gate": "PASS",
+      "code": null,
+      "pre_start_gpu": {
+        "used_bytes": 2997878784,
+        "free_bytes": 13775142912,
+        "total_bytes": 17094934528
+      },
+      "foreign_gpu_used_bytes_pre_start": 2997878784,
+      "scope": "service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active"
+    },
+    "arm_verdict": "VALID",
+    "status": "complete"
+  },
+  {
+    "repeat": 1,
+    "profile": "main-release",
+    "pair_position": 0,
+    "schedule_position": 2,
+    "report": "final-f1-m-1-main-release.json",
+    "harness_version": 6,
+    "load_ready_s": 121.84589926699846,
+    "run_id": "2dacd485201c401181b1b2f4b74cf3a6",
+    "launcher": {
+      "files": {
+        "start-experiment.sh": "90b8b08c054e992dcd6cace8cc048427f60d6d13bb4ba71f5072d8f0e297bdb7",
+        "run-experiment.sh": "a06b0b29a17838a3b24ffc364ab0ec28744b3a1ebf1b84821c1def34fee3190a",
+        "check-experiment.py": "9bb324ad9be0694f06e9af1755576327186bb14424e48b1c824e48f4968c05cc"
+      },
+      "environment_sha256": "c3dca3f0ff28c46cbb5d76cde9718d329c7e19d1dd9b186888b67f1f95236311",
+      "problems": [],
+      "main_pid": 194028,
+      "invocation_id": "8f14a2db182547b69ba1440692fab047"
+    },
+    "startup_cgroup_memory_peak_bytes": 29819887616,
+    "startup_peak_scope": "unit lifetime through loaded-model readiness, before benchmark warmup; null means unavailable",
+    "tool_task_report": "final-f1-m-1-main-release-tool-task.json",
+    "whole_run_cgroup_memory_peak_bytes": 29819887616,
+    "vram": {
+      "floor_bytes": 536870912,
+      "min_gpu_free_bytes": 1218514944,
+      "gate": "PASS",
+      "code": null,
+      "pre_start_gpu": {
+        "used_bytes": 2986344448,
+        "free_bytes": 13786677248,
+        "total_bytes": 17094934528
+      },
+      "foreign_gpu_used_bytes_pre_start": 2986344448,
+      "scope": "service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active"
+    },
+    "arm_verdict": "VALID",
+    "status": "complete"
+  },
+  {
+    "repeat": 1,
+    "profile": "bf128",
+    "pair_position": 1,
+    "schedule_position": 3,
+    "report": "final-f1-m-1-bf128.json",
+    "harness_version": 6,
+    "load_ready_s": 135.8967968040015,
+    "run_id": "21232f92903244299e88e03afeb42bed",
+    "launcher": {
+      "files": {
+        "start-experiment.sh": "90b8b08c054e992dcd6cace8cc048427f60d6d13bb4ba71f5072d8f0e297bdb7",
+        "run-experiment.sh": "a06b0b29a17838a3b24ffc364ab0ec28744b3a1ebf1b84821c1def34fee3190a",
+        "check-experiment.py": "9bb324ad9be0694f06e9af1755576327186bb14424e48b1c824e48f4968c05cc"
+      },
+      "environment_sha256": "c3dca3f0ff28c46cbb5d76cde9718d329c7e19d1dd9b186888b67f1f95236311",
+      "problems": [],
+      "main_pid": 195024,
+      "invocation_id": "fe062ae86a894af68a7060bc8c9331f7"
+    },
+    "startup_cgroup_memory_peak_bytes": 29662593024,
+    "startup_peak_scope": "unit lifetime through loaded-model readiness, before benchmark warmup; null means unavailable",
+    "tool_task_report": "final-f1-m-1-bf128-tool-task.json",
+    "whole_run_cgroup_memory_peak_bytes": 29662593024,
+    "vram": {
+      "floor_bytes": 536870912,
+      "min_gpu_free_bytes": 1011552256,
+      "gate": "PASS",
+      "code": null,
+      "pre_start_gpu": {
+        "used_bytes": 3009413120,
+        "free_bytes": 13763608576,
+        "total_bytes": 17094934528
+      },
+      "foreign_gpu_used_bytes_pre_start": 3009413120,
+      "scope": "service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active"
+    },
+    "arm_verdict": "VALID",
+    "status": "complete"
+  },
+  {
+    "repeat": 2,
+    "profile": "bf128",
+    "pair_position": 0,
+    "schedule_position": 4,
+    "report": "final-f1-m-2-bf128.json",
+    "harness_version": 6,
+    "load_ready_s": 128.8803761770032,
+    "run_id": "84e1c58bd718420d9831bb380be3d617",
+    "launcher": {
+      "files": {
+        "start-experiment.sh": "90b8b08c054e992dcd6cace8cc048427f60d6d13bb4ba71f5072d8f0e297bdb7",
+        "run-experiment.sh": "a06b0b29a17838a3b24ffc364ab0ec28744b3a1ebf1b84821c1def34fee3190a",
+        "check-experiment.py": "9bb324ad9be0694f06e9af1755576327186bb14424e48b1c824e48f4968c05cc"
+      },
+      "environment_sha256": "c3dca3f0ff28c46cbb5d76cde9718d329c7e19d1dd9b186888b67f1f95236311",
+      "problems": [],
+      "main_pid": 196329,
+      "invocation_id": "7a975200781342f4956bb2f0bbc6970c"
+    },
+    "startup_cgroup_memory_peak_bytes": 29663645696,
+    "startup_peak_scope": "unit lifetime through loaded-model readiness, before benchmark warmup; null means unavailable",
+    "tool_task_report": "final-f1-m-2-bf128-tool-task.json",
+    "whole_run_cgroup_memory_peak_bytes": 29663645696,
+    "vram": {
+      "floor_bytes": 536870912,
+      "min_gpu_free_bytes": 916918272,
+      "gate": "PASS",
+      "code": null,
+      "pre_start_gpu": {
+        "used_bytes": 3036676096,
+        "free_bytes": 13736345600,
+        "total_bytes": 17094934528
+      },
+      "foreign_gpu_used_bytes_pre_start": 3036676096,
+      "scope": "service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active"
+    },
+    "arm_verdict": "VALID",
+    "status": "complete"
+  },
+  {
+    "repeat": 2,
+    "profile": "main-release",
+    "pair_position": 1,
+    "schedule_position": 5,
+    "report": "final-f1-m-2-main-release.json",
+    "harness_version": 6,
+    "load_ready_s": 129.87440552599946,
+    "run_id": "9f18cad79d1f4e04838349f7e938f4c7",
+    "launcher": {
+      "files": {
+        "start-experiment.sh": "90b8b08c054e992dcd6cace8cc048427f60d6d13bb4ba71f5072d8f0e297bdb7",
+        "run-experiment.sh": "a06b0b29a17838a3b24ffc364ab0ec28744b3a1ebf1b84821c1def34fee3190a",
+        "check-experiment.py": "9bb324ad9be0694f06e9af1755576327186bb14424e48b1c824e48f4968c05cc"
+      },
+      "environment_sha256": "c3dca3f0ff28c46cbb5d76cde9718d329c7e19d1dd9b186888b67f1f95236311",
+      "problems": [],
+      "main_pid": 197502,
+      "invocation_id": "0cd46410f4a14b78970ceea028934705"
+    },
+    "startup_cgroup_memory_peak_bytes": 29819543552,
+    "startup_peak_scope": "unit lifetime through loaded-model readiness, before benchmark warmup; null means unavailable",
+    "tool_task_report": "final-f1-m-2-main-release-tool-task.json",
+    "whole_run_cgroup_memory_peak_bytes": 29819543552,
+    "vram": {
+      "floor_bytes": 536870912,
+      "min_gpu_free_bytes": 1123356672,
+      "gate": "PASS",
+      "code": null,
+      "pre_start_gpu": {
+        "used_bytes": 3076521984,
+        "free_bytes": 13696499712,
+        "total_bytes": 17094934528
+      },
+      "foreign_gpu_used_bytes_pre_start": 3076521984,
+      "scope": "service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active"
+    },
+    "arm_verdict": "VALID",
+    "status": "complete"
+  },
+  {
+    "repeat": 3,
+    "profile": "main-release",
+    "pair_position": 0,
+    "schedule_position": 6,
+    "report": "final-f1-m-3-main-release.json",
+    "harness_version": 6,
+    "load_ready_s": 131.89457791400127,
+    "run_id": "b878f6ebf4b34120b528bb7088e67ca2",
+    "launcher": {
+      "files": {
+        "start-experiment.sh": "90b8b08c054e992dcd6cace8cc048427f60d6d13bb4ba71f5072d8f0e297bdb7",
+        "run-experiment.sh": "a06b0b29a17838a3b24ffc364ab0ec28744b3a1ebf1b84821c1def34fee3190a",
+        "check-experiment.py": "9bb324ad9be0694f06e9af1755576327186bb14424e48b1c824e48f4968c05cc"
+      },
+      "environment_sha256": "c3dca3f0ff28c46cbb5d76cde9718d329c7e19d1dd9b186888b67f1f95236311",
+      "problems": [],
+      "main_pid": 198408,
+      "invocation_id": "8244ef66a36344089740539dbf302afa"
+    },
+    "startup_cgroup_memory_peak_bytes": 29819461632,
+    "startup_peak_scope": "unit lifetime through loaded-model readiness, before benchmark warmup; null means unavailable",
+    "tool_task_report": "final-f1-m-3-main-release-tool-task.json",
+    "whole_run_cgroup_memory_peak_bytes": 29819461632,
+    "vram": {
+      "floor_bytes": 536870912,
+      "min_gpu_free_bytes": 1078726656,
+      "gate": "PASS",
+      "code": null,
+      "pre_start_gpu": {
+        "used_bytes": 3079667712,
+        "free_bytes": 13693353984,
+        "total_bytes": 17094934528
+      },
+      "foreign_gpu_used_bytes_pre_start": 3079667712,
+      "scope": "service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active"
+    },
+    "arm_verdict": "VALID",
+    "status": "complete"
+  },
+  {
+    "repeat": 3,
+    "profile": "bf128",
+    "pair_position": 1,
+    "schedule_position": 7,
+    "report": "final-f1-m-3-bf128.json",
+    "harness_version": 6,
+    "load_ready_s": 148.98994823999965,
+    "run_id": "fb928b8c4a904f7797d49bae7965b8eb",
+    "launcher": {
+      "files": {
+        "start-experiment.sh": "90b8b08c054e992dcd6cace8cc048427f60d6d13bb4ba71f5072d8f0e297bdb7",
+        "run-experiment.sh": "a06b0b29a17838a3b24ffc364ab0ec28744b3a1ebf1b84821c1def34fee3190a",
+        "check-experiment.py": "9bb324ad9be0694f06e9af1755576327186bb14424e48b1c824e48f4968c05cc"
+      },
+      "environment_sha256": "c3dca3f0ff28c46cbb5d76cde9718d329c7e19d1dd9b186888b67f1f95236311",
+      "problems": [],
+      "main_pid": 199282,
+      "invocation_id": "dbc1e917da6f4066999c382691a81f60"
+    },
+    "startup_cgroup_memory_peak_bytes": 29664145408,
+    "startup_peak_scope": "unit lifetime through loaded-model readiness, before benchmark warmup; null means unavailable",
+    "tool_task_report": "final-f1-m-3-bf128-tool-task.json",
+    "whole_run_cgroup_memory_peak_bytes": 29664145408,
+    "vram": {
+      "floor_bytes": 536870912,
+      "min_gpu_free_bytes": 875401216,
+      "gate": "PASS",
+      "code": null,
+      "pre_start_gpu": {
+        "used_bytes": 3144679424,
+        "free_bytes": 13628342272,
+        "total_bytes": 17094934528
+      },
+      "foreign_gpu_used_bytes_pre_start": 3144679424,
+      "scope": "service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active"
+    },
+    "arm_verdict": "VALID",
+    "status": "complete"
+  },
+  {
+    "repeat": 4,
+    "profile": "bf128",
+    "pair_position": 0,
+    "schedule_position": 8,
+    "report": "final-f1-m-4-bf128.json",
+    "harness_version": 6,
+    "load_ready_s": 135.91837980700075,
+    "run_id": "5e75f53fb9084a6299b3c6bf3f4aa4ef",
+    "launcher": {
+      "files": {
+        "start-experiment.sh": "90b8b08c054e992dcd6cace8cc048427f60d6d13bb4ba71f5072d8f0e297bdb7",
+        "run-experiment.sh": "a06b0b29a17838a3b24ffc364ab0ec28744b3a1ebf1b84821c1def34fee3190a",
+        "check-experiment.py": "9bb324ad9be0694f06e9af1755576327186bb14424e48b1c824e48f4968c05cc"
+      },
+      "environment_sha256": "c3dca3f0ff28c46cbb5d76cde9718d329c7e19d1dd9b186888b67f1f95236311",
+      "problems": [],
+      "main_pid": 200390,
+      "invocation_id": "6076aed6c483432f890eb50adc6fb4f4"
+    },
+    "startup_cgroup_memory_peak_bytes": 29664624640,
+    "startup_peak_scope": "unit lifetime through loaded-model readiness, before benchmark warmup; null means unavailable",
+    "tool_task_report": "final-f1-m-4-bf128-tool-task.json",
+    "whole_run_cgroup_memory_peak_bytes": 29664624640,
+    "vram": {
+      "floor_bytes": 536870912,
+      "min_gpu_free_bytes": 728031232,
+      "gate": "PASS",
+      "code": null,
+      "pre_start_gpu": {
+        "used_bytes": 3060793344,
+        "free_bytes": 13712228352,
+        "total_bytes": 17094934528
+      },
+      "foreign_gpu_used_bytes_pre_start": 3060793344,
+      "scope": "service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active"
+    },
+    "arm_verdict": "VALID",
+    "status": "complete"
+  },
+  {
+    "repeat": 4,
+    "profile": "main-release",
+    "pair_position": 1,
+    "schedule_position": 9,
+    "report": "final-f1-m-4-main-release.json",
+    "harness_version": 6,
+    "load_ready_s": 123.84693700700154,
+    "run_id": "532c2ec0659c470f89552e7b71a30c93",
+    "launcher": {
+      "files": {
+        "start-experiment.sh": "90b8b08c054e992dcd6cace8cc048427f60d6d13bb4ba71f5072d8f0e297bdb7",
+        "run-experiment.sh": "a06b0b29a17838a3b24ffc364ab0ec28744b3a1ebf1b84821c1def34fee3190a",
+        "check-experiment.py": "9bb324ad9be0694f06e9af1755576327186bb14424e48b1c824e48f4968c05cc"
+      },
+      "environment_sha256": "c3dca3f0ff28c46cbb5d76cde9718d329c7e19d1dd9b186888b67f1f95236311",
+      "problems": [],
+      "main_pid": 201496,
+      "invocation_id": "52bab904bee44c0d915ea3ed296ed5f9"
+    },
+    "startup_cgroup_memory_peak_bytes": 29819957248,
+    "startup_peak_scope": "unit lifetime through loaded-model readiness, before benchmark warmup; null means unavailable",
+    "tool_task_report": "final-f1-m-4-main-release-tool-task.json",
+    "whole_run_cgroup_memory_peak_bytes": 29819957248,
+    "vram": {
+      "floor_bytes": 536870912,
+      "min_gpu_free_bytes": 1112158208,
+      "gate": "PASS",
+      "code": null,
+      "pre_start_gpu": {
+        "used_bytes": 3208642560,
+        "free_bytes": 13564379136,
+        "total_bytes": 17094934528
+      },
+      "foreign_gpu_used_bytes_pre_start": 3208642560,
+      "scope": "service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active"
+    },
+    "arm_verdict": "VALID",
+    "status": "complete"
+  }
+]

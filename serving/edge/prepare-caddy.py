@@ -1,0 +1,25 @@
+"""Run on edge as root. Stage and validate; activation is a separate operation."""
+import datetime,hashlib,json,pathlib,shutil,subprocess,os
+ROOT=pathlib.Path('/var/lib/qwen36-api')
+BACKUP=ROOT/'backups'
+ROOT.mkdir(mode=0o700,exist_ok=True)
+BACKUP.mkdir(mode=0o700,exist_ok=True)
+source=pathlib.Path('/etc/caddy/Caddyfile')
+stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+copy=BACKUP/('Caddyfile.'+stamp)
+shutil.copy2(source,copy)
+copy.chmod(0o600)
+meta={'backup':str(copy),'sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'uid':source.stat().st_uid,'gid':source.stat().st_gid,'mode':source.stat().st_mode&0o777}
+(ROOT/'prechange.json').write_text(json.dumps(meta,indent=2))
+(ROOT/'prechange.json').chmod(0o600)
+site=pathlib.Path('/etc/caddy/qwen36-api.caddy')
+if site.exists(): raise RuntimeError('Refusing to overwrite an existing site file')
+shutil.copyfile('/tmp/qwen36-api-llm.caddy',site)
+site.chmod(0o644)
+candidate=pathlib.Path('/etc/caddy/qwen36-api-candidate.Caddyfile')
+candidate.write_text(source.read_text()+'\n# BEGIN qwen36-api\nimport /etc/caddy/qwen36-api.caddy\n# END qwen36-api\n')
+candidate.chmod(0o644)
+r=subprocess.run(['sudo','-u','caddy','/usr/bin/caddy','validate','--config',str(candidate),'--adapter','caddyfile'],capture_output=True,text=True)
+print('CADDY_VALIDATE',r.returncode,r.stdout,r.stderr)
+if r.returncode: raise SystemExit(r.returncode)
+print('STAGED_ONLY_NO_RELOAD',json.dumps(meta))

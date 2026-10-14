@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "default": "main128",
+  "profiles": {
+    "baseline64": {
+      "context": 65536,
+      "chunk": 2048,
+      "memory_ratio": 0.75,
+      "kv_dtype": "bf16",
+      "flags": [],
+      "fused_attention_gate": false,
+      "fp32_gdn_snapshot": false,
+      "retain_chunk_snapshot": false,
+      "cuda_nvfp4_prefill": false,
+      "qualified": true
+    },
+    "main128": {
+      "context": 131072,
+      "chunk": 2048,
+      "memory_ratio": 0.75,
+      "kv_dtype": "bf16",
+      "flags": [],
+      "prefix_margin": 8,
+      "fused_attention_gate": true,
+      "fp32_gdn_snapshot": true,
+      "retain_chunk_snapshot": true,
+      "cuda_nvfp4_prefill": true,
+      "layer_major_prefill": true,
+      "cuda_gdn": true,
+      "cuda_fp8_gemv": true,
+      "decode_gather": true,
+      "layer_major_attn_batch": 2,
+      "qualified": true
+    },
+    "long256": {
+      "context": 262144,
+      "chunk": 2048,
+      "memory_ratio": 0.73,
+      "kv_dtype": "bf16",
+      "flags": [],
+      "prefix_margin": 8,
+      "fused_attention_gate": true,
+      "fp32_gdn_snapshot": true,
+      "retain_chunk_snapshot": true,
+      "cuda_nvfp4_prefill": true,
+      "layer_major_prefill": true,
+      "cuda_gdn": true,
+      "cuda_fp8_gemv": true,
+      "decode_gather": true,
+      "layer_major_attn_batch": 2,
+      "qualified": true
+    }
+  }
+}

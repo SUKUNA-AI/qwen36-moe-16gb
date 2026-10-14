@@ -1,0 +1,439 @@
+--- a/python/freetoken/attention/fi.py
++++ b/python/freetoken/attention/fi.py
+@@ -29,6 +29,30 @@
+     return 1 << math.ceil(math.log2(n))
+ 
+ 
++def _chunk_plan_int_bytes(rows: int, num_qo_heads: int, num_kv_heads: int, sm_count: int,
++                          batch_size: int = 1) -> int:
++    """Int-workspace bytes for one FlashInfer fa2 prefill plan of ``batch_size`` requests and
++    ``rows`` query rows (QWEN36_SYNC_LEAN chunk wrappers), with 2x margin. PrefillPlanImpl
++    (scheduler.cuh) allocates 3 x 4 B x padded_batch_size of tile indices, o_indptr, the kv chunk
++    size and, with split-kv, merge_indptr (4 B x (rows + 1)) and a bool mask per work item, each
++    16-B aligned; cta_tile_q >= 16 bounds the q tiles, and split-kv keeps the work items within
++    2 CTAs per SM. An overflow would raise in FlashInfer's allocator, never write out of bounds."""
++    gqa = max(1, num_qo_heads // max(1, num_kv_heads))
++    work = max(-(-rows * gqa // 16) + batch_size, 2 * sm_count)
++    need = 3 * 4 * work + 4 * (batch_size + 1) + 4 + 4 * (rows + 1) + work + 8 * 16
++    return max(64 << 10, -(-2 * need // 4096) * 4096)
++
++
++class _HostStagingEvent:
++    """CPU stand-in for a chunk wrapper's staging event (CPU tests)."""
++
++    def synchronize(self) -> None:
++        return None
++
++    def record(self, stream=None) -> None:
++        return None
++
++
+ logger = init_logger(__name__)
+ 
+ 
+@@ -152,9 +176,14 @@
+         from flashinfer import BatchDecodeWithPagedKVCacheWrapper
+ 
+         metadata.initialized = True
++        # QWEN36_SYNC_LEAN layer-major chunk wrappers (chunk_plan_wrapper) own their pinned staging
++        # buffer, guarded by their own event; every other wrapper shares self.last_event.
++        last_event = getattr(metadata.wrapper, "_qwen36_staging_event", None)
++        if last_event is None:
++            last_event = self.last_event
+         # FlashInfer planning reuses a pinned host staging buffer and launches an
+         # async H2D copy. Wait here before the next plan mutates that host buffer.
+-        self.last_event.synchronize()
++        last_event.synchronize()
+         if isinstance(metadata.wrapper, BatchDecodeWithPagedKVCacheWrapper):
+             metadata.wrapper.plan(
+                 indptr=metadata.cu_seqlens_k_cpu,
+@@ -187,7 +216,57 @@
+                 non_blocking=True,
+                 causal=True,
+             )
+-        self.last_event.record()
++        last_event.record()
++
++    # -- QWEN36_SYNC_LEAN: one prefill plan per chunk for layer-major prefill ----------------------
++    def chunk_plan_wrapper(self, index: int, rows: int):
++        """Pooled prefill wrapper ``index`` (window-local chunk index) for layer-major prefill.
++
++        A shallow copy of ``prefill_wrapper`` -- same float workspace, backend and JIT module, so
++        the same plan inputs give the same plan bytes and plan info -- that owns its int workspace
++        (sized for ``rows``-row chunks), pinned staging buffer, kv-length buffer and staging event.
++        A chunk planned on it keeps its plan while the other chunks of the window plan on theirs,
++        so every attention layer reuses it instead of re-planning the shared wrapper (and waiting
++        for the previous plan's staging copy). Pooled for the process: a staging buffer is only
++        rewritten after its own event, i.e. after its previous plan (a window ago) has landed."""
++        import copy
++
++        pool = self.__dict__.setdefault("_qwen36_chunk_wrappers", [])
++        need = _chunk_plan_int_bytes(rows, self.qo_head_local, self.kv_head_local, self._qwen36_sm_count())
++        while len(pool) <= index:
++            pool.append(None)
++        wrapper = pool[index]
++        if wrapper is None or wrapper._qwen36_int_bytes < need:
++            if wrapper is not None:
++                wrapper._qwen36_staging_event.synchronize()  # its last staging copy has landed
++            wrapper = copy.copy(self.prefill_wrapper)
++            wrapper.reset_workspace_buffer(  # own int workspace + own pinned staging of that size
++                self.float_workspace_buffer, torch.empty((need,), dtype=torch.uint8, device=self.device)
++            )
++            wrapper._kv_lens_buffer = torch.empty((16,), dtype=torch.int32, device=self.device)
++            wrapper._qwen36_staging_event = (
++                torch.cuda.Event() if self.device.type == "cuda" else _HostStagingEvent()
++            )
++            wrapper._qwen36_int_bytes = need
++            pool[index] = wrapper
++        return wrapper
++
++    def release_chunk_plans(self) -> None:
++        """Drop the per-plan tensors the pooled chunk wrappers hold (a window's KV indices can be
++        tens of MB); their next use always re-plans. Stream-ordered frees, no host sync."""
++        for wrapper in self.__dict__.get("_qwen36_chunk_wrappers", ()):
++            if wrapper is not None:
++                wrapper._qo_indptr_buf = wrapper._paged_kv_indptr_buf = None
++                wrapper._paged_kv_indices_buf = wrapper._paged_kv_last_page_len_buf = None
++                wrapper._plan_info = None
++
++    def _qwen36_sm_count(self) -> int:
++        if "_qwen36_sms" not in self.__dict__:
++            self._qwen36_sms = (
++                torch.cuda.get_device_properties(self.device).multi_processor_count
++                if self.device.type == "cuda" else 128
++            )
++        return self._qwen36_sms
+ 
+     def _get_ones_cpu(self, bs: int) -> torch.Tensor:
+         if bs <= len(self.cached_ones_cpu):
+--- a/python/freetoken/attention/linear.py
++++ b/python/freetoken/attention/linear.py
+@@ -80,6 +80,28 @@
+ 
+     track = _build_track_metadata(reqs, cu_host, device, pin)
+ 
++    from freetoken import sync_lean
++
++    if sync_lean.enabled():
++        # chunk index/offset tables from the host cu_seqlens, seeded into the FLA tensor cache:
++        # the first GDN layer then does not drain the stream three times to derive them
++        from freetoken.kernel.cuda_gdn import seed_empty_sequence
++        from freetoken.kernel.fla.index import seed_chunk_metadata
++
++        cu_seqlens = cu_host.to(device, non_blocking=True)
++        seed_chunk_metadata(cu_seqlens, cu_host)
++        # and the CUDA GDN path's empty-sequence check (one .item() drain per prefill forward)
++        seed_empty_sequence(cu_seqlens, cu_host)
++        return FLAMetadata(
++            cu_seqlens=cu_seqlens,
++            cache_indices=idx_host.to(device, non_blocking=True),
++            has_initial_state=has_init_host.to(device, non_blocking=True),
++            fresh_state_indices=(
++                fresh_host.to(device, non_blocking=True) if fresh_host is not None else None
++            ),
++            **track,
++        )
++
+     return FLAMetadata(
+         cu_seqlens=cu_host.to(device, non_blocking=True),
+         cache_indices=idx_host.to(device, non_blocking=True),
+--- a/python/freetoken/engine/layer_major.py
++++ b/python/freetoken/engine/layer_major.py
+@@ -173,6 +173,23 @@
+         # FLA caches chunk indices per cu_seqlens object (4 entries, host sync on a miss); keep
+         # every chunk of the window cached instead of thrashing (values are identical).
+         self._fla_prev = _set_fla_tensor_cache(max(4, 4 * plan.window_chunks + 8))
++        # QWEN36_SYNC_LEAN: plan each chunk once per window on a pooled per-chunk FlashInfer wrapper
++        # (attention/fi.py chunk_plan_wrapper) instead of re-planning the shared wrapper on every
++        # (attention layer, chunk) task; same plan inputs -> same plan, no wait on the previous plan.
++        from freetoken import sync_lean
++
++        backend = getattr(engine, "attn_backend", None)
++        self._chunk_plans = sync_lean.enabled() and callable(getattr(backend, "chunk_plan_wrapper", None))
++        self._chunk_rows = chunk_rows
++        if self._chunk_plans:
++            for i in range(plan.window_chunks):  # allocate the pool here, not inside the task loop
++                backend.chunk_plan_wrapper(i, chunk_rows)
++            if self.attn_k > 1:
++                # grouped attention: one more pooled wrapper per group (index window_chunks + the
++                # first member's local index), planned once per window, reused by every grouped layer
++                for i in range(0, plan.window_chunks, self.attn_k):
++                    backend.chunk_plan_wrapper(plan.window_chunks + i, self.attn_k * chunk_rows)
++        self._win_a = 0  # first chunk index of the window being run (grouped tasks, lean pool index)
+         self.begin = self.end = None
+         self._nsys_begin()
+         if self.cuda:
+@@ -184,7 +201,8 @@
+         self._select_meta(getattr(batch, "attn_metadata", None))
+ 
+     def _select_meta(self, meta) -> None:
+-        if meta is not None and meta is not self._planned and hasattr(meta, "initialized"):
++        if meta is not None and meta is not self._planned and hasattr(meta, "initialized") \
++                and not (self._chunk_plans and _pooled(meta)):
+             meta.initialized = False  # FlashInfer: re-plan the shared prefill wrapper for this chunk
+         self._planned = meta
+ 
+@@ -202,6 +220,10 @@
+         the last chunk) when that is bit-exact (else one call per chunk, i.e. k=1); then per
+         chunk output gate, o_proj, post norm and MoE."""
+         inner, store = self.inner, self.store
++        self._win_a = key[0] - locals_[0]
++        if self._chunk_plans and layer == 0 and locals_[0] == 0:
++            # a new window starts: every task of the previous one is enqueued, drop its plans' tensors
++            self.engine.attn_backend.release_chunk_plans()
+         rows = [b.input_ids.shape[0] for b in batches]
+         total = sum(rows)
+         qbuf, obuf, gbuf = self._qbuf[:total], self._obuf[:total], self._gbuf[:total]
+@@ -243,6 +265,8 @@
+         gqa = max(1, backend.qo_head_local // max(1, backend.kv_head_local))
+         for c, batch in zip(key, batches):
+             if c not in self._member_info:
++                if self._chunk_plans:  # probe on the member's own pooled wrapper (kept for a k=1 fallback)
++                    self._select_chunk_plan(batch, c - self._win_a)
+                 self._member_info[c] = self._plan_now(batch.attn_metadata)
+                 self.attn_stats["attn_member_probes"] += 1
+             info = self._member_info[c]
+@@ -270,6 +294,10 @@
+             meta = self._group_meta.get(key)
+             if meta is None:
+                 meta = self._group_meta[key] = backend.group_metadata(batches)
++                if self._chunk_plans:  # the group's own pooled wrapper: planned once per window
++                    meta.wrapper = backend.chunk_plan_wrapper(self.plan.window_chunks + key[0] - self._win_a,
++                                                              sum(rows))
++                    meta.initialized = False
+             info = self._plan_now(meta)
+             if info is not None and not info[1] and info[0] == self._member_cta:
+                 backend.run_prefill(q, kv_layer, meta, out=out)
+@@ -282,8 +310,11 @@
+         if len(batches) > 1:
+             self.attn_stats["attn_fallback_groups"] += 1
+         off = 0
+-        for batch, n in zip(batches, rows):
+-            self._select_meta(batch.attn_metadata)
++        for c, batch, n in zip(key, batches, rows):
++            if self._chunk_plans:
++                self._select_chunk_plan(batch, c - self._win_a)
++            else:
++                self._select_meta(batch.attn_metadata)
+             backend.run_prefill(q[off:off + n], kv_layer, batch.attn_metadata, out=out[off:off + n])
+             off += n
+ 
+@@ -294,14 +325,31 @@
+         for c in [c for c in self._member_info if first <= c < end]:
+             del self._member_info[c]
+ 
++    def _select_chunk_plan(self, batch, local: int) -> None:
++        """QWEN36_SYNC_LEAN: the chunk's own pooled wrapper; planned on its first attention task
++        of the window, reused (no plan, no wait) by every later attention layer."""
++        meta = getattr(batch, "attn_metadata", None)
++        if meta is None or not hasattr(meta, "initialized"):
++            return
++        wrapper = self.engine.attn_backend.chunk_plan_wrapper(local, self._chunk_rows)
++        if meta.wrapper is not wrapper:
++            meta.wrapper = wrapper
++            meta.initialized = False
++
+     def run_task(self, layer: int, local: int, batch) -> None:
++        if self._chunk_plans and layer == 0 and local == 0:
++            # a new window starts: every task of the previous one is enqueued, drop its plans' tensors
++            self.engine.attn_backend.release_chunk_plans()
+         rows = batch.input_ids.shape[0]
+         hid = self.store.hidden_view(local, rows)
+         res = self.store.residual_view(local, rows)
+         inner = self.inner
+         with self.ctx.forward_batch(batch), self.model.forward_host_ctx(batch, False):
+             if inner.layer_major_uses_attention(layer):
+-                self._select_plan(batch)
++                if self._chunk_plans:
++                    self._select_chunk_plan(batch, local)
++                else:
++                    self._select_plan(batch)
+             if layer == 0:
+                 # chunked: residual = embedding tensor, updated in place by every layer; here the
+                 # embedding is that same tensor's bytes, living in the store.
+@@ -378,6 +426,8 @@
+             self._qbuf = self._obuf = self._gbuf = None
+         if self._fla_prev is not None:
+             _set_fla_tensor_cache(self._fla_prev)
++        if self._chunk_plans:
++            self.engine.attn_backend.release_chunk_plans()
+         self._nsys_end()
+ 
+     # Nsight runs (QWEN36_NSYS_FORWARDS=n, see Engine.forward_batch): the whole layer-major
+@@ -404,6 +454,12 @@
+         self._nsys = 0
+ 
+ 
++def _pooled(meta) -> bool:
++    """QWEN36_SYNC_LEAN: ``meta`` runs on a pooled wrapper (attention/fi.py chunk_plan_wrapper) that
++    no other metadata of the window plans on, so its plan never needs a re-plan on a switch."""
++    return getattr(getattr(meta, "wrapper", None), "_qwen36_staging_event", None) is not None
++
++
+ def _keep(dst: torch.Tensor, src: torch.Tensor) -> None:
+     """Make ``dst`` hold ``src`` (bit copy unless it already is that memory)."""
+     if src.data_ptr() != dst.data_ptr() or src.shape != dst.shape:
+--- a/python/freetoken/kernel/cuda_gdn.py
++++ b/python/freetoken/kernel/cuda_gdn.py
+@@ -40,6 +40,10 @@
+     sequence by kkt_solve / recompute_w_u / chunk_o (chunk_h is per sequence and unaffected); the
+     fused path must not run then. Cached per cu tensor object (one host sync per batch, like
+     prepare_chunk_indices)."""
++    return _empty_sequence_fn()(cu)
++
++
++def _empty_sequence_fn():
+     global _EMPTY_SEQ
+     if _EMPTY_SEQ is None:
+         from freetoken.kernel.fla.utils import tensor_cache
+@@ -48,7 +52,19 @@
+         def _empty(c):
+             return bool((c[1:] == c[:-1]).any().item())
+         _EMPTY_SEQ = _empty
+-    return _EMPTY_SEQ(cu)
++    return _EMPTY_SEQ
++
++
++def seed_empty_sequence(cu_seqlens: torch.Tensor, cu_host: torch.Tensor) -> None:
++    """QWEN36_SYNC_LEAN: seed has_empty_sequence's cache for the DEVICE ``cu_seqlens`` with the
++    same answer computed on its host copy (same int64 values, same expression), so the first
++    prefill GDN layer of the forward does not drain the stream for ``.item()``."""
++    if cu_host.device.type != "cpu" or cu_host.shape != cu_seqlens.shape:
++        return
++    fn = _empty_sequence_fn()
++    seed = getattr(fn, "cache_seed", None)
++    if seed is not None:
++        seed(bool((cu_host[1:] == cu_host[:-1]).any().item()), cu_seqlens)
+ 
+ 
+ 
+--- a/python/freetoken/kernel/fla/index.py
++++ b/python/freetoken/kernel/fla/index.py
+@@ -33,3 +33,49 @@
+     return torch.cat(
+         [cu_seqlens.new_tensor([0]), triton.cdiv(prepare_lens(cu_seqlens), chunk_size)]
+     ).cumsum(-1)
++
++
++# --- QWEN36_SYNC_LEAN (freetoken.sync_lean): the two tables above, from the HOST cu_seqlens ------
++def host_chunk_indices(cu_host: torch.LongTensor, chunk_size: int) -> torch.LongTensor:
++    """``prepare_chunk_indices`` values computed on the host copy of cu_seqlens (same ops)."""
++    indices = torch.cat(
++        [torch.arange(n) for n in triton.cdiv(cu_host[1:] - cu_host[:-1], chunk_size).tolist()]
++    )
++    return torch.stack([indices.eq(0).cumsum(0) - 1, indices], 1)
++
++
++def host_chunk_offsets(cu_host: torch.LongTensor, chunk_size: int) -> torch.LongTensor:
++    """``prepare_chunk_offsets`` values computed on the host copy of cu_seqlens (same ops)."""
++    return torch.cat(
++        [cu_host.new_tensor([0]), triton.cdiv(cu_host[1:] - cu_host[:-1], chunk_size)]
++    ).cumsum(-1)
++
++
++def chunk_o_block(total: int, chunk_size: int = 64) -> int:
++    """BT that chunk_fwd_o (and the CUDA GDN chunk_o) use for ``total`` packed tokens."""
++    return min(chunk_size, max(16, triton.next_power_of_2(total)))
++
++
++def seed_chunk_metadata(
++    cu_seqlens: torch.LongTensor, cu_host: torch.LongTensor, chunk_size: int = 64
++) -> None:
++    """Seed the caches of prepare_chunk_indices (BT = ``chunk_size`` and chunk_o's BT) and
++    prepare_chunk_offsets (``chunk_size``) for the DEVICE ``cu_seqlens`` from its host copy, so the
++    first GDN layer of the forward hits them. Computed there instead, they cost a blocking
++    device->host read (``.tolist()``) plus blocking pageable host->device copies
++    (``.to(cu_seqlens)``, ``new_tensor``): three full stream drains per prefill forward. Same int64
++    values; uploaded with a non-blocking pinned copy on the current stream (like FLAMetadata)."""
++    if (cu_host.dtype != torch.int64 or cu_seqlens.dtype != torch.int64
++            or cu_host.device.type != "cpu" or cu_host.shape != cu_seqlens.shape):
++        return
++
++    def upload(t: torch.Tensor) -> torch.Tensor:
++        if cu_seqlens.is_cuda:
++            return t.pin_memory().to(cu_seqlens.device, non_blocking=True)
++        return t.to(cu_seqlens.device)
++
++    for bt in dict.fromkeys((chunk_size, chunk_o_block(int(cu_host[-1]), chunk_size))):
++        prepare_chunk_indices.cache_seed(upload(host_chunk_indices(cu_host, bt)), cu_seqlens, bt)
++    prepare_chunk_offsets.cache_seed(
++        upload(host_chunk_offsets(cu_host, chunk_size)), cu_seqlens, chunk_size
++    )
+--- a/python/freetoken/kernel/fla/utils.py
++++ b/python/freetoken/kernel/fla/utils.py
+@@ -146,6 +146,22 @@
+         cache_entries.append((args, kwargs, result))
+         return result
+ 
++    def cache_seed(result: Any, *args: Any, **kwargs: Any) -> None:
++        """Store ``result`` as the cached value of ``fn(*args, **kwargs)`` (identity-keyed exactly
++        like a call; same eviction as a miss). QWEN36_SYNC_LEAN only: chunk metadata built from the
++        host copy of ``cu_seqlens``; the caller guarantees ``result`` equals ``fn(*args, **kwargs)``."""
++        nonlocal cache_entries
++        cache_entries = [
++            entry for entry in cache_entries
++            if not (len(entry[0]) == len(args) and len(entry[1]) == len(kwargs)
++                    and all(a is b for a, b in zip(args, entry[0]))
++                    and all(k in entry[1] and v is entry[1][k] for k, v in kwargs.items()))
++        ]
++        while len(cache_entries) >= max(cache_size, TENSOR_CACHE_SIZE[0]):
++            cache_entries = cache_entries[1:]
++        cache_entries.append((args, kwargs, result))
++
++    wrapper.cache_seed = cache_seed
+     return wrapper
+ 
+ 
+--- a/python/freetoken/moe/offload_cache.py
++++ b/python/freetoken/moe/offload_cache.py
+@@ -313,6 +313,10 @@
+         flag = os.environ.get("QWEN36_PREFILL_SYNCFREE_INVALIDATE")
+         if flag is None:
+             flag = os.environ.get("QWEN36_LAYER_MAJOR_PREFILL", "0")
++            from freetoken import sync_lean
++
++            if sync_lean.enabled():
++                flag = "1"  # QWEN36_SYNC_LEAN: chunk-major prefill too (no per-layer host sync)
+         self.syncfree_invalidate = flag.strip().lower() in {"1", "true", "yes", "on"}
+ 
+     def begin_layer_major_prefill(self) -> None:
+--- a/python/freetoken/sync_lean.py
++++ b/python/freetoken/sync_lean.py
+@@ -0,0 +1,37 @@
++"""QWEN36_SYNC_LEAN=1: opt-in removal of avoidable host<->GPU synchronizations on the forward path.
++
++Every change behind this flag keeps the GPU work bitwise identical (same model kernels on the same
++inputs in the same order); only host waiting and how metadata is produced change:
++
++  * FLA chunk metadata (``freetoken.kernel.fla.index``): the chunk index/offset tables of a
++    prefill forward are built from the host copy of ``cu_seqlens`` when the metadata is built and
++    seeded into the FLA tensor cache, instead of being derived on the first GDN layer from the
++    device tensor (one ``.tolist()`` read + two blocking copies = three full stream drains per
++    prefill chunk). Same int64 values. Likewise the CUDA GDN empty-sequence check
++    (``freetoken.kernel.cuda_gdn.has_empty_sequence``, one ``.item()`` drain per prefill chunk):
++    same expression on the same values, on the host copy.
++  * FlashInfer prefill plans under layer-major prefill (``freetoken.attention.fi`` +
++    ``freetoken.engine.layer_major``): one plan per chunk and window on a pooled per-chunk wrapper
++    (own int workspace / pinned staging / event) reused by every attention layer, instead of a
++    re-plan of the shared wrapper (with an event wait on the previous plan) for every
++    (attention layer, chunk) task. Same plan inputs -> same plan bytes. With grouped attention
++    (QWEN36_LAYER_MAJOR_ATTN_BATCH=k) every group gets its own pooled wrapper too (planned once
++    per window instead of once per grouped layer), and the member probes / k=1 fallbacks run on
++    the members' own pooled wrappers.
++  * MoE prefill double-buffer invalidation (``freetoken.moe.offload_cache``): the sync-free
++    masked_fill form also when layer-major prefill is off (it was already on with it).
++
++Read at call time (cheap), so tests can toggle it per case.
++"""
++from __future__ import annotations
++
++import os
++
++_ON = {"1", "true", "yes", "on"}
++
++
++def enabled() -> bool:
++    return os.environ.get("QWEN36_SYNC_LEAN", "0").strip().lower() in _ON
++
++
++__all__ = ["enabled"]

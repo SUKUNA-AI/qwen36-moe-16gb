@@ -1,0 +1,58 @@
+{
+ "task": "cache-reset: clean prefix cache before the long-120000 teacher case (harness v7)",
+ "verdict": "PASS: main-release and long256-release are bit-exact on all 20 cases vs the EXISTING teacher-bf128 reference (125/125 logit comparisons 0.0, 20/20 NLL lists identical, PPL delta 0.0)",
+ "mechanism": {
+  "chosen": "(b) restart the experiment unit with the SAME profile right before long-120000, inside quality.py --teacher",
+  "how": "quality.teacher(): cases 1-19 on the server qualify.py started; before each CLEAN_CACHE_CASES case (only 'long-120000', the last case) stop + start-experiment.sh <same profile> + check-experiment.py 300 (the exact qualify.start sequence, via matrix.run); the new active-run.json must differ only in run_id/started_utc. Then binding checks: the last teacher.jsonl row per (profile, case) - exactly what compare-quality.py selects - must be this run's row for all 20 cases, and the clean run must hold only long-120000 (i.e. it was the fresh server's first request).",
+  "report": "teacher report keeps 'run' = full receipt of the first run (19 cases; final-helpers extract-run unchanged); adds 'clean_cache' {harness v7, mode restart_same_profile, cases, runs:[full receipt of the restart]}; rows gain 'run_id' and 'clean_cache'.",
+  "why_not_engine_endpoint": "FreeToken already has POST /v1/cache/rebuild (api_server.py -> Scheduler.rebuild_cache -> CacheManager.rebuild, idle-only), but guard.py/ingress.py ALLOWED blocks it (404). Using it means changing the production guard/ingress (service identity, security surface) plus proving a same-size rebuild (pool realloc + CUDA-graph recapture) numerically neutral. The restart touches 1 harness file, no engine/service/allowlist change, and is the exact state the GPU-proven run C used.",
+  "why_not_other": "filler request to force eviction: the filler would itself share the 3-token chat-template header (still a dedup); reordering cases: every other case would then dedup against long-120000's KV and invalidate the reference.",
+  "numerics_effect_otherwise": "none: same requests, order, seeds, engine and profile; only the server process is fresh for the last case"
+ },
+ "patches": {
+  "outputs/qwen36-api/optimization/quality.py": {
+   "old_sha256": "6e035f052857b98f366681a2c29233d9433be831655f6fd7baff7752bff5e34d",
+   "new_sha256": "90f05c85d46e2e351e4602d9a6d4570fa28ae3684ef24aa674d4b01308c48535",
+   "new_file": "work/next-update/cache-reset/patch/quality.py",
+   "diff": "work/next-update/cache-reset/quality-v7.patch (sha256 8ffab8ea1fd78021f3c10efaf5b326b75ccead52ba6615bfd2d2c467f7d34bc7)",
+   "unchanged_functions": "code_check, request, functional byte-identical (test-soak-cpu extracts request() by AST)"
+  },
+  "unchanged": ["qualify.py", "compare-quality.py", "fixtures.py", "bench.py", "matrix.py", "start-experiment.sh", "check-experiment.py", "engine/qualification.py (no new allowlist names)", "FreeToken engine/server", "guard.py/ingress.py", "reports/logit-reference"]
+ },
+ "freeze_exceptions_to_document": ["outputs/qwen36-api/optimization/quality.py 90f05c85d46e"],
+ "freeze_notes": [
+  "quality.py is in harness-v6-freeze.json group 'qualification'; sync-v5.sh syncs it (listed); sync to $N/quality.py needed",
+  "soak.py HARNESS_FILES records quality.py's sha256 (informational): the next soak (e.g. long256-soak) records 90f05c85..., its workload (quality.request) is unchanged",
+  "bench.HARNESS_VERSION stays 6 (it versions speed-matrix manifests; bumping would orphan them)"
+ ],
+ "reference_validity_evidence": {
+  "reference_run": "teacher-bf128 345788b251dc4ec1a6788148abbd7596 (context 131072; logit-reference 125 files written 2026-10-13T21:40:08-21:42:02Z)",
+  "arithmetic": "KV pool 131112 tokens; tree before long-120000 ~87389; the request needs 120076+38=120114 -> >=76391 tokens must be evicted; all other leaves hold only ~21.8K so the long-65536 leaf goes, exposing the KV-only 24-token header nodes (no GDN snapshot), which _cascade_tombstone_leaves deletes (kvcache/hybrid_radix_cache.py evict_full / _cascade_tombstone_leaves) -> empty tree at the commit",
+  "empirical": "the reference's long-120000 (38 NLLs + 5 logit files) is bit-identical to three guaranteed-cold runs: C c3ba8794 (fresh long256 server, alone), v7 main-release clean run 1da79259, v7 long256 clean run c7d0f252; a warm tree gives max_abs 1.232421875 (D 87dd67bd @131072; f8e3595d/cec6ebdf @262144). So the reference IS the cold-cache computation and stays valid; regenerating it with v7 would by construction reproduce it."
+ },
+ "gpu_validation": {
+  "runner": "work/next-update/cache-reset/scripts/gpu-session.sh -> gpu-inner.sh -> validate_v7.py (imports native harness read-only, executes the UNCHANGED compare-quality.py in a sandbox root, applies make-qualification.check_quality_bitexact_report)",
+  "teacher-main-release": {"session": "2026-10-14T17:30:56Z-17:35:58Z", "context": 131072, "runs": ["6e0c19911c5e48b797b7be279c52dba4 (19 cases)", "1da79259375947edbea7eb925dc57441 (long-120000, clean)"],
+   "comparisons": "125/125 max_abs 0.0 max_rel_l2 0.0", "nll_identical_cases": 20, "ppl_growth": 0.0, "ci95": [0.0, 0.0], "compare_quality_unchanged_quality_gate_pass": true, "bitexact_rule": "PASS", "first_ready_s": 114.7, "teacher_done_s": 294.9},
+  "teacher-long256-release": {"session": "2026-10-14T18:19:11Z-18:23:41Z (queued 43 min on the GPU lock behind another agent)", "context": 262144, "runs": ["5080f45b63e1490699c5b2d59d4b73f6 (19 cases)", "c7d0f252718647c1be99d60e39b8443a (long-120000, clean)"],
+   "comparisons": "125/125 max_abs 0.0 max_rel_l2 0.0", "nll_identical_cases": 20, "ppl_growth": 0.0, "ci95": [0.0, 0.0], "compare_quality_unchanged_quality_gate_pass": true, "bitexact_rule": "PASS", "first_ready_s": 105.7, "teacher_done_s": 263.8},
+  "cost": "the restart adds ~2-2.5 min per teacher run (server ready ~105-115 s + one 120K prefill)",
+  "evidence_files": {"gpu-results/validate-main-release.json": "539f2c31c4d379c1d8ce05bcd964224d93a6e321ba662b22b9bd0bc5b408e156",
+                     "gpu-results/validate-long256-release.json": "b7e1ed21118297d3720d62163cb26542cbb6546cbc3544d3267cf9a7eebc51e6",
+                     "gpu-results/teacher-main-release.json": "c322a5824fbfec579d5164b6d80d18cd12e9e71329a662f3ad000d7cbd660204",
+                     "gpu-results/teacher-long256-release.json": "56d9b83b8d1a16b3de31402d3c43ed1f55813b24d621a1c7f5cc37de2cef753a",
+                     "gpu-results/cq-*/reports/quality-*-v7.json": "unchanged compare-quality.py output"}
+ },
+ "cpu_tests": "scripts/test_quality_v7_cpu.py 7/7 OK (restart once before long-120000, binding, stale-row supersede, lost row -> fail, foreign row on clean run -> fail, receipt identity change -> fail, no receipt -> fail before any request, shared functions byte-identical); scripts/smoke_assemble.sh exercised the assembly path",
+ "findings": [
+  "compare-quality.py does not bind teacher.jsonl rows to a run_id (last row per profile/case wins). Before this validation, the latest teacher-main-release rows for ru-0/long-4096/long-120000 were the D diagnostic run's, so re-running compare-quality on the released teacher-main-release report would have shown max_abs 1.232 (cpu-smoke). v7 quality.py now fails loudly unless the latest rows are its own. This validation appended rows for both profiles to $N/reports/teacher.jsonl (engine writes), so the latest rows of both profiles are now the v7 bit-exact ones.",
+  "teacher.jsonl rotates at 2 MiB (request_metrics.NumericLog; now 753102 B, ~30 KB per teacher run): after ~40 more teacher runs the teacher-bf128 reference rows move to teacher.jsonl.1 and compare-quality.py will KeyError (loud, not silent). Not fixed here."
+ ],
+ "allowlist_and_config": "none needed (teacher-main-release and teacher-long256-release already allowlisted; future candidates still need teacher-<candidate> as before)",
+ "not_run": [
+  "teacher-bf128 re-run under v7 (would overwrite reports/logit-reference; unnecessary, the reference equals the cold computation)",
+  "full qualify.py (teacher + functional + compare) with the synced patch: validated through validate_v7.py calling the patched quality.teacher() plus the unchanged compare-quality.py in a sandbox; functional reports reused from the f1 gates",
+  "engine cache-flush endpoint variant (not chosen)",
+  "native CPU suites after sync (test-paired-contract-cpu does not hash quality.py; test-soak-cpu reads quality.request, unchanged)"
+ ]
+}

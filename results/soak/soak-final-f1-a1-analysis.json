@@ -1,0 +1,670 @@
+{
+ "schema": "qwen36-soak-analysis",
+ "schema_version": 2,
+ "verdict": "PASS",
+ "two_hour_execution_gate_pass": true,
+ "candidate": {
+  "profile": "main-release",
+  "identity_sha256": "ad500087e7766b39c226814ac3b1a8b31cc36957aca06eae7628b2e29dfa648b",
+  "source": "manifest",
+  "manifest_name": "final-f1-m-manifest.json",
+  "manifest_sha256": "742a52b0374303be016568add8537cc52bc105ccf9ab07c5323b13ea013937cb"
+ },
+ "gate_reasons": [],
+ "failure_reasons": [],
+ "inconclusive_reasons": [],
+ "reason_details": {},
+ "summary": {
+  "elapsed_s": 7212.322458116003,
+  "required_seconds": 7200,
+  "complete": true,
+  "termination_reason": "duration_reached",
+  "status": "finished",
+  "iterations": 509,
+  "harness": {
+   "soak.py": "b4911728cb36e71d4a7634cbcd30df00c897fbe67b75422e0c69cb24091344f3",
+   "soak-analysis.py": "9b19f0d8f5b8f55074fb424e5a406185adcef8c077d8bbe2f79324b222f97106",
+   "bench.py": "204d28710ef0fb762b4a57bb6f4fe579450d862996e90ddafa5285ef28e3b28a",
+   "quality.py": "6e035f052857b98f366681a2c29233d9433be831655f6fd7baff7752bff5e34d",
+   "request_metrics.py": "6aa1620679063856e8966ce0f935ff865bccf0e0c49e1a3206fd89030adbdab7"
+  },
+  "candidate": {
+   "expected_profile": "main-release",
+   "expected_identity_sha256": "ad500087e7766b39c226814ac3b1a8b31cc36957aca06eae7628b2e29dfa648b",
+   "run_profile": "main-release",
+   "run_identity_sha256": "ad500087e7766b39c226814ac3b1a8b31cc36957aca06eae7628b2e29dfa648b",
+   "runner_candidate": {
+    "profile": "main-release",
+    "identity_sha256": "ad500087e7766b39c226814ac3b1a8b31cc36957aca06eae7628b2e29dfa648b",
+    "source": "manifest",
+    "manifest_name": "final-f1-m-manifest.json",
+    "manifest_sha256": "742a52b0374303be016568add8537cc52bc105ccf9ab07c5323b13ea013937cb"
+   },
+   "match": true,
+   "run_copy_matches": true
+  },
+  "identity": {
+   "profile": "main-release",
+   "run_id": "05455b06181346daa631051f6144e72e",
+   "identity_sha256": "ad500087e7766b39c226814ac3b1a8b31cc36957aca06eae7628b2e29dfa648b",
+   "checks": 243,
+   "source_checks": 26,
+   "max_check_gap_s": 30.22181100900343
+  },
+  "rows": {
+   "total": 741,
+   "passed": 741,
+   "iterations": 509
+  },
+  "joins": {
+   "client_requests": 825,
+   "server_rows": 825,
+   "engine_joins": 798,
+   "foreign_generation_rows": 0,
+   "unjoined_engine_rows": 0
+  },
+  "coverage": {
+   "passed": {
+    "fresh@64": 102,
+    "fresh@4096": 102,
+    "fresh@16384": 102,
+    "fresh@65536": 102,
+    "fresh@120000": 101,
+    "prefix": 102,
+    "arithmetic": 73,
+    "tool": 30,
+    "cancel": 27
+   },
+   "floors": {
+    "fresh@64": 12,
+    "fresh@4096": 12,
+    "fresh@16384": 12,
+    "fresh@65536": 12,
+    "fresh@120000": 12,
+    "prefix": 12,
+    "arithmetic": 9,
+    "tool": 4,
+    "cancel": 4
+   }
+  },
+  "state": {
+   "rows": 721,
+   "max_gap_s": 10.162968,
+   "start_edge_s": 0.62611,
+   "end_edge_s": -1.731472,
+   "counter_maxima": {
+    "metrics_dropped": 0,
+    "metrics_failed_writes": 0,
+    "resource_sample_failures": 0
+   },
+   "min_gpu_free_bytes": 457338880,
+   "max_metrics_queue_depth": 0,
+   "stall_events": 0
+  },
+  "readers": {
+   "requests": {
+    "rotations": 0,
+    "recovered_files": 0,
+    "loss_events": 0,
+    "truncations": 0,
+    "malformed_lines": 0,
+    "read_errors": 0,
+    "lines": 945
+   },
+   "engine": {
+    "rotations": 1,
+    "recovered_files": 0,
+    "loss_events": 0,
+    "truncations": 0,
+    "malformed_lines": 0,
+    "read_errors": 0,
+    "lines": 798
+   },
+   "state": {
+    "rotations": 0,
+    "recovered_files": 0,
+    "loss_events": 0,
+    "truncations": 0,
+    "malformed_lines": 0,
+    "read_errors": 0,
+    "lines": 721
+   }
+  },
+  "monitor": {
+   "polls": 7725,
+   "max_poll_interval_s": 1.0413231429993175
+  },
+  "cases": {
+   "cancel_recovery_s": {
+    "n": 27,
+    "median": 1.4469089150006766,
+    "max": 1.6113571800015052
+   },
+   "cancel_recovery_after_disconnect_s": {
+    "n": 27,
+    "median": 0.8672658760042395,
+    "max": 0.957934602003661
+   },
+   "cancel_followup_attempts_max": 2,
+   "prefix_cache_hits": {
+    "hits": 102,
+    "prefix_requests": 102,
+    "note": "measured, not required (real-answer continuation)"
+   },
+   "fresh_ttft_content_s": {
+    "64": {
+     "n": 102,
+     "median": 0.6010202885008766,
+     "max": 1.3912826199957635
+    },
+    "4096": {
+     "n": 102,
+     "median": 0.6062726675008889,
+     "max": 0.6647663059993647
+    },
+    "16384": {
+     "n": 102,
+     "median": 1.3601179864963342,
+     "max": 1.6485755809990223
+    },
+    "65536": {
+     "n": 102,
+     "median": 8.140056708001794,
+     "max": 9.598516798003402
+    },
+    "120000": {
+     "n": 101,
+     "median": 20.96622769699752,
+     "max": 23.28788763400371
+    }
+   }
+  }
+ },
+ "memory": {
+  "status": "NO_THRESHOLD_EXCEEDED_REVIEW_REQUIRED",
+  "leak_verdict": "not_determined_automatically",
+  "method": "per prompt length: median of request/engine values for fresh requests 3..7 vs last 5; idle state samples 600..1800 s vs last 1200 s",
+  "per_length": {
+   "64": {
+    "request.service_memory_anon_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 21150113792,
+     "middle_median": 21179416576,
+     "late_median": 21197901824,
+     "late_minus_early": 47788032,
+     "min": 21051318272,
+     "max": 21201162240,
+     "gated_threshold_bytes": 268435456
+    },
+    "request.service_memory_shmem_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 112967680,
+     "middle_median": 112967680,
+     "late_median": 112967680,
+     "late_minus_early": 0,
+     "min": 112967680,
+     "max": 112967680,
+     "gated_threshold_bytes": 67108864
+    },
+    "engine.torch_allocated_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 11971606016,
+     "middle_median": 11971606016,
+     "late_median": 11971606016,
+     "late_minus_early": 0,
+     "min": 11971600896,
+     "max": 11972556800,
+     "gated_threshold_bytes": 67108864
+    },
+    "engine.torch_reserved_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 12226396160,
+     "middle_median": 12226396160,
+     "late_median": 12226396160,
+     "late_minus_early": 0,
+     "min": 11995709440,
+     "max": 12226396160,
+     "gated_threshold_bytes": 268435456
+    },
+    "request.service_cgroup_memory_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 21330739200,
+     "middle_median": 21369937920,
+     "late_median": 21395877888,
+     "late_minus_early": 65138688,
+     "min": 21231087616,
+     "max": 21398401024,
+     "gated_threshold_bytes": null
+    },
+    "request.service_memory_file_cache_estimate_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 11317248,
+     "middle_median": 13393920,
+     "late_median": 15622144,
+     "late_minus_early": 4304896,
+     "min": 11120640,
+     "max": 15704064,
+     "gated_threshold_bytes": null
+    },
+    "request.gpu_total_used_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 16115519488,
+     "middle_median": 15025106944,
+     "late_median": 15346769920,
+     "late_minus_early": -768749568,
+     "min": 14944858112,
+     "max": 16450863104,
+     "gated_threshold_bytes": null
+    }
+   },
+   "4096": {
+    "request.service_memory_anon_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 21150113792,
+     "middle_median": 21179351040,
+     "late_median": 21197611008,
+     "late_minus_early": 47497216,
+     "min": 21083680768,
+     "max": 21199798272,
+     "gated_threshold_bytes": 268435456
+    },
+    "request.service_memory_shmem_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 112967680,
+     "middle_median": 112967680,
+     "late_median": 112967680,
+     "late_minus_early": 0,
+     "min": 112967680,
+     "max": 112967680,
+     "gated_threshold_bytes": 67108864
+    },
+    "engine.torch_allocated_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 11972136448,
+     "middle_median": 11972136448,
+     "late_median": 11972136448,
+     "late_minus_early": 0,
+     "min": 11971661312,
+     "max": 11973086720,
+     "gated_threshold_bytes": 67108864
+    },
+    "engine.torch_reserved_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 12226396160,
+     "middle_median": 12226396160,
+     "late_median": 12226396160,
+     "late_minus_early": 0,
+     "min": 12205424640,
+     "max": 12226396160,
+     "gated_threshold_bytes": 268435456
+    },
+    "request.service_cgroup_memory_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 21331304448,
+     "middle_median": 21370241024,
+     "late_median": 21396148224,
+     "late_minus_early": 64843776,
+     "min": 21262708736,
+     "max": 21398073344,
+     "gated_threshold_bytes": null
+    },
+    "request.service_memory_file_cache_estimate_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 11325440,
+     "middle_median": 13398016,
+     "late_median": 15626240,
+     "late_minus_early": 4300800,
+     "min": 11149312,
+     "max": 15704064,
+     "gated_threshold_bytes": null
+    },
+    "request.gpu_total_used_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 16117026816,
+     "middle_median": 15025434624,
+     "late_median": 15326912512,
+     "late_minus_early": -790114304,
+     "min": 15023861760,
+     "max": 16541868032,
+     "gated_threshold_bytes": null
+    }
+   },
+   "16384": {
+    "request.service_memory_anon_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 21150728192,
+     "middle_median": 21179432960,
+     "late_median": 21197901824,
+     "late_minus_early": 47173632,
+     "min": 21090324480,
+     "max": 21200240640,
+     "gated_threshold_bytes": 268435456
+    },
+    "request.service_memory_shmem_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 112967680,
+     "middle_median": 112967680,
+     "late_median": 112967680,
+     "late_minus_early": 0,
+     "min": 112967680,
+     "max": 112967680,
+     "gated_threshold_bytes": 67108864
+    },
+    "engine.torch_allocated_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 11972296704,
+     "middle_median": 11972296704,
+     "late_median": 11972296704,
+     "late_minus_early": 0,
+     "min": 11971822080,
+     "max": 11973247488,
+     "gated_threshold_bytes": 67108864
+    },
+    "engine.torch_reserved_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 12226396160,
+     "middle_median": 12226396160,
+     "late_median": 12226396160,
+     "late_minus_early": 0,
+     "min": 12207521792,
+     "max": 12226396160,
+     "gated_threshold_bytes": 268435456
+    },
+    "request.service_cgroup_memory_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 21331816448,
+     "middle_median": 21369905152,
+     "late_median": 21396574208,
+     "late_minus_early": 64757760,
+     "min": 21269278720,
+     "max": 21398405120,
+     "gated_threshold_bytes": null
+    },
+    "request.service_memory_file_cache_estimate_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 11341824,
+     "middle_median": 13410304,
+     "late_median": 15638528,
+     "late_minus_early": 4296704,
+     "min": 11157504,
+     "max": 15720448,
+     "gated_threshold_bytes": null
+    },
+    "request.gpu_total_used_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 16119123968,
+     "middle_median": 15025434624,
+     "late_median": 15313215488,
+     "late_minus_early": -805908480,
+     "min": 15016030208,
+     "max": 16442728448,
+     "gated_threshold_bytes": null
+    }
+   },
+   "65536": {
+    "request.service_memory_anon_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 21150728192,
+     "middle_median": 21180579840,
+     "late_median": 21197717504,
+     "late_minus_early": 46989312,
+     "min": 21102247936,
+     "max": 21200510976,
+     "gated_threshold_bytes": 268435456
+    },
+    "request.service_memory_shmem_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 112967680,
+     "middle_median": 112967680,
+     "late_median": 112967680,
+     "late_minus_early": 0,
+     "min": 112967680,
+     "max": 112967680,
+     "gated_threshold_bytes": 67108864
+    },
+    "engine.torch_allocated_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 11972944384,
+     "middle_median": 11972944384,
+     "late_median": 11972952576,
+     "late_minus_early": 8192,
+     "min": 11972477952,
+     "max": 11973894656,
+     "gated_threshold_bytes": 67108864
+    },
+    "engine.torch_reserved_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 12226396160,
+     "middle_median": 12226396160,
+     "late_median": 12226396160,
+     "late_minus_early": 0,
+     "min": 12211716096,
+     "max": 12226396160,
+     "gated_threshold_bytes": 268435456
+    },
+    "request.service_cgroup_memory_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 21330554880,
+     "middle_median": 21371559936,
+     "late_median": 21395726336,
+     "late_minus_early": 65171456,
+     "min": 21284532224,
+     "max": 21398376448,
+     "gated_threshold_bytes": null
+    },
+    "request.service_memory_file_cache_estimate_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 11341824,
+     "middle_median": 13418496,
+     "late_median": 15646720,
+     "late_minus_early": 4304896,
+     "min": 11161600,
+     "max": 15728640,
+     "gated_threshold_bytes": null
+    },
+    "request.gpu_total_used_bytes": {
+     "status": "ok",
+     "points": 102,
+     "early_median": 16139800576,
+     "middle_median": 15025434624,
+     "late_median": 15346769920,
+     "late_minus_early": -793030656,
+     "min": 14998335488,
+     "max": 16710606848,
+     "gated_threshold_bytes": null
+    }
+   },
+   "120000": {
+    "request.service_memory_anon_bytes": {
+     "status": "ok",
+     "points": 101,
+     "early_median": 21152817152,
+     "middle_median": 21180579840,
+     "late_median": 21197901824,
+     "late_minus_early": 45084672,
+     "min": 21132394496,
+     "max": 21224243200,
+     "gated_threshold_bytes": 268435456
+    },
+    "request.service_memory_shmem_bytes": {
+     "status": "ok",
+     "points": 101,
+     "early_median": 112967680,
+     "middle_median": 112967680,
+     "late_median": 112967680,
+     "late_minus_early": 0,
+     "min": 112967680,
+     "max": 112967680,
+     "gated_threshold_bytes": 67108864
+    },
+    "engine.torch_allocated_bytes": {
+     "status": "ok",
+     "points": 101,
+     "early_median": 11973209600,
+     "middle_median": 11973209600,
+     "late_median": 11973209600,
+     "late_minus_early": 0,
+     "min": 11973199872,
+     "max": 11974116352,
+     "gated_threshold_bytes": 67108864
+    },
+    "engine.torch_reserved_bytes": {
+     "status": "ok",
+     "points": 101,
+     "early_median": 12226396160,
+     "middle_median": 12226396160,
+     "late_median": 12226396160,
+     "late_minus_early": 0,
+     "min": 12224299008,
+     "max": 12226396160,
+     "gated_threshold_bytes": 268435456
+    },
+    "request.service_cgroup_memory_bytes": {
+     "status": "ok",
+     "points": 101,
+     "early_median": 21334179840,
+     "middle_median": 21370826752,
+     "late_median": 21396303872,
+     "late_minus_early": 62124032,
+     "min": 21314826240,
+     "max": 21421461504,
+     "gated_threshold_bytes": null
+    },
+    "request.service_memory_file_cache_estimate_bytes": {
+     "status": "ok",
+     "points": 101,
+     "early_median": 11354112,
+     "middle_median": 13426688,
+     "late_median": 15601664,
+     "late_minus_early": 4247552,
+     "min": 11173888,
+     "max": 15691776,
+     "gated_threshold_bytes": null
+    },
+    "request.gpu_total_used_bytes": {
+     "status": "ok",
+     "points": 101,
+     "early_median": 16108605440,
+     "middle_median": 15025434624,
+     "late_median": 15379931136,
+     "late_minus_early": -728674304,
+     "min": 14947905536,
+     "max": 16592842752,
+     "gated_threshold_bytes": null
+    }
+   }
+  },
+  "idle_state": {
+   "status": "ok",
+   "warmup_s": 600.0,
+   "window_s": 1200.0,
+   "min_samples": 10,
+   "early_samples": 38,
+   "late_samples": 42,
+   "metrics": {
+    "service_memory_anon_bytes": {
+     "status": "ok",
+     "early_median": 21157261312.0,
+     "late_median": 21197664256.0,
+     "late_minus_early": 40402944.0,
+     "gated_threshold_bytes": 268435456
+    },
+    "service_memory_shmem_bytes": {
+     "status": "ok",
+     "early_median": 112967680.0,
+     "late_median": 112967680.0,
+     "late_minus_early": 0.0,
+     "gated_threshold_bytes": 67108864
+    },
+    "service_cgroup_memory_bytes": {
+     "status": "ok",
+     "early_median": 21340211200.0,
+     "late_median": 21395228672.0,
+     "late_minus_early": 55017472.0,
+     "gated_threshold_bytes": null
+    },
+    "service_memory_file_cache_estimate_bytes": {
+     "status": "ok",
+     "early_median": 11821056.0,
+     "late_median": 15360000.0,
+     "late_minus_early": 3538944.0,
+     "gated_threshold_bytes": null
+    },
+    "gpu_total_used_bytes": {
+     "status": "ok",
+     "early_median": 16175357952.0,
+     "late_median": 15324291072.0,
+     "late_minus_early": -851066880.0,
+     "gated_threshold_bytes": null
+    }
+   }
+  },
+  "flags": [],
+  "insufficient": []
+ },
+ "pilot_view": {
+  "passed_cases": {
+   "fresh": 509,
+   "arithmetic": 73,
+   "tool": 30,
+   "cancel": 27,
+   "prefix": 102
+  },
+  "all_case_types_passed": true,
+  "failures_excluding_duration": []
+ },
+ "thresholds": {
+  "state_gap_s": 30.0,
+  "state_edge_s": 30.0,
+  "identity_gap_s": 120.0,
+  "clock_skew_s": 60.0,
+  "request_memory_flags_bytes": {
+   "service_memory_anon_bytes": 268435456,
+   "service_memory_shmem_bytes": 67108864
+  },
+  "engine_memory_flags_bytes": {
+   "torch_allocated_bytes": 67108864,
+   "torch_reserved_bytes": 268435456
+  },
+  "idle_memory_flags_bytes": {
+   "service_memory_anon_bytes": 268435456,
+   "service_memory_shmem_bytes": 67108864
+  },
+  "required_seconds": 7200,
+  "pinned_workload_sha256": "70d533a63d298ef6a2b9b070bd205d7aa2fe647ed474b9e521c07aeb9b47e89b"
+ },
+ "interpretation": "PASS means the two-hour execution evidence is complete, the run was the named frozen candidate and every gated check held. It is not a proof that no leak exists; memory figures still need review.",
+ "source": "soak-final-f1-a1.json",
+ "source_sha256": "83fb15d0ba54b49c7a32706b08966c3a5b3085a72fc11bc07b066afc8f7a9965",
+ "run_copy": "soak-final-f1-a1-run.json",
+ "run_copy_sha256": "db2af142a3aec320fa2f139026c6e55645944d18ee18dd258f0998c622a349bf",
+ "analysis_sha256": "9b19f0d8f5b8f55074fb424e5a406185adcef8c077d8bbe2f79324b222f97106",
+ "soak_sha256": "b4911728cb36e71d4a7634cbcd30df00c897fbe67b75422e0c69cb24091344f3"
+}

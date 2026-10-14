@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "item": "PCIe 5.0 x16 H2D ceiling for decode expert streaming (RTX 5070 Ti, WSL2, driver 617.14, CUDA 13.4)",
+ "session": {
+  "gpu_sessions": 1,
+  "lock": "flock -w 3600 -E 75 /home/USER/qwen36-api/run/gpu-exclusive.lock",
+  "start_utc": "2026-10-14T20:55:48Z",
+  "wall_s": 16,
+  "model_units": "qwen36-inference and qwen36-experiment inactive before and after; nothing started",
+  "binary": "work/next-update/gather-prefetch/build/ceiling_bench (sha256 ce0fbcad...; source src/ceiling_bench.cu sha256 9d127b2c...), nvcc 13.4 -arch=sm_120a, 0 spills in all copy kernels, .shared::cta bulk form only",
+  "raw": "results/ceiling-s1.json (sha256 a0a1b83c...; 728 rows, 0 rows with mismatches), results/ceiling-s1.log, results/ceiling-s1-summary.json",
+  "method": "host region 4 GiB per kind (thp = mmap MAP_PRIVATE + MADV_HUGEPAGE + cudaHostRegister Portable|Mapped as FreeToken host_banks; hostalloc = cudaHostAlloc Portable|Mapped; 4k = MADV_NOHUGEPAGE), thp measured twice (first and last); patterns flat 64 MiB, n = 1/4/8 expert blocks of 1,781,760 B (contiguous) and the 6-row production layout; 12 timed reps per cell, CUDA events after a 20 us spin, SM variants rotated per rep; every copy verified word-exact against the host pattern"
+ },
+ "max_per_mechanism_GBps_median": {
+  "copy_engine_cudaMemcpyAsync": {
+   "max": 40.75, "config": "1 stream, 64 MiB flat, thp banks (p10 best 41.7)",
+   "4_streams": 39.5,
+   "expert_1.78MB": {"n1": 23.2, "n4": 33.9, "n8": 36.2, "note": "~35 us first-byte latency per call; 4 streams slower (18.1 / 30.6 / 34.1): asyncEngineCount = 1"},
+   "hostalloc_flat": 26.1, "4k_flat": 30.9,
+   "prior_study": "pcie-transfer measured 47.0-49.4 GB/s with 256 MiB copies in a quieter session; not reproduced tonight (single session, no second run)"
+  },
+  "tma_cp_async_bulk_shared_cta": {
+   "max": 43.37, "config": "tma 4 CTAs x 1 warp x 4 stages x 16 KiB (256 KiB in flight), n=8 experts, thp; best single rep 44.96 (8 x 1 x 16 x 4 KiB, flat)",
+   "flat_64MiB": 42.9,
+   "sweep_requested": {
+    "8_CTAs": "40.8-42.1 flat (4 or 16 requests/CTA)",
+    "35_CTAs": "14.4-17.2 flat, 19-20 at n=8",
+    "70_CTAs": "11.7-12.8 flat",
+    "140_CTAs": "12.3-13.1 flat"
+   },
+   "shape": "Little's law knee at 128-512 KiB in flight; >= ~1 MiB in flight collapses to 12-17 GB/s (same collapse as the pcie-transfer LDG sweep)"
+  },
+  "ldg_plain_from_mapped_pinned": {
+   "max_in_requested_range_70_280_CTAs": 26.1, "config": "70 CTAs x 256 thr x K=4, n=1 expert; flat 64 MiB only 10.4-15.0 at 70-280 CTAs (collapse zone)",
+   "best_in_this_run": "16 CTAs x 256 x K=4: 23-26 GB/s",
+   "prior_study": "pcie-transfer: 41-44 GB/s at 4-8 CTAs x 256 x K=2-4 (64-256 KiB in flight); smaller configs were not in tonight's sweep"
+  },
+  "gather_today_tma_8x1x3x16KiB": {
+   "flat": 41.9, "n1": 38.9, "n4": 41.7, "n8": 42.8, "exp6_n8": 42.6,
+   "vs_best_tma": "within 1-2% of the best TMA config at every n"
+  }
+ },
+ "in_model_check_cpu_only": {
+  "source": "f1 nsys sqlite reports/model-final-main-release-20261014T172433Z.sqlite -> results/f1-trace-gather-hist.json",
+  "gather_call_clusters_us": {"0_miss": 1.2, "1_expert": "44-50", "2_experts": "80-90", "3_experts": "120-135"},
+  "incremental_GBps": "~42 per added expert, ~40 for one expert incl. ~3-5 us start: the served gather already runs at the measured SM-read ceiling; the 30-33 GB/s in the dashboard is the ncu component number"
+ },
+ "verdict_55_GBps": {
+  "reachable_tonight": false,
+  "why": "Every mechanism tops out at 41-45 GB/s on this link (65-71% of the 63.0 GB/s raw x16 Gen5 rate): copy engine 40.8 (prior 47-49), TMA 43.4 (44.96 best rep), plain loads lower. More concurrency lowers throughput (4 streams, >= 35 CTAs, > 1 MiB in flight), so the limit is the host-side read path (root complex / host memory / WSL2 GPU-PV address translation), not bytes in flight. HYPOTHESIS, not measured: 55+ needs a platform change (native Linux instead of WSL2, PCIe MPS/MRRS settings), which the rules do not allow us to touch.",
+  "headroom_for_gather_transport": "<= ~5% (42 -> 44-45 GB/s); a gather retune is not worth a new prebuilt"
+ },
+ "plan_tomorrow": [
+  {
+   "step": 1, "name": "Copy-engine recheck (optional, 1 GPU session <= 5 min)",
+   "what": "256 MiB flat + cudaMallocHost (non-mapped) kind + LDG 4-8 CTAs K=2-4 + TMA sink, two rounds, to settle CE 41 vs 47-49 GB/s; does not change the verdict unless CE > 50",
+   "estimate_h": 0.5
+  },
+  {
+   "step": 2, "name": "Overlap (a): gather on a side stream parallel to the shared expert, exact",
+   "what": "Qwen3_5MoE decode: router GEMV -> top-k -> lru_ensure -> fork(event) gather on a side stream -> shared expert + gate on the main stream -> join -> marlin. Same kernels, same inputs, only order/streams change; window ~17-21 us per layer with misses (f1 trace: router+shared block 21 us median) x 17.6-19.5 such layers/step -> est. 0.30-0.35 ms/step = +4% decode at 16K, +3% at 120K. No new kernel -> no recipe-digest change, no prebuilt.",
+   "estimate_h": 5, "gpu_sessions": 2
+  },
+  {
+   "step": 3, "name": "Speculation feasibility: route trace + recall",
+   "what": "Option (b) previous-token routing and (c) staging of the previous token's misses predict 0% of misses by construction (those experts are the most recently used and LRU never evicts them within one step: 3164 slots vs 320 uses/step) - confirm on the trace. Real candidate: pre-gating (router L+1 applied to the residual at the start of layer L+1, or to layer L's MoE input). Offline LLM eager trace on a copy (3 prompts x 256 tokens, 16K + 120K) recording actual top-8, LRU misses and predictions; exact LRU replay with/without prefetch for miss coverage, wasted bytes and pollution.",
+   "estimate_h": 4, "gpu_sessions": 1
+  },
+  {
+   "step": 4, "name": "Pre-gating prefetch prototype (only if miss coverage >= ~0.6)",
+   "what": "side-stream plan+gather after layer L+1's input norm (no GEMM in flight -> no slot protection needed beyond the step's stamped slots), join before ensure(L+1); bytes in slots always equal the host rows, so outputs stay byte-identical; window = mixer of L+1 (~65 us GDN at 16K, ~350 us attention at 120K). Reuse work/cuda-decode-prefetch protocol, .shared::cta TMA kernel.",
+   "estimate_h": 10, "gpu_sessions": 3
+  },
+  {
+   "step": 5, "name": "Integration + gates",
+   "what": "env knob (e.g. QWEN36_DECODE_GATHER_OVERLAP=shared|pregate, default off) on a COPY of FreeToken-opt; CPU tests (order/ownership, fail-closed knob) + GPU byte-exact (eager vs graph, knob off/on, full logits); teacher gate allowlist name teacher-main-release-gatherv2; decode A/B 16K/120K, output 512, 3 rotating rounds, QWEN36_BENCH_WARMUP_S=60. A new kernel (step 4 only) needs a prebuilt + manifest entry like final-prep P3.",
+   "estimate_h": 4, "gpu_sessions": 2
+  }
+ ],
+ "not_done_tonight": ["gather redesign", "prefetch prototype", "integration patch", "teacher gate", "decode A/B"]
+}

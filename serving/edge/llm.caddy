@@ -1,0 +1,40 @@
+# Managed qwen36-api site; existing sites and global options are untouched.
+llm.example.com {
+    @models {
+        method GET
+        path /v1/models
+    }
+    @chat {
+        method POST
+        path /v1/chat/completions
+    }
+    route {
+        request_header -X-Api-Key
+        request_header -Api-Key
+        request_header -X-Auth-Token
+        request_body {
+            max_size 2MiB
+        }
+        header Cache-Control "no-store"
+        handle @models {
+            reverse_proxy 127.0.0.1:1919 {
+                transport http {
+                    dial_timeout 5s
+                    response_header_timeout 910s
+                }
+            }
+        }
+        handle @chat {
+            reverse_proxy 127.0.0.1:1919 {
+                stream_timeout 910s
+                transport http {
+                    dial_timeout 5s
+                    response_header_timeout 910s
+                }
+            }
+        }
+        handle {
+            respond "Route unavailable" 404
+        }
+    }
+}

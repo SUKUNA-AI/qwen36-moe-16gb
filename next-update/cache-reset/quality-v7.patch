@@ -1,0 +1,95 @@
+--- a/outputs/qwen36-api/optimization/quality.py	2026-10-14 20:26:33.869481800 +0300
++++ b/outputs/qwen36-api/optimization/quality.py	2026-10-14 20:27:33.222224100 +0300
+@@ -5,6 +5,70 @@
+ from bench import ROOT, generate, headers, document, run_receipt
+ from fixtures import prepare
+ 
++# Harness v7 teacher clean-cache step. At prefill commit the hybrid radix cache dedups a prompt's shared
++# chat header and re-points its page_table rows to KV written by EARLIER requests (rounding-different GEMM
++# shapes). The 128K teacher-bf128 reference computed long-120000 on an emptied tree: at context 131072 its
++# admission evicts the whole ~87K-token tree. A larger KV pool (262144) keeps the tree and dedups. Each case
++# listed here is therefore the first request of a freshly restarted server of the SAME profile, so every
++# context compares like with like. Nothing else changes: same requests, same order, same engine.
++CLEAN_CACHE_CASES=('long-120000',)
++RESTART_MAY_CHANGE=('run_id','started_utc')
++
++
++def teacher_rows(profile):
++    """The engine's reports/teacher.jsonl rows of one profile, in file order (what compare-quality.py reads)."""
++    path=ROOT/'reports/teacher.jsonl'
++    rows=[]
++    for line in (path.read_text().splitlines() if path.exists() else []):
++        try:row=json.loads(line)
++        except ValueError:continue
++        if isinstance(row,dict) and row.get('profile')==profile:rows.append(row)
++    return rows
++
++
++def restart_clean(previous):
++    """Restart the experiment unit with the same profile (as qualify.py starts it): empty prefix tree."""
++    from matrix import run,PY
++    run(['systemctl','--user','stop','qwen36-experiment'],60)
++    run(['bash',str(ROOT/'start-experiment.sh'),previous['profile']],60)
++    run([PY,str(ROOT/'check-experiment.py'),'300'],310)
++    receipt=run_receipt()
++    same=lambda r:{k:v for k,v in r.items() if k not in RESTART_MAY_CHANGE}
++    if receipt.get('run_id') in (None,previous['run_id']) or same(receipt)!=same(previous):
++        raise RuntimeError('clean-cache restart did not give a fresh run with an identical receipt: '+previous['profile'])
++    return receipt
++
++
++def teacher(tokenizer,cases):
++    """Teacher-forced pass over the fixed cases. Returns (rows, receipt of the first run, clean-cache receipts)."""
++    first=run_receipt()
++    if not first.get('run_id') or not first.get('profile'):raise RuntimeError('teacher run needs active-run.json')
++    current=first;clean=[];rows=[];served={}
++    for case in cases:
++        if case['case'] in CLEAN_CACHE_CASES:
++            current=restart_clean(current);clean.append(current)
++        result,text=generate([{'role':'user','content':case['prompt']}],len(case['ids']),case['seed'],0,True)
++        row={'case':case['case'],'status':result['status'],'expected_tokens':len(case['ids']),'usage':result.get('usage'),
++             'forced_text_matches':text==tokenizer.decode(case['ids']),'run_id':current['run_id'],
++             'clean_cache':case['case'] in CLEAN_CACHE_CASES}
++        served[case['case']]=current['run_id']
++        rows.append(row);print(json.dumps(row),flush=True)
++    # Bind: compare-quality.py takes the LAST teacher.jsonl row per (profile, case); it must be this run's row,
++    # and a clean-cache run must hold only its own case(s), i.e. they were its first requests.
++    deadline=time.monotonic()+30
++    while True:
++        logged=teacher_rows(first['profile'])
++        latest={row.get('case'):row.get('run_id') for row in logged}
++        unbound={case:latest.get(case) for case,run_id in served.items() if latest.get(case)!=run_id}
++        if not unbound:break
++        if time.monotonic()>=deadline:raise RuntimeError(f'teacher.jsonl rows not bound to this run: {unbound}')
++        time.sleep(.5)
++    for receipt in clean:
++        own=[row.get('case') for row in logged if row.get('run_id')==receipt['run_id']]
++        if own!=[case for case,run_id in served.items() if run_id==receipt['run_id']]:
++            raise RuntimeError(f"clean-cache run {receipt['run_id']} served other teacher cases: {own}")
++    return rows,first,clean
++
+ 
+ def code_check(text):
+     fenced=re.search(r'```(?:python)?\s*(.*?)```',text,re.S)
+@@ -79,16 +143,13 @@
+     args=p.parse_args();tokenizer=AutoTokenizer.from_pretrained('/path/to/LLM/qwen36-api/model',local_files_only=True)
+     cases=prepare(tokenizer)
+     if args.prepare:print('Prepared 20 fixed holdout cases');return
+-    rows=[]
++    extra={}
+     if args.teacher:
+-        for case in cases:
+-            result,text=generate([{'role':'user','content':case['prompt']}],len(case['ids']),case['seed'],0,True)
+-            row={'case':case['case'],'status':result['status'],'expected_tokens':len(case['ids']),'usage':result.get('usage'),
+-                 'forced_text_matches':text==tokenizer.decode(case['ids'])}
+-            rows.append(row);print(json.dumps(row),flush=True)
++        rows,run,clean=teacher(tokenizer,cases)
++        extra['clean_cache']={'harness':'v7','mode':'restart_same_profile','cases':list(CLEAN_CACHE_CASES),'runs':clean}
+     else:
+-        rows=functional(tokenizer,args.long)
+-    report=ROOT/'reports'/f'{args.name}.json';report.write_text(json.dumps({'fixture_version':1,'run':run_receipt(),'rows':rows},indent=2))
++        rows=functional(tokenizer,args.long);run=run_receipt()
++    report=ROOT/'reports'/f'{args.name}.json';report.write_text(json.dumps({'fixture_version':1,'run':run,'rows':rows,**extra},indent=2))
+     print(json.dumps({'report':str(report),'rows':rows}),flush=True)
+ 
+ if __name__=='__main__':main()

@@ -1,0 +1,93 @@
+{
+ "context": 131072,
+ "chunk": 2048,
+ "flags": [],
+ "env": {
+  "QWEN36_NSYS_FORWARDS": "391"
+ },
+ "nsys": {
+  "tool": "nsys",
+  "graph_nvtx": "precapture",
+  "cuda_event_trace": "false",
+  "output_prefix": "model-final-bf128"
+ },
+ "profile_plan": {
+  "schema": 1,
+  "source_variant": "bf128",
+  "chunk": 2048,
+  "context": 131072,
+  "requests": [
+   {
+    "label": "warmup_short",
+    "document_tokens": 256,
+    "document_seed": 46001,
+    "output_tokens": 32,
+    "prompt_tokens_planned": 278,
+    "forwards_lower": 32,
+    "forwards_upper": 36,
+    "messages_sha256": "4d8a104f75c6b6303dc7e43be29948cedb2b87f42f89796c9b545d988c53948d"
+   },
+   {
+    "label": "warmup_chunk",
+    "document_tokens": 3584,
+    "document_seed": 46002,
+    "output_tokens": 16,
+    "prompt_tokens_planned": 3606,
+    "forwards_lower": 16,
+    "forwards_upper": 21,
+    "messages_sha256": "b4d28fb2de58350489cf920b66f7db413807883c79b9b22342a8f732fd3314c5"
+   },
+   {
+    "label": "warm_decode",
+    "document_tokens": 256,
+    "document_seed": 46003,
+    "output_tokens": 128,
+    "prompt_tokens_planned": 278,
+    "forwards_lower": 128,
+    "forwards_upper": 132,
+    "messages_sha256": "cf8234c1d0085fd712b916efb46a330bf2be7fa55d7613f6285bc2e35c953b9e"
+   },
+   {
+    "label": "fresh_16k",
+    "document_tokens": 16384,
+    "document_seed": 46016,
+    "output_tokens": 64,
+    "prompt_tokens_planned": 16405,
+    "forwards_lower": 71,
+    "forwards_upper": 76,
+    "messages_sha256": "09bd0c58d251c1ef36cde8d299cf91ac422022c39c1a9455e4fb5b86f11a5ec5"
+   },
+   {
+    "label": "fresh_120k",
+    "document_tokens": 120000,
+    "document_seed": 46120,
+    "output_tokens": 64,
+    "prompt_tokens_planned": 120022,
+    "forwards_lower": 121,
+    "forwards_upper": 126,
+    "messages_sha256": "58f62d451c10c71aea2e31a63cb09056bab37c946311b887b3c5b1cfce0d8afc"
+   }
+  ],
+  "filler": {
+   "label": "filler",
+   "document_tokens": 256,
+   "document_seed": 46999,
+   "output_tokens": 512,
+   "prompt_tokens_planned": 278,
+   "forwards_min": 512,
+   "messages_sha256": "4f80782c6a0d0b4cd29422565cbf5c0748c471996ee1ffe570d8845c73fe1696"
+  },
+  "nsys_forwards": 391,
+  "slack_max_forwards": 23,
+  "sampling": {
+   "seed": 17,
+   "temperature": 0.6,
+   "top_p": 0.95,
+   "thinking": false,
+   "ignore_eos": true
+  },
+  "counting_rule": "forwards = ceil(prompt/chunk) prefill chunks + (output-1) decode steps; upper adds 1 for the first token bookkeeping and EXTRA_FORWARDS=3",
+  "source_path": "bf128.json",
+  "source_sha256": "506a711a2c6e3e77dafe5c27fc33dd13f1d69c71b379889c17a298536e35490a"
+ }
+}

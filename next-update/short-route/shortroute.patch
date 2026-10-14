@@ -1,0 +1,78 @@
+--- a/python/freetoken/engine/layer_major.py
++++ b/python/freetoken/engine/layer_major.py
+@@ -37,6 +37,18 @@
+     return os.environ.get("QWEN36_LAYER_MAJOR_PREFILL", "0").strip().lower() in _ON
+ 
+ 
++def min_tokens() -> int:
++    """QWEN36_LAYER_MAJOR_MIN_TOKENS=<T> (unset/0 = current behaviour): start layer-major only when
++    the request's uncached prompt tokens (prompt minus prefix-cache hit) are >= T, on top of the
++    >= QWEN36_LAYER_MAJOR_MIN_CHUNKS rule. When set, layer-major may also coexist with
++    --moe-prefill-hit-d2d: prefills below T stay chunked and take the hit/miss split (decode-resident
++    experts gathered D2D, only misses over PCIe); a layer-major epoch always copies full layers."""
++    try:
++        return max(0, int(os.environ.get("QWEN36_LAYER_MAJOR_MIN_TOKENS", "0")))
++    except ValueError:
++        return 0
++
++
+ def engine_reason(engine) -> str | None:
+     """None when this engine can run layer-major prefill, else the reason it cannot."""
+     model = engine.model
+@@ -62,7 +74,9 @@
+         return f"{type(cache).__name__} slot cache"
+     if not cache.prefill_overlap or not cache.prefill_bank_buffers:
+         return "MoE prefill overlap (double buffer) is off"
+-    if cache.prefill_hit_d2d:
++    if cache.prefill_hit_d2d and not min_tokens():
++        # With QWEN36_LAYER_MAJOR_MIN_TOKENS the two coexist: begin_layer_major_prefill turns the
++        # hit-D2D split off for the layer-major epoch (full-layer copies, as without the flag).
+         return "hit-D2D prefill reads the decode residency slots the store borrows"
+     return None
+ 
+@@ -421,4 +435,4 @@
+ 
+ 
+ __all__ = ["LayerMajorExecutor", "attn_batch", "attn_group_layers", "attn_scratch_bytes", "enabled", "engine_reason",
+-           "store_banks"]
++           "min_tokens", "store_banks"]
+--- a/python/freetoken/moe/offload_cache.py
++++ b/python/freetoken/moe/offload_cache.py
+@@ -316,8 +316,15 @@
+         self.syncfree_invalidate = flag.strip().lower() in {"1", "true", "yes", "on"}
+ 
+     def begin_layer_major_prefill(self) -> None:
+-        """Open ONE prefill epoch for every chunk of a layer-major prefill (before layer 0, chunk 0)."""
+-        self.begin_prefill()
++        """Open ONE prefill epoch for every chunk of a layer-major prefill (before layer 0, chunk 0).
++        Always full-layer copies: the hidden store borrows decode-residency slots, so the hit-D2D
++        split (allowed next to layer-major only with QWEN36_LAYER_MAJOR_MIN_TOKENS, for the shorter
++        chunked prefills) is off for this epoch. Without --moe-prefill-hit-d2d this is unchanged."""
++        hit_d2d, self.prefill_hit_d2d = self.prefill_hit_d2d, False
++        try:
++            self.begin_prefill()
++        finally:
++            self.prefill_hit_d2d = hit_d2d
+         self.layer_major_active = True
+ 
+     def end_layer_major_prefill(self) -> None:
+--- a/python/freetoken/scheduler/layer_major.py
++++ b/python/freetoken/scheduler/layer_major.py
+@@ -224,10 +224,16 @@
+                 _LOGGED.add(reason)  # once per reason: why a long prompt stayed chunked
+                 logger.info_rank0(f"layer-major prefill not used: {reason}")
+             return None
+-        from freetoken.engine.layer_major import attn_batch, attn_group_layers, attn_scratch_bytes, store_banks
++        from freetoken.engine.layer_major import (attn_batch, attn_group_layers, attn_scratch_bytes, min_tokens,
++                                                  store_banks)
+         from freetoken.moe.layer_major import bank_row_bytes, lendable_slots, plan_store
+ 
+         req = fi.batch.reqs[0]
++        threshold = min_tokens()
++        if threshold and sched.prefill_manager.pending_list[0].input_len - req.cached_len < threshold:
++            # Short prompt or prefix-cache hit (QWEN36_LAYER_MAJOR_MIN_TOKENS): stay chunked. Later
++            # chunks of this request have fewer uncached tokens left, so they stay chunked too.
++            return None
+         extends = [req.extend_len] + plan_chunk_extends(
+             req.device_len, sched.prefill_manager.pending_list[0].input_len,
+             sched.prefill_budget, sched.cache_manager.prefill_chunk_align)

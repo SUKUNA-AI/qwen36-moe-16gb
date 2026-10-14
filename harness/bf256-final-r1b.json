@@ -1,0 +1,8 @@
+{
+  "context": 262144,
+  "chunk": 2048,
+  "memory_ratio": 0.73,
+  "qualified": false,
+  "flags": [],
+  "env": {}
+}

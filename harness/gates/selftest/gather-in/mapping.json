@@ -1,0 +1,48 @@
+{
+ "main128": {
+  "run": {
+   "equal": true,
+   "diff": {}
+  },
+  "teacher": {
+   "equal": true,
+   "diff": {}
+  }
+ },
+ "long256": {
+  "run": {
+   "equal": true,
+   "diff": {}
+  },
+  "teacher": {
+   "equal": true,
+   "diff": {}
+  }
+ },
+ "baseline64": {
+  "run": {
+   "equal": true,
+   "diff": {}
+  }
+ },
+ "required_kernel_modules": {
+  "got": [
+   "freetoken__decode_gather_tma_8_3_16384"
+  ],
+  "expected": [
+   "freetoken__decode_gather_tma_8_3_16384"
+  ]
+ },
+ "required_libraries": [
+  "release/lib/libqwen36_gdn.so",
+  "release/lib/libqwen_attention_gate.so",
+  "release/lib/libqwen_fp8_gemv.so",
+  "release/lib/libqwen_nvfp4_bitexact.so"
+ ],
+ "canonical_sha256": {
+  "baseline64": "982cd95851eaa86e69394ab17337c414c3c098df8006392d2fb6a634baca7662",
+  "main128": "542e0fe6adfbfb90d75c09606788e6afc7e21c0559122280b4dcde23cbaad1a9",
+  "long256": "c6f8ad912082e61ac8987773aea5323619542d660fc8ddcf5211f941bdf3b2a3"
+ },
+ "pass": true
+}

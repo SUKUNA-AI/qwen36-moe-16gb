@@ -1,0 +1,4345 @@
+{
+ "schema": "nsight-final-dashboard-1",
+ "build": {
+  "profile": "main-release (profile-final-main-release = main-release.json + QWEN36_NSYS_FORWARDS=391)",
+  "switches": "layer-major prefill + CUDA GDN ABI-2 (cluster decode) + FP8 GEMV + bit-exact CUDA NVFP4 prefill + attention batching k=2 + tuned decode gather + FREETOKEN_DISABLE_JIT=1",
+  "source_sha256_prefix": "04dbae8b33be6c66 (active-run.json; equals final-f1 c128 gate runs)",
+  "chunk": 2048,
+  "context": 131072,
+  "memory_ratio": 0.75,
+  "nsys_identity_checks": {
+   "unit_execstart": "/bin/bash .../optimization/profile.sh profile-final-main-release (frozen start-experiment.sh, which already routes profile-final-* to profile.sh)",
+   "invocation_id": "6a7d72bc8fb4488f9e272906d69cf2c6",
+   "pointer_output_base": "model-final-main-release-20261014T172433Z",
+   "measured_requests_completed": true,
+   "experiment_unit_inactive_after_run": true,
+   "capture_complete_by_request": {
+    "warmup_short": true,
+    "warmup_chunk": true,
+    "warm_decode": true,
+    "fresh_16k": true,
+    "fresh_120k": true,
+    "filler": null
+   },
+   "gpu_ops_without_forward_instance": 7562,
+   "gpu_ops_with_forward_instance": 514247,
+   "decode_graph_layer_attribution": "graph_node_capture_time_nvtx present (nvtx-precapture worked)",
+   "nsys_arguments": [
+    "--trace=cuda,nvtx",
+    "--sample=none",
+    "--cpuctxsw=none",
+    "--capture-range=cudaProfilerApi",
+    "--capture-range-end=stop-shutdown",
+    "--kill=sigterm",
+    "--cuda-graph-trace=node:nvtx-precapture",
+    "--cuda-event-trace=false",
+    "--wait=primary",
+    "--export=sqlite"
+   ],
+   "nsys_version": "NVIDIA Nsight Systems version 2026.3.2.476-263238834031v0",
+   "capture_window_s": "17:26:33Z requests start -> 17:27:11Z report written (~38 s of capture)"
+  }
+ },
+ "scenarios": {
+  "short_prompt_prefill_278tok": {
+   "request_label": "warm_decode",
+   "phase": "prefill",
+   "method": "wall_decomposition (kernels first, then exposed H2D, then idle; sums to the prefill window)",
+   "critical_path_total_ms": 599.156701,
+   "decode_steps_measured_as_periods": null,
+   "ms_per_decode_step_under_nsys": null,
+   "buckets_requested": {
+    "moe_experts": {
+     "critical_ms": 124.951245,
+     "share_pct": 20.854518490981544,
+     "ms": 124.951245
+    },
+    "expert_h2d": {
+     "critical_ms": 452.064745,
+     "share_pct": 75.45016925380261,
+     "ms": 452.064745
+    },
+    "gdn": {
+     "critical_ms": 1.998509,
+     "share_pct": 0.3335536424218345,
+     "ms": 1.998509
+    },
+    "full_attention": {
+     "critical_ms": 0.406684,
+     "share_pct": 0.06787606636481563,
+     "ms": 0.406684
+    },
+    "fp8_gemv_gemm": {
+     "critical_ms": 7.662638,
+     "share_pct": 1.2789038305356448,
+     "ms": 7.662638
+    },
+    "decode_gather": {
+     "critical_ms": 0.0,
+     "share_pct": 0.0,
+     "ms": 0.0
+    },
+    "norms_misc": {
+     "critical_ms": 3.247828,
+     "share_pct": 0.5420665402855939,
+     "ms": 3.247828
+    },
+    "cpu_gaps_gpu_idle": {
+     "critical_ms": 8.825052,
+     "share_pct": 1.4729121756079633,
+     "ms": 8.825052
+    }
+   },
+   "buckets_detailed_ms": {
+    "expert_h2d_exposed": 452.064745,
+    "moe_experts": 124.951245,
+    "fp8_dense": 7.662638,
+    "gdn": 1.998509,
+    "bf16_dense": 1.637428,
+    "norms_misc": 1.194949,
+    "lm_head_sampling": 0.410395,
+    "full_attention": 0.406684,
+    "copy_or_memset_exposed": 0.005056
+   },
+   "analyzer_chain_buckets_ms": {
+    "memcpy_h2d": 511.557947,
+    "moe_experts": 77.954447,
+    "lm_head_sampling": 0.410395,
+    "fp8_dense": 0.166495,
+    "norms_misc": 0.119967,
+    "gdn": 0.075774,
+    "bf16_dense": 0.041568,
+    "memcpy_d2d": 0.002912,
+    "memcpy_d2h": 0.0016,
+    "memset": 0.000544
+   },
+   "analyzer_chain_gpu_idle_ms": 8.825052,
+   "top10_kernels_by_critical_path": [
+    {
+     "family": "moe_nvfp4_triton_prefill",
+     "critical_ms": 122.96178,
+     "share_pct": 20.522474303429345,
+     "ms": 122.96178
+    },
+    {
+     "family": "fp8_cutlass_sm120_gemm",
+     "critical_ms": 5.858976,
+     "share_pct": 0.9778703952106846,
+     "ms": 5.858976
+    },
+    {
+     "family": "fp8_cublaslt_nvjet_gemm",
+     "critical_ms": 1.654831,
+     "share_pct": 0.27619335596815764,
+     "ms": 1.654831
+    },
+    {
+     "family": "bf16_cutlass_gemm",
+     "critical_ms": 1.532821,
+     "share_pct": 0.25582973493273176,
+     "ms": 1.532821
+    },
+    {
+     "family": "swiglu",
+     "critical_ms": 1.141205,
+     "share_pct": 0.19046853654399837,
+     "ms": 1.141205
+    },
+    {
+     "family": "elementwise",
+     "critical_ms": 0.52734,
+     "share_pct": 0.08801370311303587,
+     "ms": 0.52734
+    },
+    {
+     "family": "gdn_chunk_h",
+     "critical_ms": 0.417372,
+     "share_pct": 0.06965990688302424,
+     "ms": 0.417372
+    },
+    {
+     "family": "gdn_chunk_o",
+     "critical_ms": 0.409277,
+     "share_pct": 0.0683088412959267,
+     "ms": 0.409277
+    },
+    {
+     "family": "gdn_conv_qkv",
+     "critical_ms": 0.393341,
+     "share_pct": 0.0656491030382384,
+     "ms": 0.393341
+    },
+    {
+     "family": "gdn_chunk_kkt_solve",
+     "critical_ms": 0.387867,
+     "share_pct": 0.06473548561714242,
+     "ms": 0.387867
+    }
+   ],
+   "by_layer_kind_ms": {
+    "no_mha": 454.040508,
+    "mha": 135.86081,
+    "outside_layers": 0.423099,
+    "unattributed": 0.007232
+   },
+   "by_layer_analyzer_chain": [
+    {
+     "layer": 0,
+     "ms": 25.459508,
+     "share_pct": 4.249223610035198
+    },
+    {
+     "layer": 32,
+     "ms": 22.126103,
+     "share_pct": 3.6928741618129712
+    },
+    {
+     "layer": 34,
+     "ms": 22.102583,
+     "share_pct": 3.6889486445049373
+    },
+    {
+     "layer": 36,
+     "ms": 21.820283,
+     "share_pct": 3.641832422733765
+    },
+    {
+     "layer": 35,
+     "ms": 21.566749,
+     "share_pct": 3.599517282207614
+    },
+    {
+     "layer": 33,
+     "ms": 21.215585,
+     "share_pct": 3.5409075730257085
+    },
+    {
+     "layer": 31,
+     "ms": 19.665297,
+     "share_pct": 3.2821625740275246
+    },
+    {
+     "layer": 29,
+     "ms": 19.490579,
+     "share_pct": 3.2530019221131936
+    },
+    {
+     "layer": 30,
+     "ms": 17.936452,
+     "share_pct": 2.993616189231271
+    },
+    {
+     "layer": 37,
+     "ms": 15.61046,
+     "share_pct": 2.605405226036185
+    },
+    {
+     "layer": 28,
+     "ms": 13.889998,
+     "share_pct": 2.3182579743859026
+    },
+    {
+     "layer": 2,
+     "ms": 13.823022,
+     "share_pct": 2.307079596527787
+    },
+    {
+     "layer": 1,
+     "ms": 13.66152,
+     "share_pct": 2.28012471148178
+    },
+    {
+     "layer": 3,
+     "ms": 13.362803,
+     "share_pct": 2.2302684719535497
+    },
+    {
+     "layer": 13,
+     "ms": 13.286292,
+     "share_pct": 2.2174986907139673
+    },
+    {
+     "layer": 14,
+     "ms": 13.274133,
+     "share_pct": 2.2154693384627606
+    },
+    {
+     "layer": 6,
+     "ms": 13.264917,
+     "share_pct": 2.213931176578796
+    },
+    {
+     "layer": 4,
+     "ms": 13.244277,
+     "share_pct": 2.210486334859501
+    },
+    {
+     "layer": 12,
+     "ms": 13.209429,
+     "share_pct": 2.2046701602357612
+    },
+    {
+     "layer": 11,
+     "ms": 13.186709,
+     "share_pct": 2.200878163924599
+    },
+    {
+     "layer": 23,
+     "ms": 13.174485,
+     "share_pct": 2.198837963092396
+    },
+    {
+     "layer": 24,
+     "ms": 13.12415,
+     "share_pct": 2.1904369888704625
+    },
+    {
+     "layer": 5,
+     "ms": 13.096342,
+     "share_pct": 2.185795799019195
+    },
+    {
+     "layer": 10,
+     "ms": 13.09023,
+     "share_pct": 2.1847756986030937
+    },
+    {
+     "layer": 8,
+     "ms": 12.985239,
+     "share_pct": 2.1672525698748717
+    },
+    {
+     "layer": 22,
+     "ms": 12.981528,
+     "share_pct": 2.166633199350632
+    },
+    {
+     "layer": 15,
+     "ms": 12.977784,
+     "share_pct": 2.1660083210852714
+    },
+    {
+     "layer": 19,
+     "ms": 12.976215,
+     "share_pct": 2.1657464530301564
+    },
+    {
+     "layer": 9,
+     "ms": 12.969623,
+     "share_pct": 2.164646240015932
+    },
+    {
+     "layer": 27,
+     "ms": 12.890841,
+     "share_pct": 2.1514974260464794
+    },
+    {
+     "layer": 16,
+     "ms": 12.877881,
+     "share_pct": 2.1493343858971543
+    },
+    {
+     "layer": 20,
+     "ms": 12.871994,
+     "share_pct": 2.1483518382614233
+    },
+    {
+     "layer": 7,
+     "ms": 12.860216,
+     "share_pct": 2.1463860753849766
+    },
+    {
+     "layer": 17,
+     "ms": 12.859578,
+     "share_pct": 2.1462795923899716
+    },
+    {
+     "layer": 18,
+     "ms": 12.846521,
+     "share_pct": 2.144100362819776
+    },
+    {
+     "layer": 25,
+     "ms": 12.783258,
+     "share_pct": 2.133541689288392
+    },
+    {
+     "layer": 21,
+     "ms": 12.766426,
+     "share_pct": 2.1307324075142073
+    },
+    {
+     "layer": 38,
+     "ms": 12.718362,
+     "share_pct": 2.122710466022143
+    },
+    {
+     "layer": 26,
+     "ms": 12.654235,
+     "share_pct": 2.1120075898141377
+    },
+    {
+     "layer": 39,
+     "ms": 3.199711,
+     "share_pct": 0.5340357530274872
+    },
+    {
+     "layer": "unattributed",
+     "ms": 0.430331,
+     "share_pct": 0.07182278013110296
+    }
+   ],
+   "layer_note": "mha = full-attention layers (3,7,...,39); no_mha = GDN layers. Under layer-major prefill the grouped attention path has no Layer_N NVTX, so its work is 'unattributed'.",
+   "gpu": {
+    "window_ms": 599.156701,
+    "busy_pct": 98.52708782439204,
+    "idle_bubble_pct": 1.4729121756079633,
+    "kernel_busy_pct": 23.076074717889203,
+    "idle_gaps": {
+     "count": 463,
+     "total_ms": 8.825052,
+     "count_ge_10us": 83,
+     "ms_in_ge_10us": 8.399264,
+     "count_ge_100us": 49,
+     "ms_in_ge_100us": 6.742419,
+     "count_ge_1ms": 0,
+     "ms_in_ge_1ms": 0.0,
+     "max_ms": 0.318396
+    }
+   },
+   "pcie_h2d": {
+    "bytes": 18245224582.0,
+    "gb": 18.245224582,
+    "copy_busy_ms": 515.492402,
+    "gbps_while_copying": 35.39377983305368,
+    "gbps_window_avg": 30.451507179254598,
+    "copy_overlapped_with_kernels_pct": 12.304285524658422
+   },
+   "sources": [
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_buckets.warm_decode.prefill",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_families.warm_decode.prefill",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#scenario_windows.warm_decode.prefill",
+    "results/model-final-main-release-20261014T172433Z.run-receipt.json#requests[warm_decode]"
+   ],
+   "ttft_under_nsys_s": 0.6060533810014022,
+   "prompt_tokens": 278
+  },
+  "warm_short_decode": {
+   "request_label": "warm_decode",
+   "phase": "decode",
+   "method": "analyzer critical chain (serial decode graph stream; equals the wall decomposition within 0.1 ms/step)",
+   "critical_path_total_ms": 1011.843589,
+   "decode_steps_measured_as_periods": 126,
+   "ms_per_decode_step_under_nsys": 8.030504674603174,
+   "buckets_requested": {
+    "moe_experts": {
+     "critical_ms": 199.948542,
+     "share_pct": 19.760815226156463,
+     "ms_per_step": 1.5868931904761905
+    },
+    "expert_h2d": {
+     "critical_ms": 18.825155,
+     "share_pct": 1.8604807308810256,
+     "ms_per_step": 0.14940599206349206
+    },
+    "gdn": {
+     "critical_ms": 39.37408,
+     "share_pct": 3.8913207958270712,
+     "ms_per_step": 0.3124926984126984
+    },
+    "full_attention": {
+     "critical_ms": 17.713727,
+     "share_pct": 1.7506388529383665,
+     "ms_per_step": 0.1405851349206349
+    },
+    "fp8_gemv_gemm": {
+     "critical_ms": 279.79818,
+     "share_pct": 27.65231534218872,
+     "ms_per_step": 2.220620476190476
+    },
+    "decode_gather": {
+     "critical_ms": 230.593838,
+     "share_pct": 22.78947462896857,
+     "ms_per_step": 1.8301098253968255
+    },
+    "norms_misc": {
+     "critical_ms": 127.015896,
+     "share_pct": 12.552917998475355,
+     "ms_per_step": 1.0080626666666666
+    },
+    "cpu_gaps_gpu_idle": {
+     "critical_ms": 98.574171,
+     "share_pct": 9.74203642456443,
+     "ms_per_step": 0.7823346904761905,
+     "inside_forward_ms": 63.719111,
+     "between_forwards_ms": 34.85506
+    }
+   },
+   "buckets_detailed_ms": {
+    "fp8_dense": 279.79818,
+    "decode_gather": 230.593838,
+    "moe_experts": 199.948542,
+    "lm_head_sampling": 62.550116,
+    "gdn": 39.37408,
+    "norms_misc": 31.862586,
+    "bf16_dense": 28.616407,
+    "expert_h2d": 18.340362,
+    "full_attention": 17.713727,
+    "memset": 3.367015,
+    "memcpy_d2d": 0.507036,
+    "memcpy_h2d": 0.484793,
+    "memcpy_d2h": 0.112736
+   },
+   "analyzer_chain_buckets_ms": {
+    "fp8_dense": 279.79818,
+    "decode_gather": 230.593838,
+    "moe_experts": 199.948542,
+    "lm_head_sampling": 62.550116,
+    "gdn": 39.37408,
+    "norms_misc": 31.862586,
+    "bf16_dense": 28.616407,
+    "expert_h2d": 18.340362,
+    "full_attention": 17.713727,
+    "memset": 3.367015,
+    "memcpy_d2d": 0.507036,
+    "memcpy_h2d": 0.484793,
+    "memcpy_d2h": 0.112736
+   },
+   "analyzer_chain_gpu_idle_ms": 98.574171,
+   "top10_kernels_by_critical_path": [
+    {
+     "family": "decode_gather_tma",
+     "critical_ms": 230.593838,
+     "share_pct": 22.78947462896857,
+     "ms_per_step": 1.8301098253968255
+    },
+    {
+     "family": "fp8_gemv_qmma",
+     "critical_ms": 166.638054,
+     "share_pct": 16.468756219989253,
+     "ms_per_step": 1.3225242380952382
+    },
+    {
+     "family": "moe_decode_nvfp4_marlin",
+     "critical_ms": 145.717806,
+     "share_pct": 14.401218487139122,
+     "ms_per_step": 1.1564905238095238
+    },
+    {
+     "family": "fp8_cublas_xmma_gemm",
+     "critical_ms": 77.559109,
+     "share_pct": 7.66512827112452,
+     "ms_per_step": 0.6155484841269842
+    },
+    {
+     "family": "lm_head_nvfp4_gemv",
+     "critical_ms": 52.751115,
+     "share_pct": 5.213366529518032,
+     "ms_per_step": 0.41865964285714286
+    },
+    {
+     "family": "gdn_decode_cluster",
+     "critical_ms": 39.37408,
+     "share_pct": 3.8913207958270712,
+     "ms_per_step": 0.3124926984126984
+    },
+    {
+     "family": "moe_decode_nvfp4_gemv_splitk",
+     "critical_ms": 32.969584,
+     "share_pct": 3.2583676329445024,
+     "ms_per_step": 0.26166336507936505
+    },
+    {
+     "family": "bf16_cublas_gemv",
+     "critical_ms": 28.616407,
+     "share_pct": 2.828145309324088,
+     "ms_per_step": 0.22711434126984126
+    },
+    {
+     "family": "cublaslt_splitk_reduce",
+     "critical_ms": 27.260403,
+     "share_pct": 2.694132106617518,
+     "ms_per_step": 0.21635240476190476
+    },
+    {
+     "family": "expert_lru_metadata",
+     "critical_ms": 18.340362,
+     "share_pct": 1.8125688791610262,
+     "ms_per_step": 0.14555842857142856
+    }
+   ],
+   "by_layer_kind_ms": {
+    "no_mha": 643.941861,
+    "mha": 204.992656,
+    "outside_layers": 62.866242,
+    "unattributed": 1.468659
+   },
+   "by_layer_analyzer_chain": [
+    {
+     "layer": "unattributed",
+     "ms_per_step": 0.5105944523809524,
+     "share_pct": 6.358186354037373
+    },
+    {
+     "layer": 0,
+     "ms_per_step": 0.19920253174603175,
+     "share_pct": 2.480573012752468
+    },
+    {
+     "layer": 2,
+     "ms_per_step": 0.1912124285714286,
+     "share_pct": 2.3810761131382727
+    },
+    {
+     "layer": 34,
+     "ms_per_step": 0.19107915079365081,
+     "share_pct": 2.37941646927804
+    },
+    {
+     "layer": 1,
+     "ms_per_step": 0.18812596031746032,
+     "share_pct": 2.3426418131903586
+    },
+    {
+     "layer": 12,
+     "ms_per_step": 0.1876175873015873,
+     "share_pct": 2.336311289313313
+    },
+    {
+     "layer": 33,
+     "ms_per_step": 0.18481657142857144,
+     "share_pct": 2.301431590134827
+    },
+    {
+     "layer": 32,
+     "ms_per_step": 0.18324834920634922,
+     "share_pct": 2.281903275467608
+    },
+    {
+     "layer": 37,
+     "ms_per_step": 0.18199853174603176,
+     "share_pct": 2.2663399016703165
+    },
+    {
+     "layer": 28,
+     "ms_per_step": 0.1804713968253968,
+     "share_pct": 2.2473232273451704
+    },
+    {
+     "layer": 13,
+     "ms_per_step": 0.17829042063492065,
+     "share_pct": 2.2201645831646415
+    },
+    {
+     "layer": 30,
+     "ms_per_step": 0.1757479841269841,
+     "share_pct": 2.1885048480551275
+    },
+    {
+     "layer": 22,
+     "ms_per_step": 0.17056979365079364,
+     "share_pct": 2.124023340528375
+    },
+    {
+     "layer": 23,
+     "ms_per_step": 0.1690685,
+     "share_pct": 2.1053284550681677
+    },
+    {
+     "layer": 31,
+     "ms_per_step": 0.16861181746031745,
+     "share_pct": 2.099641607750504
+    },
+    {
+     "layer": 11,
+     "ms_per_step": 0.16848207936507936,
+     "share_pct": 2.0980260418490433
+    },
+    {
+     "layer": 26,
+     "ms_per_step": 0.1674524126984127,
+     "share_pct": 2.0852040996624823
+    },
+    {
+     "layer": 29,
+     "ms_per_step": 0.1670176984126984,
+     "share_pct": 2.0797908124118183
+    },
+    {
+     "layer": 25,
+     "ms_per_step": 0.16669259523809524,
+     "share_pct": 2.075742459440537
+    },
+    {
+     "layer": 14,
+     "ms_per_step": 0.16629089682539683,
+     "share_pct": 2.070740302926404
+    },
+    {
+     "layer": 3,
+     "ms_per_step": 0.16625759523809525,
+     "share_pct": 2.07032561432773
+    },
+    {
+     "layer": 35,
+     "ms_per_step": 0.1661882857142857,
+     "share_pct": 2.0694625362695263
+    },
+    {
+     "layer": 5,
+     "ms_per_step": 0.16540598412698412,
+     "share_pct": 2.0597209120628226
+    },
+    {
+     "layer": 6,
+     "ms_per_step": 0.16408597619047618,
+     "share_pct": 2.0432834901323864
+    },
+    {
+     "layer": 18,
+     "ms_per_step": 0.1640308253968254,
+     "share_pct": 2.042596723909272
+    },
+    {
+     "layer": 9,
+     "ms_per_step": 0.16301440476190476,
+     "share_pct": 2.0299397281648437
+    },
+    {
+     "layer": 21,
+     "ms_per_step": 0.16258213492063492,
+     "share_pct": 2.024556880401404
+    },
+    {
+     "layer": 4,
+     "ms_per_step": 0.16209860317460317,
+     "share_pct": 2.0185356928717963
+    },
+    {
+     "layer": 39,
+     "ms_per_step": 0.16146069047619047,
+     "share_pct": 2.0105920738308893
+    },
+    {
+     "layer": 27,
+     "ms_per_step": 0.16126615079365078,
+     "share_pct": 2.008169565029482
+    },
+    {
+     "layer": 36,
+     "ms_per_step": 0.16114826984126984,
+     "share_pct": 2.006701650406958
+    },
+    {
+     "layer": 38,
+     "ms_per_step": 0.16066470634920635,
+     "share_pct": 2.000680067559335
+    },
+    {
+     "layer": 17,
+     "ms_per_step": 0.15981547619047617,
+     "share_pct": 1.99010501414562
+    },
+    {
+     "layer": 10,
+     "ms_per_step": 0.15980884126984127,
+     "share_pct": 1.990022392680298
+    },
+    {
+     "layer": 15,
+     "ms_per_step": 0.15952619841269844,
+     "share_pct": 1.9865027775552768
+    },
+    {
+     "layer": 16,
+     "ms_per_step": 0.1567373650793651,
+     "share_pct": 1.9517747816653903
+    },
+    {
+     "layer": 19,
+     "ms_per_step": 0.15663703174603175,
+     "share_pct": 1.9505253790761528
+    },
+    {
+     "layer": 8,
+     "ms_per_step": 0.1522114365079365,
+     "share_pct": 1.8954155769227292
+    },
+    {
+     "layer": 20,
+     "ms_per_step": 0.15184603968253968,
+     "share_pct": 1.8908654665597728
+    },
+    {
+     "layer": 7,
+     "ms_per_step": 0.14942749206349207,
+     "share_pct": 1.8607484600072908
+    },
+    {
+     "layer": 24,
+     "ms_per_step": 0.14736531746031747,
+     "share_pct": 1.8350691946717468
+    }
+   ],
+   "layer_note": "mha = full-attention layers (3,7,...,39); no_mha = GDN layers. Under layer-major prefill the grouped attention path has no Layer_N NVTX, so its work is 'unattributed'.",
+   "gpu": {
+    "window_ms": 1011.843589,
+    "busy_pct": 90.55570129228738,
+    "idle_bubble_pct": 9.44429870771262,
+    "kernel_busy_pct": 89.92552237241087,
+    "idle_gaps": {
+     "count": 134402,
+     "total_ms": 95.561531,
+     "count_ge_10us": 727,
+     "ms_in_ge_10us": 37.893098,
+     "count_ge_100us": 154,
+     "ms_in_ge_100us": 26.62263,
+     "count_ge_1ms": 0,
+     "ms_in_ge_1ms": 0.0,
+     "max_ms": 0.524251
+    }
+   },
+   "pcie_h2d": {
+    "bytes": 133812.0,
+    "gb": 0.000133812,
+    "copy_busy_ms": 2.089451,
+    "gbps_while_copying": 0.06404170282050166,
+    "gbps_window_avg": 0.0001322457358575012,
+    "copy_overlapped_with_kernels_pct": 0.0
+   },
+   "sources": [
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_buckets.warm_decode.decode",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_families.warm_decode.decode",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#scenario_windows.warm_decode.decode"
+   ]
+  },
+  "prefill_16k": {
+   "request_label": "fresh_16k",
+   "phase": "prefill",
+   "method": "wall_decomposition (kernels first, then exposed H2D, then idle; sums to the prefill window)",
+   "critical_path_total_ms": 1529.131456,
+   "decode_steps_measured_as_periods": null,
+   "ms_per_decode_step_under_nsys": null,
+   "buckets_requested": {
+    "moe_experts": {
+     "critical_ms": 613.766909,
+     "share_pct": 40.138269773452365,
+     "ms": 613.766909
+    },
+    "expert_h2d": {
+     "critical_ms": 78.016603,
+     "share_pct": 5.102020672838739,
+     "ms": 78.016603
+    },
+    "gdn": {
+     "critical_ms": 126.421876,
+     "share_pct": 8.267561006867417,
+     "ms": 126.421876
+    },
+    "full_attention": {
+     "critical_ms": 291.209948,
+     "share_pct": 19.044140832846747,
+     "ms": 291.209948
+    },
+    "fp8_gemv_gemm": {
+     "critical_ms": 228.991564,
+     "share_pct": 14.975269987513748,
+     "ms": 228.991564
+    },
+    "decode_gather": {
+     "critical_ms": 0.0,
+     "share_pct": 0.0,
+     "ms": 0.0
+    },
+    "norms_misc": {
+     "critical_ms": 121.91169500000001,
+     "share_pct": 7.972610498701297,
+     "ms": 121.91169500000001
+    },
+    "cpu_gaps_gpu_idle": {
+     "critical_ms": 68.812861,
+     "share_pct": 4.500127227779688,
+     "ms": 68.812861
+    }
+   },
+   "buckets_detailed_ms": {
+    "moe_experts": 613.766909,
+    "full_attention": 291.209948,
+    "fp8_dense": 228.991564,
+    "gdn": 126.421876,
+    "expert_h2d_exposed": 78.016603,
+    "bf16_dense": 72.261358,
+    "norms_misc": 44.571756,
+    "copy_or_memset_exposed": 3.792258,
+    "lm_head_sampling": 1.286323
+   },
+   "analyzer_chain_buckets_ms": {
+    "memcpy_h2d": 488.553882,
+    "moe_experts": 406.075431,
+    "full_attention": 267.031444,
+    "fp8_dense": 152.488927,
+    "gdn": 71.791918,
+    "bf16_dense": 41.807998,
+    "norms_misc": 27.490062,
+    "memcpy_d2d": 3.768098,
+    "lm_head_sampling": 1.286323,
+    "memcpy_d2h": 0.012576,
+    "memset": 0.011936
+   },
+   "analyzer_chain_gpu_idle_ms": 68.812861,
+   "top10_kernels_by_critical_path": [
+    {
+     "family": "moe_nvfp4_cuda_fast_gemm",
+     "critical_ms": 549.895968,
+     "share_pct": 35.96132731704134,
+     "ms": 549.895968
+    },
+    {
+     "family": "flashinfer_attention_paged",
+     "critical_ms": 285.41867,
+     "share_pct": 18.66541093508183,
+     "ms": 285.41867
+    },
+    {
+     "family": "fp8_cutlass_sm120_gemm",
+     "critical_ms": 182.5183505,
+     "share_pct": 11.936079778088091,
+     "ms": 182.5183505
+    },
+    {
+     "family": "bf16_cutlass_gemm",
+     "critical_ms": 65.994715,
+     "share_pct": 4.3158300577134945,
+     "ms": 65.994715
+    },
+    {
+     "family": "fp8_cublaslt_nvjet_gemm",
+     "critical_ms": 42.881412,
+     "share_pct": 2.8042985991650413,
+     "ms": 42.881412
+    },
+    {
+     "family": "gdn_chunk_h",
+     "critical_ms": 37.588946,
+     "share_pct": 2.458189310834503,
+     "ms": 37.588946
+    },
+    {
+     "family": "moe_sum_reduce",
+     "critical_ms": 28.789577,
+     "share_pct": 1.8827404855897492,
+     "ms": 28.789577
+    },
+    {
+     "family": "gdn_chunk_o",
+     "critical_ms": 27.798656,
+     "share_pct": 1.817937620138788,
+     "ms": 27.798656
+    },
+    {
+     "family": "moe_nvfp4_triton_prefill",
+     "critical_ms": 25.323705,
+     "share_pct": 1.6560842366190915,
+     "ms": 25.323705
+    },
+    {
+     "family": "gdn_conv_qkv",
+     "critical_ms": 23.15992,
+     "share_pct": 1.5145800519062764,
+     "ms": 23.15992
+    }
+   ],
+   "by_layer_kind_ms": {
+    "no_mha": 908.653183,
+    "unattributed": 542.477675,
+    "mha": 8.711808,
+    "outside_layers": 0.475929
+   },
+   "by_layer_analyzer_chain": [
+    {
+     "layer": "unattributed",
+     "ms": 542.953604,
+     "share_pct": 35.50732030719536
+    },
+    {
+     "layer": 0,
+     "ms": 44.54769,
+     "share_pct": 2.913267517008034
+    },
+    {
+     "layer": 36,
+     "ms": 32.686381,
+     "share_pct": 2.137578222705792
+    },
+    {
+     "layer": 34,
+     "ms": 32.582057,
+     "share_pct": 2.1307557876829133
+    },
+    {
+     "layer": 33,
+     "ms": 32.494603,
+     "share_pct": 2.1250365933221635
+    },
+    {
+     "layer": 29,
+     "ms": 31.591317,
+     "share_pct": 2.0659647590167682
+    },
+    {
+     "layer": 32,
+     "ms": 31.591027,
+     "share_pct": 2.065945794002422
+    },
+    {
+     "layer": 30,
+     "ms": 31.050748,
+     "share_pct": 2.0306133837063647
+    },
+    {
+     "layer": 37,
+     "ms": 29.98826,
+     "share_pct": 1.9611302796978103
+    },
+    {
+     "layer": 28,
+     "ms": 29.940131,
+     "share_pct": 1.957982806678983
+    },
+    {
+     "layer": 2,
+     "ms": 29.771143,
+     "share_pct": 1.9469315658365476
+    },
+    {
+     "layer": 13,
+     "ms": 29.707081,
+     "share_pct": 1.9427421287709092
+    },
+    {
+     "layer": 18,
+     "ms": 29.689994,
+     "share_pct": 1.9416246970463211
+    },
+    {
+     "layer": 4,
+     "ms": 29.664554,
+     "share_pct": 1.9399610075119664
+    },
+    {
+     "layer": 14,
+     "ms": 29.567816,
+     "share_pct": 1.933634671105739
+    },
+    {
+     "layer": 20,
+     "ms": 29.446952,
+     "share_pct": 1.925730576299125
+    },
+    {
+     "layer": 21,
+     "ms": 29.413965,
+     "share_pct": 1.9235733386155651
+    },
+    {
+     "layer": 8,
+     "ms": 29.383121,
+     "share_pct": 1.9215562458483622
+    },
+    {
+     "layer": 12,
+     "ms": 29.363886,
+     "share_pct": 1.920298342224411
+    },
+    {
+     "layer": 17,
+     "ms": 29.352682,
+     "share_pct": 1.9195656387046425
+    },
+    {
+     "layer": 26,
+     "ms": 29.332941,
+     "share_pct": 1.9182746444004877
+    },
+    {
+     "layer": 1,
+     "ms": 29.115664,
+     "share_pct": 1.9040654670830341
+    },
+    {
+     "layer": 24,
+     "ms": 29.111918,
+     "share_pct": 1.9038204914149643
+    },
+    {
+     "layer": 5,
+     "ms": 29.039729,
+     "share_pct": 1.8990995761714289
+    },
+    {
+     "layer": 6,
+     "ms": 28.965679,
+     "share_pct": 1.8942569578530728
+    },
+    {
+     "layer": 9,
+     "ms": 28.928369,
+     "share_pct": 1.891817010662555
+    },
+    {
+     "layer": 22,
+     "ms": 28.899853,
+     "share_pct": 1.8899521611829297
+    },
+    {
+     "layer": 16,
+     "ms": 28.787855,
+     "share_pct": 1.8826278726424943
+    },
+    {
+     "layer": 10,
+     "ms": 28.697397,
+     "share_pct": 1.8767122268917604
+    },
+    {
+     "layer": 38,
+     "ms": 28.467187,
+     "share_pct": 1.8616572753310752
+    },
+    {
+     "layer": 25,
+     "ms": 27.473183,
+     "share_pct": 1.7966527921586357
+    },
+    {
+     "layer": 35,
+     "ms": 1.041108,
+     "share_pct": 0.06808492467504376
+    },
+    {
+     "layer": 39,
+     "ms": 0.935509,
+     "share_pct": 0.06117910898564368
+    },
+    {
+     "layer": 23,
+     "ms": 0.871126,
+     "share_pct": 0.05696867961102227
+    },
+    {
+     "layer": 31,
+     "ms": 0.870583,
+     "share_pct": 0.056933169256574365
+    },
+    {
+     "layer": 19,
+     "ms": 0.868374,
+     "share_pct": 0.056788708164538605
+    },
+    {
+     "layer": 27,
+     "ms": 0.858263,
+     "share_pct": 0.05612748312987422
+    },
+    {
+     "layer": 15,
+     "ms": 0.855351,
+     "share_pct": 0.05593704822719964
+    },
+    {
+     "layer": 11,
+     "ms": 0.853271,
+     "share_pct": 0.055801023296717794
+    },
+    {
+     "layer": 3,
+     "ms": 0.836023,
+     "share_pct": 0.054673062719337584
+    },
+    {
+     "layer": 7,
+     "ms": 0.7222,
+     "share_pct": 0.04722942538172467
+    }
+   ],
+   "layer_note": "mha = full-attention layers (3,7,...,39); no_mha = GDN layers. Under layer-major prefill the grouped attention path has no Layer_N NVTX, so its work is 'unattributed'.",
+   "gpu": {
+    "window_ms": 1529.131456,
+    "busy_pct": 95.49987277222031,
+    "idle_bubble_pct": 4.500127227779689,
+    "kernel_busy_pct": 90.14985131533388,
+    "idle_gaps": {
+     "count": 9146,
+     "total_ms": 68.812861,
+     "count_ge_10us": 304,
+     "ms_in_ge_10us": 50.142513,
+     "count_ge_100us": 90,
+     "ms_in_ge_100us": 41.658666,
+     "count_ge_1ms": 9,
+     "ms_in_ge_1ms": 25.472884,
+     "max_ms": 6.200543
+    }
+   },
+   "pcie_h2d": {
+    "bytes": 18245969602.0,
+    "gb": 18.245969602,
+    "copy_busy_ms": 533.956741,
+    "gbps_while_copying": 34.171250592002544,
+    "gbps_window_avg": 11.932243974451337,
+    "copy_overlapped_with_kernels_pct": 85.38896562034414
+   },
+   "sources": [
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_buckets.fresh_16k.prefill",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_families.fresh_16k.prefill",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#scenario_windows.fresh_16k.prefill",
+    "results/model-final-main-release-20261014T172433Z.run-receipt.json#requests[fresh_16k]"
+   ],
+   "ttft_under_nsys_s": 1.5570413800014649,
+   "prompt_tokens": 16405
+  },
+  "decode_16k": {
+   "request_label": "fresh_16k",
+   "phase": "decode",
+   "method": "analyzer critical chain (serial decode graph stream; equals the wall decomposition within 0.1 ms/step)",
+   "critical_path_total_ms": 502.420793,
+   "decode_steps_measured_as_periods": 62,
+   "ms_per_decode_step_under_nsys": 8.103561177419355,
+   "buckets_requested": {
+    "moe_experts": {
+     "critical_ms": 102.806353,
+     "share_pct": 20.46220109365577,
+     "ms_per_step": 1.6581669838709678
+    },
+    "expert_h2d": {
+     "critical_ms": 8.492416,
+     "share_pct": 1.6902994697514442,
+     "ms_per_step": 0.13697445161290323
+    },
+    "gdn": {
+     "critical_ms": 18.583969,
+     "share_pct": 3.6988853285775534,
+     "ms_per_step": 0.29974143548387094
+    },
+    "full_attention": {
+     "critical_ms": 36.756372,
+     "share_pct": 7.315854063388654,
+     "ms_per_step": 0.5928447096774193
+    },
+    "fp8_gemv_gemm": {
+     "critical_ms": 139.005147,
+     "share_pct": 27.667076867975087,
+     "ms_per_step": 2.2420185
+    },
+    "decode_gather": {
+     "critical_ms": 92.167129,
+     "share_pct": 18.344608798863945,
+     "ms_per_step": 1.4865665967741937
+    },
+    "norms_misc": {
+     "critical_ms": 61.624117,
+     "share_pct": 12.26543922118287,
+     "ms_per_step": 0.9939373709677419
+    },
+    "cpu_gaps_gpu_idle": {
+     "critical_ms": 42.98529,
+     "share_pct": 8.555635156604675,
+     "ms_per_step": 0.693311129032258,
+     "inside_forward_ms": 31.096043,
+     "between_forwards_ms": 11.889247
+    }
+   },
+   "buckets_detailed_ms": {
+    "fp8_dense": 139.005147,
+    "moe_experts": 102.806353,
+    "decode_gather": 92.167129,
+    "full_attention": 36.756372,
+    "lm_head_sampling": 29.700465,
+    "gdn": 18.583969,
+    "norms_misc": 15.4141,
+    "bf16_dense": 14.552712,
+    "expert_h2d": 8.25549,
+    "memset": 1.651276,
+    "memcpy_d2d": 0.250044,
+    "memcpy_h2d": 0.236926,
+    "memcpy_d2h": 0.05552
+   },
+   "analyzer_chain_buckets_ms": {
+    "fp8_dense": 139.005147,
+    "moe_experts": 102.806353,
+    "decode_gather": 92.167129,
+    "full_attention": 36.756372,
+    "lm_head_sampling": 29.700465,
+    "gdn": 18.583969,
+    "norms_misc": 15.4141,
+    "bf16_dense": 14.552712,
+    "expert_h2d": 8.25549,
+    "memset": 1.651276,
+    "memcpy_d2d": 0.250044,
+    "memcpy_h2d": 0.236926,
+    "memcpy_d2h": 0.05552
+   },
+   "analyzer_chain_gpu_idle_ms": 42.98529,
+   "top10_kernels_by_critical_path": [
+    {
+     "family": "decode_gather_tma",
+     "critical_ms": 92.167129,
+     "share_pct": 18.344608798863945,
+     "ms_per_step": 1.4865665967741937
+    },
+    {
+     "family": "fp8_gemv_qmma",
+     "critical_ms": 82.247728,
+     "share_pct": 16.37028744548795,
+     "ms_per_step": 1.326576258064516
+    },
+    {
+     "family": "moe_decode_nvfp4_marlin",
+     "critical_ms": 76.676373,
+     "share_pct": 15.26138529063625,
+     "ms_per_step": 1.2367156935483872
+    },
+    {
+     "family": "fp8_cublas_xmma_gemm",
+     "critical_ms": 38.539032,
+     "share_pct": 7.670668200231116,
+     "ms_per_step": 0.6215972903225806
+    },
+    {
+     "family": "flashinfer_attention_paged",
+     "critical_ms": 32.628858,
+     "share_pct": 6.49432874885017,
+     "ms_per_step": 0.5262719032258064
+    },
+    {
+     "family": "lm_head_nvfp4_gemv",
+     "critical_ms": 23.942313,
+     "share_pct": 4.765390551819777,
+     "ms_per_step": 0.38616633870967737
+    },
+    {
+     "family": "gdn_decode_cluster",
+     "critical_ms": 18.583969,
+     "share_pct": 3.6988853285775534,
+     "ms_per_step": 0.29974143548387094
+    },
+    {
+     "family": "moe_decode_nvfp4_gemv_splitk",
+     "critical_ms": 16.436023,
+     "share_pct": 3.271366000172688,
+     "ms_per_step": 0.2650971451612903
+    },
+    {
+     "family": "bf16_cublas_gemv",
+     "critical_ms": 14.552712,
+     "share_pct": 2.896518655827208,
+     "ms_per_step": 0.23472116129032258
+    },
+    {
+     "family": "cublaslt_splitk_reduce",
+     "critical_ms": 14.245336,
+     "share_pct": 2.835339659200769,
+     "ms_per_step": 0.22976348387096773
+    }
+   ],
+   "by_layer_kind_ms": {
+    "no_mha": 302.067507,
+    "mha": 126.79388,
+    "outside_layers": 29.854062,
+    "unattributed": 0.720054
+   },
+   "by_layer_analyzer_chain": [
+    {
+     "layer": "unattributed",
+     "ms_per_step": 0.49313090322580644,
+     "share_pct": 6.085360404261772
+    },
+    {
+     "layer": 11,
+     "ms_per_step": 0.22502996774193548,
+     "share_pct": 2.7769268697444214
+    },
+    {
+     "layer": 39,
+     "ms_per_step": 0.2100452741935484,
+     "share_pct": 2.592011951225116
+    },
+    {
+     "layer": 27,
+     "ms_per_step": 0.2095916451612903,
+     "share_pct": 2.586414053926307
+    },
+    {
+     "layer": 3,
+     "ms_per_step": 0.20714304838709677,
+     "share_pct": 2.5561977487663414
+    },
+    {
+     "layer": 35,
+     "ms_per_step": 0.2043343870967742,
+     "share_pct": 2.5215381561646475
+    },
+    {
+     "layer": 31,
+     "ms_per_step": 0.2043173709677419,
+     "share_pct": 2.5213281728170833
+    },
+    {
+     "layer": 15,
+     "ms_per_step": 0.20169148387096775,
+     "share_pct": 2.488924060115482
+    },
+    {
+     "layer": 19,
+     "ms_per_step": 0.19474987096774193,
+     "share_pct": 2.4032627964901923
+    },
+    {
+     "layer": 7,
+     "ms_per_step": 0.19417188709677421,
+     "share_pct": 2.3961303289452034
+    },
+    {
+     "layer": 23,
+     "ms_per_step": 0.19398764516129033,
+     "share_pct": 2.3938567367374066
+    },
+    {
+     "layer": 2,
+     "ms_per_step": 0.18550062903225809,
+     "share_pct": 2.2891248053899713
+    },
+    {
+     "layer": 1,
+     "ms_per_step": 0.18273233870967742,
+     "share_pct": 2.2549634007683275
+    },
+    {
+     "layer": 33,
+     "ms_per_step": 0.1811645322580645,
+     "share_pct": 2.2356162715582513
+    },
+    {
+     "layer": 28,
+     "ms_per_step": 0.18107635483870968,
+     "share_pct": 2.234528139841537
+    },
+    {
+     "layer": 12,
+     "ms_per_step": 0.17997130645161288,
+     "share_pct": 2.220891562503465
+    },
+    {
+     "layer": 13,
+     "ms_per_step": 0.1795862580645161,
+     "share_pct": 2.216139967758062
+    },
+    {
+     "layer": 0,
+     "ms_per_step": 0.17251380645161288,
+     "share_pct": 2.128864121274535
+    },
+    {
+     "layer": 24,
+     "ms_per_step": 0.16977570967741937,
+     "share_pct": 2.0950753126971002
+    },
+    {
+     "layer": 34,
+     "ms_per_step": 0.1693836612903226,
+     "share_pct": 2.0902373361764908
+    },
+    {
+     "layer": 32,
+     "ms_per_step": 0.1664080806451613,
+     "share_pct": 2.0535179164051836
+    },
+    {
+     "layer": 10,
+     "ms_per_step": 0.16532159677419353,
+     "share_pct": 2.0401104299041224
+    },
+    {
+     "layer": 36,
+     "ms_per_step": 0.1639001451612903,
+     "share_pct": 2.0225693565194462
+    },
+    {
+     "layer": 16,
+     "ms_per_step": 0.1617268387096774,
+     "share_pct": 1.9957502037540074
+    },
+    {
+     "layer": 22,
+     "ms_per_step": 0.16068212903225806,
+     "share_pct": 1.9828582213953077
+    },
+    {
+     "layer": 5,
+     "ms_per_step": 0.16034666129032257,
+     "share_pct": 1.9787184643848925
+    },
+    {
+     "layer": 14,
+     "ms_per_step": 0.16010203225806452,
+     "share_pct": 1.9756996800886781
+    },
+    {
+     "layer": 9,
+     "ms_per_step": 0.15912243548387098,
+     "share_pct": 1.9636112074684775
+    },
+    {
+     "layer": 21,
+     "ms_per_step": 0.1588061129032258,
+     "share_pct": 1.959707706603616
+    },
+    {
+     "layer": 29,
+     "ms_per_step": 0.1580371129032258,
+     "share_pct": 1.9502180515845011
+    },
+    {
+     "layer": 18,
+     "ms_per_step": 0.15666724193548387,
+     "share_pct": 1.9333134964420153
+    },
+    {
+     "layer": 8,
+     "ms_per_step": 0.15434429032258062,
+     "share_pct": 1.9046476844361018
+    },
+    {
+     "layer": 30,
+     "ms_per_step": 0.15421620967741936,
+     "share_pct": 1.9030671367934409
+    },
+    {
+     "layer": 6,
+     "ms_per_step": 0.15289075806451613,
+     "share_pct": 1.8867107277544541
+    },
+    {
+     "layer": 37,
+     "ms_per_step": 0.15285256451612902,
+     "share_pct": 1.886239409681438
+    },
+    {
+     "layer": 25,
+     "ms_per_step": 0.15141782258064515,
+     "share_pct": 1.868534330345679
+    },
+    {
+     "layer": 4,
+     "ms_per_step": 0.1499577258064516,
+     "share_pct": 1.8505163658702317
+    },
+    {
+     "layer": 26,
+     "ms_per_step": 0.14804640322580645,
+     "share_pct": 1.826930160511888
+    },
+    {
+     "layer": 17,
+     "ms_per_step": 0.1470364677419355,
+     "share_pct": 1.8144673005203429
+    },
+    {
+     "layer": 38,
+     "ms_per_step": 0.14489240322580643,
+     "share_pct": 1.7880090006545568
+    },
+    {
+     "layer": 20,
+     "ms_per_step": 0.143576935483871,
+     "share_pct": 1.7717757951152313
+    }
+   ],
+   "layer_note": "mha = full-attention layers (3,7,...,39); no_mha = GDN layers. Under layer-major prefill the grouped attention path has no Layer_N NVTX, so its work is 'unattributed'.",
+   "gpu": {
+    "window_ms": 502.420793,
+    "busy_pct": 91.73815921269006,
+    "idle_bubble_pct": 8.26184078730993,
+    "kernel_busy_pct": 91.11613420028179,
+    "idle_gaps": {
+     "count": 66150,
+     "total_ms": 41.509206,
+     "count_ge_10us": 304,
+     "ms_in_ge_10us": 13.453552,
+     "count_ge_100us": 46,
+     "ms_in_ge_100us": 7.967563,
+     "count_ge_1ms": 0,
+     "ms_in_ge_1ms": 0.0,
+     "max_ms": 0.384668
+    }
+   },
+   "pcie_h2d": {
+    "bytes": 65844.0,
+    "gb": 6.5844e-05,
+    "copy_busy_ms": 1.020569,
+    "gbps_while_copying": 0.06451695083820888,
+    "gbps_window_avg": 0.00013105349324186907,
+    "copy_overlapped_with_kernels_pct": 0.0
+   },
+   "sources": [
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_buckets.fresh_16k.decode",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_families.fresh_16k.decode",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#scenario_windows.fresh_16k.decode"
+   ]
+  },
+  "prefill_120k": {
+   "request_label": "fresh_120k",
+   "phase": "prefill",
+   "method": "wall_decomposition (kernels first, then exposed H2D, then idle; sums to the prefill window)",
+   "critical_path_total_ms": 21941.48307,
+   "decode_steps_measured_as_periods": null,
+   "ms_per_decode_step_under_nsys": null,
+   "buckets_requested": {
+    "moe_experts": {
+     "critical_ms": 4025.825551,
+     "share_pct": 18.34801019674191,
+     "ms": 4025.825551
+    },
+    "expert_h2d": {
+     "critical_ms": 80.481641,
+     "share_pct": 0.3668012811314491,
+     "ms": 80.481641
+    },
+    "gdn": {
+     "critical_ms": 834.856937,
+     "share_pct": 3.8049248281738874,
+     "ms": 834.856937
+    },
+    "full_attention": {
+     "critical_ms": 14327.303872,
+     "share_pct": 65.29779152253084,
+     "ms": 14327.303872
+    },
+    "fp8_gemv_gemm": {
+     "critical_ms": 1558.302408,
+     "share_pct": 7.102083314188661,
+     "ms": 1558.302408
+    },
+    "decode_gather": {
+     "critical_ms": 0.0,
+     "share_pct": 0.0,
+     "ms": 0.0
+    },
+    "norms_misc": {
+     "critical_ms": 819.198862,
+     "share_pct": 3.733561944680342,
+     "ms": 819.198862
+    },
+    "cpu_gaps_gpu_idle": {
+     "critical_ms": 295.513799,
+     "share_pct": 1.346826912552908,
+     "ms": 295.513799
+    }
+   },
+   "buckets_detailed_ms": {
+    "full_attention": 14327.303872,
+    "moe_experts": 4025.825551,
+    "fp8_dense": 1558.302408,
+    "gdn": 834.856937,
+    "bf16_dense": 482.10957,
+    "norms_misc": 292.694638,
+    "expert_h2d_exposed": 80.481641,
+    "copy_or_memset_exposed": 43.956898,
+    "lm_head_sampling": 0.437756
+   },
+   "analyzer_chain_buckets_ms": {
+    "full_attention": 14302.28781,
+    "moe_experts": 3825.687252,
+    "fp8_dense": 1483.329082,
+    "gdn": 778.436716,
+    "memcpy_h2d": 483.584954,
+    "bf16_dense": 452.158,
+    "norms_misc": 276.089747,
+    "memcpy_d2d": 43.855682,
+    "lm_head_sampling": 0.437756,
+    "memcpy_d2h": 0.087392,
+    "memset": 0.01488
+   },
+   "analyzer_chain_gpu_idle_ms": 295.513799,
+   "top10_kernels_by_critical_path": [
+    {
+     "family": "flashinfer_attention_paged",
+     "critical_ms": 14285.842952,
+     "share_pct": 65.10883018446756,
+     "ms": 14285.842952
+    },
+    {
+     "family": "moe_nvfp4_cuda_fast_gemm",
+     "critical_ms": 3779.672822,
+     "share_pct": 17.22615016469805,
+     "ms": 3779.672822
+    },
+    {
+     "family": "fp8_cutlass_sm120_gemm",
+     "critical_ms": 1247.504569,
+     "share_pct": 5.685598211479513,
+     "ms": 1247.504569
+    },
+    {
+     "family": "bf16_cutlass_gemm",
+     "critical_ms": 432.822884,
+     "share_pct": 1.9726236490904623,
+     "ms": 432.822884
+    },
+    {
+     "family": "fp8_cublaslt_nvjet_gemm",
+     "critical_ms": 297.588422,
+     "share_pct": 1.3562821667551026,
+     "ms": 297.588422
+    },
+    {
+     "family": "gdn_chunk_h",
+     "critical_ms": 243.164983,
+     "share_pct": 1.1082431493998368,
+     "ms": 243.164983
+    },
+    {
+     "family": "moe_sum_reduce",
+     "critical_ms": 192.498914,
+     "share_pct": 0.8773286353792492,
+     "ms": 192.498914
+    },
+    {
+     "family": "gdn_chunk_o",
+     "critical_ms": 183.933931,
+     "share_pct": 0.8382930653009865,
+     "ms": 183.933931
+    },
+    {
+     "family": "gdn_conv_qkv",
+     "critical_ms": 147.057725,
+     "share_pct": 0.6702269146112009,
+     "ms": 147.057725
+    },
+    {
+     "family": "fused_add_rmsnorm",
+     "critical_ms": 127.134258,
+     "share_pct": 0.5794241783675382,
+     "ms": 127.134258
+    }
+   ],
+   "by_layer_kind_ms": {
+    "unattributed": 15627.977794,
+    "no_mha": 5663.514434,
+    "mha": 353.636477,
+    "outside_layers": 0.840566
+   },
+   "by_layer_analyzer_chain": [
+    {
+     "layer": "unattributed",
+     "ms": 15628.81836,
+     "share_pct": 71.22954410209793
+    },
+    {
+     "layer": 30,
+     "ms": 207.267296,
+     "share_pct": 0.9446366744615864
+    },
+    {
+     "layer": 36,
+     "ms": 205.919062,
+     "share_pct": 0.9384919941056655
+    },
+    {
+     "layer": 28,
+     "ms": 204.575561,
+     "share_pct": 0.9323688847619908
+    },
+    {
+     "layer": 29,
+     "ms": 204.356516,
+     "share_pct": 0.9313705702939068
+    },
+    {
+     "layer": 38,
+     "ms": 199.720081,
+     "share_pct": 0.9102396604770618
+    },
+    {
+     "layer": 26,
+     "ms": 199.533397,
+     "share_pct": 0.9093888337603607
+    },
+    {
+     "layer": 18,
+     "ms": 199.50839,
+     "share_pct": 0.9092748624307099
+    },
+    {
+     "layer": 2,
+     "ms": 198.938925,
+     "share_pct": 0.906679481807699
+    },
+    {
+     "layer": 37,
+     "ms": 198.656792,
+     "share_pct": 0.9053936389177726
+    },
+    {
+     "layer": 8,
+     "ms": 197.96709,
+     "share_pct": 0.9022502689012626
+    },
+    {
+     "layer": 1,
+     "ms": 197.74901,
+     "share_pct": 0.9012563524950458
+    },
+    {
+     "layer": 20,
+     "ms": 196.799711,
+     "share_pct": 0.896929849145334
+    },
+    {
+     "layer": 10,
+     "ms": 196.241446,
+     "share_pct": 0.894385513385445
+    },
+    {
+     "layer": 9,
+     "ms": 195.197241,
+     "share_pct": 0.8896264686268539
+    },
+    {
+     "layer": 0,
+     "ms": 193.498473,
+     "share_pct": 0.8818842025522207
+    },
+    {
+     "layer": 22,
+     "ms": 189.64828,
+     "share_pct": 0.8643366512416883
+    },
+    {
+     "layer": 32,
+     "ms": 188.427916,
+     "share_pct": 0.8587747482649996
+    },
+    {
+     "layer": 21,
+     "ms": 188.373741,
+     "share_pct": 0.8585278415275326
+    },
+    {
+     "layer": 33,
+     "ms": 179.647168,
+     "share_pct": 0.8187558125714244
+    },
+    {
+     "layer": 34,
+     "ms": 179.138699,
+     "share_pct": 0.816438425919037
+    },
+    {
+     "layer": 17,
+     "ms": 177.362127,
+     "share_pct": 0.8083415621184808
+    },
+    {
+     "layer": 12,
+     "ms": 176.697501,
+     "share_pct": 0.8053124779044392
+    },
+    {
+     "layer": 4,
+     "ms": 176.545257,
+     "share_pct": 0.804618614141838
+    },
+    {
+     "layer": 24,
+     "ms": 175.937402,
+     "share_pct": 0.8018482681353225
+    },
+    {
+     "layer": 16,
+     "ms": 174.682626,
+     "share_pct": 0.7961295298166916
+    },
+    {
+     "layer": 14,
+     "ms": 174.457269,
+     "share_pct": 0.7951024479221769
+    },
+    {
+     "layer": 13,
+     "ms": 174.199834,
+     "share_pct": 0.7939291680705884
+    },
+    {
+     "layer": 6,
+     "ms": 173.604655,
+     "share_pct": 0.791216593910942
+    },
+    {
+     "layer": 5,
+     "ms": 173.414344,
+     "share_pct": 0.7903492368622282
+    },
+    {
+     "layer": 25,
+     "ms": 165.448624,
+     "share_pct": 0.7540448540883431
+    },
+    {
+     "layer": 31,
+     "ms": 37.541852,
+     "share_pct": 0.17109988363243306
+    },
+    {
+     "layer": 27,
+     "ms": 37.434806,
+     "share_pct": 0.17061201323799122
+    },
+    {
+     "layer": 35,
+     "ms": 36.987039,
+     "share_pct": 0.16857128062857057
+    },
+    {
+     "layer": 11,
+     "ms": 36.457461,
+     "share_pct": 0.16615768808192963
+    },
+    {
+     "layer": 3,
+     "ms": 36.247278,
+     "share_pct": 0.16519976286179092
+    },
+    {
+     "layer": 39,
+     "ms": 35.725742,
+     "share_pct": 0.16282282234990234
+    },
+    {
+     "layer": 19,
+     "ms": 34.978281,
+     "share_pct": 0.15941621123972638
+    },
+    {
+     "layer": 7,
+     "ms": 33.041202,
+     "share_pct": 0.15058782441728538
+    },
+    {
+     "layer": 23,
+     "ms": 32.646914,
+     "share_pct": 0.14879082647169484
+    },
+    {
+     "layer": 15,
+     "ms": 32.575902,
+     "share_pct": 0.14846718380919363
+    }
+   ],
+   "layer_note": "mha = full-attention layers (3,7,...,39); no_mha = GDN layers. Under layer-major prefill the grouped attention path has no Layer_N NVTX, so its work is 'unattributed'.",
+   "gpu": {
+    "window_ms": 21941.48307,
+    "busy_pct": 98.65317308744709,
+    "idle_bubble_pct": 1.346826912552908,
+    "kernel_busy_pct": 98.08603485616618,
+    "idle_gaps": {
+     "count": 82013,
+     "total_ms": 295.513799,
+     "count_ge_10us": 1360,
+     "ms_in_ge_10us": 121.822302,
+     "count_ge_100us": 304,
+     "ms_in_ge_100us": 78.452414,
+     "count_ge_1ms": 2,
+     "ms_in_ge_1ms": 10.772847,
+     "max_ms": 9.093953
+    }
+   },
+   "pcie_h2d": {
+    "bytes": 18251025922.0,
+    "gb": 18.251025922,
+    "copy_busy_ms": 530.336115,
+    "gbps_while_copying": 34.41407327502107,
+    "gbps_window_avg": 0.8318045714491441,
+    "copy_overlapped_with_kernels_pct": 84.82440876197919
+   },
+   "sources": [
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_buckets.fresh_120k.prefill",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_families.fresh_120k.prefill",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#scenario_windows.fresh_120k.prefill",
+    "results/model-final-main-release-20261014T172433Z.run-receipt.json#requests[fresh_120k]"
+   ],
+   "ttft_under_nsys_s": 22.13566597600584,
+   "prompt_tokens": 120022
+  },
+  "decode_120k": {
+   "request_label": "fresh_120k",
+   "phase": "decode",
+   "method": "analyzer critical chain (serial decode graph stream; equals the wall decomposition within 0.1 ms/step)",
+   "critical_path_total_ms": 706.360813,
+   "decode_steps_measured_as_periods": 62,
+   "ms_per_decode_step_under_nsys": 11.392916338709677,
+   "buckets_requested": {
+    "moe_experts": {
+     "critical_ms": 103.554672,
+     "share_pct": 14.660308173126245,
+     "ms_per_step": 1.6702366451612902
+    },
+    "expert_h2d": {
+     "critical_ms": 9.256353,
+     "share_pct": 1.3104284424679715,
+     "ms_per_step": 0.14929601612903226
+    },
+    "gdn": {
+     "critical_ms": 19.196356,
+     "share_pct": 2.7176416990731336,
+     "ms_per_step": 0.30961864516129034
+    },
+    "full_attention": {
+     "critical_ms": 217.060433,
+     "share_pct": 30.729399055720265,
+     "ms_per_step": 3.5009747258064516
+    },
+    "fp8_gemv_gemm": {
+     "critical_ms": 142.278673,
+     "share_pct": 20.142492389367586,
+     "ms_per_step": 2.294817306451613
+    },
+    "decode_gather": {
+     "critical_ms": 98.799517,
+     "share_pct": 13.987117515818364,
+     "ms_per_step": 1.5935405967741934
+    },
+    "norms_misc": {
+     "critical_ms": 62.632521,
+     "share_pct": 8.866930306339063,
+     "ms_per_step": 1.0102019516129033
+    },
+    "cpu_gaps_gpu_idle": {
+     "critical_ms": 53.582288,
+     "share_pct": 7.5856824180873685,
+     "ms_per_step": 0.8642304516129032,
+     "inside_forward_ms": 30.321997,
+     "between_forwards_ms": 23.260291
+    }
+   },
+   "buckets_detailed_ms": {
+    "full_attention": 217.060433,
+    "fp8_dense": 142.278673,
+    "moe_experts": 103.554672,
+    "decode_gather": 98.799517,
+    "lm_head_sampling": 30.173058,
+    "gdn": 19.196356,
+    "norms_misc": 16.201562,
+    "bf16_dense": 14.28768,
+    "expert_h2d": 9.015458,
+    "memset": 1.64037,
+    "memcpy_d2d": 0.275389,
+    "memcpy_h2d": 0.240895,
+    "memcpy_d2h": 0.054462
+   },
+   "analyzer_chain_buckets_ms": {
+    "full_attention": 217.060433,
+    "fp8_dense": 142.278673,
+    "moe_experts": 103.554672,
+    "decode_gather": 98.799517,
+    "lm_head_sampling": 30.173058,
+    "gdn": 19.196356,
+    "norms_misc": 16.201562,
+    "bf16_dense": 14.28768,
+    "expert_h2d": 9.015458,
+    "memset": 1.64037,
+    "memcpy_d2d": 0.275389,
+    "memcpy_h2d": 0.240895,
+    "memcpy_d2h": 0.054462
+   },
+   "analyzer_chain_gpu_idle_ms": 53.582288,
+   "top10_kernels_by_critical_path": [
+    {
+     "family": "flashinfer_attention_paged",
+     "critical_ms": 211.874954,
+     "share_pct": 29.995287125306596,
+     "ms_per_step": 3.4173379677419353
+    },
+    {
+     "family": "decode_gather_tma",
+     "critical_ms": 98.799517,
+     "share_pct": 13.987117515818364,
+     "ms_per_step": 1.5935405967741934
+    },
+    {
+     "family": "fp8_gemv_qmma",
+     "critical_ms": 84.049649,
+     "share_pct": 11.89896826850161,
+     "ms_per_step": 1.3556395
+    },
+    {
+     "family": "moe_decode_nvfp4_marlin",
+     "critical_ms": 76.623575,
+     "share_pct": 10.847653718865065,
+     "ms_per_step": 1.235864112903226
+    },
+    {
+     "family": "fp8_cublas_xmma_gemm",
+     "critical_ms": 38.542605,
+     "share_pct": 5.456503856195658,
+     "ms_per_step": 0.6216549193548387
+    },
+    {
+     "family": "lm_head_nvfp4_gemv",
+     "critical_ms": 25.835662,
+     "share_pct": 3.6575729463633198,
+     "ms_per_step": 0.4167042258064516
+    },
+    {
+     "family": "gdn_decode_cluster",
+     "critical_ms": 19.196356,
+     "share_pct": 2.7176416990731336,
+     "ms_per_step": 0.30961864516129034
+    },
+    {
+     "family": "moe_decode_nvfp4_gemv_splitk",
+     "critical_ms": 16.292949,
+     "share_pct": 2.3066043161145746,
+     "ms_per_step": 0.2627895
+    },
+    {
+     "family": "cublaslt_splitk_reduce",
+     "critical_ms": 15.703084,
+     "share_pct": 2.223096710774073,
+     "ms_per_step": 0.25327554838709676
+    },
+    {
+     "family": "bf16_cublas_gemv",
+     "critical_ms": 14.28768,
+     "share_pct": 2.0227169651892907,
+     "ms_per_step": 0.23044645161290322
+    }
+   ],
+   "by_layer_kind_ms": {
+    "mha": 311.968109,
+    "no_mha": 309.730807,
+    "outside_layers": 30.332545,
+    "unattributed": 0.747064
+   },
+   "by_layer_analyzer_chain": [
+    {
+     "layer": 31,
+     "ms_per_step": 0.5354431290322581,
+     "share_pct": 4.6997898791987485
+    },
+    {
+     "layer": 35,
+     "ms_per_step": 0.5216310645161291,
+     "share_pct": 4.578556087029137
+    },
+    {
+     "layer": 7,
+     "ms_per_step": 0.5173767903225807,
+     "share_pct": 4.541214689382833
+    },
+    {
+     "layer": 23,
+     "ms_per_step": 0.5058196935483871,
+     "share_pct": 4.43977361467814
+    },
+    {
+     "layer": 27,
+     "ms_per_step": 0.5036484516129032,
+     "share_pct": 4.42071579075551
+    },
+    {
+     "layer": 19,
+     "ms_per_step": 0.5019967419354839,
+     "share_pct": 4.406218100890033
+    },
+    {
+     "layer": "unattributed",
+     "ms_per_step": 0.5012840161290323,
+     "share_pct": 4.399962232899236
+    },
+    {
+     "layer": 39,
+     "ms_per_step": 0.49879579032258065,
+     "share_pct": 4.3781221198634075
+    },
+    {
+     "layer": 15,
+     "ms_per_step": 0.49267667741935484,
+     "share_pct": 4.324412317023595
+    },
+    {
+     "layer": 11,
+     "ms_per_step": 0.4801219838709677,
+     "share_pct": 4.214214952493408
+    },
+    {
+     "layer": 3,
+     "ms_per_step": 0.47423337096774193,
+     "share_pct": 4.162528336633533
+    },
+    {
+     "layer": 33,
+     "ms_per_step": 0.20084719354838712,
+     "share_pct": 1.7629129151591256
+    },
+    {
+     "layer": 0,
+     "ms_per_step": 0.19815454838709676,
+     "share_pct": 1.7392785349772795
+    },
+    {
+     "layer": 36,
+     "ms_per_step": 0.18479006451612903,
+     "share_pct": 1.6219733299389585
+    },
+    {
+     "layer": 9,
+     "ms_per_step": 0.18249887096774195,
+     "share_pct": 1.6018626446651423
+    },
+    {
+     "layer": 1,
+     "ms_per_step": 0.18194304838709677,
+     "share_pct": 1.5969839765162623
+    },
+    {
+     "layer": 29,
+     "ms_per_step": 0.18185587096774194,
+     "share_pct": 1.5962187868425821
+    },
+    {
+     "layer": 34,
+     "ms_per_step": 0.18178401612903225,
+     "share_pct": 1.595588089340964
+    },
+    {
+     "layer": 2,
+     "ms_per_step": 0.18087616129032258,
+     "share_pct": 1.5876194989316317
+    },
+    {
+     "layer": 16,
+     "ms_per_step": 0.17781045161290324,
+     "share_pct": 1.5607105882868393
+    },
+    {
+     "layer": 8,
+     "ms_per_step": 0.17774227419354838,
+     "share_pct": 1.560112168906516
+    },
+    {
+     "layer": 38,
+     "ms_per_step": 0.17568148387096774,
+     "share_pct": 1.5420238211883932
+    },
+    {
+     "layer": 30,
+     "ms_per_step": 0.17508420967741936,
+     "share_pct": 1.5367813163214081
+    },
+    {
+     "layer": 18,
+     "ms_per_step": 0.17061264516129032,
+     "share_pct": 1.497532678104554
+    },
+    {
+     "layer": 10,
+     "ms_per_step": 0.16913861290322582,
+     "share_pct": 1.484594531152169
+    },
+    {
+     "layer": 14,
+     "ms_per_step": 0.1626720322580645,
+     "share_pct": 1.4278348705621076
+    },
+    {
+     "layer": 13,
+     "ms_per_step": 0.15941270967741936,
+     "share_pct": 1.3992265451452783
+    },
+    {
+     "layer": 6,
+     "ms_per_step": 0.15866529032258064,
+     "share_pct": 1.392666158562791
+    },
+    {
+     "layer": 22,
+     "ms_per_step": 0.15858324193548387,
+     "share_pct": 1.3919459883740748
+    },
+    {
+     "layer": 32,
+     "ms_per_step": 0.15795053225806452,
+     "share_pct": 1.3863924526628575
+    },
+    {
+     "layer": 4,
+     "ms_per_step": 0.15678351612903224,
+     "share_pct": 1.376149104126477
+    },
+    {
+     "layer": 25,
+     "ms_per_step": 0.15619937096774195,
+     "share_pct": 1.3710218378153431
+    },
+    {
+     "layer": 37,
+     "ms_per_step": 0.15464216129032257,
+     "share_pct": 1.3573536107247217
+    },
+    {
+     "layer": 5,
+     "ms_per_step": 0.1535676612903226,
+     "share_pct": 1.3479223117661823
+    },
+    {
+     "layer": 26,
+     "ms_per_step": 0.15312317741935483,
+     "share_pct": 1.3440209062107187
+    },
+    {
+     "layer": 21,
+     "ms_per_step": 0.15149590322580647,
+     "share_pct": 1.3297376959670044
+    },
+    {
+     "layer": 12,
+     "ms_per_step": 0.14957427419354838,
+     "share_pct": 1.3128708203126211
+    },
+    {
+     "layer": 17,
+     "ms_per_step": 0.1479382258064516,
+     "share_pct": 1.2985105956040628
+    },
+    {
+     "layer": 20,
+     "ms_per_step": 0.1478819516129032,
+     "share_pct": 1.298016655405826
+    },
+    {
+     "layer": 28,
+     "ms_per_step": 0.14458801612903224,
+     "share_pct": 1.2691045192508434
+    },
+    {
+     "layer": 24,
+     "ms_per_step": 0.14376066129032258,
+     "share_pct": 1.261842508242314
+    }
+   ],
+   "layer_note": "mha = full-attention layers (3,7,...,39); no_mha = GDN layers. Under layer-major prefill the grouped attention path has no Layer_N NVTX, so its work is 'unattributed'.",
+   "gpu": {
+    "window_ms": 706.360813,
+    "busy_pct": 92.62608286850137,
+    "idle_bubble_pct": 7.373917131498629,
+    "kernel_busy_pct": 92.17894070802595,
+    "idle_gaps": {
+     "count": 66158,
+     "total_ms": 52.086461,
+     "count_ge_10us": 245,
+     "ms_in_ge_10us": 23.676702,
+     "count_ge_100us": 57,
+     "ms_in_ge_100us": 19.38372,
+     "count_ge_1ms": 1,
+     "ms_in_ge_1ms": 7.76751,
+     "max_ms": 7.76751
+    }
+   },
+   "pcie_h2d": {
+    "bytes": 65844.0,
+    "gb": 6.5844e-05,
+    "copy_busy_ms": 1.038042,
+    "gbps_while_copying": 0.06343095944094748,
+    "gbps_window_avg": 9.321581660278201e-05,
+    "copy_overlapped_with_kernels_pct": 0.0
+   },
+   "sources": [
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_buckets.fresh_120k.decode",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#critical_path_families.fresh_120k.decode",
+    "results/model-final-main-release-20261014T172433Z.release-analysis.json#scenario_windows.fresh_120k.decode"
+   ]
+  }
+ },
+ "kernels": [
+  {
+   "label": "FlashInfer paged prefill attention, q=2048 chunk, KV 16384",
+   "phase": "prefill",
+   "scenario": "prefill_16k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench (cuda-attention agent); same kernel/tile config as release (block 32x4, smem 49152); release batches 2 chunks per call (k=2) so its grid is [512,1,2] vs [256,1,2] here",
+   "release_library_match": "flashinfer (unchanged)",
+   "report": "<native-harness>/private-cuda-attention/profiles/bd-prefill-20261014T081844Z/fi-prefill-2048x16384.ncu-repz",
+   "parsed_from": "results/component-ncu/attn-prefill-2048x16384.json",
+   "duration_us": 7664.448,
+   "sm_throughput_pct": 81.64,
+   "memory_throughput_pct": 35.15,
+   "dram_throughput_pct": 5.87,
+   "dram_gbps": 43.88710472039,
+   "tensor_inst_hmma_pct_peak_active": 44.58,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 0.41,
+   "l2_hit_rate_pct": 96.9,
+   "achieved_occupancy_pct": 15.63,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 248.0,
+   "shared_mem_per_block_bytes": 49152.0,
+   "waves_per_sm": 3.66,
+   "top_stalls": [
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 5.66,
+     "share_pct": 56.37450199203187
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.6,
+     "share_pct": 15.93625498007968
+    },
+    {
+     "reason": "selected",
+     "cycles_per_issue": 1.0,
+     "share_pct": 9.960159362549799
+    }
+   ],
+   "roofline_class": "compute-bound",
+   "grid": [
+    256,
+    1,
+    2
+   ],
+   "block": [
+    32,
+    4,
+    1
+   ],
+   "kernel_function": "void BatchPrefillWithPagedKVCacheKernel<KernelTraits<1, 64, 1, 1, 16, 16, 4, 1, 0, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, int, DefaultAttention<0, 0, 0, 0>>, PagedParams>(T2)",
+   "family": "flashinfer_attention_paged",
+   "bucket": "full_attention",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 40,
+    "release_nsys_p50_us": 8484.008,
+    "release_block": [
+     32,
+     4,
+     1
+    ],
+    "release_smem": 49152
+   },
+   "release_grid": [
+    512,
+    1,
+    2
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/attn-prefill-2048x16384.json"
+  },
+  {
+   "label": "FlashInfer paged prefill attention, q=2048 chunk, KV 120000",
+   "phase": "prefill",
+   "scenario": "prefill_120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench; release grid [512,1,2] (k=2 batching)",
+   "release_library_match": "flashinfer (unchanged)",
+   "report": "<native-harness>/private-cuda-attention/profiles/bd-prefill-20261014T081844Z/fi-prefill-2048x120000.ncu-repz",
+   "parsed_from": "results/component-ncu/attn-prefill-2048x120000.json",
+   "duration_us": 58980.064,
+   "sm_throughput_pct": 82.36,
+   "memory_throughput_pct": 35.55,
+   "dram_throughput_pct": 6.6,
+   "dram_gbps": 49.42771713506,
+   "tensor_inst_hmma_pct_peak_active": 44.42,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 0.39,
+   "l2_hit_rate_pct": 95.31,
+   "achieved_occupancy_pct": 15.59,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 248.0,
+   "shared_mem_per_block_bytes": 49152.0,
+   "waves_per_sm": 3.66,
+   "top_stalls": [
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 5.64,
+     "share_pct": 56.23130608175474
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.6,
+     "share_pct": 15.952143569292124
+    },
+    {
+     "reason": "selected",
+     "cycles_per_issue": 1.0,
+     "share_pct": 9.970089730807578
+    }
+   ],
+   "roofline_class": "compute-bound",
+   "grid": [
+    256,
+    1,
+    2
+   ],
+   "block": [
+    32,
+    4,
+    1
+   ],
+   "kernel_function": "void BatchPrefillWithPagedKVCacheKernel<KernelTraits<1, 64, 1, 1, 16, 16, 4, 1, 0, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, int, DefaultAttention<0, 0, 0, 0>>, PagedParams>(T2)",
+   "family": "flashinfer_attention_paged",
+   "bucket": "full_attention",
+   "release_launch_config_in_trace": {
+    "release_scope": "120k",
+    "release_count_in_request": 290,
+    "release_nsys_p50_us": 47812.879,
+    "release_block": [
+     32,
+     4,
+     1
+    ],
+    "release_smem": 49152
+   },
+   "release_grid": [
+    512,
+    1,
+    2
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/attn-prefill-2048x120000.json"
+  },
+  {
+   "label": "FlashInfer decode attention (tensor-core path), KV 65536 (nearest to 16K available)",
+   "phase": "decode",
+   "scenario": "decode_16k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench; identical launch config to release decode graph node ([70,1,2], block 32x1x4, smem 73728); KV 64K not 16K",
+   "release_library_match": "flashinfer (unchanged)",
+   "report": "<native-harness>/private-cuda-attention/profiles/bd-decode-20261014T082709Z/fi-decode-65536.ncu-repz",
+   "parsed_from": "results/component-ncu/attn-decode-65536.json",
+   "duration_us": 174.784,
+   "sm_throughput_pct": 12.65,
+   "memory_throughput_pct": 92.6,
+   "dram_throughput_pct": 92.6,
+   "dram_gbps": 828.73819113878,
+   "tensor_inst_hmma_pct_peak_active": 6.61,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 1.72,
+   "l2_hit_rate_pct": 0.64,
+   "achieved_occupancy_pct": 8.66,
+   "theoretical_occupancy_pct": 8.33,
+   "registers_per_thread": 248.0,
+   "shared_mem_per_block_bytes": 73728.0,
+   "waves_per_sm": 2.0,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 15.03,
+     "share_pct": 67.18819848010729
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 2.58,
+     "share_pct": 11.533303531515422
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.47,
+     "share_pct": 6.57130084935181
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    70,
+    1,
+    2
+   ],
+   "block": [
+    32,
+    1,
+    4
+   ],
+   "kernel_function": "void BatchPrefillWithPagedKVCacheKernel<KernelTraits<0, 16, 1, 1, 16, 16, 1, 4, 0, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, int, DefaultAttention<0, 0, 0, 0>>, PagedParams>(T2)",
+   "family": "flashinfer_attention_paged",
+   "bucket": "full_attention",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 630,
+    "release_nsys_p50_us": 49.439,
+    "release_block": [
+     32,
+     1,
+     4
+    ],
+    "release_smem": 73728
+   },
+   "release_grid": [
+    70,
+    1,
+    2
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/attn-decode-65536.json"
+  },
+  {
+   "label": "FlashInfer decode attention (tensor-core path), KV 131072",
+   "phase": "decode",
+   "scenario": "decode_120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench; identical launch config to release decode node",
+   "release_library_match": "flashinfer (unchanged)",
+   "report": "<native-harness>/private-cuda-attention/profiles/bd-decode-20261014T082709Z/fi-decode-131072.ncu-repz",
+   "parsed_from": "results/component-ncu/attn-decode-131072.json",
+   "duration_us": 342.432,
+   "sm_throughput_pct": 12.93,
+   "memory_throughput_pct": 93.98,
+   "dram_throughput_pct": 93.98,
+   "dram_gbps": 841.1931595178,
+   "tensor_inst_hmma_pct_peak_active": 6.24,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 1.61,
+   "l2_hit_rate_pct": 0.32,
+   "achieved_occupancy_pct": 7.66,
+   "theoretical_occupancy_pct": 8.33,
+   "registers_per_thread": 248.0,
+   "shared_mem_per_block_bytes": 73728.0,
+   "waves_per_sm": 2.0,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 14.62,
+     "share_pct": 64.77625166149757
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 3.17,
+     "share_pct": 14.045192733717323
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.59,
+     "share_pct": 7.044749667700487
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    70,
+    1,
+    2
+   ],
+   "block": [
+    32,
+    1,
+    4
+   ],
+   "kernel_function": "void BatchPrefillWithPagedKVCacheKernel<KernelTraits<0, 16, 1, 1, 16, 16, 1, 4, 0, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, int, DefaultAttention<0, 0, 0, 0>>, PagedParams>(T2)",
+   "family": "flashinfer_attention_paged",
+   "bucket": "full_attention",
+   "release_launch_config_in_trace": {
+    "release_scope": "120k",
+    "release_count_in_request": 630,
+    "release_nsys_p50_us": 306.621,
+    "release_block": [
+     32,
+     1,
+     4
+    ],
+    "release_smem": 73728
+   },
+   "release_grid": [
+    70,
+    1,
+    2
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/attn-decode-131072.json"
+  },
+  {
+   "label": "FlashInfer split-KV merge (decode), KV 131072",
+   "phase": "decode",
+   "scenario": "decode_120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench",
+   "release_library_match": "flashinfer (unchanged)",
+   "report": "<native-harness>/private-cuda-attention/profiles/bd-decode-20261014T082709Z/fi-decode-131072.ncu-repz",
+   "parsed_from": "results/component-ncu/attn-decode-131072.json",
+   "duration_us": 4.768,
+   "sm_throughput_pct": 2.61,
+   "memory_throughput_pct": 14.99,
+   "dram_throughput_pct": 14.99,
+   "dram_gbps": 133.36912751678,
+   "tensor_inst_hmma_pct_peak_active": 0.0,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 11.35,
+   "l2_hit_rate_pct": 20.25,
+   "achieved_occupancy_pct": 8.8,
+   "theoretical_occupancy_pct": 83.33,
+   "registers_per_thread": 40.0,
+   "shared_mem_per_block_bytes": 8704.0,
+   "waves_per_sm": 0.1,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 3.8,
+     "share_pct": 39.09465020576131
+    },
+    {
+     "reason": "no_instruction",
+     "cycles_per_issue": 1.37,
+     "share_pct": 14.094650205761315
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.21,
+     "share_pct": 12.448559670781892
+    }
+   ],
+   "roofline_class": "latency/occupancy-bound (both SOL < 40%)",
+   "grid": [
+    70,
+    1,
+    1
+   ],
+   "block": [
+    32,
+    4,
+    1
+   ],
+   "kernel_function": "void PersistentVariableLengthMergeStatesKernel<8, 32, 4, 4, __nv_bfloat16, __nv_bfloat16, int>(T5 *, float *, T7 *, T6 *, float *, unsigned int, unsigned int *, unsigned int)",
+   "family": "flashinfer_merge_states",
+   "bucket": "full_attention",
+   "release_launch_config_in_trace": {
+    "release_scope": "120k",
+    "release_count_in_request": 630,
+    "release_nsys_p50_us": 3.808,
+    "release_block": [
+     32,
+     4,
+     1
+    ],
+    "release_smem": 8704
+   },
+   "release_grid": [
+    70,
+    1,
+    1
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/attn-decode-131072.json"
+  },
+  {
+   "label": "CUDA NVFP4 MoE expert GEMM gate_up (M=2048 chunk)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k (position-independent)",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component bench with real layer weights; library build 52762dd4 (pre fp32-global rebuild); release library b7fea227: same grid/block/smem",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-nvfp4-bitexact/bitexact-compute-M2048.ncu-repz",
+   "parsed_from": "results/component-ncu/nvfp4-bitexact-M2048.json",
+   "duration_us": 1075.2,
+   "sm_throughput_pct": 82.93,
+   "memory_throughput_pct": 42.36,
+   "dram_throughput_pct": 38.68,
+   "dram_gbps": 346.29333333333,
+   "tensor_inst_hmma_pct_peak_active": 41.15,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 16.03,
+   "l2_hit_rate_pct": 70.14,
+   "achieved_occupancy_pct": 32.95,
+   "theoretical_occupancy_pct": 33.33,
+   "registers_per_thread": 110.0,
+   "shared_mem_per_block_bytes": 38784.0,
+   "waves_per_sm": 29.09,
+   "top_stalls": [
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 8.5,
+     "share_pct": 50.655542312276516
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.85,
+     "share_pct": 11.02502979737783
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 1.79,
+     "share_pct": 10.66746126340882
+    }
+   ],
+   "roofline_class": "compute-bound",
+   "grid": [
+    8,
+    509,
+    1
+   ],
+   "block": [
+    256,
+    1,
+    1
+   ],
+   "kernel_function": "void bx::fast_gemm<64, 2, 8, 3, 1, 1>(QwenNvfp4Args, int)",
+   "family": "moe_nvfp4_cuda_fast_gemm",
+   "bucket": "moe_experts",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 320,
+    "release_nsys_p50_us": 994.486,
+    "release_block": [
+     256,
+     1,
+     1
+    ],
+    "release_smem": 38784
+   },
+   "release_grid": [
+    8,
+    509,
+    1
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/nvfp4-bitexact-M2048.json"
+  },
+  {
+   "label": "CUDA NVFP4 MoE expert GEMM down (M=2048 chunk)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k (position-independent)",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "as above",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-nvfp4-bitexact/bitexact-compute-M2048.ncu-repz",
+   "parsed_from": "results/component-ncu/nvfp4-bitexact-M2048.json",
+   "duration_us": 595.712,
+   "sm_throughput_pct": 75.4,
+   "memory_throughput_pct": 47.05,
+   "dram_throughput_pct": 47.05,
+   "dram_gbps": 421.1929522991,
+   "tensor_inst_hmma_pct_peak_active": 36.76,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 41.08,
+   "l2_hit_rate_pct": 65.35,
+   "achieved_occupancy_pct": 32.86,
+   "theoretical_occupancy_pct": 33.33,
+   "registers_per_thread": 108.0,
+   "shared_mem_per_block_bytes": 38784.0,
+   "waves_per_sm": 58.17,
+   "top_stalls": [
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 6.14,
+     "share_pct": 40.07832898172324
+    },
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 3.03,
+     "share_pct": 19.778067885117494
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.83,
+     "share_pct": 11.945169712793733
+    }
+   ],
+   "roofline_class": "compute-bound",
+   "grid": [
+    16,
+    509,
+    1
+   ],
+   "block": [
+    256,
+    1,
+    1
+   ],
+   "kernel_function": "void bx::fast_gemm<64, 2, 8, 3, 1, 0>(QwenNvfp4Args, int)",
+   "family": "moe_nvfp4_cuda_fast_gemm",
+   "bucket": "moe_experts",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 320,
+    "release_nsys_p50_us": 519.866,
+    "release_block": [
+     256,
+     1,
+     1
+    ],
+    "release_smem": 38784
+   },
+   "release_grid": [
+    16,
+    509,
+    1
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/nvfp4-bitexact-M2048.json"
+  },
+  {
+   "label": "GDN chunk kkt_solve (T=2048)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "component suite, released GDN library a8a806 (ABI 2), non-FLA path",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-gdn/fla/run-20261014T102817Z/fla.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-fla-a8a806.json",
+   "duration_us": 53.28,
+   "sm_throughput_pct": 47.99,
+   "memory_throughput_pct": 47.99,
+   "dram_throughput_pct": 36.44,
+   "dram_gbps": 325.97237237237,
+   "tensor_inst_hmma_pct_peak_active": 11.69,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 14.66,
+   "l2_hit_rate_pct": 57.72,
+   "achieved_occupancy_pct": 14.95,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 242.0,
+   "shared_mem_per_block_bytes": 7168.0,
+   "waves_per_sm": 1.83,
+   "top_stalls": [
+    {
+     "reason": "short_scoreboard",
+     "cycles_per_issue": 1.54,
+     "share_pct": 26.2350936967632
+    },
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 1.15,
+     "share_pct": 19.59114139693356
+    },
+    {
+     "reason": "selected",
+     "cycles_per_issue": 1.0,
+     "share_pct": 17.035775127768314
+    }
+   ],
+   "roofline_class": "memory-bound (L1/L2/smem)",
+   "grid": [
+    32,
+    32,
+    1
+   ],
+   "block": [
+    32,
+    1,
+    1
+   ],
+   "kernel_function": "chunk_gated_delta_rule_fwd_kkt_solve_kernel",
+   "family": "gdn_chunk_kkt_solve",
+   "bucket": "gdn",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 240,
+    "release_nsys_p50_us": 38.528,
+    "release_block": [
+     32,
+     1,
+     1
+    ],
+    "release_smem": 7168
+   },
+   "release_grid": [
+    32,
+    32,
+    1
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/gdn-fla-a8a806.json"
+  },
+  {
+   "label": "GDN recompute_w_u (T=2048)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released GDN library a8a806",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-gdn/fla/run-20261014T102817Z/fla.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-fla-a8a806.json",
+   "duration_us": 91.872,
+   "sm_throughput_pct": 30.29,
+   "memory_throughput_pct": 79.51,
+   "dram_throughput_pct": 79.51,
+   "dram_gbps": 711.2030651341,
+   "tensor_inst_hmma_pct_peak_active": 24.71,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 13.23,
+   "l2_hit_rate_pct": 15.96,
+   "achieved_occupancy_pct": 23.66,
+   "theoretical_occupancy_pct": 25.0,
+   "registers_per_thread": 163.0,
+   "shared_mem_per_block_bytes": 28672.0,
+   "waves_per_sm": 4.88,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 5.37,
+     "share_pct": 40.80547112462006
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.83,
+     "share_pct": 13.905775075987842
+    },
+    {
+     "reason": "mio_throttle",
+     "cycles_per_issue": 1.53,
+     "share_pct": 11.626139817629179
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    32,
+    32,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "recompute_w_u_fwd_kernel",
+   "family": "gdn_chunk_wu",
+   "bucket": "gdn",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 240,
+    "release_nsys_p50_us": 67.679,
+    "release_block": [
+     128,
+     1,
+     1
+    ],
+    "release_smem": 28672
+   },
+   "release_grid": [
+    32,
+    32,
+    1
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/gdn-fla-a8a806.json"
+  },
+  {
+   "label": "GDN chunk_h state recurrence (T=2048)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released GDN library a8a806",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-gdn/fla/run-20261014T102817Z/fla.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-fla-a8a806.json",
+   "duration_us": 120.608,
+   "sm_throughput_pct": 44.29,
+   "memory_throughput_pct": 84.19,
+   "dram_throughput_pct": 84.19,
+   "dram_gbps": 753.43910851685,
+   "tensor_inst_hmma_pct_peak_active": 22.36,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 1.06,
+   "l2_hit_rate_pct": 57.4,
+   "achieved_occupancy_pct": 15.06,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 168.0,
+   "shared_mem_per_block_bytes": 41220.0,
+   "waves_per_sm": 0.91,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 7.86,
+     "share_pct": 46.04569420035149
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 3.03,
+     "share_pct": 17.75043936731107
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 2.05,
+     "share_pct": 12.009373169302869
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    4,
+    32,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "chunk_gated_delta_rule_fwd_kernel_h_blockdim64",
+   "family": "gdn_chunk_h",
+   "bucket": "gdn",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 240,
+    "release_nsys_p50_us": 132.447,
+    "release_block": [
+     128,
+     1,
+     1
+    ],
+    "release_smem": 45316
+   },
+   "release_grid": [
+    4,
+    32,
+    1
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/gdn-fla-a8a806.json"
+  },
+  {
+   "label": "GDN chunk_o output (T=2048)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released GDN library a8a806",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-gdn/fla/run-20261014T102817Z/fla.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-fla-a8a806.json",
+   "duration_us": 111.872,
+   "sm_throughput_pct": 61.28,
+   "memory_throughput_pct": 84.02,
+   "dram_throughput_pct": 84.02,
+   "dram_gbps": 751.9176201373001,
+   "tensor_inst_hmma_pct_peak_active": 33.73,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 11.08,
+   "l2_hit_rate_pct": 39.38,
+   "achieved_occupancy_pct": 24.1,
+   "theoretical_occupancy_pct": 25.0,
+   "registers_per_thread": 148.0,
+   "shared_mem_per_block_bytes": 18432.0,
+   "waves_per_sm": 9.75,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 6.01,
+     "share_pct": 35.47815820543093
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 4.12,
+     "share_pct": 24.3211334120425
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 1.79,
+     "share_pct": 10.566706021251475
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    2,
+    32,
+    32
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "chunk_fwd_kernel_o",
+   "family": "gdn_chunk_o",
+   "bucket": "gdn",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 240,
+    "release_nsys_p50_us": 97.983,
+    "release_block": [
+     128,
+     1,
+     1
+    ],
+    "release_smem": 18432
+   },
+   "release_grid": [
+    2,
+    32,
+    32
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/gdn-fla-a8a806.json"
+  },
+  {
+   "label": "GDN conv_qkv (T=4096 in bench; release T=2048 grid [8,129,1])",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "earlier GDN build (pre ABI-2) of the same kernel",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-gdn/run-20261014T075357Z/gdn-components.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-components-075357.json",
+   "duration_us": 197.184,
+   "sm_throughput_pct": 35.55,
+   "memory_throughput_pct": 75.5,
+   "dram_throughput_pct": 75.5,
+   "dram_gbps": 675.75462512171,
+   "tensor_inst_hmma_pct_peak_active": 0.0,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 13.49,
+   "l2_hit_rate_pct": 14.36,
+   "achieved_occupancy_pct": 26.13,
+   "theoretical_occupancy_pct": 33.33,
+   "registers_per_thread": 105.0,
+   "shared_mem_per_block_bytes": 36.0,
+   "waves_per_sm": 7.34,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 2.43,
+     "share_pct": 32.015810276679844
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.87,
+     "share_pct": 24.63768115942029
+    },
+    {
+     "reason": "selected",
+     "cycles_per_issue": 1.0,
+     "share_pct": 13.175230566534914
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    8,
+    257,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "void <unnamed>::gdn_conv_qkv_kernel<16, 4>(<unnamed>::ConvParams)",
+   "family": "gdn_conv_qkv",
+   "bucket": "gdn",
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/gdn-components-075357.json"
+  },
+  {
+   "label": "GDN gated RMSNorm (T=4096 in bench)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "earlier GDN build",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-gdn/run-20261014T075357Z/gdn-components.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-components-075357.json",
+   "duration_us": 101.952,
+   "sm_throughput_pct": 32.9,
+   "memory_throughput_pct": 85.28,
+   "dram_throughput_pct": 85.28,
+   "dram_gbps": 762.96296296296,
+   "tensor_inst_hmma_pct_peak_active": 0.0,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 18.35,
+   "l2_hit_rate_pct": 0.11,
+   "achieved_occupancy_pct": 84.15,
+   "theoretical_occupancy_pct": 100.0,
+   "registers_per_thread": 40.0,
+   "shared_mem_per_block_bytes": 0,
+   "waves_per_sm": 19.5,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 22.8,
+     "share_pct": 84.50704225352112
+    },
+    {
+     "reason": "selected",
+     "cycles_per_issue": 1.0,
+     "share_pct": 3.7064492216456633
+    },
+    {
+     "reason": "not_selected",
+     "cycles_per_issue": 0.99,
+     "share_pct": 3.669384729429207
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    8192,
+    1,
+    1
+   ],
+   "block": [
+    256,
+    1,
+    1
+   ],
+   "kernel_function": "void <unnamed>::gdn_gated_norm_kernel<16>(<unnamed>::NormParams)",
+   "family": "gdn_gated_norm",
+   "bucket": "gdn",
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/gdn-components-075357.json"
+  },
+  {
+   "label": "GDN gate cumsum (T=4096 in bench)",
+   "phase": "prefill",
+   "scenario": "prefill_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "earlier GDN build",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-gdn/run-20261014T075357Z/gdn-components.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-components-075357.json",
+   "duration_us": 10.272,
+   "sm_throughput_pct": 12.54,
+   "memory_throughput_pct": 66.08,
+   "dram_throughput_pct": 17.63,
+   "dram_gbps": 157.43302180685,
+   "tensor_inst_hmma_pct_peak_active": 0.0,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 75.49,
+   "l2_hit_rate_pct": 90.12,
+   "achieved_occupancy_pct": 74.7,
+   "theoretical_occupancy_pct": 100.0,
+   "registers_per_thread": 25.0,
+   "shared_mem_per_block_bytes": 40.0,
+   "waves_per_sm": 1.24,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 18.54,
+     "share_pct": 30.604159788709147
+    },
+    {
+     "reason": "short_scoreboard",
+     "cycles_per_issue": 12.28,
+     "share_pct": 20.270716408055463
+    },
+    {
+     "reason": "mio_throttle",
+     "cycles_per_issue": 8.3,
+     "share_pct": 13.700891383294818
+    }
+   ],
+   "roofline_class": "memory-bound (L1/L2/smem)",
+   "grid": [
+    65,
+    8,
+    1
+   ],
+   "block": [
+    256,
+    1,
+    1
+   ],
+   "kernel_function": "<unnamed>::gdn_gate_cumsum_kernel(<unnamed>::GateParams)",
+   "family": "gdn_gate_cumsum",
+   "bucket": "gdn",
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/gdn-components-075357.json"
+  },
+  {
+   "label": "GDN decode (cluster variant, M=1)",
+   "phase": "decode",
+   "scenario": "decode_16k+120k (KV-independent)",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "earlier GDN build; same launch config as release ([128,1,1], block 32)",
+   "release_library_match": "predecessor build",
+   "report": "<native-harness>/private-cuda-gdn/run-20261014T075357Z/gdn-components.ncu-repz",
+   "parsed_from": "results/component-ncu/gdn-components-075357.json",
+   "duration_us": 12.096,
+   "sm_throughput_pct": 5.94,
+   "memory_throughput_pct": 25.84,
+   "dram_throughput_pct": 25.84,
+   "dram_gbps": 230.62433862434,
+   "tensor_inst_hmma_pct_peak_active": 0.0,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 12.3,
+   "l2_hit_rate_pct": 54.41,
+   "achieved_occupancy_pct": 3.79,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 209.0,
+   "shared_mem_per_block_bytes": 640.0,
+   "waves_per_sm": 0.23,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 3.85,
+     "share_pct": 41.0010649627263
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 1.24,
+     "share_pct": 13.205537806176784
+    },
+    {
+     "reason": "membar",
+     "cycles_per_issue": 1.19,
+     "share_pct": 12.673056443024493
+    }
+   ],
+   "roofline_class": "latency/occupancy-bound (both SOL < 40%)",
+   "grid": [
+    128,
+    1,
+    1
+   ],
+   "block": [
+    32,
+    1,
+    1
+   ],
+   "kernel_function": "<unnamed>::gdn_decode_cluster_kernel(<unnamed>::DecodeParams)",
+   "family": "gdn_decode_cluster",
+   "bucket": "gdn",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 1890,
+    "release_nsys_p50_us": 9.408,
+    "release_block": [
+     32,
+     1,
+     1
+    ],
+    "release_smem": 640
+   },
+   "release_grid": [
+    128,
+    1,
+    1
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/gdn-components-075357.json"
+  },
+  {
+   "label": "FP8 GEMV QMMA 12288x2048 (GDN in_proj, M=1)",
+   "phase": "decode",
+   "scenario": "decode_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released FP8 GEMV library 685c78cf",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-fp8-gemv/compute-main.ncu-repz",
+   "parsed_from": "results/component-ncu/fp8-gemv-compute-main.json",
+   "duration_us": 35.264,
+   "sm_throughput_pct": 11.02,
+   "memory_throughput_pct": 90.36,
+   "dram_throughput_pct": 90.36,
+   "dram_gbps": 808.15970961887,
+   "tensor_inst_hmma_pct_peak_active": 6.86,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 1.41,
+   "l2_hit_rate_pct": 0.9,
+   "achieved_occupancy_pct": 15.48,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 64.0,
+   "shared_mem_per_block_bytes": 34944.0,
+   "waves_per_sm": 1.37,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 26.84,
+     "share_pct": 84.37598239547313
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.64,
+     "share_pct": 5.1556114429424715
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.4,
+     "share_pct": 4.401131719585036
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    192,
+    1,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "void qwen_fp8::gemv_rowwise_kernel<4, 4, 4, 256, 0>(qwen_fp8::Params)",
+   "family": "fp8_gemv_qmma",
+   "bucket": "fp8_dense",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 1827,
+    "release_nsys_p50_us": 32.991,
+    "release_block": [
+     128,
+     1,
+     1
+    ],
+    "release_smem": 34944
+   },
+   "release_grid": [
+    192,
+    1,
+    1
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/fp8-gemv-compute-main.json"
+  },
+  {
+   "label": "FP8 GEMV QMMA 9216x2048 (attention qkv, M=1)",
+   "phase": "decode",
+   "scenario": "decode_16k+120k",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released FP8 GEMV library 685c78cf",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-fp8-gemv/compute-main.ncu-repz",
+   "parsed_from": "results/component-ncu/fp8-gemv-compute-main.json",
+   "duration_us": 28.864,
+   "sm_throughput_pct": 10.1,
+   "memory_throughput_pct": 81.98,
+   "dram_throughput_pct": 81.98,
+   "dram_gbps": 732.4434589800401,
+   "tensor_inst_hmma_pct_peak_active": 5.91,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 1.23,
+   "l2_hit_rate_pct": 1.24,
+   "achieved_occupancy_pct": 16.21,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 64.0,
+   "shared_mem_per_block_bytes": 34944.0,
+   "waves_per_sm": 1.03,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 31.74,
+     "share_pct": 85.85339464430619
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.64,
+     "share_pct": 4.4360292128753045
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.38,
+     "share_pct": 3.7327562888828782
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    144,
+    1,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "void qwen_fp8::gemv_rowwise_kernel<4, 4, 4, 256, 0>(qwen_fp8::Params)",
+   "family": "fp8_gemv_qmma",
+   "bucket": "fp8_dense",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 630,
+    "release_nsys_p50_us": 26.463,
+    "release_block": [
+     128,
+     1,
+     1
+    ],
+    "release_smem": 34944
+   },
+   "release_grid": [
+    144,
+    1,
+    1
+   ],
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/fp8-gemv-compute-main.json"
+  },
+  {
+   "label": "FP8 GEMV QMMA 2048x4096 (out/o-proj shape; NOT used by the release: release runs this projection on cuBLAS xmma + split-K reduce)",
+   "phase": "decode",
+   "scenario": "lever evidence",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "released FP8 GEMV library 685c78cf",
+   "release_library_match": "yes",
+   "report": "<native-harness>/private-cuda-fp8-gemv/compute-main.ncu-repz",
+   "parsed_from": "results/component-ncu/fp8-gemv-compute-main.json",
+   "duration_us": 13.568,
+   "sm_throughput_pct": 9.46,
+   "memory_throughput_pct": 70.76,
+   "dram_throughput_pct": 70.76,
+   "dram_gbps": 631.9056603773599,
+   "tensor_inst_hmma_pct_peak_active": 11.9,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 0.22,
+   "l2_hit_rate_pct": 2.16,
+   "achieved_occupancy_pct": 8.24,
+   "theoretical_occupancy_pct": 16.67,
+   "registers_per_thread": 64.0,
+   "shared_mem_per_block_bytes": 36992.0,
+   "waves_per_sm": 0.23,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 5.97,
+     "share_pct": 56.80304471931494
+    },
+    {
+     "reason": "wait",
+     "cycles_per_issue": 1.7,
+     "share_pct": 16.175071360608943
+    },
+    {
+     "reason": "math_pipe_throttle",
+     "cycles_per_issue": 1.21,
+     "share_pct": 11.512844909609896
+    }
+   ],
+   "roofline_class": "memory-bound (DRAM)",
+   "grid": [
+    32,
+    1,
+    1
+   ],
+   "block": [
+    128,
+    1,
+    1
+   ],
+   "kernel_function": "void qwen_fp8::gemv_rowwise_kernel<4, 4, 4, 256, 0>(qwen_fp8::Params)",
+   "family": "fp8_gemv_qmma",
+   "bucket": "fp8_dense",
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/fp8-gemv-compute-main.json"
+  },
+  {
+   "label": "Triton NVFP4 MoE prefill gate_up M=2048 (pre-release path; release uses it only for <512-token remainder chunks)",
+   "phase": "prefill",
+   "scenario": "reference (replaced)",
+   "provenance": "component-level ncu (not the model process)",
+   "provenance_note": "replaced by fast_gemm for full chunks",
+   "release_library_match": "n/a",
+   "report": "<native-harness>/private-cuda-nvfp4-bitexact/bitexact-compute-M2048.ncu-repz",
+   "parsed_from": "results/component-ncu/nvfp4-bitexact-M2048.json",
+   "duration_us": 10228.032,
+   "sm_throughput_pct": 23.42,
+   "memory_throughput_pct": 94.07,
+   "dram_throughput_pct": 9.02,
+   "dram_gbps": 70.19706782302,
+   "tensor_inst_hmma_pct_peak_active": 5.53,
+   "tensor_inst_imma_pct_peak_active": 0.0,
+   "l1tex_hit_rate_pct": 90.0,
+   "l2_hit_rate_pct": 79.09,
+   "achieved_occupancy_pct": 66.27,
+   "theoretical_occupancy_pct": 66.67,
+   "registers_per_thread": 64.0,
+   "shared_mem_per_block_bytes": 22528.0,
+   "waves_per_sm": 43.49,
+   "top_stalls": [
+    {
+     "reason": "mio_throttle",
+     "cycles_per_issue": 20.02,
+     "share_pct": 34.96943231441048
+    },
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 10.87,
+     "share_pct": 18.986899563318776
+    },
+    {
+     "reason": "barrier",
+     "cycles_per_issue": 10.06,
+     "share_pct": 17.572052401746724
+    }
+   ],
+   "roofline_class": "memory-bound (L1/L2/smem)",
+   "grid": [
+    12176,
+    1,
+    1
+   ],
+   "block": [
+    256,
+    1,
+    1
+   ],
+   "kernel_function": "_prefill_nvfp4_moe_kernel",
+   "family": "moe_nvfp4_triton_prefill",
+   "bucket": "moe_experts",
+   "source": "results/ncu-component-kernels.json <- results/component-ncu/nvfp4-bitexact-M2048.json"
+  },
+  {
+   "label": "decode gather TMA, 1 missing expert (1.78 MB) per launch",
+   "phase": "decode",
+   "scenario": "decode_16k+120k (KV-independent; cost = misses)",
+   "provenance": "component-level ncu (wf-gather workflow; .shared::cluster build before the .shared::cta VRAM fix, which reported unchanged speed)",
+   "release_library_match": "predecessor build",
+   "report": "work/wf-gather/results/ncu-summary.json#b1-tma_8c3s16k-n1",
+   "kernel_function": "decode_gather_tma_kernel",
+   "family": "decode_gather_tma",
+   "bucket": "decode_gather",
+   "grid": [
+    8,
+    1,
+    1
+   ],
+   "block": [
+    32,
+    1,
+    1
+   ],
+   "duration_us": 59.52,
+   "sm_throughput_pct": 0.381191,
+   "dram_throughput_pct": 0.593062,
+   "sysmem_fill_pct_of_peak": 21.051378,
+   "pcie_read_gbps_under_ncu": 29.974193548387095,
+   "l1tex_hit_rate_pct": 73.913043,
+   "l2_hit_rate_pct": 3.427969,
+   "registers_per_thread": 46.0,
+   "warps_active_per_cycle": 1.0,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 7.331907
+    }
+   ],
+   "roofline_class": "PCIe/system-memory latency-bound (1 warp per CTA, 8 CTAs; ~30-33 GB/s of ~63 GB/s PCIe 5.0 x16)",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 2520,
+    "release_nsys_p50_us": 1.408,
+    "release_block": [
+     32,
+     1,
+     1
+    ],
+    "release_smem": 49408
+   },
+   "source": "results/ncu-component-kernels.json <- work/wf-gather/results/ncu-summary.json#b1-tma_8c3s16k-n1"
+  },
+  {
+   "label": "decode gather TMA, 4 missing experts per launch",
+   "phase": "decode",
+   "scenario": "decode_16k+120k (KV-independent; cost = misses)",
+   "provenance": "component-level ncu (wf-gather workflow; .shared::cluster build before the .shared::cta VRAM fix, which reported unchanged speed)",
+   "release_library_match": "predecessor build",
+   "report": "work/wf-gather/results/ncu-summary.json#b1-tma_8c3s16k-n4",
+   "kernel_function": "decode_gather_tma_kernel",
+   "family": "decode_gather_tma",
+   "bucket": "decode_gather",
+   "grid": [
+    8,
+    1,
+    1
+   ],
+   "block": [
+    32,
+    1,
+    1
+   ],
+   "duration_us": 214.496,
+   "sm_throughput_pct": 0.405015,
+   "dram_throughput_pct": 3.6507,
+   "sysmem_fill_pct_of_peak": 23.324906,
+   "pcie_read_gbps_under_ncu": 33.237654781441144,
+   "l1tex_hit_rate_pct": 92.307692,
+   "l2_hit_rate_pct": 13.78796,
+   "registers_per_thread": 46.0,
+   "warps_active_per_cycle": 1.0,
+   "top_stalls": [
+    {
+     "reason": "long_scoreboard",
+     "cycles_per_issue": 7.29712
+    }
+   ],
+   "roofline_class": "PCIe/system-memory latency-bound (1 warp per CTA, 8 CTAs; ~30-33 GB/s of ~63 GB/s PCIe 5.0 x16)",
+   "release_launch_config_in_trace": {
+    "release_scope": "16k",
+    "release_count_in_request": 2520,
+    "release_nsys_p50_us": 1.408,
+    "release_block": [
+     32,
+     1,
+     1
+    ],
+    "release_smem": 49408
+   },
+   "source": "results/ncu-component-kernels.json <- work/wf-gather/results/ncu-summary.json#b1-tma_8c3s16k-n4"
+  }
+ ],
+ "ncu_status": {
+  "model_process_ncu": "NOT_RUN (no kernel profiled). Attempt 1 (session 2, 18:30-18:46Z, ncu16k, --set full): startup under ncu exceeded the 32G cgroup MemoryHigh (34.4 GiB, pressure 85%); /health polls timed out and the API guard latched 'Protocol cleanup failed' (sticky 503); aborted at the parent's cap. Attempt 2 (session 3, 19:59-20:13Z, ncu120k-b, 5 sections, MemoryHigh 42G/MemoryMax 44G): ready after 146 s with memory.peak 38.9 GiB, then the 120K layer-major prefill grew host memory to the 44G cap (thrash, ~layer 2 after 3.5 min, first kernel replay never completed); ended; the 16K follow-up could not start before the session ended (transient unit still loaded).",
+  "root_cause": "ncu kernel-replay injection adds ~11 GiB host memory at startup (38.9 vs 27.7 GiB peak under nsys) and grows further during the expert-streaming prefill; on this 48 GiB WSL host a model-process ncu run cannot fit the experiment unit memory envelope.",
+  "substitute": "component-level ncu reports of the same kernel families (released or predecessor library builds, production launch configs) imported on CPU; each row carries provenance and release-match fields.",
+  "not_run_component_ncu": [
+   "MoE decode NVFP4 marlin (2 configs) and gemv_splitk",
+   "lm_head NVFP4 GEMV (decode) / GEMM (prefill)",
+   "cuBLAS FP8 xmma (decode out/o-proj) + split-K reduce",
+   "CUTLASS/nvjet FP8 GEMMs at M=2048 (prefill dense)",
+   "FlashInfer/cute-dsl RMSNorm kernels, moe_sum_reduce, router, LRU metadata",
+   "FlashInfer decode attention at KV 16K (64K used as nearest)"
+  ],
+  "receipts": [
+   "<native-harness>/reports/reports/ncu-final-main-release-120k-b-20261014T195937Z.run-receipt.json"
+  ]
+ },
+ "decode_step_stats": {
+  "warmup_short": {
+   "decode_steps": 31,
+   "kernels_per_step_median": 998,
+   "inter_kernel_gap_us_p50": 0.192,
+   "inter_kernel_gap_us_p90": 0.48,
+   "inter_kernel_gap_ms_per_step_mean": 0.47010577419354843,
+   "gather_ms_per_step_median": 2.6589169999999998,
+   "gather_ms_per_step_mean": 3.735948741935484,
+   "gather_launches_per_step": 40.0,
+   "gather_launches_with_misses_per_step(dur>5us)": 28.35483870967742
+  },
+  "warmup_chunk": {
+   "decode_steps": 15,
+   "kernels_per_step_median": 998,
+   "inter_kernel_gap_us_p50": 0.192,
+   "inter_kernel_gap_us_p90": 0.48,
+   "inter_kernel_gap_ms_per_step_mean": 0.48398173333333333,
+   "gather_ms_per_step_median": 1.362673,
+   "gather_ms_per_step_mean": 2.3069002,
+   "gather_launches_per_step": 40.0,
+   "gather_launches_with_misses_per_step(dur>5us)": 18.8
+  },
+  "warm_decode": {
+   "decode_steps": 127,
+   "kernels_per_step_median": 998,
+   "inter_kernel_gap_us_p50": 0.192,
+   "inter_kernel_gap_us_p90": 0.48,
+   "inter_kernel_gap_ms_per_step_mean": 0.48382351968503934,
+   "gather_ms_per_step_median": 1.3512819999999999,
+   "gather_ms_per_step_mean": 1.8303931338582677,
+   "gather_launches_per_step": 40.0,
+   "gather_launches_with_misses_per_step(dur>5us)": 19.543307086614174
+  },
+  "fresh_16k": {
+   "decode_steps": 63,
+   "kernels_per_step_median": 998,
+   "inter_kernel_gap_us_p50": 0.192,
+   "inter_kernel_gap_us_p90": 0.48,
+   "inter_kernel_gap_ms_per_step_mean": 0.48142033333333334,
+   "gather_ms_per_step_median": 1.201331,
+   "gather_ms_per_step_mean": 1.4865622222222221,
+   "gather_launches_per_step": 40.0,
+   "gather_launches_with_misses_per_step(dur>5us)": 17.555555555555557
+  },
+  "fresh_120k": {
+   "decode_steps": 63,
+   "kernels_per_step_median": 998,
+   "inter_kernel_gap_us_p50": 0.192,
+   "inter_kernel_gap_us_p90": 0.48,
+   "inter_kernel_gap_ms_per_step_mean": 0.48483579365079366,
+   "gather_ms_per_step_median": 1.225333,
+   "gather_ms_per_step_mean": 1.6113879523809524,
+   "gather_launches_per_step": 40.0,
+   "gather_launches_with_misses_per_step(dur>5us)": 17.88888888888889
+  },
+  "filler": {
+   "decode_steps": 86,
+   "kernels_per_step_median": 998.0,
+   "inter_kernel_gap_us_p50": 0.192,
+   "inter_kernel_gap_us_p90": 0.48,
+   "inter_kernel_gap_ms_per_step_mean": 0.4880181744186047,
+   "gather_ms_per_step_median": 0.941092,
+   "gather_ms_per_step_mean": 1.2662440813953488,
+   "gather_launches_per_step": 40.0,
+   "gather_launches_with_misses_per_step(dur>5us)": 14.104651162790697
+  }
+ },
+ "pcie": {
+  "h2d_bytes_per_fresh_prompt_gb": {
+   "short_prompt_prefill_278tok": 18.245224582,
+   "prefill_16k": 18.245969602,
+   "prefill_120k": 18.251025922
+  },
+  "h2d_gbps_while_copying": {
+   "short_prompt_prefill_278tok": 35.39377983305368,
+   "prefill_16k": 34.171250592002544,
+   "prefill_120k": 34.41407327502107
+  },
+  "h2d_copy_compute_overlap_pct": {
+   "short_prompt_prefill_278tok": 12.304285524658422,
+   "prefill_16k": 85.38896562034414,
+   "prefill_120k": 84.82440876197919
+  },
+  "h2d_on_critical_path_ms": {
+   "short_prompt_prefill_278tok": 452.064745,
+   "prefill_16k": 78.016603,
+   "prefill_120k": 80.481641
+  },
+  "decode_h2d_memcpy_bytes_per_step": 1062.0,
+  "decode_expert_traffic_note": "Decode expert misses move over PCIe inside decode_gather_tma (mapped pinned host memory); these bytes are not CUPTI memcpy records. See kernels[family=decode_gather_tma].sysmem_read_* (ncu).",
+  "totals_in_capture": [
+   {
+    "direction": "d2d",
+    "phase": "decode",
+    "count": 2310,
+    "bytes": 34941060,
+    "sum_ms": 1.576113,
+    "union_ms": 1.576113
+   },
+   {
+    "direction": "d2d",
+    "phase": "prefill",
+    "count": 4574,
+    "bytes": 45677940097,
+    "sum_ms": 53.14836,
+    "union_ms": 53.14836
+   },
+   {
+    "direction": "d2d",
+    "phase": "unknown",
+    "count": 795,
+    "bytes": 156504996,
+    "sum_ms": 0.87173,
+    "union_ms": 0.87173
+   },
+   {
+    "direction": "d2h",
+    "phase": "decode",
+    "count": 385,
+    "bytes": 1540,
+    "sum_ms": 0.33894,
+    "union_ms": 0.33894
+   },
+   {
+    "direction": "d2h",
+    "phase": "prefill",
+    "count": 153,
+    "bytes": 689,
+    "sum_ms": 0.123648,
+    "union_ms": 0.123648
+   },
+   {
+    "direction": "d2h",
+    "phase": "unknown",
+    "count": 40,
+    "bytes": 480,
+    "sum_ms": 0.028512,
+    "union_ms": 0.028512
+   },
+   {
+    "direction": "h2d",
+    "phase": "decode",
+    "count": 1155,
+    "bytes": 382690,
+    "sum_ms": 1.493872,
+    "union_ms": 1.493872
+   },
+   {
+    "direction": "h2d",
+    "phase": "prefill",
+    "count": 5017,
+    "bytes": 109477997519,
+    "sum_ms": 3223.616745,
+    "union_ms": 3219.855987
+   },
+   {
+    "direction": "h2d",
+    "phase": "unknown",
+    "count": 4330,
+    "bytes": 241145,
+    "sum_ms": 5.014802,
+    "union_ms": 5.014802
+   }
+  ],
+  "source": "results/model-final-main-release-20261014T172433Z.release-analysis.json#scenario_windows, #memory_copies",
+  "h2d_burst_timeline": {
+   "warm_decode": {
+    "bursts": 13,
+    "median_burst_ms": 11.752964,
+    "median_burst_gbps": 40.50080538904317,
+    "median_kernel_busy_during_burst_pct": 16.983324996997236,
+    "first_burst": {
+     "burst": 0,
+     "t_start_ms": 0.0,
+     "dur_ms": 11.214666,
+     "gb": 0.45613056,
+     "gbps": 40.684524558123954,
+     "kernel_busy_during_burst_pct": 0.0,
+     "gap_to_next_burst_ms": 2.517766,
+     "kernel_busy_in_gap_pct": 94.81703224207492
+    },
+    "source": "results/h2d-timeline-warm_decode.json"
+   },
+   "fresh_16k": {
+    "bursts": 39,
+    "median_burst_ms": 12.141248,
+    "median_burst_gbps": 37.68597040614343,
+    "median_kernel_busy_during_burst_pct": 90.06966440352161,
+    "first_burst": {
+     "burst": 0,
+     "t_start_ms": 0.0,
+     "dur_ms": 22.265143,
+     "gb": 0.91226112,
+     "gbps": 41.288242641289266,
+     "kernel_busy_during_burst_pct": 10.017065688731485,
+     "gap_to_next_burst_ms": 59.135252,
+     "kernel_busy_in_gap_pct": 38.11793344518089
+    },
+    "source": "results/h2d-timeline-fresh_16k.json"
+   }
+  },
+  "h2d_burst_note": "layer-major prefill (16K) streams one ~0.46 GB burst per layer at ~38-40 GB/s, ~90% overlapped with compute after the first (layers 0-1, ~22 ms, ~10% overlap); the single-chunk short-prompt path overlaps only ~12-25% (copy-bound).",
+  "decode_gather_ncu_component": {
+   "label": "decode gather TMA, 1 missing expert (1.78 MB) per launch",
+   "duration_us": 59.52,
+   "pcie_read_gbps_under_ncu": 29.974193548387095,
+   "sysmem_fill_pct_of_peak": 21.051378,
+   "roofline_class": "PCIe/system-memory latency-bound (1 warp per CTA, 8 CTAs; ~30-33 GB/s of ~63 GB/s PCIe 5.0 x16)",
+   "report": "work/wf-gather/results/ncu-summary.json#b1-tma_8c3s16k-n1"
+  }
+ },
+ "comparison_vs_earlier_profiles": {
+  "baseline_trace": "<native-harness>/reports/model-baseline.sqlite (profile64, 2026-10-13 16:10, pre-optimization build; CUDA-graph decode replays without phase NVTX; context profile 64K)",
+  "baseline_decode_period_ms": {
+   "count": 44,
+   "mean_ms": 11.677212113636363,
+   "p50_ms": 10.0216775,
+   "p95_ms": 17.51124175,
+   "min_ms": 7.488778,
+   "max_ms": 33.614304
+  },
+  "baseline_gpu_idle_inside_replays_ms_per_step": 0.4792298444444444,
+  "decode_ms_per_step_by_bucket": {
+   "bf16_dense": {
+    "baseline_ms_per_step": 0.23992719999999998,
+    "release_warm_short_ms_per_step": 0.22711434126984126,
+    "release_16k_ms_per_step": 0.23472116129032258
+   },
+   "decode_gather": {
+    "baseline_ms_per_step": 4.581640244444444,
+    "release_warm_short_ms_per_step": 1.8301098253968255,
+    "release_16k_ms_per_step": 1.4865665967741937
+   },
+   "expert_h2d": {
+    "baseline_ms_per_step": 0.15089655555555556,
+    "release_warm_short_ms_per_step": 0.14555842857142856,
+    "release_16k_ms_per_step": 0.13315306451612904
+   },
+   "fp8_dense": {
+    "baseline_ms_per_step": 3.0363601555555557,
+    "release_warm_short_ms_per_step": 2.220620476190476,
+    "release_16k_ms_per_step": 2.2420185
+   },
+   "full_attention": {
+    "baseline_ms_per_step": 0.21288308888888888,
+    "release_warm_short_ms_per_step": 0.1405851349206349,
+    "release_16k_ms_per_step": 0.5928447096774193
+   },
+   "gdn": {
+    "baseline_ms_per_step": 0.2956437333333333,
+    "release_warm_short_ms_per_step": 0.3124926984126984,
+    "release_16k_ms_per_step": 0.29974143548387094
+   },
+   "lm_head_sampling": {
+    "baseline_ms_per_step": 0.3756401555555556,
+    "release_warm_short_ms_per_step": 0.4964294920634921,
+    "release_16k_ms_per_step": 0.47903975806451615
+   },
+   "memcpy_d2d": {
+    "baseline_ms_per_step": 0.0181658,
+    "release_warm_short_ms_per_step": 0.004024095238095238,
+    "release_16k_ms_per_step": 0.004032967741935484
+   },
+   "memcpy_d2h": {
+    "baseline_ms_per_step": 0.0,
+    "release_warm_short_ms_per_step": 0.0008947301587301587,
+    "release_16k_ms_per_step": 0.0008954838709677419
+   },
+   "memcpy_h2d": {
+    "baseline_ms_per_step": 0.0,
+    "release_warm_short_ms_per_step": 0.003847563492063492,
+    "release_16k_ms_per_step": 0.0038213870967741936
+   },
+   "memset": {
+    "baseline_ms_per_step": 0.025795355555555552,
+    "release_warm_short_ms_per_step": 0.026722341269841268,
+    "release_16k_ms_per_step": 0.026633483870967742
+   },
+   "moe_experts": {
+    "baseline_ms_per_step": 1.536574311111111,
+    "release_warm_short_ms_per_step": 1.5868931904761905,
+    "release_16k_ms_per_step": 1.6581669838709678
+   },
+   "norms_misc": {
+    "baseline_ms_per_step": 0.2612602666666667,
+    "release_warm_short_ms_per_step": 0.25287766666666667,
+    "release_16k_ms_per_step": 0.24861451612903224
+   }
+  },
+  "release_decode_period_ms": {
+   "warm_short_decode": 8.030504674603174,
+   "decode_16k": 8.103561177419355,
+   "decode_120k": 11.392916338709677
+  },
+  "baseline_nongraph_prefill_kernel_sum_by_bucket": [
+   [
+    "moe_experts",
+    997.158522,
+    1120
+   ],
+   [
+    "norms_misc",
+    58.239141,
+    3959
+   ],
+   [
+    "fp8_dense",
+    55.010984,
+    550
+   ],
+   [
+    "gdn",
+    32.88424,
+    720
+   ],
+   [
+    "full_attention",
+    19.282817,
+    100
+   ],
+   [
+    "bf16_dense",
+    15.705004,
+    490
+   ],
+   [
+    "lm_head_sampling",
+    5.093666,
+    355
+   ]
+  ],
+  "r1b_r1c_full_model_nsys": "none exists: the R1b/R1c attempt (driver 6, profile-final-cuda-bitexact128, 2026-10-14 05:56Z) captured nothing (first request HTTP 503 before /health ready; receipt model-final-cuda-bitexact128-20261014T055600Z.run-receipt.json measured_requests_completed=false); driver 8 was cancelled. The only earlier full-model trace is model-baseline.",
+  "unprofiled_matrix_reference": "STATE.md 'Matrix absolute medians, bf128 -> release' (f1 final gates): TTFT 16K 6.78 -> 1.59 s, 120K 54.77 -> 22.07 s; decode 16K 94.2 -> 119.1 tok/s, 120K 80.7 -> 94.6 tok/s.",
+  "sources": [
+   "results/model-baseline.release-categories.json",
+   "results/model-final-main-release-20261014T172433Z.release-analysis.json"
+  ]
+ },
+ "levers": {
+  "ranked_top3": [
+   {
+    "rank": 1,
+    "name": "Decode expert misses over PCIe (decode_gather_tma): raise its PCIe efficiency and overlap it with compute",
+    "evidence": {
+     "gather_ms_per_step": {
+      "decode_16k": 1.4865665967741937,
+      "decode_120k": 1.5935405967741934,
+      "warm_short_decode": 1.8301098253968255
+     },
+     "share_of_decode_step_pct": {
+      "decode_16k": 18.344608798863945,
+      "decode_120k": 13.987117515818364,
+      "warm_short_decode": 22.78947462896857
+     },
+     "layers_with_misses_per_step": {
+      "warm_decode": 19.543307086614174,
+      "fresh_16k": 17.555555555555557,
+      "fresh_120k": 17.88888888888889
+     },
+     "ncu_component_gather": [
+      {
+       "label": "decode gather TMA, 1 missing expert (1.78 MB) per launch",
+       "duration_us": 59.52,
+       "pcie_read_gbps_under_ncu": 29.974193548387095,
+       "warps_active_per_cycle": 1.0,
+       "roofline_class": "PCIe/system-memory latency-bound (1 warp per CTA, 8 CTAs; ~30-33 GB/s of ~63 GB/s PCIe 5.0 x16)"
+      },
+      {
+       "label": "decode gather TMA, 4 missing experts per launch",
+       "duration_us": 214.496,
+       "pcie_read_gbps_under_ncu": 33.237654781441144,
+       "roofline_class": "PCIe/system-memory latency-bound (1 warp per CTA, 8 CTAs; ~30-33 GB/s of ~63 GB/s PCIe 5.0 x16)"
+      }
+     ],
+     "pcie_h2d_memcpy_gbps_same_link": 34.171250592002544,
+     "observation": "8 CTAs x 1 warp move ~30-33 GB/s (ncu) while the copy engine reaches ~34-41 GB/s on the same link; the gather sits serially on the decode critical chain (single-stream graph)."
+    },
+    "estimate": {
+     "assumption": "hide 50% of gather time (more TMA requests in flight to reach copy-engine bandwidth, plus issuing layer L+1's likely misses during layer L on a side stream); transport only -> bit-exact",
+     "ms_per_step_saved": {
+      "decode_16k": 0.7432832983870968,
+      "decode_120k": 0.7967702983870967,
+      "warm_short_decode": 0.9150549126984128
+     },
+     "decode_tok_s_gain_pct": {
+      "decode_16k": 10.09857658369857,
+      "decode_120k": 7.519434852587592,
+      "warm_short_decode": 12.86011346180116
+     }
+    }
+   },
+   {
+    "rank": 2,
+    "name": "Fresh-prompt expert streaming: every fresh prefill copies the whole 18.25 GB NVFP4 expert bank over PCIe",
+    "evidence": {
+     "h2d_gb_per_fresh_prompt": {
+      "short_prompt_prefill_278tok": 18.245224582,
+      "prefill_16k": 18.245969602,
+      "prefill_120k": 18.251025922
+     },
+     "h2d_gbps_while_copying": 34.171250592002544,
+     "exposed_h2d_ms": {
+      "short_prompt_prefill_278tok": 452.064745,
+      "prefill_16k": 78.016603,
+      "prefill_120k": 80.481641
+     },
+     "short_prompt_prefill_ms": 599.156701,
+     "short_prompt_exposed_share_pct": 75.45016925380261,
+     "copy_compute_overlap_pct": {
+      "short_prompt_prefill_278tok": 12.304285524658422,
+      "prefill_16k": 85.38896562034414,
+      "prefill_120k": 84.82440876197919
+     }
+    },
+    "estimate": {
+     "assumption": "skip experts already resident in decode slots (~31% of the bank, 3164 of 40x256) on fresh prefills; same bytes for the rest -> bit-exact",
+     "short_prompt_ttft_ms_saved": 164.98428989492186,
+     "short_prompt_ttft_gain_pct": 27.536083568716002,
+     "prefill_16k_ms_saved_upper": 78.016603,
+     "note": "the single-chunk (short prompt) path overlaps only ~12% of the copy with compute; even a perfect overlap cannot go below ~(1-resident)*18.25 GB / 40 GB/s ~ 0.32 s for a fresh short prompt"
+    }
+   },
+   {
+    "rank": 3,
+    "name": "Decode weight-streaming kernels below the DRAM roofline: MoE NVFP4 marlin (~59% of 896 GB/s) and the out/o-projection still on cuBLAS FP8 xmma + split-K reduce",
+    "evidence": {
+     "marlin_ms_per_step_16k": 1.2367156935483872,
+     "marlin_us_per_layer": 30.91789233870968,
+     "moe_expert_bytes_per_layer_mb": 14.155776,
+     "marlin_effective_gbps": 457.85061429548836,
+     "xmma_plus_splitk_ms_per_step_16k": 0.8513607741935483,
+     "ncu_component_fp8_gemv_2048x4096": {
+      "duration_us": 13.568,
+      "dram_throughput_pct": 70.76,
+      "dram_gbps": 631.9056603773599,
+      "roofline_class": "memory-bound (DRAM)"
+     },
+     "ncu_component_fp8_gemv_12288x2048": {
+      "duration_us": 35.264,
+      "dram_throughput_pct": 90.36,
+      "dram_gbps": 808.15970961887
+     },
+     "note": "marlin/xmma were not profiled with ncu (NOT_RUN); marlin efficiency is bytes/time from the nsys trace"
+    },
+    "estimate": {
+     "assumption": "bit-exact GEMV-style kernels at ~85% of DRAM peak for the 8 routed experts, and the existing QMMA FP8 GEMV (2048x4096 measured) replacing xmma + split-K (needs a bit-exact replica of cuBLAS split-K=3 order)",
+     "ms_per_step_saved_16k": {
+      "moe_marlin": 0.49324006329628645,
+      "out_o_proj": 0.30864077419354835,
+      "total": 0.8018808374898347
+     },
+     "decode_tok_s_gain_pct_16k": 10.982141098463583
+    }
+   }
+  ],
+  "other_candidates": [
+   {
+    "name": "120K prefill attention (65% of 120K TTFT)",
+    "evidence": {
+     "ms": 14327.303872,
+     "share_pct": 65.29779152253084,
+     "ncu_component_prefill": {
+      "duration_us": 58980.064,
+      "sm_throughput_pct": 82.36,
+      "tensor_inst_hmma_pct_peak_active": 44.42,
+      "roofline_class": "compute-bound",
+      "top_stalls": [
+       {
+        "reason": "math_pipe_throttle",
+        "cycles_per_issue": 5.64,
+        "share_pct": 56.23130608175474
+       },
+       {
+        "reason": "wait",
+        "cycles_per_issue": 1.6,
+        "share_pct": 15.952143569292124
+       },
+       {
+        "reason": "selected",
+        "cycles_per_issue": 1.0,
+        "share_pct": 9.970089730807578
+       }
+      ]
+     },
+     "ncu_component_decode_131072": {
+      "duration_us": 342.432,
+      "dram_throughput_pct": 93.98,
+      "dram_gbps": 841.1931595178,
+      "roofline_class": "memory-bound (DRAM)"
+     }
+    },
+    "estimate": "prefill is tensor-pipe bound (SM ~82%, HMMA ~44.5% of instruction peak = pipe ~90% busy; top stall math_pipe_throttle); decode attention already at ~94% of DRAM peak. Bit-exact headroom <= ~5-10% (k=4 grouping, wave tail) ~ -0.7..-1.4 s at 120K; larger gains need non-bit-exact FP8 attention."
+   },
+   {
+    "name": "Prefill MoE expert GEMM (CUDA NVFP4 fast_gemm, 36% of 16K / 17% of 120K prefill)",
+    "evidence": {
+     "ms_16k": 549.895968,
+     "ms_120k": 3779.672822,
+     "ncu_component_gate_up": {
+      "duration_us": 1075.2,
+      "sm_throughput_pct": 82.93,
+      "tensor_inst_hmma_pct_peak_active": 41.15,
+      "dram_throughput_pct": 38.68,
+      "roofline_class": "compute-bound",
+      "top_stalls": [
+       {
+        "reason": "math_pipe_throttle",
+        "cycles_per_issue": 8.5,
+        "share_pct": 50.655542312276516
+       },
+       {
+        "reason": "wait",
+        "cycles_per_issue": 1.85,
+        "share_pct": 11.02502979737783
+       },
+       {
+        "reason": "barrier",
+        "cycles_per_issue": 1.79,
+        "share_pct": 10.66746126340882
+       }
+      ]
+     }
+    },
+    "estimate": "compute-bound on the BF16 HMMA pipe (SM ~83%) because bit-exactness pins the Triton BF16 dequant+HMMA order; headroom ~10% (-50 ms at 16K, -0.36 s at 120K) unless an FP4/FP8 MMA path is accepted with a new quality gate."
+   },
+   {
+    "name": "Decode launch bubbles (~998 graph nodes per step)",
+    "evidence": {
+     "kernels_per_step": 998,
+     "inter_kernel_gap_ms_per_step": 0.48142033333333334,
+     "gpu_idle_ms_per_step_16k": 0.693311129032258
+    },
+    "estimate": "fusing router/top-k/LRU/sum-reduce and norm+quant chains (or PDL) ~ -0.2..-0.3 ms/step (+3-4%)"
+   }
+  ],
+  "note": "Estimates derive from profiler-time shares (nsys) and component ncu; confirm with unprofiled paired A/B."
+ },
+ "notes": [
+  "All timings were taken under Nsight (Systems or Compute) and are diagnostic only; speed acceptance needs unprofiled paired runs.",
+  "Critical path = analyze-model-nsys.py latest-finishing-predecessor chain per forward (overlapped work is not summed); decode = sum of step periods with the last step of each request excluded; prefill = whole layer-major window (under layer-major the entire prefill is ONE forward).",
+  "cpu_gaps_gpu_idle = GPU idle inside forwards + between forwards on the critical chain (host launch/sync/scheduler).",
+  "gpu.busy_pct/idle_bubble_pct = union of all traced GPU ops in the scenario window (kernels+copies+memsets).",
+  "kernels[] are COMPONENT-level Nsight Compute results (standalone benches of the same kernels at production launch configs; see ncu_status for why model-process ncu did not run). ncu durations are kernel-replay microbenchmarks (cold caches, ncu clocks), not model time; release_launch_config_in_trace gives the in-model nsys p50 of the same launch config for comparison. tensor_inst_hmma_pct_peak_active = HMMA instruction rate vs peak (a BF16 m16n8k16 HMMA keeps the pipe ~2 cycles, so ~45% means the tensor pipe is ~90% busy).",
+  "Decode attention in this build uses FlashInfer's BatchPrefillWithPagedKVCacheKernel (tensor-core decode path) + PersistentVariableLengthMergeStates (split-KV merge)."
+ ],
+ "sources": {
+  "nsys_rep": {
+   "path": "<native-harness>/reports/model-final-main-release-20261014T172433Z.nsys-rep",
+   "sha256": "41d8e1351943145861a6f6bf43c01d339777a753a30edd150ea2e326eade9c85"
+  },
+  "nsys_sqlite": {
+   "path": "<native-harness>/reports/model-final-main-release-20261014T172433Z.sqlite",
+   "sha256": "526385882b4cc438c026630cd3701c5f8578652b8ef7a40f6b032b171fb532d7"
+  },
+  "stock_analysis": {
+   "path": "results/model-final-main-release-20261014T172433Z.analysis.json (copy of <native-harness>/reports/model-final-main-release-20261014T172433Z.analysis.json)",
+   "sha256": "f578aa5d2700c462382665d3712092d78dbb0cf833bdc0aaf3a79301a1ed47ad"
+  },
+  "release_analysis": {
+   "path": "results/model-final-main-release-20261014T172433Z.release-analysis.json",
+   "sha256": "70350c2dc47735d45744aec71d7e5ba8be61f6a40e26591301489d1ecc775e7c"
+  },
+  "run_receipt": {
+   "path": "results/model-final-main-release-20261014T172433Z.run-receipt.json",
+   "sha256": "bc764ad18120e1f5801b3b138115e50e010235e694136bab477571ada1e0ee73"
+  },
+  "profile_receipt": {
+   "path": "results/model-final-main-release-20261014T172433Z.profile-receipt.json"
+  },
+  "baseline_recategorized": {
+   "path": "results/model-baseline.release-categories.json"
+  },
+  "ncu": [
+   "results/ncu-component-kernels.json"
+  ],
+  "scripts": "scripts/my_analyze.py, scripts/release_categories.py, scripts/baseline_compare.py, scripts/ncu_plan.py, scripts/parse_ncu.py, scripts/build_dashboard.py"
+ }
+}

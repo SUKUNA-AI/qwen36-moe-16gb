@@ -1,0 +1,154 @@
+{
+  "tool": "final-gates",
+  "run_id": "zz",
+  "gather": "out",
+  "generated_utc": "2026-10-14T12:20:50.325427+00:00",
+  "steps": {
+    "CONFIG": {
+      "status": "gather=out",
+      "detail": ""
+    },
+    "A": {
+      "status": "PASS",
+      "detail": "t=300s sync=final gather=out"
+    },
+    "B.main-release": {
+      "status": "PASS",
+      "detail": "t=290s quality=quality-main-release.json"
+    },
+    "B.long256-release": {
+      "status": "PASS",
+      "detail": "t=480s quality=quality-long256-release.json"
+    },
+    "D.pilot": {
+      "status": "PASS",
+      "detail": "name=final-zz-tool-a2 t=110s"
+    },
+    "D.matrix": {
+      "status": "PASS",
+      "detail": "rc=0 name=final-zz-m t=2400s"
+    },
+    "D.manifest": {
+      "status": "PASS",
+      "detail": "sha=0123456789abcdef"
+    },
+    "D.compare": {
+      "status": "INCONCLUSIVE",
+      "detail": "rc=2 reasons=noninferiority_not_established outputs_differ=0/40"
+    },
+    "C.c0": {
+      "status": "PASS",
+      "detail": "tag=final-zz-c128-a1 class=TARGET min_free_GiB=1.4 t=400s"
+    },
+    "C.l4": {
+      "status": "PASS",
+      "detail": "tag=final-zz-l256-a1 class=FLOOR min_free_GiB=0.8 t=450s"
+    },
+    "C.f1": {
+      "status": "PASS_WITH_KNOWN_LIMITATION",
+      "detail": "tag=final-zz-b64-a1 class=TARGET min_free_GiB=2.7 t=220s"
+    },
+    "E.pilot": {
+      "status": "PASS",
+      "detail": "name=soak-pilot-final-zz-a1 rc=0 analysis_rc=1 tunables=PASS t=150s"
+    },
+    "E.soak": {
+      "status": "PASS",
+      "detail": "name=soak-final-zz-a1 rc=0 analysis_rc=0 tunables=PASS/PASS t=7400s"
+    }
+  },
+  "profiles": {
+    "main128": {
+      "pass": true,
+      "gates": [
+        {
+          "step": "A",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "B.main-release",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "D.pilot",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "D.matrix",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "D.compare",
+          "status": "INCONCLUSIVE",
+          "ok": true
+        },
+        {
+          "step": "C.c0",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "E.pilot",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "E.soak",
+          "status": "PASS",
+          "ok": true
+        }
+      ]
+    },
+    "long256": {
+      "pass": true,
+      "gates": [
+        {
+          "step": "A",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "B.long256-release",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "D.manifest",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "C.l4",
+          "status": "PASS",
+          "ok": true
+        }
+      ]
+    },
+    "baseline64": {
+      "pass": true,
+      "gates": [
+        {
+          "step": "A",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "D.manifest",
+          "status": "PASS",
+          "ok": true
+        },
+        {
+          "step": "C.f1",
+          "status": "PASS_WITH_KNOWN_LIMITATION",
+          "ok": true
+        }
+      ]
+    }
+  },
+  "releasable": true,
+  "note": "main128 is the default profile: nothing can be released unless it passes"
+}

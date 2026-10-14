@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "profile": "profile-final-fla-on",
+  "tool": "nsys",
+  "tool_version": "NVIDIA Nsight Systems version 2026.3.2.476-263238834031v0",
+  "config_sha256": "3f9b6eccfa21b75afa0491e06247237c8bf8f644fc5e165cc5fe9d9461aab8bc",
+  "tool_arguments": [
+    "--trace=cuda,nvtx",
+    "--sample=none",
+    "--cpuctxsw=none",
+    "--capture-range=cudaProfilerApi",
+    "--capture-range-end=stop-shutdown",
+    "--kill=sigterm",
+    "--cuda-graph-trace=node",
+    "--cuda-event-trace=false",
+    "--wait=primary",
+    "--export=sqlite"
+  ],
+  "started_utc": "2026-10-14T19:25:23Z",
+  "ended_utc": "2026-10-14T19:27:40.667026+00:00",
+  "exit_status": 0,
+  "outputs": [
+    {
+      "name": "model-final-fla-on-20261014T192523Z.nsys-rep",
+      "bytes": 12929851,
+      "sha256": "c489145f6f329f22f0949ef917573785f3377cbbbc5f1d0d5c8c457d19b82d0f"
+    },
+    {
+      "name": "model-final-fla-on-20261014T192523Z.sqlite",
+      "bytes": 36208640,
+      "sha256": "3455e16ad6d05a0a64a60dca2b2ba2d6d577171ee06c862686eba641f83f9451"
+    }
+  ],
+  "note": "Profiler timings are diagnostic only; speed acceptance needs unprofiled paired runs."
+}

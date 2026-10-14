@@ -1,0 +1,10 @@
+# <path-glob> <rule> <justification>   (used by tools/scan-publish.py)
+serving/cuda-13.4.1-manifest.json routable-ipv4 CUDA component version numbers (e.g. 13.2.0.35), not addresses
+serving/requirements.lock.txt routable-ipv4 Python package version numbers (e.g. nvidia-* 12.6.3.3), not addresses
+harness/sync-v5.sh wsl-drive-path OLD_WORKSPACE placeholder of the pre-relocation workspace (/mnt/c/Users/USER/...), already sanitized
+harness/test-lookup-qualification-cpu.py wsl-drive-path synthetic non-existent path /mnt/c/old/workspace/that/does/not/exist used by a negative test
+harness/test-export-release-evidence-cpu.py home-path synthetic fixture paths (/home/PRIVATE, /home/one, /home/two) used to test redaction
+harness/test-profile-runtime-cpu.py home-path synthetic HOME=/home/u in a unit-test environment
+harness/test-readiness-transport-cpu.py secret-assignment TOKEN = 'SYNTHETIC-NOT-A-CREDENTIAL' test fixture
+harness/test-worker-fault-v2-cpu.py bearer-value 'Bearer SYNTHETIC-NOT-A-CREDENTIAL' test fixture
+tools/scan-allowlist.txt * this file quotes the allowlisted synthetic values above

@@ -1,0 +1,14 @@
+CONFIG gather=out
+A PASS t=300s sync=final gather=out
+B.main-release PASS t=290s quality=quality-main-release.json
+B.long256-release PASS t=480s quality=quality-long256-release.json
+D.pilot FAIL name=final-zz-tool-a1 rc=1 status=FAIL runner=FAIL
+D.pilot PASS name=final-zz-tool-a2 t=110s
+D.matrix PASS rc=0 name=final-zz-m t=2400s
+D.manifest PASS sha=0123456789abcdef
+D.compare INCONCLUSIVE rc=2 reasons=noninferiority_not_established outputs_differ=0/40
+C.c0 PASS tag=final-zz-c128-a1 class=TARGET min_free_GiB=1.4 t=400s
+C.l4 PASS tag=final-zz-l256-a1 class=FLOOR min_free_GiB=0.8 t=450s
+C.f1 PASS_WITH_KNOWN_LIMITATION tag=final-zz-b64-a1 class=TARGET min_free_GiB=2.7 t=220s
+E.pilot PASS name=soak-pilot-final-zz-a1 rc=0 analysis_rc=1 tunables=PASS t=150s
+E.soak PASS name=soak-final-zz-a1 rc=0 analysis_rc=0 tunables=PASS/PASS t=7400s

@@ -1,0 +1,121 @@
+--- a/cuda-attention/src/qfa_prefill.cu
++++ b/cuda-attention/src/qfa_prefill.cu
+@@ -148,7 +148,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {
+--- a/cuda-attention/src/qfa_prefill_v2.cu
++++ b/cuda-attention/src/qfa_prefill_v2.cu
+@@ -128,7 +128,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {
+--- a/cuda-attention/src/qfa_prefill_v3.cu
++++ b/cuda-attention/src/qfa_prefill_v3.cu
+@@ -130,7 +130,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {
+--- a/cuda-attention/src/qfa_prefill_v4.cu
++++ b/cuda-attention/src/qfa_prefill_v4.cu
+@@ -130,7 +130,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {
+--- a/cuda-attention/src/qfa_prefill_v5.cu
++++ b/cuda-attention/src/qfa_prefill_v5.cu
+@@ -130,7 +130,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {
+--- a/cuda-attention/src/qfa_prefill_v6.cu
++++ b/cuda-attention/src/qfa_prefill_v6.cu
+@@ -133,7 +133,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {
+--- a/cuda-attention/src/qfa_prefill_v7b.cu
++++ b/cuda-attention/src/qfa_prefill_v7b.cu
+@@ -136,7 +136,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {
+--- a/cuda-attention/src/qfa_prefill_v7c.cu
++++ b/cuda-attention/src/qfa_prefill_v7c.cu
+@@ -137,7 +137,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {
+--- a/cuda-attention/src/qfa_prefill_v7.cu
++++ b/cuda-attention/src/qfa_prefill_v7.cu
+@@ -135,7 +135,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {
+--- a/cuda-attention/src/qfa_prefill_v7s.cu
++++ b/cuda-attention/src/qfa_prefill_v7s.cu
+@@ -139,7 +139,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {
+--- a/cuda-attention/src/qfa_prefill_v7si.cu
++++ b/cuda-attention/src/qfa_prefill_v7si.cu
+@@ -136,7 +136,7 @@
+ }
+ __device__ __forceinline__ void bulk_g2s(uint32_t dst, const void* src, uint32_t bytes, uint32_t bar) {
+   asm volatile(
+-      "cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
++      "cp.async.bulk.shared::cta.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];\n"
+       ::"r"(dst), "l"(src), "r"(bytes), "r"(bar) : "memory");
+ }
+ __device__ __forceinline__ uint32_t ldg_u32(const __nv_bfloat16* p) {

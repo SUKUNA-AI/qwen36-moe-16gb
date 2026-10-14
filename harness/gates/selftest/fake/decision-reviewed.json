@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "profiles": {
+    "main128": {
+      "acceptance_status": "accepted_with_known_limits",
+      "known_limitations": [
+        "Numeric basis = FP32 NVFP4 globals (pre-registered eval-v1 rule e8f7823f decided fp32: eval 59/60 vs 57/60, teacher relative perplexity -1.13% CI95 [-2.27%, -0.08%]). On this basis the fixed functional fixtures executable-code and long-facts-16384 fail identically on the bf128-R1 reference and on this profile (inherited basis limitation, not a profile regression).",
+        "Inherited baseline limitation: strict special-anchor JSON gates still fail as on the reference (answer wrapped in Markdown fences / no forced primer call); no parser relaxation is applied.",
+        "API contract (guard v2, all profiles): constrained decoding is not implemented, so tool_choice \"required\" or a named function, parallel_tool_calls=false with active tools, non-bool parallel_tool_calls, strict:true (function or tool level; also set by OpenAI SDK pydantic_function_tool) and legacy functions/function_call are rejected with HTTP 400 before admission; auto/none tool calling works.",
+        "AUTO (review): speed final-zz-m main-release vs bf128 (5 pairs, V6): INCONCLUSIVE rc=2 reasons=noninferiority_not_established outputs_differ=0/40",
+        "AUTO (review): soak name=soak-final-zz-a1 rc=0 analysis_rc=0 tunables=PASS/PASS t=7400s",
+        "AUTO (review): main128 context gates PASS tag=final-zz-c128-a1 class=TARGET min_free_GiB=1.4 t=400s"
+      ],
+      "evidence": [
+        "reports/teacher-main-release.json",
+        "reports/quality-main-release.json",
+        "reports/final-zz-qrun-teacher-main-release.json",
+        "reports/final-zz-m-manifest.json",
+        "reports/soak-final-zz-a1-run.json"
+      ],
+      "run_receipts": [
+        "reports/soak-final-zz-a1-run.json"
+      ],
+      "cuda_nvfp4_evidence": {
+        "run_receipts": [
+          "reports/final-zz-qrun-teacher-main-release.json"
+        ],
+        "bitexact_reports": [
+          "reports/quality-main-release.json"
+        ]
+      },
+      "cuda_gdn_evidence": {
+        "run_receipts": [
+          "reports/final-zz-qrun-teacher-main-release.json"
+        ],
+        "bitexact_reports": [
+          "reports/quality-main-release.json"
+        ]
+      },
+      "cuda_fp8_gemv_evidence": {
+        "run_receipts": [
+          "reports/final-zz-qrun-teacher-main-release.json"
+        ],
+        "bitexact_reports": [
+          "reports/quality-main-release.json"
+        ]
+      }
+    },
+    "long256": {
+      "acceptance_status": "accepted_with_known_limits",
+      "known_limitations": [
+        "Numeric basis = FP32 NVFP4 globals (pre-registered eval-v1 rule e8f7823f decided fp32: eval 59/60 vs 57/60, teacher relative perplexity -1.13% CI95 [-2.27%, -0.08%]). On this basis the fixed functional fixtures executable-code and long-facts-16384 fail identically on the bf128-R1 reference and on this profile (inherited basis limitation, not a profile regression).",
+        "Inherited baseline limitation: strict special-anchor JSON gates still fail as on the reference (answer wrapped in Markdown fences / no forced primer call); no parser relaxation is applied.",
+        "API contract (guard v2, all profiles): constrained decoding is not implemented, so tool_choice \"required\" or a named function, parallel_tool_calls=false with active tools, non-bool parallel_tool_calls, strict:true (function or tool level; also set by OpenAI SDK pydantic_function_tool) and legacy functions/function_call are rejected with HTTP 400 before admission; auto/none tool calling works.",
+        "AUTO (review): long256 L4 tag=final-zz-l256-a1 class=FLOOR min_free_GiB=0.8 t=450s; no dedicated 2 h soak at 256K (soak evidence = main128, same build)"
+      ],
+      "evidence": [
+        "reports/final-zz-m-manifest.json"
+      ],
+      "run_receipts": [],
+      "cuda_nvfp4_evidence": {
+        "run_receipts": [],
+        "bitexact_reports": []
+      },
+      "cuda_gdn_evidence": {
+        "run_receipts": [],
+        "bitexact_reports": []
+      },
+      "cuda_fp8_gemv_evidence": {
+        "run_receipts": [],
+        "bitexact_reports": []
+      }
+    },
+    "baseline64": {
+      "acceptance_status": "accepted_with_known_limits",
+      "known_limitations": [
+        "Numeric basis = FP32 NVFP4 globals (pre-registered eval-v1 rule e8f7823f decided fp32: eval 59/60 vs 57/60, teacher relative perplexity -1.13% CI95 [-2.27%, -0.08%]). On this basis the fixed functional fixtures executable-code and long-facts-16384 fail identically on the bf128-R1 reference and on this profile (inherited basis limitation, not a profile regression).",
+        "Inherited baseline limitation: strict special-anchor JSON gates still fail as on the reference (answer wrapped in Markdown fences / no forced primer call); no parser relaxation is applied.",
+        "API contract (guard v2, all profiles): constrained decoding is not implemented, so tool_choice \"required\" or a named function, parallel_tool_calls=false with active tools, non-bool parallel_tool_calls, strict:true (function or tool level; also set by OpenAI SDK pydantic_function_tool) and legacy functions/function_call are rejected with HTTP 400 before admission; auto/none tool calling works.",
+        "AUTO (review): baseline64 F1 tag=final-zz-b64-a1 class=TARGET min_free_GiB=2.7 t=220s; no dedicated soak",
+        "Functional long-facts-60000 (\"total\" field) fails, as on the legacy baseline64 before R1 (functional-baseline64-original-60k.json); inherited legacy limitation, F1 verdict PASS_WITH_KNOWN_LIMITATION."
+      ],
+      "evidence": [
+        "reports/final-zz-m-manifest.json"
+      ],
+      "run_receipts": []
+    }
+  }
+}

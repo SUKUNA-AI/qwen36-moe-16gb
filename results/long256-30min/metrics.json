@@ -1,0 +1,266 @@
+{
+ "kind": "long256-short-stability-test",
+ "label": "short 256K stability test (30 min)",
+ "name": "l256short-r1",
+ "verdict": "PASS",
+ "verdict_scope": "short 256K stability test (30 min); NOT a soak, NOT the 7200 s soak gate",
+ "failure_reasons": [],
+ "inconclusive_reasons": [],
+ "profile": "long256-release",
+ "context": 262144,
+ "run_id": "ad356401466d4f3dbb15c082d26d82e4",
+ "elapsed_s": 1853.561615935003,
+ "iterations": 42,
+ "termination_reason": "duration_reached",
+ "rows": {
+  "total": 109,
+  "passed": 109,
+  "hard_failures": 0,
+  "known_limitation_failures": 0,
+  "iterations": 42
+ },
+ "case_counts_passed": {
+  "fresh@250000": 11,
+  "fresh@16384": 11,
+  "fresh@65536": 10,
+  "fresh@120000": 10,
+  "prefix": 21,
+  "prefix2": 11,
+  "arithmetic": 14,
+  "tool": 9,
+  "cancel": 6,
+  "cancel_prefill": 6
+ },
+ "errors": {
+  "hard_failures": 0,
+  "known_limitation_failures": 0,
+  "unexpected_http_statuses": {},
+  "stall_events": 0
+ },
+ "fresh_by_length": {
+  "16384": {
+   "n": 11,
+   "ttft_p50_s": 1.4686207339982502,
+   "ttft_p90_s": 1.480123225999705,
+   "ttft_max_s": 1.4868257919952157,
+   "decode_tps_p50": 96.87870272670396,
+   "decode_tps_p90": 100.10315834594182,
+   "decode_tps_min": 95.12284109984859
+  },
+  "65536": {
+   "n": 10,
+   "ttft_p50_s": 8.564676251000492,
+   "ttft_p90_s": 8.589065408001625,
+   "ttft_max_s": 8.636246611997194,
+   "decode_tps_p50": 85.70937634542774,
+   "decode_tps_p90": 87.44508716472792,
+   "decode_tps_min": 83.86486459705569
+  },
+  "120000": {
+   "n": 10,
+   "ttft_p50_s": 21.939319623998017,
+   "ttft_p90_s": 21.97656034549873,
+   "ttft_max_s": 21.98237789599807,
+   "decode_tps_p50": 77.11201103785713,
+   "decode_tps_p90": 79.04908870020726,
+   "decode_tps_min": 75.6214914688051
+  },
+  "250000": {
+   "n": 11,
+   "ttft_p50_s": 77.37899380000454,
+   "ttft_p90_s": 77.4823662619965,
+   "ttft_max_s": 77.87894527400204,
+   "decode_tps_p50": 60.82871248811489,
+   "decode_tps_p90": 62.211822790922554,
+   "decode_tps_min": 58.919278866868744
+  }
+ },
+ "continuations": {
+  "prefix@120000": {
+   "n": 10,
+   "ttft_p50_s": 0.7705663545020798,
+   "ttft_max_s": 0.7802023200056283,
+   "cache_hits": 10,
+   "cached_ratio_p50": 0.9974896510448704
+  },
+  "prefix@250000": {
+   "n": 11,
+   "ttft_p50_s": 1.0566075620008633,
+   "ttft_max_s": 1.0841990990011254,
+   "cache_hits": 11,
+   "cached_ratio_p50": 0.9987295347220557
+  },
+  "prefix2@250000": {
+   "n": 11,
+   "ttft_p50_s": 0.9450663919997169,
+   "ttft_max_s": 0.9634816430043429,
+   "cache_hits": 11,
+   "cached_ratio_p50": 0.999153530417006
+  }
+ },
+ "cancel": {
+  "decode_recovery_after_disconnect_s": {
+   "n": 6,
+   "p50": 0.8320704829966417,
+   "p90": 0.837455200500699,
+   "min": 0.826538260000234,
+   "max": 0.841061566999997
+  },
+  "prefill_250k_recovery_after_disconnect_s": {
+   "n": 6,
+   "p50": 1.6410332889972779,
+   "p90": 1.7670293455012143,
+   "min": 1.15021138600423,
+   "max": 1.892669871005637
+  },
+  "prefill_250k_n": 6,
+  "prefill_250k_mid_prefill": 6
+ },
+ "host_ram_indicative": {
+  "label": "INDICATIVE ONLY (30 min; soak thresholds shown for orientation, no leak verdict)",
+  "anon_late_minus_early_bytes_by_length": {
+   "250000": 65277952,
+   "16384": 7102464,
+   "120000": 7286784,
+   "65536": 5763072
+  },
+  "state_all_anon": {
+   "samples": 186,
+   "early_samples": 30,
+   "late_samples": 30,
+   "slope_bytes_per_hour_after_warmup": 74046889.92372422,
+   "first": 21105446912,
+   "last": 21236043776,
+   "max": 21284777984,
+   "early_median": 21226053632.0,
+   "late_median": 21234507776.0,
+   "late_minus_early": 8454144.0
+  },
+  "state_all_cgroup": {
+   "samples": 186,
+   "early_samples": 30,
+   "late_samples": 30,
+   "slope_bytes_per_hour_after_warmup": 81267493.69259755,
+   "first": 21284581376,
+   "last": 21419077632,
+   "max": 21469007872,
+   "early_median": 21406380032.0,
+   "late_median": 21416435712.0,
+   "late_minus_early": 10055680.0
+  },
+  "state_idle_anon": {
+   "samples": 27,
+   "early_samples": 4,
+   "late_samples": 7,
+   "slope_bytes_per_hour_after_warmup": 62764095.706992105,
+   "first": 21162287104,
+   "last": 21236043776,
+   "max": 21284777984,
+   "early_median": 21229475840.0,
+   "late_median": 21236043776,
+   "late_minus_early": 6567936.0
+  }
+ },
+ "vram": {
+  "min_free_gib": 2.5605201721191406,
+  "band": "TARGET",
+  "state_samples": 186,
+  "state_samples_below_1gib": 0,
+  "state_samples_below_0_5gib": 0,
+  "state_min": {
+   "t_s": 1681.838983,
+   "free_bytes": 2752352256,
+   "gpu_total_used_bytes": 14342582272,
+   "active_inference": 1
+  },
+  "request_peak_min": {
+   "free_bytes": 2749337600,
+   "case": "fresh",
+   "length": 65536
+  },
+  "min_free_by_5min_bucket_gib": {
+   "0-5min": 2.5938148498535156,
+   "5-10min": 2.6126747131347656,
+   "10-15min": 2.6113319396972656,
+   "15-20min": 2.6095008850097656,
+   "20-25min": 2.6001930236816406,
+   "25-30min": 2.5633277893066406,
+   "30-35min": 2.6157569885253906
+  }
+ },
+ "kv": {
+  "kv_total_pages": 262175,
+  "stats_samples": 80,
+  "used_fraction_after_case": {
+   "cancel_prefill": {
+    "n": 6,
+    "p50": 0.0,
+    "p90": 0.0,
+    "min": 0.0,
+    "max": 0.0
+   },
+   "fresh": {
+    "n": 42,
+    "p50": 0.0,
+    "p90": 0.0,
+    "min": 0.0,
+    "max": 0.0
+   },
+   "prefix": {
+    "n": 21,
+    "p50": 0.0,
+    "p90": 0.0,
+    "min": 0.0,
+    "max": 0.0
+   },
+   "prefix2": {
+    "n": 11,
+    "p50": 0.0,
+    "p90": 0.0,
+    "min": 0.0,
+    "max": 0.0
+   }
+  },
+  "state_used_fraction": {
+   "n": 179,
+   "p50": 0.0,
+   "p90": 0.0012594640984075554,
+   "min": 0.0,
+   "max": 0.9557738151997711
+  },
+  "state_mamba_used_slots_max": 4,
+  "stats_errors": 0,
+  "note": "kv used pages as reported by the worker (/v1/stats after fresh/prefix/prefix2/cancel_prefill, state every 10 s)"
+ },
+ "glibc_tunables": {
+  "pre": "PASS",
+  "post": "PASS"
+ },
+ "identity_match": true,
+ "files": [
+  "l256short-r1-analysis.json",
+  "l256short-r1-identity.json",
+  "l256short-r1-launch.log",
+  "l256short-r1-run.json",
+  "l256short-r1-session.log",
+  "l256short-r1-tunables-post.json",
+  "l256short-r1-tunables-pre.json",
+  "l256short-r1.json"
+ ],
+ "generated_utc": "2026-10-14T18:19:13.657404+00:00",
+ "notes": [
+  "Short 256K stability test (30 min), owner decision 2026-10-14; NOT a soak and NOT the 7200 s soak gate.",
+  "KV: worker kv_used_pages counts pages of in-flight requests (0 between requests, so /v1/stats after each case reads 0); peak 95.6% of 262175 pages during 250K requests (state). Prefix-cache retention is shown by cached tokens: 250K continuations 11/11 + 11/11 hits, cached ratio 0.999.",
+  "Prefill cancels: 6/6 mid-prefill (8/30/55 s after send; server outcome cancelled, 0 completion tokens, engine cancelled, engine span = delay). engine prefill_forward_tokens reads 0 for aborted prefills (counter published only at prefill completion).",
+  "Host RAM early/late is INDICATIVE ONLY over 30 min: anon +5.8..+65 MB per length (250K +65 MB, 11 points), state anon +8.5 MB (window 300-600 s vs last 300 s), shmem 0, torch allocated 0 / reserved +4 MB.",
+  "Decode tok/s = server decode_ack_tps; TTFT = client time to first content token."
+ ],
+ "not_run": [
+  "75-95 min or 2 h soak of long256 (replaced by this 30 min test, owner decision)",
+  "no-leak verdict (never automatic; 30 min too short)"
+ ],
+ "cpu_validation": {
+  "test_long256_cpu.py": "9/9 PASS (native FakeWorld/FakeClient)",
+  "scripts/httpxcheck.py": "loopback prefill-cancel mechanics PASS"
+ }
+}

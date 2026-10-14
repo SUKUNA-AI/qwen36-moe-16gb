@@ -1,0 +1,480 @@
+<title>Выпуск Qwen3.6 f1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: instrument panel — status strip, headline figures, then comparison tables, time breakdowns, resources, quality, backlog; one column of panels, tables scroll inside their own frame. */
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #17202c;
+  --muted: #586476;
+  --line: #d9dfe7;
+  --soft: #eef1f5;
+  --accent: #2b55d6;       /* release */
+  --base: #97a2b1;         /* original FreeToken */
+  --good: #18805a;
+  --warn: #a8700f;
+  --bad: #bf3b35;
+  --c-attn: #3b62dc;
+  --c-moe: #13917f;
+  --c-fp8: #cf8a17;
+  --c-gdn: #8a5cf0;
+  --c-pcie: #d14f6b;
+  --c-gather: #e06a3c;
+  --c-other: #a3acb9;
+  --c-idle: #dfe3e9;
+  --c-free: #ffffff;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1218; --surface: #151b23; --ink: #e5e9ef; --muted: #98a3b3; --line: #29313c; --soft: #1b222c;
+    --accent: #7d9cff; --base: #5d6878; --good: #43c08a; --warn: #e0a640; --bad: #f0716a;
+    --c-attn: #6f8ff5; --c-moe: #2fbfa8; --c-fp8: #e3a43e; --c-gdn: #a98bf7; --c-pcie: #ee7b93; --c-gather: #f08a5e;
+    --c-other: #6d7786; --c-idle: #2a323d; --c-free: #151b23;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1218; --surface: #151b23; --ink: #e5e9ef; --muted: #98a3b3; --line: #29313c; --soft: #1b222c;
+  --accent: #7d9cff; --base: #5d6878; --good: #43c08a; --warn: #e0a640; --bad: #f0716a;
+  --c-attn: #6f8ff5; --c-moe: #2fbfa8; --c-fp8: #e3a43e; --c-gdn: #a98bf7; --c-pcie: #ee7b93; --c-gather: #f08a5e;
+  --c-other: #6d7786; --c-idle: #2a323d; --c-free: #151b23;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font-body); }
+.page { max-width: 1120px; margin: 0 auto; padding-inline: max(16px, 3vw); padding-block: 28px 64px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 700; line-height: 1.05; }
+h2 { font-size: 23px; font-weight: 600; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.num, td.n, th.n { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.label { font-family: var(--font-display); font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+small, .note { font-size: 13px; color: var(--muted); }
+code { font-family: var(--font-data); font-size: 0.92em; background: var(--soft); padding: 1px 5px; border-radius: 4px; }
+
+/* header */
+header.top { display: grid; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--font-data); font-size: 13px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 11px; font-size: 13px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
+.dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); } .dot.idle { background: var(--base); }
+
+/* headline figures */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; min-width: 0; }
+.tile .big { font-family: var(--font-display); font-size: 34px; font-weight: 700; line-height: 1; color: var(--accent); }
+.tile .ft { font-family: var(--font-data); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* panels */
+section.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px clamp(14px, 2.5vw, 24px); display: grid; gap: 14px; min-width: 0; }
+.panel-head { display: grid; gap: 4px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.cols > * { min-width: 0; }
+
+/* tables */
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-display); font-weight: 600; font-size: 13px; color: var(--muted); background: var(--soft); white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+td.n, th.n { text-align: right; white-space: nowrap; }
+td.rel { color: var(--accent); font-weight: 500; }
+td.best { color: var(--good); font-weight: 500; }
+td.worse { color: var(--bad); }
+tr.group td { background: var(--soft); font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 13px; }
+
+/* ratio bars inside tables */
+.rb { display: flex; align-items: center; gap: 8px; min-width: 150px; }
+.rb .track { flex: 1; height: 8px; background: var(--soft); border-radius: 4px; position: relative; overflow: hidden; }
+.rb .fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 4px; }
+.rb .v { font-family: var(--font-data); font-size: 13px; width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* stacked breakdown bars */
+.stack-list { display: grid; gap: 12px; }
+.stack-row { display: grid; grid-template-columns: minmax(130px, 210px) 1fr; gap: 12px; align-items: center; }
+.stack-row .name { display: grid; }
+.stack-row .name b { font-weight: 600; font-size: 14px; }
+.stack-row .name span { font-family: var(--font-data); font-size: 12px; color: var(--muted); }
+.stack { display: flex; height: 26px; border-radius: 6px; overflow: hidden; background: var(--c-idle); min-width: 0; }
+.stack i { display: block; height: 100%; font-style: normal; font-family: var(--font-data); font-size: 11px; line-height: 26px; color: #fff; text-align: center; overflow: hidden; white-space: nowrap; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.c-attn { background: var(--c-attn); } .c-moe { background: var(--c-moe); } .c-fp8 { background: var(--c-fp8); color: #1d1405 !important; }
+.c-gdn { background: var(--c-gdn); } .c-pcie { background: var(--c-pcie); } .c-gather { background: var(--c-gather); }
+.c-other { background: var(--c-other); } .c-idle { background: var(--c-idle); color: var(--muted) !important; }
+.c-free { background: var(--c-free); color: var(--muted) !important; box-shadow: inset 0 0 0 1px var(--line); }
+@media (max-width: 560px) { .stack-row { grid-template-columns: 1fr; gap: 4px; } }
+
+/* utilization meters */
+.meter { display: flex; align-items: center; gap: 6px; min-width: 110px; }
+.meter .track { flex: 1; height: 6px; background: var(--soft); border-radius: 3px; position: relative; overflow: hidden; }
+.meter .fill { position: absolute; inset: 0 auto 0 0; border-radius: 3px; }
+.meter .fill.sm { background: var(--c-attn); } .meter .fill.dram { background: var(--c-moe); }
+.meter .v { font-family: var(--font-data); font-size: 12px; width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* status lists */
+.verdicts { display: grid; gap: 8px; }
+.verdict { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.verdict:last-child { border-bottom: 0; }
+.verdict .k { font-family: var(--font-data); font-size: 13px; white-space: nowrap; }
+.pill { font-family: var(--font-display); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.pill.ok { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.pill.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 16%, transparent); }
+.pill.no { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); }
+.pill.na { color: var(--muted); background: var(--soft); }
+ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; max-width: 80ch; }
+.callout { border-left: 3px solid var(--warn); background: color-mix(in srgb, var(--warn) 8%, var(--surface)); padding: 10px 14px; border-radius: 0 8px 8px 0; display: grid; gap: 4px; }
+.callout.good { border-left-color: var(--good); background: color-mix(in srgb, var(--good) 8%, var(--surface)); }
+footer { font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: no-preference) { .stack i, .fill { transition: width .4s ease; } }
+</style>
+
+<div class="page">
+
+<header class="top">
+  <div class="label">Домашний API · api.example.invalid/v1 · модель qwen36-35b</div>
+  <h1>Выпуск Qwen3.6 f1</h1>
+  <div class="meta">
+    <span>nvidia/Qwen3.6-35B-A3B-NVFP4 · rev 1355db6a</span>
+    <span>256 экспертов, top-8</span>
+    <span>RTX 5070 Ti 16 ГБ (SM120, 70 SM)</span>
+    <span>FreeToken + наши ядра CUDA</span>
+    <span>14.10.2026</span>
+  </div>
+  <div class="chips">
+    <span class="chip"><span class="dot"></span>Установлен и проверен вживую</span>
+    <span class="chip"><span class="dot"></span>Гейты выпуска пройдены</span>
+    <span class="chip"><span class="dot"></span>Логиты побитово равны эталону</span>
+    <span class="chip"><span class="dot idle"></span>Запуск вручную: <code>qwen36 start</code></span>
+  </div>
+</header>
+
+<div class="tiles">
+  <div class="tile"><div class="label">TTFT, промпт 120K</div><div class="big">×2.5</div><div class="ft">54.8 → 22.1 с</div></div>
+  <div class="tile"><div class="label">TTFT, промпт 16K</div><div class="big">×4.3</div><div class="ft">6.78 → 1.59 с</div></div>
+  <div class="tile"><div class="label">Правка сообщения, 16K</div><div class="big">×9.4</div><div class="ft">7.11 → 0.76 с</div></div>
+  <div class="tile"><div class="label">Decode, 16K</div><div class="big">+26%</div><div class="ft">94 → 119 ток/с (128 ток. ответа)</div></div>
+  <div class="tile"><div class="label">TTFT, промпт 250K</div><div class="big">×1.66</div><div class="ft">133.7 → 80.4 с (профиль 256K)</div></div>
+  <div class="tile"><div class="label">Качество</div><div class="big">125/125</div><div class="ft">логитов совпадают, PPL +0.0%</div></div>
+</div>
+
+<section class="panel" id="speed">
+  <div class="panel-head">
+    <h2>Скорость против исходного FreeToken</h2>
+    <p class="muted">Матрица 5 пар, профиль 128K, ответ 128 токенов, медианы. Базовая сборка: исходный FreeToken (Triton) с исправленными FP32-масштабами. Вердикт гейта: PASS, выигрыш ≥ 5% с поправкой Бонферрони, без регресса ни в одном гейтовом случае.</p>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Случай</th><th class="n">TTFT было</th><th class="n">TTFT стало</th><th>Ускорение TTFT</th><th class="n">Decode было</th><th class="n">Decode стало</th><th class="n">Весь запрос</th></tr></thead>
+    <tbody>
+      <tr><td>64 токена</td><td class="n">0.75 с</td><td class="n rel">0.79 с</td><td><div class="rb"><div class="track"><div class="fill" style="width:9.4%"></div></div><span class="v">×0.94</span></div></td><td class="n">96.4</td><td class="n rel">122.8</td><td class="n">×1.13</td></tr>
+      <tr><td>4K</td><td class="n">2.24 с</td><td class="n rel">0.77 с</td><td><div class="rb"><div class="track"><div class="fill" style="width:29.5%"></div></div><span class="v">×2.95</span></div></td><td class="n">98.9</td><td class="n rel">124.5</td><td class="n">×1.95</td></tr>
+      <tr><td>16K</td><td class="n">6.78 с</td><td class="n rel">1.59 с</td><td><div class="rb"><div class="track"><div class="fill" style="width:42.3%"></div></div><span class="v">×4.23</span></div></td><td class="n">94.2</td><td class="n rel">119.1</td><td class="n">×3.03</td></tr>
+      <tr><td>64K</td><td class="n">28.46 с</td><td class="n rel">9.14 с</td><td><div class="rb"><div class="track"><div class="fill" style="width:30.9%"></div></div><span class="v">×3.09</span></div></td><td class="n">84.4</td><td class="n rel">99.3</td><td class="n">×2.86</td></tr>
+      <tr><td>120K</td><td class="n">54.77 с</td><td class="n rel">22.07 с</td><td><div class="rb"><div class="track"><div class="fill" style="width:25.2%"></div></div><span class="v">×2.52</span></div></td><td class="n">80.7</td><td class="n rel">94.6</td><td class="n">×2.45</td></tr>
+      <tr><td>Продолжение истории, 4K</td><td class="n">2.20 с</td><td class="n rel">0.78 с</td><td><div class="rb"><div class="track"><div class="fill" style="width:28.8%"></div></div><span class="v">×2.88</span></div></td><td class="n">106.4</td><td class="n rel">126.9</td><td class="n">×1.91</td></tr>
+      <tr><td>Правка последнего сообщения, 16K</td><td class="n">6.85 с</td><td class="n rel">0.78 с</td><td><div class="rb"><div class="track"><div class="fill" style="width:90.8%"></div></div><span class="v">×9.08</span></div></td><td class="n">90.4</td><td class="n rel">112.4</td><td class="n">×4.44</td></tr>
+      <tr><td>Правка результата инструмента, 16K</td><td class="n">7.11 с</td><td class="n rel">0.76 с</td><td><div class="rb"><div class="track"><div class="fill" style="width:94.7%"></div></div><span class="v">×9.47</span></div></td><td class="n">94.9</td><td class="n rel">113.4</td><td class="n">×4.49</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Шкала полос: от 0 до ×10. Цикл tool use (вся задача целиком): ×1.08, доверительный интервал 0.97–1.20. Ответы различаются в 15 из 40 запросов, это наблюдение, а не гейт: качество проверяется teacher-forcing.</p>
+
+  <h3>Одинаковые условия: контекст 64K, ответ 192 токена</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Сборка</th><th class="n">4K: TTFT / decode</th><th class="n">16K: TTFT / decode</th><th class="n">60K: TTFT / decode</th></tr></thead>
+    <tbody>
+      <tr><td>Исходный FreeToken (FP16-масштабы)</td><td class="n">1.93 с / 116.0</td><td class="n">6.04 с / 111.3</td><td class="n">22.86 с / 101.3</td></tr>
+      <tr><td>+ FP32-масштабы</td><td class="n">1.85 с / 118.1</td><td class="n">5.86 с / 115.7</td><td class="n">22.43 с / 107.6</td></tr>
+      <tr><td>Выпуск</td><td class="n rel">0.58 с / 142.4</td><td class="n rel">1.49 с / 138.0</td><td class="n rel">7.50 с / 122.2</td></tr>
+      <tr class="group"><td>Выпуск против исходного</td><td class="n">×3.3 / +23%</td><td class="n">×4.1 / +24%</td><td class="n">×3.0 / +21%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Два раунда в обратном порядке, прогрев 60 с. Раунды выпуска расходятся меньше чем на 0.3%. Переход на FP32-масштабы decode не замедлил.</p>
+</section>
+
+<section class="panel" id="latency">
+  <div class="panel-head">
+    <h2>Задержки под нагрузкой</h2>
+    <p class="muted">Soak 2 часа на профиле 128K: 509 итераций, ответ 256 токенов, одна сессия. Короткий тест профиля 256K: 30 минут.</p>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Промпт</th><th class="n">Токенов</th><th class="n">TTFT p50</th><th class="n">p90</th><th class="n">p99</th><th class="n">max</th><th class="n">Prefill, ток/с</th><th class="n">Decode p50</th><th class="n">p10</th><th class="n">Мс/токен</th></tr></thead>
+    <tbody>
+      <tr class="group"><td colspan="10">Профиль 128K (main128), soak, n ≈ 102 на длину</td></tr>
+      <tr><td>64</td><td class="n">93</td><td class="n">0.60</td><td class="n">0.64</td><td class="n">0.67</td><td class="n">1.39</td><td class="n">155</td><td class="n">133.7</td><td class="n">126.6</td><td class="n">7.5</td></tr>
+      <tr><td>4K</td><td class="n">4 125</td><td class="n">0.61</td><td class="n">0.63</td><td class="n">0.65</td><td class="n">0.66</td><td class="n">6 802</td><td class="n">135.0</td><td class="n">127.7</td><td class="n">7.4</td></tr>
+      <tr><td>16K</td><td class="n">16 413</td><td class="n">1.36</td><td class="n">1.40</td><td class="n">1.61</td><td class="n">1.65</td><td class="n">12 067</td><td class="n">129.8</td><td class="n">124.1</td><td class="n">7.7</td></tr>
+      <tr><td>64K</td><td class="n">65 565</td><td class="n">8.14</td><td class="n">8.52</td><td class="n">9.29</td><td class="n">9.60</td><td class="n">8 055</td><td class="n">112.2</td><td class="n">107.1</td><td class="n">8.9</td></tr>
+      <tr><td>120K</td><td class="n">120 029</td><td class="n">20.97</td><td class="n">21.63</td><td class="n">22.92</td><td class="n">23.29</td><td class="n">5 725</td><td class="n">97.5</td><td class="n">93.7</td><td class="n">10.3</td></tr>
+      <tr><td>Продолжение по кэшу, 4K</td><td class="n">4 400</td><td class="n">0.59</td><td class="n">0.65</td><td class="n">0.72</td><td class="n">0.72</td><td class="n">—</td><td class="n">138.2</td><td class="n">127.9</td><td class="n">7.2</td></tr>
+      <tr class="group"><td colspan="10">Профиль 256K (long256), короткий тест, n ≈ 10 на длину</td></tr>
+      <tr><td>16K</td><td class="n">16K</td><td class="n">1.47</td><td class="n">1.48</td><td class="n">—</td><td class="n">1.49</td><td class="n">≈11 000</td><td class="n">96.9</td><td class="n">—</td><td class="n">10.3</td></tr>
+      <tr><td>64K</td><td class="n">64K</td><td class="n">8.56</td><td class="n">8.59</td><td class="n">—</td><td class="n">8.64</td><td class="n">≈7 600</td><td class="n">85.7</td><td class="n">—</td><td class="n">11.7</td></tr>
+      <tr><td>120K</td><td class="n">120K</td><td class="n">21.94</td><td class="n">21.98</td><td class="n">—</td><td class="n">21.98</td><td class="n">≈5 500</td><td class="n">77.1</td><td class="n">—</td><td class="n">13.0</td></tr>
+      <tr><td>250K</td><td class="n">250K</td><td class="n">77.38</td><td class="n">77.48</td><td class="n">—</td><td class="n">77.88</td><td class="n">3 112</td><td class="n">60.8</td><td class="n">—</td><td class="n">16.4</td></tr>
+      <tr><td>Продолжение 250K по кэшу</td><td class="n">250K</td><td class="n">≈1.0</td><td class="n">—</td><td class="n">—</td><td class="n">1.06</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Шаг decode на GPU: 7.26 мс (p50, короткий контекст), 10.8 мс на 120K. Накладные планировщика ≈ 0.22 мс на шаг. Предел контекста: 128K-профиль принимает 130 396 + 676 токенов, 256K-профиль — 261K. Профиль 256K медленнее в decode, потому что под экспертов в нём остаётся 1481 слот вместо 3164.</p>
+</section>
+
+<section class="panel" id="nsys">
+  <div class="panel-head">
+    <h2>Куда уходит время</h2>
+    <p class="muted">Nsight Systems по выпускной сборке, разложение времени: сначала ядра, затем незакрытые копирования. Абсолютные значения сняты под профилировщиком, они описывают структуру, а не скорость.</p>
+  </div>
+  <div class="legend">
+    <span><i class="sw c-attn"></i>Attention (FlashInfer)</span>
+    <span><i class="sw c-moe"></i>Эксперты MoE</span>
+    <span><i class="sw c-fp8"></i>Плотные слои FP8</span>
+    <span><i class="sw c-gdn"></i>GDN</span>
+    <span><i class="sw c-gather"></i>Подкачка экспертов (gather)</span>
+    <span><i class="sw c-pcie"></i>Копирование по PCIe, не перекрытое</span>
+    <span><i class="sw c-other"></i>Прочее: нормы, lm_head, выборка</span>
+    <span><i class="sw c-idle"></i>Простой GPU</span>
+  </div>
+  <div class="stack-list">
+    <div class="stack-row"><div class="name"><b>Prefill 16K</b><span>1.53 с · GPU 95.5%</span></div>
+      <div class="stack"><i class="c-moe" style="width:40%">40%</i><i class="c-attn" style="width:19%">19%</i><i class="c-fp8" style="width:15%">15%</i><i class="c-gdn" style="width:8%">8%</i><i class="c-pcie" style="width:5%">5</i><i class="c-other" style="width:8.5%"></i><i class="c-idle" style="width:4.5%"></i></div></div>
+    <div class="stack-row"><div class="name"><b>Prefill 120K</b><span>21.9 с · GPU 98.7%</span></div>
+      <div class="stack"><i class="c-attn" style="width:65%">65%</i><i class="c-moe" style="width:18%">18%</i><i class="c-fp8" style="width:7%">7%</i><i class="c-gdn" style="width:4%"></i><i class="c-pcie" style="width:0.4%"></i><i class="c-other" style="width:4.3%"></i><i class="c-idle" style="width:1.3%"></i></div></div>
+    <div class="stack-row"><div class="name"><b>Короткий промпт, 278 ток.</b><span>0.60 с · GPU 98.5%</span></div>
+      <div class="stack"><i class="c-pcie" style="width:75.5%">75.5% PCIe</i><i class="c-moe" style="width:21%">21%</i><i class="c-other" style="width:2%"></i><i class="c-idle" style="width:1.5%"></i></div></div>
+    <div class="stack-row"><div class="name"><b>Decode, 16K</b><span>8.10 мс/токен · GPU ≈92%</span></div>
+      <div class="stack"><i class="c-fp8" style="width:28%">28%</i><i class="c-moe" style="width:20%">20%</i><i class="c-gather" style="width:18%">18%</i><i class="c-attn" style="width:7%">7%</i><i class="c-other" style="width:18.4%"></i><i class="c-idle" style="width:8.6%"></i></div></div>
+    <div class="stack-row"><div class="name"><b>Decode, 120K</b><span>11.39 мс/токен · GPU ≈92%</span></div>
+      <div class="stack"><i class="c-attn" style="width:31%">31%</i><i class="c-fp8" style="width:20%">20%</i><i class="c-moe" style="width:15%">15%</i><i class="c-gather" style="width:14%">14%</i><i class="c-other" style="width:12.4%"></i><i class="c-idle" style="width:7.6%"></i></div></div>
+  </div>
+  <div class="cols">
+    <div class="callout good"><b>Что убрали оптимизации</b><span>Против исходной сборки (её профиль снимали на 64K, сравнение приблизительное): шаг decode 10.0 → 8.0 мс, подкачка экспертов 4.58 → 1.49 мс, плотные FP8-слои 3.04 → 2.24 мс. Трафик PCIe на промпт 120K: 1076 → 18 ГБ.</span></div>
+    <div class="callout"><b>Что осталось</b><span>Prefill упирается в GPU, а не в PCIe: 18.25 ГБ экспертов на 34–41 ГБ/с перекрыты вычислениями на ≈85%. На коротких промптах перекрыто только 12%, отсюда пол TTFT ≈0.6 с. Около 998 ядер на шаг decode, промежутки между ними ≈0.48 мс.</span></div>
+  </div>
+</section>
+
+<section class="panel" id="ncu">
+  <div class="panel-head">
+    <h2>Загрузка блоков GPU</h2>
+    <p class="muted">Nsight Compute по ключевым ядрам выпуска, снято на отдельных компонентах с теми же формами. Внутри процесса модели ncu не снялся: инъекция раздувает RAM до ≈39 ГиБ, и prefill 120K упирается в лимит памяти.</p>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Ядро</th><th>Фаза</th><th class="n">Длительность</th><th>SM</th><th>DRAM</th><th class="n">ГБ/с</th><th class="n">Occupancy</th><th>Упирается в</th></tr></thead>
+    <tbody>
+      <tr><td>FlashInfer attention, paged</td><td>prefill 120K</td><td class="n">59.0 мс</td><td><div class="meter"><div class="track"><div class="fill sm" style="width:82%"></div></div><span class="v">82</span></div></td><td><div class="meter"><div class="track"><div class="fill dram" style="width:7%"></div></div><span class="v">7</span></div></td><td class="n">49</td><td class="n">15.6%</td><td>тензорные ядра</td></tr>
+      <tr><td>FlashInfer attention, paged</td><td>prefill 16K</td><td class="n">7.66 мс</td><td><div class="meter"><div class="track"><div class="fill sm" style="width:82%"></div></div><span class="v">82</span></div></td><td><div class="meter"><div class="track"><div class="fill dram" style="width:6%"></div></div><span class="v">6</span></div></td><td class="n">44</td><td class="n">15.6%</td><td>тензорные ядра</td></tr>
+      <tr><td>MoE NVFP4 fast_gemm (CUDA)</td><td>prefill</td><td class="n">1.08 мс</td><td><div class="meter"><div class="track"><div class="fill sm" style="width:83%"></div></div><span class="v">83</span></div></td><td><div class="meter"><div class="track"><div class="fill dram" style="width:39%"></div></div><span class="v">39</span></div></td><td class="n">346</td><td class="n">33.0%</td><td>вычисления</td></tr>
+      <tr><td class="muted">MoE NVFP4 Triton (заменён)</td><td class="muted">prefill</td><td class="n muted">10.23 мс</td><td><div class="meter"><div class="track"><div class="fill sm" style="width:23%"></div></div><span class="v">23</span></div></td><td><div class="meter"><div class="track"><div class="fill dram" style="width:9%"></div></div><span class="v">9</span></div></td><td class="n muted">70</td><td class="n muted">66.3%</td><td class="muted">L1/TEX</td></tr>
+      <tr><td>GDN chunk_h</td><td>prefill</td><td class="n">121 мкс</td><td><div class="meter"><div class="track"><div class="fill sm" style="width:44%"></div></div><span class="v">44</span></div></td><td><div class="meter"><div class="track"><div class="fill dram" style="width:84%"></div></div><span class="v">84</span></div></td><td class="n">753</td><td class="n">15.1%</td><td>память</td></tr>
+      <tr><td>GDN gated_norm</td><td>prefill</td><td class="n">102 мкс</td><td><div class="meter"><div class="track"><div class="fill sm" style="width:33%"></div></div><span class="v">33</span></div></td><td><div class="meter"><div class="track"><div class="fill dram" style="width:85%"></div></div><span class="v">85</span></div></td><td class="n">763</td><td class="n">84.2%</td><td>память</td></tr>
+      <tr><td>FlashInfer attention, paged</td><td>decode 120K</td><td class="n">342 мкс</td><td><div class="meter"><div class="track"><div class="fill sm" style="width:13%"></div></div><span class="v">13</span></div></td><td><div class="meter"><div class="track"><div class="fill dram" style="width:94%"></div></div><span class="v">94</span></div></td><td class="n">841</td><td class="n">7.7%</td><td>память</td></tr>
+      <tr><td>FP8 GEMV (QMMA, наш)</td><td>decode</td><td class="n">35 мкс</td><td><div class="meter"><div class="track"><div class="fill sm" style="width:11%"></div></div><span class="v">11</span></div></td><td><div class="meter"><div class="track"><div class="fill dram" style="width:90%"></div></div><span class="v">90</span></div></td><td class="n">808</td><td class="n">15.5%</td><td>память</td></tr>
+      <tr><td>GDN decode (кластер)</td><td>decode</td><td class="n">12 мкс</td><td><div class="meter"><div class="track"><div class="fill sm" style="width:6%"></div></div><span class="v">6</span></div></td><td><div class="meter"><div class="track"><div class="fill dram" style="width:26%"></div></div><span class="v">26</span></div></td><td class="n">231</td><td class="n">3.8%</td><td>задержки</td></tr>
+      <tr><td>Gather экспертов (TMA, наш)</td><td>decode</td><td class="n">60–214 мкс</td><td><div class="meter"><div class="track"><div class="fill sm" style="width:0.5%"></div></div><span class="v">0.4</span></div></td><td><div class="meter"><div class="track"><div class="fill dram" style="width:2%"></div></div><span class="v">2–4</span></div></td><td class="n">≈42 PCIe</td><td class="n">—</td><td>PCIe</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">SM и DRAM — доля от пика устройства, в процентах. Пропускная способность памяти RTX 5070 Ti ≈ 896 ГБ/с. Gather в модели качает ≈42 ГБ/с; под ncu он показывает 30–33 ГБ/с из-за накладных профилировщика. Замер потолка канала: любой способ копирования с хоста упирается в 41–45 ГБ/с (WSL2), так что gather уже работает у предела.</p>
+</section>
+
+<section class="panel" id="memory">
+  <div class="panel-head">
+    <h2>Память</h2>
+    <p class="muted">Видеопамять 15.92 ГиБ, профиль 128K, медианы из soak. Рабочий стол с экраном 4K@159 Гц и браузер работают на той же видеокарте.</p>
+  </div>
+  <div class="stack-list">
+    <div class="stack-row"><div class="name"><b>VRAM, 15.92 ГиБ</b><span>медиана в soak</span></div>
+      <div class="stack"><i class="c-gather" style="width:33%">эксперты 5.25</i><i class="c-fp8" style="width:15.8%">веса 2.52</i><i class="c-attn" style="width:15.7%">KV 2.50</i><i class="c-gdn" style="width:3.4%"></i><i class="c-other" style="width:3.6%"></i><i class="c-idle" style="width:18.3%">контекст CUDA, стол 2.92</i><i class="c-free" style="width:10.2%">своб. 1.63</i></div></div>
+  </div>
+  <div class="legend">
+    <span><i class="sw c-gather"></i>Кэш экспертов: 3164 слота из 10 240 (31%)</span>
+    <span><i class="sw c-fp8"></i>Плотные веса и масштабы</span>
+    <span><i class="sw c-attn"></i>KV-кэш bf16, 131 111 токенов</span>
+    <span><i class="sw c-gdn"></i>Состояния GDN 0.54</span>
+    <span><i class="sw c-other"></i>Прочее PyTorch 0.6</span>
+    <span><i class="sw c-idle"></i>Контекст CUDA, cuBLAS, рабочий стол</span>
+    <span><i class="sw c-free"></i>Свободно</span>
+  </div>
+  <div class="cols">
+    <div class="tw"><table>
+      <thead><tr><th>Видеопамять</th><th class="n">Значение</th></tr></thead>
+      <tbody>
+        <tr><td>PyTorch выделено / зарезервировано</td><td class="n">11.15 / 11.39 ГиБ</td></tr>
+        <tr><td>Свободно: медиана / p5 / минимум</td><td class="n">1.63 / 0.68 / 0.36 ГиБ</td></tr>
+        <tr><td>Замеров ниже 1 ГиБ / ниже 0.5 ГиБ</td><td class="n">268 из 720 / 4 из 825</td></tr>
+        <tr><td>Минимум в гейтах: 128K / 256K / 64K</td><td class="n">1.20 / 1.41 / 0.79 ГиБ</td></tr>
+        <tr><td>Исправление gather вернуло</td><td class="n">1.37 ГиБ</td></tr>
+        <tr><td>Рост памяти PyTorch за 2 часа</td><td class="n best">0</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>RAM и PCIe</th><th class="n">Значение</th></tr></thead>
+      <tbody>
+        <tr><td>Сервис, анонимная память</td><td class="n">19.72 ГиБ</td></tr>
+        <tr><td>из неё закреплённый банк экспертов</td><td class="n">16.99 ГиБ</td></tr>
+        <tr><td>Пик при запуске</td><td class="n">27.8 ГиБ</td></tr>
+        <tr><td>Рост за 2 часа (было +394 МБ)</td><td class="n best">+48 МБ</td></tr>
+        <tr><td>Свободно в WSL</td><td class="n">≈25 ГиБ</td></tr>
+        <tr><td>PCIe на свежий prefill</td><td class="n">18.25 ГБ, 34–41 ГБ/с</td></tr>
+        <tr><td>Промахи кэша экспертов в decode</td><td class="n">9% (коротко) – 22% (120K)</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="panel" id="kv">
+  <div class="panel-head">
+    <h2>KV-кэш и кэш префиксов</h2>
+    <p class="muted">Страница KV — один токен, 20 480 байт на токен в bf16 (10 слоёв полного attention).</p>
+  </div>
+  <div class="cols">
+    <div class="tw"><table>
+      <thead><tr><th>Профиль</th><th class="n">Токенов в пуле</th><th class="n">Размер</th><th class="n">Пик заполнения</th></tr></thead>
+      <tbody>
+        <tr><td>main128</td><td class="n">131 111</td><td class="n">2.50 ГиБ</td><td class="n">91.7% (промпт 120K)</td></tr>
+        <tr><td>long256</td><td class="n">262 175</td><td class="n">5.00 ГиБ</td><td class="n">95.6% (промпт 250K)</td></tr>
+        <tr><td>baseline64</td><td class="n">65 600</td><td class="n">1.25 ГиБ</td><td class="n">—</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>Кэш префиксов</th><th class="n">Значение</th></tr></thead>
+      <tbody>
+        <tr><td>Попадания в soak</td><td class="n best">102 из 102</td></tr>
+        <tr><td>Доля токенов из кэша (медиана)</td><td class="n">91.6%</td></tr>
+        <tr><td>Продолжение 4K: выпуск / исходный</td><td class="n">0.78 / 2.20 с</td></tr>
+        <tr><td>Продолжение 120K / 250K</td><td class="n">0.77 / ≈1.0 с</td></tr>
+        <tr><td>Состояния GDN (mamba-слоты)</td><td class="n">8, занято до 4</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="callout"><b>Свойство кэша префиксов</b><span>Общий заголовок чата из 24 токенов подменяется копией KV из прошлых запросов: те же значения с другим округлением. На почти-ничьих при temperature 0 ответ может зависеть от истории запросов. Так работают все серверы с кэшем префиксов. Тест эталона теперь прогоняет кейс 120K на чистом кэше.</span></div>
+</section>
+
+<section class="panel" id="quality">
+  <div class="panel-head">
+    <h2>Качество и стабильность</h2>
+  </div>
+  <div class="cols">
+    <div class="verdicts">
+      <div class="verdict"><span class="k">Teacher-forcing, 128K</span><span>125/125 логитов побитово, 20 кейсов, PPL +0.0%</span><span class="pill ok">PASS</span></div>
+      <div class="verdict"><span class="k">Teacher-forcing, 256K</span><span>125/125 побитово, кейс 120K на чистом кэше</span><span class="pill ok">PASS</span></div>
+      <div class="verdict"><span class="k">Функциональные</span><span>executable-code и long-facts-16384 проваливаются так же, как у эталона: почти-ничьи самой модели</span><span class="pill warn">ИЗВЕСТНО</span></div>
+      <div class="verdict"><span class="k">Сеть через Caddy</span><span>59 из 60. auto-tool-cycle: почти-ничья FP32-базы, так же у эталона</span><span class="pill warn">59/60</span></div>
+      <div class="verdict"><span class="k">Гонка в кэше страниц</span><span>Заливка NaN: побитово равно; контроль без ожидания ловит ошибку</span><span class="pill ok">БЕЗОПАСНО</span></div>
+    </div>
+    <div class="verdicts">
+      <div class="verdict"><span class="k">Soak 2 ч, 128K</span><span>741/741 запросов, 0 ошибок, 0 зависаний</span><span class="pill ok">PASS</span></div>
+      <div class="verdict"><span class="k">Тест 30 мин, 256K</span><span>109/109 кейсов, 11 промптов по 250K, 6 отмен посреди prefill</span><span class="pill ok">PASS</span></div>
+      <div class="verdict"><span class="k">Отмена запроса</span><span>готов к следующему через 1.45 с (128K), 1.64 с (250K)</span><span class="pill ok">OK</span></div>
+      <div class="verdict"><span class="k">Холодный старт / restart</span><span>132 с / 125 с до готовности через edge</span><span class="pill ok">OK</span></div>
+      <div class="verdict"><span class="k">Смена профиля</span><span>256K: 103 с, 64K: 105 с, обратно 128K: 110 с</span><span class="pill ok">OK</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="tooluse">
+  <div class="panel-head">
+    <h2>Цикл tool use через API</h2>
+    <p class="muted">Синтетические инструменты без побочных эффектов, настоящий маршрут https://api.example.invalid/v1 через Caddy.</p>
+  </div>
+  <div class="tiles">
+    <div class="tile"><div class="label">Контракт API</div><div class="big">PASS</div><div class="ft">357 раундов, 0 ошибок протокола</div></div>
+    <div class="tile"><div class="label">Аргументы вызовов</div><div class="big">228/228</div><div class="ft">валидный JSON по схеме</div></div>
+    <div class="tile"><div class="label">Задача выполнена строго</div><div class="big">88.3%</div><div class="ft">106/120, ДИ 81.4–92.9%</div></div>
+    <div class="tile"><div class="label">Итоговый ответ верный</div><div class="big">97.5%</div><div class="ft">117/120</div></div>
+  </div>
+  <div class="cols">
+    <div class="tw"><table>
+      <thead><tr><th>Сценарий</th><th class="n">Успех</th></tr></thead>
+      <tbody>
+        <tr><td>Цепочки из 2–4 зависимых вызовов</td><td class="n best">30/30</td></tr>
+        <tr><td>Выбор нужного инструмента из нескольких</td><td class="n best">10/10</td></tr>
+        <tr><td>Параллельные вызовы в одном ходе</td><td class="n">19/20</td></tr>
+        <tr><td>Длинный контекст 16K, английский</td><td class="n best">10/10</td></tr>
+        <tr><td>Длинный контекст 16K, русский</td><td class="n worse">5/10</td></tr>
+        <tr><td>tool_choice none: вызовов нет</td><td class="n best">20/20</td></tr>
+        <tr><td>Неподдерживаемые опции → 400</td><td class="n best">14/14</td></tr>
+        <tr class="group"><td>Thinking включён / выключен</td><td class="n">92.5% / 85.0%</td></tr>
+        <tr class="group"><td>Стриминг / без стриминга</td><td class="n">88.8% / 88.8%</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>Задержка одного раунда</th><th class="n">Медиана</th></tr></thead>
+      <tbody>
+        <tr><td>Thinking выкл.: первый токен / весь раунд</td><td class="n">0.57 / 0.75 с</td></tr>
+        <tr><td>Thinking вкл.: первый токен / весь раунд</td><td class="n">0.54 / 1.56 с</td></tr>
+        <tr><td>Thinking вкл.: весь раунд, p90</td><td class="n">3.7 с</td></tr>
+        <tr><td>16K, первый раунд: без кэша / с кэшем</td><td class="n">1.58 / 0.62 с</td></tr>
+        <tr><td>Токенов промпта / из кэша</td><td class="n">1.17 млн / 0.94 млн</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="callout"><b>Где модель ошибается</b><span>Все 11 случаев «не вызвала, когда было нужно» — с выключенным thinking. В 6 из 10 таких запросов к справочнику модель придумала цену вместо вызова, с thinking такого не было ни разу. Для работы с инструментами, где нужны настоящие данные, включайте thinking. Мелочь: при стриминге с thinking ответ начинается с двух переводов строки.</span></div>
+</section>
+
+<section class="panel" id="fp8">
+  <div class="panel-head">
+    <h2>Эксперимент: FP8 KV-кэш</h2>
+    <p class="muted">Только скорость, 2 раунда, ответ 512 токенов. Обрезанных значений 0, слоты экспертов 3164 → 3917 (128K) и 1481 → ≈2987 (256K). Качество не проверялось.</p>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Профиль · промпт</th><th class="n">TTFT bf16 → FP8</th><th class="n">Decode bf16 → FP8</th><th class="n">Весь запрос</th></tr></thead>
+    <tbody>
+      <tr><td>256K · 4K</td><td class="n worse">0.52 → 0.58 с</td><td class="n best">104.9 → 131.8 (+26%)</td><td class="n best">−17%</td></tr>
+      <tr><td>256K · 16K</td><td class="n worse">1.45 → 1.59 с</td><td class="n best">101.3 → 131.2 (+29%)</td><td class="n best">−16%</td></tr>
+      <tr><td>256K · 120K</td><td class="n worse">21.8 → 27.6 с</td><td class="n best">80.2 → 114.2 (+42%)</td><td class="n worse">+14%</td></tr>
+      <tr><td>256K · 250K</td><td class="n worse">77.2 → 102.4 с</td><td class="n best">62.0 → 90.5 (+46%)</td><td class="n worse">+26%</td></tr>
+      <tr><td>128K · 16K</td><td class="n worse">1.48 → 1.58 с</td><td class="n best">131.8 → 144.2 (+9.5%)</td><td class="n">≈0</td></tr>
+      <tr><td>128K · 120K</td><td class="n worse">21.8 → 27.5 с</td><td class="n best">95.2 → 119.7 (+26%)</td><td class="n worse">+15%</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout"><b>Решение: не сейчас</b><span>Decode растёт заметно, но каждый свежий промпт стартует на 10–33% медленнее, и на длинных свежих промптах запрос целиком медленнее. Окупается при ответах от 2500–5000 токенов или в длинных диалогах с кэшем. Побитовая точность теряется. Держим готовым профилем <code>long256-fp8</code> на случай агентной работы с длинной историей.</span></div>
+</section>
+
+<section class="panel" id="next">
+  <div class="panel-head"><h2>Состав выпуска и следующий шаг</h2></div>
+  <div class="cols">
+    <div class="tw"><table>
+      <thead><tr><th>Вошло в выпуск</th><th>Эффект</th></tr></thead>
+      <tbody>
+        <tr><td>Побитово точный CUDA MoE для prefill</td><td>слой ×7.25</td></tr>
+        <tr><td>Послойный prefill</td><td>PCIe на 120K ÷60, 250K 134 → 90 с</td></tr>
+        <tr><td>GDN на CUDA</td><td>TTFT −6…9%</td></tr>
+        <tr><td>FP8 GEMV (QMMA)</td><td>decode +8…12%</td></tr>
+        <tr><td>Gather экспертов (TMA)</td><td>decode +4.8…5.6%</td></tr>
+        <tr><td>Пакетный attention</td><td>TTFT −3…8%</td></tr>
+        <tr><td>THP для банка экспертов</td><td>TTFT −2…4%, decode +2…6%</td></tr>
+        <tr><td>GLIBC_TUNABLES</td><td>утечка RAM устранена</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>Следующее обновление</th><th>Ожидание</th><th class="n">Срок</th></tr></thead>
+      <tbody>
+        <tr><td>FLA на CUDA (готов, побитово)</td><td>TTFT −3% (16K)</td><td class="n">≈0</td></tr>
+        <tr><td>Короткие промпты через hit-d2d</td><td>TTFT 0.57 → 0.45 с</td><td class="n">1–1.5 ч</td></tr>
+        <tr><td>Перекрыть gather с общим экспертом слоя</td><td>+3…4% ток/с</td><td class="n">≈5 ч</td></tr>
+        <tr><td>Предсказание экспертов слоя L+1 заранее</td><td>зависит от точности</td><td class="n">трасса 20 мин, затем ≈1–2 дня</td></tr>
+        <tr><td>Выпуск с полными гейтами</td><td>—</td><td class="n">≈5 ч GPU</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <ul class="plain">
+    <li>Исключены: FLA (в выпуске выигрыш ниже шума), refill и sync-lean (0.1–0.5%), MTP и vision (решение владельца), исправление RMSNorm (в пределах шума).</li>
+    <li>Найденные ошибки: FP16-масштабы NVFP4 в FreeToken; gather через <code>.shared::cluster</code> съедал 1.37 ГиБ VRAM; THP не работал на разделяемой памяти; падение первого <code>qwen36 start</code> после простоя (исправлено); стирание WSL interop при перезапуске дистрибутива (исправлено владельцем).</li>
+    <li>Черновики issue для FreeToken лежат локально и не отправлены.</li>
+  </ul>
+</section>
+
+<footer>
+  <span>Источники: STATE.md и отчёты в optimization/reports (матрица final-f1-m, soak-final-f1-a1, гейты final-f1-*), work/next-update/* (Nsight, метрики, тест 256K, FP8 KV, сравнение на 64K).</span>
+  <span>Не измерялось: внешний E2E снаружи домашней сети, soak на 256K длиннее 30 минут, Nsight Compute внутри процесса модели, пропускная способность при нескольких клиентах.</span>
+</footer>
+
+</div>

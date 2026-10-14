@@ -1,0 +1,41 @@
+# Build outputs (nvcc output is not byte-reproducible; released binaries are pinned by sha256
+# in README.md, not committed)
+build/
+build-*/
+*.so
+*.so.*
+*.o
+*.a
+*.cubin
+*.fatbin
+*.ptx
+*.sass
+hmma_probe
+cvt_probe*
+
+# Profiler reports and raw exports
+*.nsys-rep
+*.ncu-rep
+*.ncu-repz
+*.qdrep
+*.sqlite
+*.csv
+
+# Test outputs and large test data
+*.json
+*.jsonl
+*.out
+*.log
+*.pt
+*.npy
+*.npz
+*.safetensors
+*.bin
+results/
+runs/
+pristine/
+
+# Python / editor noise
+__pycache__/
+*.pyc
+.pytest_cache/

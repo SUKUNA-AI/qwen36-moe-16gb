@@ -1,0 +1,222 @@
+{
+ "3": {
+  "gauss/calibrated": {
+   "rel_l2": 0.02655,
+   "clipped": 0,
+   "subnormal_frac": 0.000168
+  },
+  "gauss/noclip_bound": {
+   "rel_l2": 0.02646,
+   "clipped": 0,
+   "subnormal_frac": 0.001133
+  },
+  "student_t3/calibrated": {
+   "rel_l2": 0.24844,
+   "clipped": 7638,
+   "subnormal_frac": 0.000274
+  },
+  "student_t3/noclip_bound": {
+   "rel_l2": 0.06487,
+   "clipped": 22,
+   "subnormal_frac": 0.001782
+  }
+ },
+ "7": {
+  "gauss/calibrated": {
+   "rel_l2": 0.02652,
+   "clipped": 0,
+   "subnormal_frac": 0.000174
+  },
+  "gauss/noclip_bound": {
+   "rel_l2": 0.02644,
+   "clipped": 0,
+   "subnormal_frac": 0.000457
+  },
+  "student_t3/calibrated": {
+   "rel_l2": 0.25503,
+   "clipped": 7714,
+   "subnormal_frac": 0.000262
+  },
+  "student_t3/noclip_bound": {
+   "rel_l2": 0.14195,
+   "clipped": 384,
+   "subnormal_frac": 0.000712
+  }
+ },
+ "11": {
+  "gauss/calibrated": {
+   "rel_l2": 0.02654,
+   "clipped": 0,
+   "subnormal_frac": 0.000167
+  },
+  "gauss/noclip_bound": {
+   "rel_l2": 0.02646,
+   "clipped": 0,
+   "subnormal_frac": 0.000446
+  },
+  "student_t3/calibrated": {
+   "rel_l2": 0.25976,
+   "clipped": 7690,
+   "subnormal_frac": 0.000263
+  },
+  "student_t3/noclip_bound": {
+   "rel_l2": 0.1566,
+   "clipped": 405,
+   "subnormal_frac": 0.00072
+  }
+ },
+ "15": {
+  "gauss/calibrated": {
+   "rel_l2": 0.02656,
+   "clipped": 0,
+   "subnormal_frac": 0.000176
+  },
+  "gauss/noclip_bound": {
+   "rel_l2": 0.02643,
+   "clipped": 0,
+   "subnormal_frac": 0.000472
+  },
+  "student_t3/calibrated": {
+   "rel_l2": 0.2802,
+   "clipped": 7718,
+   "subnormal_frac": 0.000261
+  },
+  "student_t3/noclip_bound": {
+   "rel_l2": 0.17679,
+   "clipped": 386,
+   "subnormal_frac": 0.000738
+  }
+ },
+ "19": {
+  "gauss/calibrated": {
+   "rel_l2": 0.02654,
+   "clipped": 0,
+   "subnormal_frac": 0.000171
+  },
+  "gauss/noclip_bound": {
+   "rel_l2": 0.02642,
+   "clipped": 0,
+   "subnormal_frac": 0.000549
+  },
+  "student_t3/calibrated": {
+   "rel_l2": 0.26561,
+   "clipped": 7618,
+   "subnormal_frac": 0.000262
+  },
+  "student_t3/noclip_bound": {
+   "rel_l2": 0.14436,
+   "clipped": 221,
+   "subnormal_frac": 0.000853
+  }
+ },
+ "23": {
+  "gauss/calibrated": {
+   "rel_l2": 0.02656,
+   "clipped": 0,
+   "subnormal_frac": 0.000159
+  },
+  "gauss/noclip_bound": {
+   "rel_l2": 0.02642,
+   "clipped": 0,
+   "subnormal_frac": 0.000504
+  },
+  "student_t3/calibrated": {
+   "rel_l2": 0.26345,
+   "clipped": 7567,
+   "subnormal_frac": 0.000258
+  },
+  "student_t3/noclip_bound": {
+   "rel_l2": 0.15541,
+   "clipped": 230,
+   "subnormal_frac": 0.000825
+  }
+ },
+ "27": {
+  "gauss/calibrated": {
+   "rel_l2": 0.02654,
+   "clipped": 0,
+   "subnormal_frac": 0.000152
+  },
+  "gauss/noclip_bound": {
+   "rel_l2": 0.02655,
+   "clipped": 0,
+   "subnormal_frac": 0.000787
+  },
+  "student_t3/calibrated": {
+   "rel_l2": 0.27833,
+   "clipped": 7671,
+   "subnormal_frac": 0.000258
+  },
+  "student_t3/noclip_bound": {
+   "rel_l2": 0.15015,
+   "clipped": 62,
+   "subnormal_frac": 0.001277
+  }
+ },
+ "31": {
+  "gauss/calibrated": {
+   "rel_l2": 0.02655,
+   "clipped": 0,
+   "subnormal_frac": 0.00017
+  },
+  "gauss/noclip_bound": {
+   "rel_l2": 0.0265,
+   "clipped": 0,
+   "subnormal_frac": 0.000846
+  },
+  "student_t3/calibrated": {
+   "rel_l2": 0.27954,
+   "clipped": 7574,
+   "subnormal_frac": 0.000269
+  },
+  "student_t3/noclip_bound": {
+   "rel_l2": 0.13914,
+   "clipped": 72,
+   "subnormal_frac": 0.001383
+  }
+ },
+ "35": {
+  "gauss/calibrated": {
+   "rel_l2": 0.02655,
+   "clipped": 0,
+   "subnormal_frac": 0.00017
+  },
+  "gauss/noclip_bound": {
+   "rel_l2": 0.02644,
+   "clipped": 0,
+   "subnormal_frac": 0.000557
+  },
+  "student_t3/calibrated": {
+   "rel_l2": 0.25893,
+   "clipped": 7665,
+   "subnormal_frac": 0.000267
+  },
+  "student_t3/noclip_bound": {
+   "rel_l2": 0.13882,
+   "clipped": 201,
+   "subnormal_frac": 0.000873
+  }
+ },
+ "39": {
+  "gauss/calibrated": {
+   "rel_l2": 0.02653,
+   "clipped": 0,
+   "subnormal_frac": 0.000175
+  },
+  "gauss/noclip_bound": {
+   "rel_l2": 0.02656,
+   "clipped": 0,
+   "subnormal_frac": 0.000703
+  },
+  "student_t3/calibrated": {
+   "rel_l2": 0.26131,
+   "clipped": 7504,
+   "subnormal_frac": 0.000265
+  },
+  "student_t3/noclip_bound": {
+   "rel_l2": 0.12451,
+   "clipped": 104,
+   "subnormal_frac": 0.001096
+  }
+ }
+}

@@ -1,0 +1,786 @@
+{
+ "source": "/path/to/qwen36-workspace/work/next-update/gather-prefetch/results/ceiling-s1.json",
+ "device": "NVIDIA GeForce RTX 5070 Ti",
+ "async_engines": 1,
+ "overall_max_per_mechanism": {
+  "ce_memcpy_1s": {
+   "max_GBps_median": 40.75,
+   "at": "thp/flat",
+   "config": "ce_memcpy_1s",
+   "p10best": 41.68
+  },
+  "ce_memcpy_4s": {
+   "max_GBps_median": 39.5,
+   "at": "thp/flat",
+   "config": "ce_memcpy_4s",
+   "p10best": 39.99
+  },
+  "gather_today(tma 8x1x3x16K)": {
+   "max_GBps_median": 42.79,
+   "at": "thp/exp8",
+   "config": "tma:8:1:3:16384",
+   "p10best": 43.63
+  },
+  "ldg": {
+   "max_GBps_median": 26.13,
+   "at": "thp/exp1",
+   "config": "ldg:70:4:plain",
+   "p10best": 26.9
+  },
+  "tma": {
+   "max_GBps_median": 43.37,
+   "at": "thp/exp8",
+   "config": "tma:4:1:4:16384",
+   "p10best": 43.64
+  }
+ },
+ "per_mechanism": {
+  "ce_memcpy_1s": {
+   "4k/exp1": {
+    "GBps_median": 23.07,
+    "GBps_p10best": 23.55,
+    "config": "ce_memcpy_1s",
+    "median_us": 77.2,
+    "inflight_bytes": 0
+   },
+   "4k/exp4": {
+    "GBps_median": 31.83,
+    "GBps_p10best": 34.08,
+    "config": "ce_memcpy_1s",
+    "median_us": 223.9,
+    "inflight_bytes": 0
+   },
+   "4k/exp8": {
+    "GBps_median": 34.21,
+    "GBps_p10best": 36.72,
+    "config": "ce_memcpy_1s",
+    "median_us": 416.7,
+    "inflight_bytes": 0
+   },
+   "4k/exp61": {
+    "GBps_median": 18.02,
+    "GBps_p10best": 19.62,
+    "config": "ce_memcpy_1s",
+    "median_us": 98.9,
+    "inflight_bytes": 0
+   },
+   "4k/exp64": {
+    "GBps_median": 25.69,
+    "GBps_p10best": 27.32,
+    "config": "ce_memcpy_1s",
+    "median_us": 277.4,
+    "inflight_bytes": 0
+   },
+   "4k/exp68": {
+    "GBps_median": 27.7,
+    "GBps_p10best": 28.79,
+    "config": "ce_memcpy_1s",
+    "median_us": 514.6,
+    "inflight_bytes": 0
+   },
+   "4k/flat": {
+    "GBps_median": 30.88,
+    "GBps_p10best": 32.36,
+    "config": "ce_memcpy_1s",
+    "median_us": 2173.0,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp1": {
+    "GBps_median": 23.1,
+    "GBps_p10best": 23.89,
+    "config": "ce_memcpy_1s",
+    "median_us": 77.1,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp4": {
+    "GBps_median": 33.6,
+    "GBps_p10best": 34.54,
+    "config": "ce_memcpy_1s",
+    "median_us": 212.1,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp8": {
+    "GBps_median": 34.13,
+    "GBps_p10best": 37.01,
+    "config": "ce_memcpy_1s",
+    "median_us": 417.6,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp61": {
+    "GBps_median": 19.48,
+    "GBps_p10best": 19.92,
+    "config": "ce_memcpy_1s",
+    "median_us": 91.5,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp64": {
+    "GBps_median": 25.86,
+    "GBps_p10best": 27.11,
+    "config": "ce_memcpy_1s",
+    "median_us": 275.6,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp68": {
+    "GBps_median": 27.95,
+    "GBps_p10best": 28.66,
+    "config": "ce_memcpy_1s",
+    "median_us": 510.0,
+    "inflight_bytes": 0
+   },
+   "hostalloc/flat": {
+    "GBps_median": 26.06,
+    "GBps_p10best": 27.33,
+    "config": "ce_memcpy_1s",
+    "median_us": 2575.2,
+    "inflight_bytes": 0
+   },
+   "thp/exp1": {
+    "GBps_median": 23.2,
+    "GBps_p10best": 23.45,
+    "config": "ce_memcpy_1s",
+    "median_us": 76.8,
+    "inflight_bytes": 0
+   },
+   "thp/exp4": {
+    "GBps_median": 33.9,
+    "GBps_p10best": 34.34,
+    "config": "ce_memcpy_1s",
+    "median_us": 210.2,
+    "inflight_bytes": 0
+   },
+   "thp/exp8": {
+    "GBps_median": 36.24,
+    "GBps_p10best": 36.45,
+    "config": "ce_memcpy_1s",
+    "median_us": 393.3,
+    "inflight_bytes": 0
+   },
+   "thp/exp61": {
+    "GBps_median": 19.51,
+    "GBps_p10best": 19.67,
+    "config": "ce_memcpy_1s",
+    "median_us": 91.3,
+    "inflight_bytes": 0
+   },
+   "thp/exp64": {
+    "GBps_median": 26.38,
+    "GBps_p10best": 26.57,
+    "config": "ce_memcpy_1s",
+    "median_us": 270.1,
+    "inflight_bytes": 0
+   },
+   "thp/exp68": {
+    "GBps_median": 28.44,
+    "GBps_p10best": 28.93,
+    "config": "ce_memcpy_1s",
+    "median_us": 501.2,
+    "inflight_bytes": 0
+   },
+   "thp/flat": {
+    "GBps_median": 40.75,
+    "GBps_p10best": 41.68,
+    "config": "ce_memcpy_1s",
+    "median_us": 1646.8,
+    "inflight_bytes": 0
+   }
+  },
+  "ce_memcpy_4s": {
+   "4k/exp1": {
+    "GBps_median": 17.97,
+    "GBps_p10best": 18.35,
+    "config": "ce_memcpy_4s",
+    "median_us": 99.1,
+    "inflight_bytes": 0
+   },
+   "4k/exp4": {
+    "GBps_median": 28.68,
+    "GBps_p10best": 30.95,
+    "config": "ce_memcpy_4s",
+    "median_us": 248.5,
+    "inflight_bytes": 0
+   },
+   "4k/exp8": {
+    "GBps_median": 31.92,
+    "GBps_p10best": 34.79,
+    "config": "ce_memcpy_4s",
+    "median_us": 446.5,
+    "inflight_bytes": 0
+   },
+   "4k/exp61": {
+    "GBps_median": 16.68,
+    "GBps_p10best": 17.06,
+    "config": "ce_memcpy_4s",
+    "median_us": 106.8,
+    "inflight_bytes": 0
+   },
+   "4k/exp64": {
+    "GBps_median": 23.47,
+    "GBps_p10best": 25.76,
+    "config": "ce_memcpy_4s",
+    "median_us": 303.7,
+    "inflight_bytes": 0
+   },
+   "4k/exp68": {
+    "GBps_median": 27.15,
+    "GBps_p10best": 28.56,
+    "config": "ce_memcpy_4s",
+    "median_us": 525.0,
+    "inflight_bytes": 0
+   },
+   "4k/flat": {
+    "GBps_median": 30.89,
+    "GBps_p10best": 32.03,
+    "config": "ce_memcpy_4s",
+    "median_us": 2172.3,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp1": {
+    "GBps_median": 17.97,
+    "GBps_p10best": 20.03,
+    "config": "ce_memcpy_4s",
+    "median_us": 99.1,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp4": {
+    "GBps_median": 28.93,
+    "GBps_p10best": 31.61,
+    "config": "ce_memcpy_4s",
+    "median_us": 246.3,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp8": {
+    "GBps_median": 34.31,
+    "GBps_p10best": 34.72,
+    "config": "ce_memcpy_4s",
+    "median_us": 415.4,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp61": {
+    "GBps_median": 15.61,
+    "GBps_p10best": 16.82,
+    "config": "ce_memcpy_4s",
+    "median_us": 114.1,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp64": {
+    "GBps_median": 24.63,
+    "GBps_p10best": 25.61,
+    "config": "ce_memcpy_4s",
+    "median_us": 289.3,
+    "inflight_bytes": 0
+   },
+   "hostalloc/exp68": {
+    "GBps_median": 26.36,
+    "GBps_p10best": 28.2,
+    "config": "ce_memcpy_4s",
+    "median_us": 540.7,
+    "inflight_bytes": 0
+   },
+   "hostalloc/flat": {
+    "GBps_median": 25.57,
+    "GBps_p10best": 26.34,
+    "config": "ce_memcpy_4s",
+    "median_us": 2624.6,
+    "inflight_bytes": 0
+   },
+   "thp/exp1": {
+    "GBps_median": 18.05,
+    "GBps_p10best": 18.21,
+    "config": "ce_memcpy_4s",
+    "median_us": 98.7,
+    "inflight_bytes": 0
+   },
+   "thp/exp4": {
+    "GBps_median": 30.58,
+    "GBps_p10best": 30.88,
+    "config": "ce_memcpy_4s",
+    "median_us": 233.1,
+    "inflight_bytes": 0
+   },
+   "thp/exp8": {
+    "GBps_median": 34.06,
+    "GBps_p10best": 34.53,
+    "config": "ce_memcpy_4s",
+    "median_us": 418.5,
+    "inflight_bytes": 0
+   },
+   "thp/exp61": {
+    "GBps_median": 16.87,
+    "GBps_p10best": 18.24,
+    "config": "ce_memcpy_4s",
+    "median_us": 105.6,
+    "inflight_bytes": 0
+   },
+   "thp/exp64": {
+    "GBps_median": 25.7,
+    "GBps_p10best": 26.85,
+    "config": "ce_memcpy_4s",
+    "median_us": 277.3,
+    "inflight_bytes": 0
+   },
+   "thp/exp68": {
+    "GBps_median": 28.0,
+    "GBps_p10best": 28.32,
+    "config": "ce_memcpy_4s",
+    "median_us": 509.2,
+    "inflight_bytes": 0
+   },
+   "thp/flat": {
+    "GBps_median": 39.5,
+    "GBps_p10best": 39.99,
+    "config": "ce_memcpy_4s",
+    "median_us": 1698.8,
+    "inflight_bytes": 0
+   }
+  },
+  "gather_today(tma 8x1x3x16K)": {
+   "4k/exp1": {
+    "GBps_median": 38.83,
+    "GBps_p10best": 40.14,
+    "config": "tma:8:1:3:16384",
+    "median_us": 45.9,
+    "inflight_bytes": 393216
+   },
+   "4k/exp4": {
+    "GBps_median": 39.25,
+    "GBps_p10best": 42.01,
+    "config": "tma:8:1:3:16384",
+    "median_us": 181.6,
+    "inflight_bytes": 393216
+   },
+   "4k/exp8": {
+    "GBps_median": 38.54,
+    "GBps_p10best": 41.51,
+    "config": "tma:8:1:3:16384",
+    "median_us": 369.8,
+    "inflight_bytes": 393216
+   },
+   "4k/exp61": {
+    "GBps_median": 36.95,
+    "GBps_p10best": 38.75,
+    "config": "tma:8:1:3:16384",
+    "median_us": 48.2,
+    "inflight_bytes": 393216
+   },
+   "4k/exp64": {
+    "GBps_median": 38.02,
+    "GBps_p10best": 40.95,
+    "config": "tma:8:1:3:16384",
+    "median_us": 187.5,
+    "inflight_bytes": 393216
+   },
+   "4k/exp68": {
+    "GBps_median": 39.19,
+    "GBps_p10best": 41.3,
+    "config": "tma:8:1:3:16384",
+    "median_us": 363.7,
+    "inflight_bytes": 393216
+   },
+   "4k/flat": {
+    "GBps_median": 34.22,
+    "GBps_p10best": 35.54,
+    "config": "tma:8:1:3:16384",
+    "median_us": 1961.0,
+    "inflight_bytes": 393216
+   },
+   "hostalloc/exp1": {
+    "GBps_median": 39.02,
+    "GBps_p10best": 40.82,
+    "config": "tma:8:1:3:16384",
+    "median_us": 45.7,
+    "inflight_bytes": 393216
+   },
+   "hostalloc/exp4": {
+    "GBps_median": 41.98,
+    "GBps_p10best": 43.18,
+    "config": "tma:8:1:3:16384",
+    "median_us": 169.8,
+    "inflight_bytes": 393216
+   },
+   "hostalloc/exp8": {
+    "GBps_median": 42.23,
+    "GBps_p10best": 43.6,
+    "config": "tma:8:1:3:16384",
+    "median_us": 337.6,
+    "inflight_bytes": 393216
+   },
+   "hostalloc/exp61": {
+    "GBps_median": 38.94,
+    "GBps_p10best": 40.12,
+    "config": "tma:8:1:3:16384",
+    "median_us": 45.8,
+    "inflight_bytes": 393216
+   },
+   "hostalloc/exp64": {
+    "GBps_median": 38.42,
+    "GBps_p10best": 39.74,
+    "config": "tma:8:1:3:16384",
+    "median_us": 185.5,
+    "inflight_bytes": 393216
+   },
+   "hostalloc/exp68": {
+    "GBps_median": 40.1,
+    "GBps_p10best": 41.04,
+    "config": "tma:8:1:3:16384",
+    "median_us": 355.5,
+    "inflight_bytes": 393216
+   },
+   "hostalloc/flat": {
+    "GBps_median": 28.05,
+    "GBps_p10best": 30.67,
+    "config": "tma:8:1:3:16384",
+    "median_us": 2392.8,
+    "inflight_bytes": 393216
+   },
+   "thp/exp1": {
+    "GBps_median": 38.86,
+    "GBps_p10best": 40.49,
+    "config": "tma:8:1:3:16384",
+    "median_us": 45.9,
+    "inflight_bytes": 393216
+   },
+   "thp/exp4": {
+    "GBps_median": 41.65,
+    "GBps_p10best": 42.67,
+    "config": "tma:8:1:3:16384",
+    "median_us": 171.1,
+    "inflight_bytes": 393216
+   },
+   "thp/exp8": {
+    "GBps_median": 42.79,
+    "GBps_p10best": 43.63,
+    "config": "tma:8:1:3:16384",
+    "median_us": 333.1,
+    "inflight_bytes": 393216
+   },
+   "thp/exp61": {
+    "GBps_median": 38.86,
+    "GBps_p10best": 40.35,
+    "config": "tma:8:1:3:16384",
+    "median_us": 45.9,
+    "inflight_bytes": 393216
+   },
+   "thp/exp64": {
+    "GBps_median": 42.17,
+    "GBps_p10best": 43.23,
+    "config": "tma:8:1:3:16384",
+    "median_us": 169.0,
+    "inflight_bytes": 393216
+   },
+   "thp/exp68": {
+    "GBps_median": 42.55,
+    "GBps_p10best": 43.35,
+    "config": "tma:8:1:3:16384",
+    "median_us": 335.0,
+    "inflight_bytes": 393216
+   },
+   "thp/flat": {
+    "GBps_median": 41.91,
+    "GBps_p10best": 44.1,
+    "config": "tma:8:1:3:16384",
+    "median_us": 1601.2,
+    "inflight_bytes": 393216
+   }
+  },
+  "ldg": {
+   "4k/exp1": {
+    "GBps_median": 23.27,
+    "GBps_p10best": 23.78,
+    "config": "ldg:16:4:plain",
+    "median_us": 76.6,
+    "inflight_bytes": 262144
+   },
+   "4k/exp4": {
+    "GBps_median": 22.81,
+    "GBps_p10best": 23.27,
+    "config": "ldg:16:4:plain",
+    "median_us": 312.5,
+    "inflight_bytes": 262144
+   },
+   "4k/exp8": {
+    "GBps_median": 22.63,
+    "GBps_p10best": 23.09,
+    "config": "ldg:16:4:plain",
+    "median_us": 629.9,
+    "inflight_bytes": 262144
+   },
+   "4k/exp61": {
+    "GBps_median": 23.18,
+    "GBps_p10best": 24.45,
+    "config": "ldg:16:4:plain",
+    "median_us": 76.9,
+    "inflight_bytes": 262144
+   },
+   "4k/exp64": {
+    "GBps_median": 22.56,
+    "GBps_p10best": 23.37,
+    "config": "ldg:16:4:plain",
+    "median_us": 316.0,
+    "inflight_bytes": 262144
+   },
+   "4k/exp68": {
+    "GBps_median": 22.76,
+    "GBps_p10best": 23.23,
+    "config": "ldg:16:4:plain",
+    "median_us": 626.3,
+    "inflight_bytes": 262144
+   },
+   "4k/flat": {
+    "GBps_median": 20.85,
+    "GBps_p10best": 22.21,
+    "config": "ldg:16:4:plain",
+    "median_us": 3218.1,
+    "inflight_bytes": 262144
+   },
+   "hostalloc/exp1": {
+    "GBps_median": 23.27,
+    "GBps_p10best": 25.3,
+    "config": "ldg:16:4:plain",
+    "median_us": 76.6,
+    "inflight_bytes": 262144
+   },
+   "hostalloc/exp4": {
+    "GBps_median": 23.42,
+    "GBps_p10best": 24.94,
+    "config": "ldg:16:4:plain",
+    "median_us": 304.3,
+    "inflight_bytes": 262144
+   },
+   "hostalloc/exp8": {
+    "GBps_median": 23.38,
+    "GBps_p10best": 24.37,
+    "config": "ldg:16:4:plain",
+    "median_us": 609.6,
+    "inflight_bytes": 262144
+   },
+   "hostalloc/exp61": {
+    "GBps_median": 23.78,
+    "GBps_p10best": 24.64,
+    "config": "ldg:70:4:plain",
+    "median_us": 74.9,
+    "inflight_bytes": 1146880
+   },
+   "hostalloc/exp64": {
+    "GBps_median": 22.26,
+    "GBps_p10best": 23.31,
+    "config": "ldg:16:4:plain",
+    "median_us": 320.1,
+    "inflight_bytes": 262144
+   },
+   "hostalloc/exp68": {
+    "GBps_median": 23.71,
+    "GBps_p10best": 24.12,
+    "config": "ldg:16:4:plain",
+    "median_us": 601.3,
+    "inflight_bytes": 262144
+   },
+   "hostalloc/flat": {
+    "GBps_median": 19.33,
+    "GBps_p10best": 20.25,
+    "config": "ldg:16:4:plain",
+    "median_us": 3472.1,
+    "inflight_bytes": 262144
+   },
+   "thp/exp1": {
+    "GBps_median": 26.13,
+    "GBps_p10best": 26.9,
+    "config": "ldg:70:4:plain",
+    "median_us": 68.2,
+    "inflight_bytes": 1146880
+   },
+   "thp/exp4": {
+    "GBps_median": 24.3,
+    "GBps_p10best": 25.0,
+    "config": "ldg:16:4:plain",
+    "median_us": 293.3,
+    "inflight_bytes": 262144
+   },
+   "thp/exp8": {
+    "GBps_median": 24.12,
+    "GBps_p10best": 24.89,
+    "config": "ldg:16:4:plain",
+    "median_us": 591.0,
+    "inflight_bytes": 262144
+   },
+   "thp/exp61": {
+    "GBps_median": 25.34,
+    "GBps_p10best": 26.12,
+    "config": "ldg:16:4:plain",
+    "median_us": 70.3,
+    "inflight_bytes": 262144
+   },
+   "thp/exp64": {
+    "GBps_median": 24.23,
+    "GBps_p10best": 24.74,
+    "config": "ldg:16:4:plain",
+    "median_us": 294.1,
+    "inflight_bytes": 262144
+   },
+   "thp/exp68": {
+    "GBps_median": 23.95,
+    "GBps_p10best": 24.47,
+    "config": "ldg:16:4:plain",
+    "median_us": 595.1,
+    "inflight_bytes": 262144
+   },
+   "thp/flat": {
+    "GBps_median": 23.12,
+    "GBps_p10best": 24.27,
+    "config": "ldg:16:4:plain",
+    "median_us": 2903.0,
+    "inflight_bytes": 262144
+   }
+  },
+  "tma": {
+   "4k/exp1": {
+    "GBps_median": 38.59,
+    "GBps_p10best": 39.13,
+    "config": "tma:8:1:4:16384",
+    "median_us": 46.2,
+    "inflight_bytes": 524288
+   },
+   "4k/exp4": {
+    "GBps_median": 42.17,
+    "GBps_p10best": 43.19,
+    "config": "tma:4:1:4:16384",
+    "median_us": 169.0,
+    "inflight_bytes": 262144
+   },
+   "4k/exp8": {
+    "GBps_median": 38.55,
+    "GBps_p10best": 40.81,
+    "config": "tma:4:1:4:16384",
+    "median_us": 369.8,
+    "inflight_bytes": 262144
+   },
+   "4k/exp61": {
+    "GBps_median": 37.24,
+    "GBps_p10best": 38.75,
+    "config": "tma:8:1:4:16384",
+    "median_us": 47.8,
+    "inflight_bytes": 524288
+   },
+   "4k/exp64": {
+    "GBps_median": 39.38,
+    "GBps_p10best": 40.67,
+    "config": "tma:4:1:4:16384",
+    "median_us": 181.0,
+    "inflight_bytes": 262144
+   },
+   "4k/exp68": {
+    "GBps_median": 39.2,
+    "GBps_p10best": 41.05,
+    "config": "tma:4:1:4:16384",
+    "median_us": 363.6,
+    "inflight_bytes": 262144
+   },
+   "4k/flat": {
+    "GBps_median": 33.75,
+    "GBps_p10best": 35.35,
+    "config": "tma:8:1:4:16384",
+    "median_us": 1988.3,
+    "inflight_bytes": 524288
+   },
+   "hostalloc/exp1": {
+    "GBps_median": 38.96,
+    "GBps_p10best": 40.7,
+    "config": "tma:8:4:4:4096",
+    "median_us": 45.7,
+    "inflight_bytes": 524288
+   },
+   "hostalloc/exp4": {
+    "GBps_median": 42.26,
+    "GBps_p10best": 43.21,
+    "config": "tma:8:1:4:16384",
+    "median_us": 168.6,
+    "inflight_bytes": 524288
+   },
+   "hostalloc/exp8": {
+    "GBps_median": 41.77,
+    "GBps_p10best": 42.54,
+    "config": "tma:8:1:4:16384",
+    "median_us": 341.3,
+    "inflight_bytes": 524288
+   },
+   "hostalloc/exp61": {
+    "GBps_median": 38.37,
+    "GBps_p10best": 40.67,
+    "config": "tma:8:4:4:4096",
+    "median_us": 46.4,
+    "inflight_bytes": 524288
+   },
+   "hostalloc/exp64": {
+    "GBps_median": 40.15,
+    "GBps_p10best": 41.18,
+    "config": "tma:8:1:16:4096",
+    "median_us": 177.5,
+    "inflight_bytes": 524288
+   },
+   "hostalloc/exp68": {
+    "GBps_median": 41.07,
+    "GBps_p10best": 42.75,
+    "config": "tma:4:1:4:16384",
+    "median_us": 347.1,
+    "inflight_bytes": 262144
+   },
+   "hostalloc/flat": {
+    "GBps_median": 27.3,
+    "GBps_p10best": 30.11,
+    "config": "tma:8:1:16:4096",
+    "median_us": 2458.3,
+    "inflight_bytes": 524288
+   },
+   "thp/exp1": {
+    "GBps_median": 38.91,
+    "GBps_p10best": 40.76,
+    "config": "tma:16:2:4:8192",
+    "median_us": 45.8,
+    "inflight_bytes": 1048576
+   },
+   "thp/exp4": {
+    "GBps_median": 42.28,
+    "GBps_p10best": 43.2,
+    "config": "tma:4:1:4:16384",
+    "median_us": 168.6,
+    "inflight_bytes": 262144
+   },
+   "thp/exp8": {
+    "GBps_median": 43.37,
+    "GBps_p10best": 43.64,
+    "config": "tma:4:1:4:16384",
+    "median_us": 328.7,
+    "inflight_bytes": 262144
+   },
+   "thp/exp61": {
+    "GBps_median": 40.17,
+    "GBps_p10best": 41.9,
+    "config": "tma:4:1:4:16384",
+    "median_us": 44.4,
+    "inflight_bytes": 262144
+   },
+   "thp/exp64": {
+    "GBps_median": 42.29,
+    "GBps_p10best": 43.33,
+    "config": "tma:4:1:4:16384",
+    "median_us": 168.5,
+    "inflight_bytes": 262144
+   },
+   "thp/exp68": {
+    "GBps_median": 42.79,
+    "GBps_p10best": 43.1,
+    "config": "tma:8:1:4:16384",
+    "median_us": 333.1,
+    "inflight_bytes": 524288
+   },
+   "thp/flat": {
+    "GBps_median": 42.9,
+    "GBps_p10best": 44.11,
+    "config": "tma:4:1:4:16384",
+    "median_us": 1564.4,
+    "inflight_bytes": 262144
+   }
+  }
+ },
+ "total_rows": 728,
+ "rows_with_mismatches": 0
+}

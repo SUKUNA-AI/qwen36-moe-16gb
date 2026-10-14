@@ -1,0 +1,173 @@
+{
+ "arms": {
+  "U": {
+   "poison": false,
+   "drop_wait": false,
+   "overlap_loop_dropwait_installed": false,
+   "kv_pool": {
+    "class": "MHAKVCache",
+    "kv_buffer_shape": [
+     2,
+     10,
+     16446,
+     1,
+     2,
+     256
+    ],
+    "dtype": "torch.bfloat16",
+    "cm_page_size": 1,
+    "cm_num_pages": 16445,
+    "is_hybrid": true
+   },
+   "drains": 640,
+   "drains_engine_busy": 640,
+   "commit_donations": 20,
+   "commit_dedup_events": 13,
+   "commit_dedup_tokens": 3698,
+   "commit_dedup_engine_busy": 13,
+   "lazy_tokens": 12242,
+   "direct_tokens": 11683,
+   "evict_full_calls": 0,
+   "evict_tokens": 0,
+   "poison_fills": 0,
+   "poison_skipped_no_pool": 0,
+   "gdn_slots_freed": 62,
+   "gdn_slots_poisoned": 0,
+   "record_errors": 0,
+   "record_error": null,
+   "logit_rows": 640,
+   "nonfinite_rows": 0,
+   "requests": 16,
+   "start_to_ready_s": 105.7
+  },
+  "P": {
+   "poison": true,
+   "drop_wait": false,
+   "overlap_loop_dropwait_installed": false,
+   "kv_pool": {
+    "class": "MHAKVCache",
+    "kv_buffer_shape": [
+     2,
+     10,
+     16446,
+     1,
+     2,
+     256
+    ],
+    "dtype": "torch.bfloat16",
+    "cm_page_size": 1,
+    "cm_num_pages": 16445,
+    "is_hybrid": true
+   },
+   "drains": 640,
+   "drains_engine_busy": 640,
+   "commit_donations": 20,
+   "commit_dedup_events": 13,
+   "commit_dedup_tokens": 3698,
+   "commit_dedup_engine_busy": 13,
+   "lazy_tokens": 12242,
+   "direct_tokens": 11683,
+   "evict_full_calls": 0,
+   "evict_tokens": 0,
+   "poison_fills": 23,
+   "poison_skipped_no_pool": 0,
+   "gdn_slots_freed": 62,
+   "gdn_slots_poisoned": 62,
+   "record_errors": 0,
+   "record_error": null,
+   "logit_rows": 640,
+   "nonfinite_rows": 0,
+   "requests": 16,
+   "start_to_ready_s": 103.6
+  },
+  "N": {
+   "poison": true,
+   "drop_wait": true,
+   "overlap_loop_dropwait_installed": true,
+   "kv_pool": {
+    "class": "MHAKVCache",
+    "kv_buffer_shape": [
+     2,
+     10,
+     16446,
+     1,
+     2,
+     256
+    ],
+    "dtype": "torch.bfloat16",
+    "cm_page_size": 1,
+    "cm_num_pages": 16445,
+    "is_hybrid": true
+   },
+   "drains": 640,
+   "drains_engine_busy": 640,
+   "commit_donations": 20,
+   "commit_dedup_events": 13,
+   "commit_dedup_tokens": 3698,
+   "commit_dedup_engine_busy": 13,
+   "lazy_tokens": 12242,
+   "direct_tokens": 11683,
+   "evict_full_calls": 0,
+   "evict_tokens": 0,
+   "poison_fills": 23,
+   "poison_skipped_no_pool": 0,
+   "gdn_slots_freed": 62,
+   "gdn_slots_poisoned": 62,
+   "record_errors": 0,
+   "record_error": null,
+   "logit_rows": 640,
+   "nonfinite_rows": 0,
+   "requests": 16,
+   "start_to_ready_s": 104.7
+  }
+ },
+ "U_vs_P": {
+  "text_identical": true,
+  "text_mismatch_requests": [],
+  "logit_sequences": [
+   16,
+   16
+  ],
+  "logit_steps": [
+   640,
+   640
+  ],
+  "logit_bit_identical": true,
+  "logit_mismatched_sequences": 0,
+  "first_logit_mismatch": null
+ },
+ "U_vs_N": {
+  "text_identical": false,
+  "text_mismatch_requests": [
+   "A-q1",
+   "B-q0",
+   "AB-q2",
+   "C-q0",
+   "A-q0-turn2",
+   "E-q0",
+   "CA-q1",
+   "B-q2",
+   "A-q3",
+   "EC-q0",
+   "A-q0-repeat",
+   "C-q3",
+   "BE-q1"
+  ],
+  "logit_sequences": [
+   16,
+   16
+  ],
+  "logit_steps": [
+   640,
+   640
+  ],
+  "logit_bit_identical": false,
+  "logit_mismatched_sequences": 13,
+  "first_logit_mismatch": {
+   "request_seq": 1,
+   "step": 1
+  }
+ },
+ "positive_verdict": "PASS",
+ "negative_control": "FAILS_AS_EXPECTED"
+}

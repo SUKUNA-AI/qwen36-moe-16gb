@@ -1,0 +1,68 @@
+{
+ "warmup_short": {
+  "decode_steps": 31,
+  "kernels_per_step_median": 998,
+  "inter_kernel_gap_us_p50": 0.192,
+  "inter_kernel_gap_us_p90": 0.48,
+  "inter_kernel_gap_ms_per_step_mean": 0.47010577419354843,
+  "gather_ms_per_step_median": 2.6589169999999998,
+  "gather_ms_per_step_mean": 3.735948741935484,
+  "gather_launches_per_step": 40.0,
+  "gather_launches_with_misses_per_step(dur>5us)": 28.35483870967742
+ },
+ "warmup_chunk": {
+  "decode_steps": 15,
+  "kernels_per_step_median": 998,
+  "inter_kernel_gap_us_p50": 0.192,
+  "inter_kernel_gap_us_p90": 0.48,
+  "inter_kernel_gap_ms_per_step_mean": 0.48398173333333333,
+  "gather_ms_per_step_median": 1.362673,
+  "gather_ms_per_step_mean": 2.3069002,
+  "gather_launches_per_step": 40.0,
+  "gather_launches_with_misses_per_step(dur>5us)": 18.8
+ },
+ "warm_decode": {
+  "decode_steps": 127,
+  "kernels_per_step_median": 998,
+  "inter_kernel_gap_us_p50": 0.192,
+  "inter_kernel_gap_us_p90": 0.48,
+  "inter_kernel_gap_ms_per_step_mean": 0.48382351968503934,
+  "gather_ms_per_step_median": 1.3512819999999999,
+  "gather_ms_per_step_mean": 1.8303931338582677,
+  "gather_launches_per_step": 40.0,
+  "gather_launches_with_misses_per_step(dur>5us)": 19.543307086614174
+ },
+ "fresh_16k": {
+  "decode_steps": 63,
+  "kernels_per_step_median": 998,
+  "inter_kernel_gap_us_p50": 0.192,
+  "inter_kernel_gap_us_p90": 0.48,
+  "inter_kernel_gap_ms_per_step_mean": 0.48142033333333334,
+  "gather_ms_per_step_median": 1.201331,
+  "gather_ms_per_step_mean": 1.4865622222222221,
+  "gather_launches_per_step": 40.0,
+  "gather_launches_with_misses_per_step(dur>5us)": 17.555555555555557
+ },
+ "fresh_120k": {
+  "decode_steps": 63,
+  "kernels_per_step_median": 998,
+  "inter_kernel_gap_us_p50": 0.192,
+  "inter_kernel_gap_us_p90": 0.48,
+  "inter_kernel_gap_ms_per_step_mean": 0.48483579365079366,
+  "gather_ms_per_step_median": 1.225333,
+  "gather_ms_per_step_mean": 1.6113879523809524,
+  "gather_launches_per_step": 40.0,
+  "gather_launches_with_misses_per_step(dur>5us)": 17.88888888888889
+ },
+ "filler": {
+  "decode_steps": 86,
+  "kernels_per_step_median": 998.0,
+  "inter_kernel_gap_us_p50": 0.192,
+  "inter_kernel_gap_us_p90": 0.48,
+  "inter_kernel_gap_ms_per_step_mean": 0.4880181744186047,
+  "gather_ms_per_step_median": 0.941092,
+  "gather_ms_per_step_mean": 1.2662440813953488,
+  "gather_launches_per_step": 40.0,
+  "gather_launches_with_misses_per_step(dur>5us)": 14.104651162790697
+ }
+}

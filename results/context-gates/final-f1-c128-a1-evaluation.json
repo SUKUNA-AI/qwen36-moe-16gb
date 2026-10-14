@@ -1,0 +1,653 @@
+{
+  "schema": 1,
+  "tool": "evaluate-gates-r1b",
+  "profile": "main-release",
+  "context": 131072,
+  "length": 120000,
+  "verdict": "PASS",
+  "failed_checks": [],
+  "not_run": [],
+  "warnings": [
+    "fp32-basis known limitations (identical to reference): ['executable-code', 'long-facts-16384']"
+  ],
+  "vram_reserve_class": "TARGET",
+  "min_gpu_free_GiB": 1.1973,
+  "checks": {
+    "profile_mechanics_equal_reference_arm": {
+      "pass": true,
+      "observed": {
+        "disallowed": {},
+        "allowed": {}
+      },
+      "expected": "only ['context', 'memory_ratio', 'qualified'] may differ from arm main-release",
+      "informational": false
+    },
+    "source_identity_functional_equals_reference_arm": {
+      "pass": true,
+      "observed": {
+        "source_sha256": "04dbae8b33be6c66",
+        "service_source_files": {
+          "experiment.py": "98e781505cf77033",
+          "serve_guarded.py": "efe562a5bbae4957",
+          "guard.py": "58007eb76e1f504e",
+          "ingress.py": "c3557dcb43fbabc0",
+          "request_metrics.py": "6aa1620679063856"
+        },
+        "packages": {
+          "torch": "2.11.0",
+          "triton": "3.6.0",
+          "flashinfer-python": "0.6.18.post1",
+          "sglang-kernel": "0.4.5",
+          "transformers": "5.16.1"
+        },
+        "checkpoint_revision": "1355db6a052410cfd62085d94b58866fd0f2c3c5"
+      },
+      "expected": {
+        "source_sha256": "04dbae8b33be6c66",
+        "service_source_files": {
+          "experiment.py": "98e781505cf77033",
+          "serve_guarded.py": "efe562a5bbae4957",
+          "guard.py": "58007eb76e1f504e",
+          "ingress.py": "c3557dcb43fbabc0",
+          "request_metrics.py": "6aa1620679063856"
+        },
+        "packages": {
+          "torch": "2.11.0",
+          "triton": "3.6.0",
+          "flashinfer-python": "0.6.18.post1",
+          "sglang-kernel": "0.4.5",
+          "transformers": "5.16.1"
+        },
+        "checkpoint_revision": "1355db6a052410cfd62085d94b58866fd0f2c3c5"
+      },
+      "informational": false
+    },
+    "native_libraries_functional_equal_reference_arm": {
+      "pass": true,
+      "observed": {
+        "QWEN36_FUSED_ATTN_GATE_LIBRARY": "f654f87a0a3f621f",
+        "QWEN36_CUDA_NVFP4_LIBRARY": "b7fea22750256c2a",
+        "QWEN36_CUDA_GDN_LIBRARY": "a8a806eda3a90a65",
+        "QWEN36_FP8_GEMV_LIBRARY": "685c78cf89e60d02"
+      },
+      "expected": {
+        "QWEN36_FUSED_ATTN_GATE_LIBRARY": "f654f87a0a3f621f",
+        "QWEN36_CUDA_NVFP4_LIBRARY": "b7fea22750256c2a",
+        "QWEN36_CUDA_GDN_LIBRARY": "a8a806eda3a90a65",
+        "QWEN36_FP8_GEMV_LIBRARY": "685c78cf89e60d02"
+      },
+      "informational": false
+    },
+    "source_identity_prefill_cancel_equals_reference_arm": {
+      "pass": true,
+      "observed": {
+        "source_sha256": "04dbae8b33be6c66",
+        "service_source_files": {
+          "experiment.py": "98e781505cf77033",
+          "serve_guarded.py": "efe562a5bbae4957",
+          "guard.py": "58007eb76e1f504e",
+          "ingress.py": "c3557dcb43fbabc0",
+          "request_metrics.py": "6aa1620679063856"
+        },
+        "packages": {
+          "torch": "2.11.0",
+          "triton": "3.6.0",
+          "flashinfer-python": "0.6.18.post1",
+          "sglang-kernel": "0.4.5",
+          "transformers": "5.16.1"
+        },
+        "checkpoint_revision": "1355db6a052410cfd62085d94b58866fd0f2c3c5"
+      },
+      "expected": {
+        "source_sha256": "04dbae8b33be6c66",
+        "service_source_files": {
+          "experiment.py": "98e781505cf77033",
+          "serve_guarded.py": "efe562a5bbae4957",
+          "guard.py": "58007eb76e1f504e",
+          "ingress.py": "c3557dcb43fbabc0",
+          "request_metrics.py": "6aa1620679063856"
+        },
+        "packages": {
+          "torch": "2.11.0",
+          "triton": "3.6.0",
+          "flashinfer-python": "0.6.18.post1",
+          "sglang-kernel": "0.4.5",
+          "transformers": "5.16.1"
+        },
+        "checkpoint_revision": "1355db6a052410cfd62085d94b58866fd0f2c3c5"
+      },
+      "informational": false
+    },
+    "native_libraries_prefill_cancel_equal_reference_arm": {
+      "pass": true,
+      "observed": {
+        "QWEN36_FUSED_ATTN_GATE_LIBRARY": "f654f87a0a3f621f",
+        "QWEN36_CUDA_NVFP4_LIBRARY": "b7fea22750256c2a",
+        "QWEN36_CUDA_GDN_LIBRARY": "a8a806eda3a90a65",
+        "QWEN36_FP8_GEMV_LIBRARY": "685c78cf89e60d02"
+      },
+      "expected": {
+        "QWEN36_FUSED_ATTN_GATE_LIBRARY": "f654f87a0a3f621f",
+        "QWEN36_CUDA_NVFP4_LIBRARY": "b7fea22750256c2a",
+        "QWEN36_CUDA_GDN_LIBRARY": "a8a806eda3a90a65",
+        "QWEN36_FP8_GEMV_LIBRARY": "685c78cf89e60d02"
+      },
+      "informational": false
+    },
+    "run_profile": {
+      "pass": true,
+      "observed": "main-release",
+      "expected": "main-release",
+      "informational": false
+    },
+    "run_configuration_equals_config_file": {
+      "pass": true,
+      "observed": {
+        "context": 131072,
+        "chunk": 2048,
+        "memory_ratio": 0.75,
+        "qualified": false,
+        "flags": [],
+        "env": {
+          "QWEN36_PREFIX_MARGIN": "8",
+          "QWEN36_FUSED_ATTN_GATE": "1",
+          "QWEN36_FUSED_ATTN_GATE_LIBRARY": "<native-harness>/private-libraries/libqwen_attention_gate.so",
+          "QWEN36_FP32_GDN_SNAPSHOT": "1",
+          "QWEN36_RETAIN_CHUNK_SNAPSHOT": "1",
+          "QWEN36_NVFP4_PREFILL": "cuda",
+          "QWEN36_CUDA_NVFP4_LIBRARY": "<native-harness>/private-libraries/libqwen_nvfp4_bitexact.so",
+          "QWEN36_LAYER_MAJOR_PREFILL": "1",
+          "QWEN36_CUDA_GDN": "1",
+          "QWEN36_CUDA_GDN_LIBRARY": "<native-harness>/private-cuda-gdn/pinned/libqwen36_gdn-a8a806eda3a90a65.so",
+          "QWEN36_CUDA_GDN_DECODE": "cluster",
+          "QWEN36_FP8_GEMV": "1",
+          "QWEN36_FP8_GEMV_LIBRARY": "<native-harness>/private-fp8gemv/libqwen_fp8_gemv-685c78cf89e60d02.so",
+          "QWEN36_LAYER_MAJOR_ATTN_BATCH": "2",
+          "QWEN36_DECODE_GATHER": "tuned",
+          "TVM_FFI_CUDA_ARCH_LIST": "12.0",
+          "FREETOKEN_DISABLE_JIT": "1"
+        }
+      },
+      "expected": {
+        "context": 131072,
+        "chunk": 2048,
+        "memory_ratio": 0.75,
+        "qualified": false,
+        "flags": [],
+        "env": {
+          "QWEN36_PREFIX_MARGIN": "8",
+          "QWEN36_FUSED_ATTN_GATE": "1",
+          "QWEN36_FUSED_ATTN_GATE_LIBRARY": "<native-harness>/private-libraries/libqwen_attention_gate.so",
+          "QWEN36_FP32_GDN_SNAPSHOT": "1",
+          "QWEN36_RETAIN_CHUNK_SNAPSHOT": "1",
+          "QWEN36_NVFP4_PREFILL": "cuda",
+          "QWEN36_CUDA_NVFP4_LIBRARY": "<native-harness>/private-libraries/libqwen_nvfp4_bitexact.so",
+          "QWEN36_LAYER_MAJOR_PREFILL": "1",
+          "QWEN36_CUDA_GDN": "1",
+          "QWEN36_CUDA_GDN_LIBRARY": "<native-harness>/private-cuda-gdn/pinned/libqwen36_gdn-a8a806eda3a90a65.so",
+          "QWEN36_CUDA_GDN_DECODE": "cluster",
+          "QWEN36_FP8_GEMV": "1",
+          "QWEN36_FP8_GEMV_LIBRARY": "<native-harness>/private-fp8gemv/libqwen_fp8_gemv-685c78cf89e60d02.so",
+          "QWEN36_LAYER_MAJOR_ATTN_BATCH": "2",
+          "QWEN36_DECODE_GATHER": "tuned",
+          "TVM_FFI_CUDA_ARCH_LIST": "12.0",
+          "FREETOKEN_DISABLE_JIT": "1"
+        }
+      },
+      "informational": false
+    },
+    "checkpoint_revision": {
+      "pass": true,
+      "observed": "1355db6a052410cfd62085d94b58866fd0f2c3c5",
+      "expected": "1355db6a052410cfd62085d94b58866fd0f2c3c5",
+      "informational": false
+    },
+    "functional_case_set": {
+      "pass": true,
+      "observed": [
+        "executable-code",
+        "long-facts-120000",
+        "long-facts-16384",
+        "russian",
+        "tool-cycle"
+      ],
+      "expected": [
+        "executable-code",
+        "long-facts-120000",
+        "long-facts-16384",
+        "russian",
+        "tool-cycle"
+      ],
+      "informational": false
+    },
+    "functional_short_failures_equal_reference": {
+      "pass": true,
+      "observed": [
+        "executable-code",
+        "long-facts-16384"
+      ],
+      "expected": [
+        "executable-code",
+        "long-facts-16384"
+      ],
+      "informational": false
+    },
+    "functional_short_hashes_identical_to_reference": {
+      "pass": true,
+      "observed": {
+        "executable-code": "2c9764299c8dcd07",
+        "long-facts-16384": "bd9aced8b836eda6"
+      },
+      "expected": {
+        "executable-code": "2c9764299c8dcd07",
+        "long-facts-16384": "bd9aced8b836eda6"
+      },
+      "informational": false
+    },
+    "functional_long_case_pass": {
+      "pass": true,
+      "observed": true,
+      "expected": true,
+      "informational": false
+    },
+    "fresh_long_prompt_tokens": {
+      "pass": true,
+      "observed": 120067,
+      "expected": 120067,
+      "informational": false
+    },
+    "fresh_long_not_cached": {
+      "pass": true,
+      "observed": 0,
+      "expected": 0,
+      "informational": false
+    },
+    "fresh_long_ttft_below_watchdog_margin": {
+      "pass": true,
+      "observed": 23.686290665998968,
+      "expected": "<= 240.0",
+      "informational": false
+    },
+    "engine_metrics_joined": {
+      "pass": true,
+      "observed": "joined",
+      "expected": "joined",
+      "informational": false
+    },
+    "engine_run_binding": {
+      "pass": true,
+      "observed": "60700c7c1cd849b9b4590ed261b634c0",
+      "expected": "60700c7c1cd849b9b4590ed261b634c0",
+      "informational": false
+    },
+    "kv_bf16": {
+      "pass": true,
+      "observed": "torch.bfloat16",
+      "expected": "torch.bfloat16",
+      "informational": false
+    },
+    "gpu_expert_slots_valid": {
+      "pass": true,
+      "observed": {
+        "expert_slots": 3164,
+        "valid": 3164
+      },
+      "expected": ">0 and all valid",
+      "informational": false
+    },
+    "host_experts_fully_pinned": {
+      "pass": true,
+      "observed": {
+        "host": 18245222400,
+        "pinned": 18245222400
+      },
+      "expected": "equal and >16 GiB",
+      "informational": false
+    },
+    "gdn_pool_unchanged": {
+      "pass": true,
+      "observed": 579502080,
+      "expected": 579502080,
+      "informational": false
+    },
+    "kv_capacity_covers_context": {
+      "pass": true,
+      "observed": 2685173760,
+      "expected": ">= 2684354560",
+      "informational": false
+    },
+    "fused_attention_gate_10_layers": {
+      "pass": true,
+      "observed": 10,
+      "expected": 10,
+      "informational": false
+    },
+    "fp32_gdn_snapshot_flag_matches_env": {
+      "pass": true,
+      "observed": true,
+      "expected": true,
+      "informational": false
+    },
+    "retain_snapshot_enabled_and_donated": {
+      "pass": true,
+      "observed": {
+        "enabled": true,
+        "retained_donations": 2
+      },
+      "expected": "enabled, >0",
+      "informational": false
+    },
+    "h2d_measured": {
+      "pass": true,
+      "observed": 109471334400,
+      "expected": ">0",
+      "informational": false
+    },
+    "boundary_receipt_pass": {
+      "pass": true,
+      "observed": true,
+      "expected": true,
+      "informational": false
+    },
+    "boundary_exact_total": {
+      "pass": true,
+      "observed": {
+        "prompt": 130396,
+        "requested_output": 676
+      },
+      "expected": {
+        "prompt": 130396,
+        "requested_output": 676,
+        "sum": 131072
+      },
+      "informational": false
+    },
+    "boundary_generation_completed": {
+      "pass": true,
+      "observed": {
+        "status": 200,
+        "completion": 28,
+        "finish": "stop"
+      },
+      "expected": "200, 1..requested",
+      "informational": false
+    },
+    "boundary_plus_one_rejected": {
+      "pass": true,
+      "observed": {
+        "status": 400,
+        "code": "context_length_exceeded"
+      },
+      "expected": {
+        "status": 400,
+        "code": "context_length_exceeded"
+      },
+      "informational": false
+    },
+    "boundary_ttft_below_watchdog_margin": {
+      "pass": true,
+      "observed": 25.135560559003352,
+      "expected": "<= 240.0",
+      "informational": false
+    },
+    "boundary_same_serving_run": {
+      "pass": true,
+      "observed": "60700c7c1cd849b9b4590ed261b634c0",
+      "expected": "60700c7c1cd849b9b4590ed261b634c0",
+      "informational": false
+    },
+    "backend_all_pass": {
+      "pass": true,
+      "observed": [],
+      "expected": [],
+      "informational": false
+    },
+    "backend_strict_context_present": {
+      "pass": true,
+      "observed": true,
+      "expected": true,
+      "informational": false
+    },
+    "cancel_receipt_pass": {
+      "pass": true,
+      "observed": true,
+      "expected": true,
+      "informational": false
+    },
+    "cancel_length": {
+      "pass": true,
+      "observed": 120000,
+      "expected": 120000,
+      "informational": false
+    },
+    "cancel_observed_active_and_pending": {
+      "pass": true,
+      "observed": {
+        "observed_active": true,
+        "pending": true
+      },
+      "expected": true,
+      "informational": false
+    },
+    "cancel_followup_correct_fast": {
+      "pass": true,
+      "observed": {
+        "correct": true,
+        "recovery_s": 0.9817305010001292
+      },
+      "expected": "< 10 s",
+      "informational": false
+    },
+    "cancel_same_serving_run": {
+      "pass": true,
+      "observed": "60700c7c1cd849b9b4590ed261b634c0",
+      "expected": "60700c7c1cd849b9b4590ed261b634c0",
+      "informational": false
+    },
+    "request_log_rows_joined": {
+      "pass": true,
+      "observed": 145,
+      "expected": "> 0 rows with this run_id",
+      "informational": true
+    },
+    "request_level_min_gpu_free_floor": {
+      "pass": true,
+      "observed": 1.1973,
+      "expected": ">= 0.5 GiB",
+      "informational": false
+    },
+    "sampler_serving_min_gpu_free_floor": {
+      "pass": true,
+      "observed": 1.1982,
+      "expected": ">= 0.5 GiB",
+      "informational": false
+    },
+    "sampler_coverage_1hz": {
+      "pass": true,
+      "observed": 1.008,
+      "expected": "<= 2.5 s",
+      "informational": false
+    },
+    "idle_foreign_usage_recorded": {
+      "pass": true,
+      "observed": {
+        "max_used_mib": 2648,
+        "median_used_mib": 2615,
+        "reserved_mib": 308
+      },
+      "expected": "recorded: the measured reserve is valid for foreign usage <= this value",
+      "informational": true
+    },
+    "host_nonreclaimable_anon_plus_shmem_below_MemoryHigh": {
+      "pass": true,
+      "observed": {
+        "anon_GiB": 19.683,
+        "shmem_GiB": 1.402,
+        "sum_GiB": 21.085
+      },
+      "expected": "< 32 GiB",
+      "informational": false
+    },
+    "host_anon_shmem_growth_first_to_last_request": {
+      "pass": true,
+      "observed": {
+        "service_memory_anon_bytes": {
+          "delta_MiB": 0.9,
+          "soak_threshold_MiB": 256
+        },
+        "service_memory_shmem_bytes": {
+          "delta_MiB": 0.0,
+          "soak_threshold_MiB": 64
+        }
+      },
+      "expected": "report only: leak gating is the soak (like-for-like series)",
+      "informational": true
+    },
+    "host_cgroup_total_and_file_cache_report_only": {
+      "pass": true,
+      "observed": {
+        "cgroup_peak_GiB": 27.673,
+        "file_cache_estimate_peak_GiB": 8.602
+      },
+      "expected": "report only: page cache is reclaimable (soak-analysis MEMORY_REPORT_ONLY)",
+      "informational": true
+    },
+    "wsl_swap_free_report_only": {
+      "pass": true,
+      "observed": {
+        "min": 17150623744,
+        "max": 17150623744
+      },
+      "expected": "report only: unit has MemorySwapMax=0, swap use cannot come from it",
+      "informational": true
+    }
+  },
+  "sampler": {
+    "samples": 251,
+    "total_mib": 16303,
+    "whole": {
+      "samples": 251,
+      "first": "2026-10-14T16:40:47.764000",
+      "last": "2026-10-14T16:44:57.906000",
+      "min_free_mib": 1227,
+      "min_free_GiB": 1.1982,
+      "max_used_mib": 14769,
+      "reserved_mib_max": 308,
+      "max_gap_s": 1.008,
+      "median_used_mib": 5614
+    },
+    "idle_before_start": {
+      "samples": 30,
+      "first": "2026-10-14T16:40:47.764000",
+      "last": "2026-10-14T16:41:16.785000",
+      "min_free_mib": 13348,
+      "min_free_GiB": 13.0352,
+      "max_used_mib": 2648,
+      "reserved_mib_max": 308,
+      "max_gap_s": 1.003,
+      "median_used_mib": 2615
+    },
+    "loading": {
+      "samples": 114,
+      "first": "2026-10-14T16:41:17.785000",
+      "last": "2026-10-14T16:43:10.848000",
+      "min_free_mib": 1592,
+      "min_free_GiB": 1.5547,
+      "max_used_mib": 14404,
+      "reserved_mib_max": 308,
+      "max_gap_s": 1.008,
+      "median_used_mib": 5614
+    },
+    "serving": {
+      "samples": 76,
+      "first": "2026-10-14T16:43:11.848000",
+      "last": "2026-10-14T16:44:26.895000",
+      "min_free_mib": 1227,
+      "min_free_GiB": 1.1982,
+      "max_used_mib": 14769,
+      "reserved_mib_max": 308,
+      "max_gap_s": 1.008,
+      "median_used_mib": 14647
+    },
+    "idle_after_stop": {
+      "samples": 30,
+      "first": "2026-10-14T16:44:28.895000",
+      "last": "2026-10-14T16:44:57.906000",
+      "min_free_mib": 13312,
+      "min_free_GiB": 13.0,
+      "max_used_mib": 2684,
+      "reserved_mib_max": 308,
+      "max_gap_s": 1.001,
+      "median_used_mib": 2684
+    }
+  },
+  "targets": {
+    "floor_GiB": 0.5,
+    "target_GiB": 1.0,
+    "ttft_limit_s": 240.0
+  },
+  "inputs": {
+    "config": {
+      "path": "<workspace>/outputs/qwen36-api/optimization/main-release.json",
+      "sha256": "60763d5e6f1c581b7591fcf1772e2d03d9ceaa6105ffe65eee7312b0d56acd36"
+    },
+    "functional": {
+      "path": "<native-harness>/reports/final-f1-c128-a1-functional.json",
+      "sha256": "ed4d12d49b29293ae96231b9a9e2277436a7901baaddcdb2d9748fb8dfbf7b20"
+    },
+    "boundary": {
+      "path": "<native-harness>/reports/final-f1-c128-a1-boundary.json",
+      "sha256": "24739d7702cf15c80d564167d0f3ec5a00162e302c0caff2a0ac44903e14b649"
+    },
+    "backend": {
+      "path": "<native-harness>/reports/final-f1-c128-a1-backend.json",
+      "sha256": "972624df7e488eb23e7029c692a705371b71891b8c2a9ff024b222bc97368fdb"
+    },
+    "cancel": {
+      "path": "<native-harness>/reports/final-f1-c128-a1-prefill-cancel.json",
+      "sha256": "e6c8b3ab5d5e5c1200fb45cd5bec55cf94d76d4f1e69073452e54e745a5bc03b"
+    },
+    "sampler": {
+      "path": "<native-harness>/reports/final-f1-c128-a1-gpu-sampler.csv",
+      "sha256": "3f0571b67c7ed294329c18c49c01bf9d1574db78972943144231ae3eb0ca3724"
+    },
+    "phases": {
+      "path": "<native-harness>/reports/final-f1-c128-a1-phases.jsonl",
+      "sha256": "38ea09e55c0d487a8ab7c1dc3ca958f3e2e53bd02a835363ea3e1e225ef755c3"
+    },
+    "identity_manifest": {
+      "path": "<native-harness>/reports/final-f1-m-manifest.json",
+      "sha256": "742a52b0374303be016568add8537cc52bc105ccf9ab07c5323b13ea013937cb"
+    },
+    "functional_reference": {
+      "path": "<native-harness>/reports/functional-main-release.json",
+      "sha256": "96c9a3bd1704e6ca83b26d39fd557f6963630fcbde4e4f9f38ff03d4dd1fc930"
+    }
+  },
+  "reference": {
+    "arm": "main-release",
+    "identity": {
+      "source_sha256": "04dbae8b33be6c66",
+      "service_source_files": {
+        "experiment.py": "98e781505cf77033",
+        "serve_guarded.py": "efe562a5bbae4957",
+        "guard.py": "58007eb76e1f504e",
+        "ingress.py": "c3557dcb43fbabc0",
+        "request_metrics.py": "6aa1620679063856"
+      },
+      "packages": {
+        "torch": "2.11.0",
+        "triton": "3.6.0",
+        "flashinfer-python": "0.6.18.post1",
+        "sglang-kernel": "0.4.5",
+        "transformers": "5.16.1"
+      },
+      "checkpoint_revision": "1355db6a052410cfd62085d94b58866fd0f2c3c5"
+    }
+  },
+  "limits": [
+    "Fixed fixtures only; not proof of quality on arbitrary inputs.",
+    "Min free is NVML free incl. foreign Windows usage; valid for foreign usage <= the recorded idle value.",
+    "Single run; performance acceptance is the separate 5-pair matrix."
+  ]
+}

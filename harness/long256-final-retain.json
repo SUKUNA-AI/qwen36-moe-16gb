@@ -1,0 +1,14 @@
+{
+  "context": 262144,
+  "chunk": 4096,
+  "memory_ratio": 0.72,
+  "qualified": false,
+  "flags": [],
+  "env": {
+    "QWEN36_PREFIX_MARGIN": "8",
+    "QWEN36_FUSED_ATTN_GATE": "1",
+    "QWEN36_FUSED_ATTN_GATE_LIBRARY": "/home/USER/qwen36-api/optimization/private-libraries/libqwen_attention_gate.so",
+    "QWEN36_FP32_GDN_SNAPSHOT": "1",
+    "QWEN36_RETAIN_CHUNK_SNAPSHOT": "1"
+  }
+}

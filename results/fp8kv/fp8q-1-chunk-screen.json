@@ -1,0 +1,89 @@
+{
+  "kind": "chunk-screen-summary",
+  "acceptance": false,
+  "name": "fp8q-1",
+  "profiles": [
+    "main-release",
+    "main-release-fp8kv"
+  ],
+  "lengths": [
+    16384,
+    120000
+  ],
+  "output": 512,
+  "vram_floor_bytes": 536870912,
+  "results": [
+    {
+      "profile": "main-release",
+      "status": "measured",
+      "chunk": 2048,
+      "memory_ratio": 0.75,
+      "load_ready_s": 105.68661791199702,
+      "min_gpu_free_bytes": 2581794816,
+      "vram_gate": "PASS",
+      "foreign_gpu_used_bytes_pre_start": 1636827136,
+      "fresh": [
+        {
+          "length": 16384,
+          "ttft_content_s": 1.4868013149971375,
+          "elapsed_s": 5.413818036999146,
+          "prefill_client_tps": 11064.692931100664,
+          "prefill_engine_tps": 11261.77636222305,
+          "decode_client_tps": 130.13459275177104,
+          "min_gpu_free_bytes": 2594902016,
+          "prefill_h2d_bytes": 18245222400,
+          "decode_missing": 14212,
+          "expert_slots": 3164
+        },
+        {
+          "length": 120000,
+          "ttft_content_s": 21.87190778399963,
+          "elapsed_s": 27.28573018500174,
+          "prefill_client_tps": 5489.598858305155,
+          "prefill_engine_tps": 5540.992289006765,
+          "decode_client_tps": 94.39577211035873,
+          "min_gpu_free_bytes": 2581794816,
+          "prefill_h2d_bytes": 18245222400,
+          "decode_missing": 15617,
+          "expert_slots": 3164
+        }
+      ]
+    },
+    {
+      "profile": "main-release-fp8kv",
+      "status": "measured",
+      "chunk": 2048,
+      "memory_ratio": 0.75,
+      "load_ready_s": 104.69532953199814,
+      "min_gpu_free_bytes": 2575175680,
+      "vram_gate": "PASS",
+      "foreign_gpu_used_bytes_pre_start": 1650458624,
+      "fresh": [
+        {
+          "length": 16384,
+          "ttft_content_s": 1.5863791439987835,
+          "elapsed_s": 5.143551403001766,
+          "prefill_client_tps": 10370.15650529292,
+          "prefill_engine_tps": 10544.3312829905,
+          "decode_client_tps": 143.66611946609615,
+          "min_gpu_free_bytes": 2594967552,
+          "prefill_h2d_bytes": 18245222400,
+          "decode_missing": 9825,
+          "expert_slots": 3917
+        },
+        {
+          "length": 120000,
+          "ttft_content_s": 27.619688794002286,
+          "elapsed_s": 31.880054052999185,
+          "prefill_client_tps": 4347.188735380436,
+          "prefill_engine_tps": 4379.439632369609,
+          "decode_client_tps": 119.9546190784503,
+          "min_gpu_free_bytes": 2575175680,
+          "prefill_h2d_bytes": 18245222400,
+          "decode_missing": 9352,
+          "expert_slots": 3917
+        }
+      ]
+    }
+  ]
+}

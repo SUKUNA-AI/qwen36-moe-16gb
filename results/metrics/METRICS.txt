@@ -1,0 +1,81 @@
+QWEN3.6-35B-A3B API - RELEASE f1 SYSTEM METRICS (installed 2026-10-14; default profile main128)
+Built from existing reports only (no new runs). Every number has its source path + definition in metrics.json
+($N = <native-harness>, reports in $N/reports). Rebuild: compute.py (CPU, read-only).
+Hardware/setup: one RTX 5070 Ti 16 GB shared with the Windows desktop, WSL2, batch 1. All 256 experts in pinned host RAM, a GPU slot cache in front.
+
+1. LATENCY - 2 h soak, main128, sequential, 256 output tokens (soak-final-f1-a1.json; n=102 per length, 101 at 120K)
+   prompt  | TTFT p50/p90/p99/max s     | decode p50/p10 tok/s | mean ITL ms | prefill tok/s | E2E 256 tok p50/p99 s
+   93      | 0.601/0.636/0.671/1.391    | 133.7/126.6          | 7.48        | 155           | 2.51/2.84
+   4125    | 0.606/0.634/0.649/0.665    | 135.0/127.7          | 7.41        | 6802          | 2.49/2.78
+   16413   | 1.360/1.401/1.610/1.649    | 129.8/124.1          | 7.70        | 12067         | 3.32/3.82
+   65565   | 8.140/8.523/9.288/9.598    | 112.2/107.1          | 8.91        | 8055          | 10.41/11.82
+   120029  | 20.97/21.63/22.92/23.29    | 97.5/93.7            | 10.26       | 5725          | 23.59/25.81
+   prefix hit 4400 (4032 cached) | TTFT 0.594 s p50 | 138.2 tok/s.
+   Long contexts (single runs): 250,069 tok on long256 has TTFT 80.4 s (3112 tok/s) and a 19.1 ms decode step.
+   At the limit: 261,468 tok has TTFT 91.3 s and decodes at 52.5 tok/s; main128 at 130,396 tok has TTFT 25.1 s.
+   Mean ITL = 1000/decode tok/s per request. A per-token ITL distribution is NOT_MEASURED.
+   Paired matrix, release vs bf128 (5 pairs, 128 output tokens, medians):
+     TTFT:  4K 2.24->0.77 s (2.91x); 16K 6.78->1.59 (4.26x); 64K 28.46->9.14 (3.12x); 120K 54.77->22.07 (2.48x)
+            64 tok 0.75->0.79 (0.94x, non-gating); last-message/tool-result edit at 16K 6.85->0.78 / 7.11->0.76 (8.8x / 9.4x)
+     decode tok/s: 64 tok 96.4->122.8; 16K 94.2->119.1; 64K 84.4->99.3; 120K 80.7->94.6
+     full-request geomean (gating): 1.13 / 1.95 / 3.03 / 2.86 / 2.45 (64..120K); tool cycle 1.08 (CI 0.97-1.20)
+     Verdict: PASS. Outputs differ in 15/40 (observation only).
+
+2. ENGINE (soak telemetry, p50)
+   - Decode step GPU time: 7.3 / 7.2 / 7.5 / 8.7 / 10.0 ms (64 tok .. 120K); p99 8.3 / 8.1 / 8.4 / 9.8 / 11.1 ms.
+   - Scheduler gap: ~0.22 ms per step (~56 ms per request). This is engine span minus GPU-timed forwards.
+   - Ingress time outside the engine (queue/tokenize/tail proxy): 8 / 14 / 30 / 101 / 182 ms. It grows with prompt length.
+     A separate queue-wait field is NOT_MEASURED.
+   - Prefill floor: every prefill streams the full 18.245 GB expert bank once, even a 64-token prompt or a prefix hit.
+     Prefill GPU time is therefore at least ~0.59 s (>= 30.8 GB/s logical). This is why prefix hits barely lower TTFT.
+   - Decode expert miss rate: 0.08-0.12 on main128 (26-39 misses/token, about 46-70 MB H2D per token).
+     It is 0.38 on long256 (1481 slots).
+
+3. MEMORY
+   Host (soak):
+   - Service anon: 19.72 GiB median. This includes the pinned expert bank (18.245 GB = 16.99 GiB).
+   - cgroup 19.90 GiB; shmem 0.105 GiB; file cache 0.013 GiB.
+   - Late minus early: anon +45..48 MB at every length (flag 268 MB); shmem 0. Tunables PASS pre and post.
+   - WSL MemAvailable: 25.0 GiB median (min 24.6). Unit peak including model load: 27.8 GiB.
+   VRAM:
+   - torch: allocated 11.15 GiB, reserved 11.39 GiB.
+     Breakdown: dense weights 2.52 + KV 2.50 + GDN 0.54 + expert slots 5.25 (3164 x 1.78 MB) + other 0.34 GiB.
+   - NVML free in the soak: median 1667 MiB, p5 697 MiB, min 436 MiB (state rows).
+     The 1 Hz request sampler saw a min of 367 MiB. 4 of 825 requests dipped below 512 MiB and 310 below 1 GiB.
+   - Foreign/desktop use before start: 2.55-2.99 GiB. Free VRAM in the journal: 14.65 GiB before load, 2.00 / 2.18 / 1.90 GiB after init (main128 / long256 / baseline64).
+   - Gate minimum free: 1.20 / 1.41 / 0.79 GiB (baseline64 is FLOOR class).
+   - CUDA-graph memory: NOT_MEASURED for the release.
+
+4. KV CACHE
+   - Pages (1 page = 1 token): 131,111 (2.50 GiB) main128; 262,175 (5.00 GiB) long256; 65,600 (1.25 GiB) baseline64.
+     That is 20,480 B per token.
+   - Soak: at most 120,284 pages used (91.7% of the pool).
+   - Prefix cache: 102/102 hits, 4032 of 4400 tokens cached (91.6%).
+   - Matrix edits: 16,320 and 16,448 cached tokens.
+   - GDN/mamba: 8 slots, at most 4 in use.
+   - DERIVED decode KV read: 0.34 GB per step at 16K (40 GB/s at 119 tok/s). At 120K it is 2.46 GB per step (233 GB/s),
+     about 34% of the 10.3 ms step at ~700 GB/s.
+
+5. THROUGHPUT / CAPACITY
+   - Maximum context: 131,072 / 262,144 / 65,536 tokens. The exact boundary is accepted; boundary +1 returns 400 context_length_exceeded.
+   - Soak: 771 requests completed in 7212 s (385/h) with 5 s pauses. 741/741 rows passed, 0 errors, 0 stalls.
+     Generated 72.6K tok/h; the engine was busy 63% of the time.
+   - Cancel recovery: soak median 1.45 s (max 1.61 s); prefill-cancel 0.80-1.03 s.
+   - Multi-client concurrency: NOT_MEASURED.
+
+6. STARTUP / OPS (live install)
+   - Cold start main128 to edge-ready: 132 s. Restart: 125 s.
+   - Profile switch: to long256 103 s, to baseline64 105 s, back to main128 110 s.
+   - Harness load to ready: 104-132 s.
+   - Network acceptance: 59/60 with TLS verified. auto-tool-cycle fails as an FP32-basis near-tie, also seen on bf128.
+   - External end-to-end test: NOT_RUN.
+
+7. QUALITY
+   - main-release teacher forcing vs bf128: 20/20 cases, 943/943 tokens, 125/125 logit checkpoints, max |dlogit| 0, PPL growth 0.0.
+   - long256 in standard fixture order: 19/20 cases. long-120000 differs: NLL +0.0177, PPL +0.072% (CI 0-0.24%).
+     The cause is prefix-cache header-KV dedup: with a clean cache it is 1/1 bit-exact, and main128 reproduces the deviation in the same cache state.
+   - Functional, known limitations identical to the reference: executable-code and long-facts-16384 (all profiles), long-facts-60000 (baseline64).
+   - Passing: long-facts-120K and long-facts-250K, russian, tool-cycle. Backend checks 13/13. Soak correctness: arithmetic 73, tool 30, cancel 27, prefix 102.
+
+NOT_MEASURED: per-token ITL distribution, separate queue wait, concurrency, release CUDA-graph memory, external E2E,
+long256/baseline64 soak and matrix, bf256 teacher, release Nsight profile, foreign vs CUDA-context VRAM split.

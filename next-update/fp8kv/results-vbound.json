@@ -1,0 +1,162 @@
+{
+ "3": {
+  "v_bound_cauchy": 33.91062078811386,
+  "v_bound_fp8_input_saturation": 1188.8746417600078,
+  "v_bound": 33.91062078811386,
+  "calibrated_amax_v": 4.25,
+  "fp8_v_clip_threshold": 5.1,
+  "bound_over_clip": 6.649141331002718,
+  "v_scale_noclip": 0.07569334997346844,
+  "weight_shape": [
+   512,
+   2048
+  ],
+  "weight_dtype": "torch.float8_e4m3fn",
+  "weight_scale_numel": 1,
+  "input_scale": 0.0993303582072258
+ },
+ "7": {
+  "v_bound_cauchy": 31.761165905886646,
+  "v_bound_fp8_input_saturation": 1047.834209552775,
+  "v_bound": 31.761165905886646,
+  "calibrated_amax_v": 9.875,
+  "fp8_v_clip_threshold": 11.85,
+  "bound_over_clip": 2.6802671650537255,
+  "v_scale_noclip": 0.07089545961135411,
+  "weight_shape": [
+   512,
+   2048
+  ],
+  "weight_dtype": "torch.float8_e4m3fn",
+  "weight_scale_numel": 1,
+  "input_scale": 0.0898437574505806
+ },
+ "11": {
+  "v_bound_cauchy": 33.775615665788976,
+  "v_bound_fp8_input_saturation": 1008.0496991552327,
+  "v_bound": 33.775615665788976,
+  "calibrated_amax_v": 10.6875,
+  "fp8_v_clip_threshold": 12.825,
+  "bound_over_clip": 2.6335762702369574,
+  "v_scale_noclip": 0.07539199925399324,
+  "weight_shape": [
+   512,
+   2048
+  ],
+  "weight_dtype": "torch.float8_e4m3fn",
+  "weight_scale_numel": 1,
+  "input_scale": 0.0876116082072258
+ },
+ "15": {
+  "v_bound_cauchy": 39.99295033930941,
+  "v_bound_fp8_input_saturation": 1099.386742070159,
+  "v_bound": 39.99295033930941,
+  "calibrated_amax_v": 12.1875,
+  "fp8_v_clip_threshold": 14.625,
+  "bound_over_clip": 2.7345607069613274,
+  "v_scale_noclip": 0.0892699784359585,
+  "weight_shape": [
+   512,
+   2048
+  ],
+  "weight_dtype": "torch.float8_e4m3fn",
+  "weight_scale_numel": 1,
+  "input_scale": 0.0792410746216774
+ },
+ "19": {
+  "v_bound_cauchy": 45.425655510128486,
+  "v_bound_fp8_input_saturation": 1449.4997444567161,
+  "v_bound": 45.425655510128486,
+  "calibrated_amax_v": 11.75,
+  "fp8_v_clip_threshold": 14.1,
+  "bound_over_clip": 3.2216776957537934,
+  "v_scale_noclip": 0.10139655247796538,
+  "weight_shape": [
+   512,
+   2048
+  ],
+  "weight_dtype": "torch.float8_e4m3fn",
+  "weight_scale_numel": 1,
+  "input_scale": 0.0898437574505806
+ },
+ "23": {
+  "v_bound_cauchy": 51.013467826963414,
+  "v_bound_fp8_input_saturation": 2127.2459913888015,
+  "v_bound": 51.013467826963414,
+  "calibrated_amax_v": 14.0625,
+  "fp8_v_clip_threshold": 16.875,
+  "bound_over_clip": 3.023020315671906,
+  "v_scale_noclip": 0.11386934782804334,
+  "weight_shape": [
+   512,
+   2048
+  ],
+  "weight_dtype": "torch.float8_e4m3fn",
+  "weight_scale_numel": 1,
+  "input_scale": 0.1121651828289032
+ },
+ "27": {
+  "v_bound_cauchy": 78.53930012915082,
+  "v_bound_fp8_input_saturation": 2976.2833771375845,
+  "v_bound": 78.53930012915082,
+  "calibrated_amax_v": 13.9375,
+  "fp8_v_clip_threshold": 16.724999999999998,
+  "bound_over_clip": 4.695922279769855,
+  "v_scale_noclip": 0.17531093778828308,
+  "weight_shape": [
+   512,
+   2048
+  ],
+  "weight_dtype": "torch.float8_e4m3fn",
+  "weight_scale_numel": 1,
+  "input_scale": 0.1054687574505806
+ },
+ "31": {
+  "v_bound_cauchy": 108.1467780919332,
+  "v_bound_fp8_input_saturation": 3361.4704674425593,
+  "v_bound": 108.1467780919332,
+  "calibrated_amax_v": 18.25,
+  "fp8_v_clip_threshold": 21.9,
+  "bound_over_clip": 4.938209045293754,
+  "v_scale_noclip": 0.2413990582409223,
+  "weight_shape": [
+   512,
+   2048
+  ],
+  "weight_dtype": "torch.float8_e4m3fn",
+  "weight_scale_numel": 1,
+  "input_scale": 0.086495541036129
+ },
+ "35": {
+  "v_bound_cauchy": 53.23719186258779,
+  "v_bound_fp8_input_saturation": 1420.5347023225695,
+  "v_bound": 53.23719186258779,
+  "calibrated_amax_v": 13.75,
+  "fp8_v_clip_threshold": 16.5,
+  "bound_over_clip": 3.2264964765204724,
+  "v_scale_noclip": 0.11883301755041918,
+  "weight_shape": [
+   512,
+   2048
+  ],
+  "weight_dtype": "torch.float8_e4m3fn",
+  "weight_scale_numel": 1,
+  "input_scale": 0.0792410746216774
+ },
+ "39": {
+  "v_bound_cauchy": 72.89865623194528,
+  "v_bound_fp8_input_saturation": 1986.5899221697236,
+  "v_bound": 72.89865623194528,
+  "calibrated_amax_v": 14.8125,
+  "fp8_v_clip_threshold": 17.775,
+  "bound_over_clip": 4.101190224019425,
+  "v_scale_noclip": 0.16272021480344928,
+  "weight_shape": [
+   512,
+   2048
+  ],
+  "weight_dtype": "torch.float8_e4m3fn",
+  "weight_scale_numel": 1,
+  "input_scale": 0.082589291036129
+ }
+}

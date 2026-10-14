@@ -1,0 +1,51 @@
+{
+  "analysis": "CPU-only; source tree hash-identical to the run (source_sha256 04dbae...)",
+  "most_likely_cause": {
+    "name": "prefix-cache dedup re-point of the 24-token shared chat header at the 120K prefill commit, present at context 262144 (tree intact) and absent at 131072 (tree evicted)",
+    "confidence": 0.85,
+    "mechanism_lines": [
+      "scheduler/scheduler.py:243-266 overlap: decode step 1 launched before _process_last_data(prefill)",
+      "scheduler/scheduler.py:413-422 cache_req(finished=False) at prefill drain",
+      "scheduler/cache.py:391-393,418-447 _donate_hybrid_snapshot -> insert -> _free(page_indices[0:prefix_len]) -> page_table[req,0:prefix_len] = canonical (:435-437)",
+      "kvcache/hybrid_radix_cache.py:90-112 insert returns prefix_len over KV-only tombstone nodes; :76-88 match_prefix truncates to snapshot (cached-token 0)",
+      "scheduler/cache.py:621-640 + kvcache/hybrid_radix_cache.py:148-166,225-237 LRU leaf eviction + tombstone cascade empties the tree at 131072",
+      "attention/fi.py:300 decode indices re-gathered from page_table every step"
+    ],
+    "shared_prefix_tokens": {"long-120000_vs_long-4096/16384/65536": 24, "vs_short_cases": 3,
+                             "canonical_kv_writer": {"positions_0_2": "ru-0 (31-token prefill)", "positions_3_23": "long-4096"}},
+    "pool_tokens": {"context_131072": 131112, "context_262144": 262176, "kv_bytes_per_token": 20480},
+    "tree_before_long120000_tokens_approx": 87389,
+    "eviction_needed_at_131072_tokens_approx": 76353,
+    "eviction_needed_at_262144_tokens": 0
+  },
+  "deviation_location": {
+    "prefill_position0": "bit-exact (max_abs 0.0)",
+    "decode_position1": "NLL exactly equal",
+    "first_nll_difference_position": 2,
+    "nll_delta_by_position_head": [0.0, 0.0, 2e-05, 0.00012, 0.07487],
+    "logit_max_abs_at_8_16_24_32": [1.0390625, 0.9375, 0.6875, 1.232421875],
+    "identical_in_runs": ["teacher-long256-release f8e3595d", "teacher-long256-release cec6ebdf", "teacher-long256-final-cuda2048 97d39b77"]
+  },
+  "context_dependent_paths": {
+    "max_seq_len": {"where": "engine/engine.py:428", "values": [131072, 262144], "numeric_effect": false},
+    "page_table_width": {"where": "engine/engine.py:429-434", "values": [131072, 262144], "numeric_effect": false},
+    "decode_cuda_graph": {"where": "engine/engine.py:1514-1515, engine/graph.py:79-98,204-205", "bs_list": [1], "decode_always_graph": true, "numeric_effect": false},
+    "fi_capture_indices_buffer": {"where": "attention/fi.py:320-327, attention/utils.py:15-22", "entries": [131072, 262144], "numeric_effect": false},
+    "flashinfer_decode_plan": {"where": "attention/fi.py:159-172; flashinfer decode.py:1670-1741; scheduler.cuh:101-129,579-644,788-791", "depends_on": "kv_len and SM count only (fixed_split_size=-1, disable_split_kv=False, use_tensor_cores=True)", "numeric_effect": false},
+    "rope_cache": {"where": "layers/rotary.py:54-58, models/qwen3_5_moe/attention.py:54", "size": "rotary_config.max_position (model), not context", "numeric_effect": false},
+    "float_workspace": {"where": "attention/fi.py:103-117", "numeric_effect": false},
+    "kv_pool_size_and_page_ids": {"where": "engine/cache_budget.py:76-84, experiment.py:66-68", "numeric_effect": "only via eviction -> dedup re-point"},
+    "expert_slots": {"values": [3164, 1481], "decode_cpu_per_layer": 0.0, "numeric_effect": "unlikely (short cases exact with different slot states); tested by run D"},
+    "gdn_state_pool": {"gdn_bytes": 579502080, "numeric_effect": false}
+  },
+  "which_side_is_right": "Both are valid numerics. The 128K reference for long-120000 is the cache-state outlier: eviction left it with a cold tree, so it uses its own header KV, which is HF-like. 256K uses prefix-cache KV for 24 header positions, as every other case does in both profiles.",
+  "gpu_plan": {
+    "script": "work/l256-deviation/gpu-plan.sh",
+    "runs": [
+      {"id": "D", "profile": "teacher-main-release", "fresh_server": true, "cases": ["ru-0", "long-4096", "long-120000"], "prediction": "reproduces the 256K digits exactly", "minutes": 5, "new_allowlist": false},
+      {"id": "C", "profile": "teacher-long256-release", "fresh_server": true, "cases": ["long-120000"], "prediction": "all logit comparisons 0.0", "minutes": 5, "new_allowlist": false},
+      {"id": "A", "optional": true, "config": "configs/l256d-c128-pool256.json", "allowlist": "teacher-l256d-c128-pool256", "prediction": "long256 digits", "minutes": 15}
+    ],
+    "total_minutes_D_plus_C": 10
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "kind": "pre-registration",
+  "written": "2026-10-14T17:45Z (before any GPU measurement by this agent)",
+  "base_profile": "main-release",
+  "base_note": "release f1 build (layer-major + CUDA GDN ABI2 + FP8 GEMV + bit-exact CUDA NVFP4 prefill + attention batching k=2 + tuned decode gather, FREETOKEN_DISABLE_JIT=1); config $N/config/main-release.json",
+  "harness": "screen-chunk.py via screen-wrapper.py under the real GPU flock; QWEN36_BENCH_WARMUP_S=60 sustained warm-up per server start; fresh fixture prompts (seed 314159+length), ignore_eos, exactly OUTPUT tokens",
+  "design": {
+    "rounds": 3,
+    "pairing": "each GPU session holds ONE output size and both arms (base + candidate) back to back in the same session; the arm order alternates between sessions (rotating) so each arm runs first in half of the sessions",
+    "order_rule": "session (round r = 1..3, output index j = 0..1): base first if (r + j) is odd, else candidate first",
+    "warmup_s": 60,
+    "session_limit_s": 1200
+  },
+  "features": {
+    "synclean": {
+      "candidate_profile": "main-release-synclean",
+      "env_delta": {"QWEN36_SYNC_LEAN": "1"},
+      "code": "synclean-release.patch (P1 sync-lean + P2 fi-plans rebased onto attention batching + CUDA GDN empty-sequence seed); must be applied and synced by the parent",
+      "teacher_candidate": "main-release-synclean",
+      "teacher_allowlist_name": "teacher-main-release-synclean",
+      "lengths": [16384, 120000],
+      "outputs": [512, 128],
+      "primary_metric": "ttft_content_s",
+      "primary_direction": "lower_is_better",
+      "primary_cells": [[120000, 512], [120000, 128]],
+      "guard_metrics": ["ttft_content_s", "elapsed_s", "decode_client_tps"],
+      "mechanism": "prefill only (host syncs + FlashInfer re-plans per chunk/group); decode is untouched"
+    },
+    "refill": {
+      "candidate_profile": "main-release-refill-restore",
+      "env_delta": {"QWEN36_LAYER_MAJOR_REFILL": "1", "QWEN36_LAYER_MAJOR_REFILL_POLICY": "restore"},
+      "code": "already in the synced native tree (moe/slot_refill.py c7a3e4fa, engine/layer_major.py, scheduler/layer_major.py); only the config + allowlist name are needed",
+      "teacher_candidate": "main-release-refill-restore",
+      "teacher_allowlist_name": "teacher-main-release-refill-restore",
+      "lengths": [16384, 65536, 120000],
+      "outputs": [1024, 512],
+      "primary_metric": "decode_client_tps",
+      "primary_direction": "higher_is_better",
+      "primary_cells": [[120000, 1024], [120000, 512]],
+      "guard_metrics": ["decode_client_tps", "ttft_content_s", "elapsed_s"],
+      "mechanism": "decode only: the slots lent to the layer-major hidden store are restored to their pre-prefill experts behind the last layer, so early decode tokens miss less; effect grows with the borrowed slot count (largest at 120K)"
+    }
+  },
+  "gain_definition": "per round and cell: lower_is_better metrics g = base/candidate - 1; higher_is_better metrics g = candidate/base - 1 (positive = candidate better)",
+  "decision_rule": {
+    "cell_pass": "median(g over the 3 rounds) >= +0.02 AND every round g > 0",
+    "cell_harm": "median(g) <= -0.02 AND every round g < 0",
+    "keep_if_all": [
+      "teacher QUALIFY_PASS for the candidate (teacher max_abs 0.0, forced targets complete, no new functional failures)",
+      "content_sha256 identical between base and candidate for every paired request",
+      "VRAM gate PASS (min free >= 0.5 GiB floor) in every candidate run",
+      "every primary cell PASS",
+      "no HARM cell for any guard metric at any length/output"
+    ],
+    "otherwise": "REJECT (feature stays out of the next update; code may stay flag-off). Missing rounds or a failed session = INCONCLUSIVE, handled as REJECT for this update.",
+    "teacher_first": "the teacher runs before the A/B; a teacher failure rejects the feature and skips its A/B"
+  },
+  "expected_cpu_estimates": {
+    "synclean": "TTFT gain at 120K ~ +0.1..+0.4% (FlashInfer plans per 120K prompt at k=2: ~358 -> ~88; ~4 stream drains -> 0 per chunk x 59 chunks); 16K smaller. Prediction: REJECT (below the 2% threshold).",
+    "refill": "decode gain at 120K <= ~0.5% at output 512 and <= ~0.1-0.3% at 1024 (earlier at output 128: -150 misses of ~3835 per request ~ 6 ms of ~1.35 s; the saved misses do not grow with output length); 16K/64K smaller. Prediction: REJECT."
+  }
+}

@@ -1,0 +1,199 @@
+{
+ "ranked_top3": [
+  {
+   "rank": 1,
+   "name": "Decode expert misses over PCIe (decode_gather_tma): raise its PCIe efficiency and overlap it with compute",
+   "evidence": {
+    "gather_ms_per_step": {
+     "decode_16k": 1.4865665967741937,
+     "decode_120k": 1.5935405967741934,
+     "warm_short_decode": 1.8301098253968255
+    },
+    "share_of_decode_step_pct": {
+     "decode_16k": 18.344608798863945,
+     "decode_120k": 13.987117515818364,
+     "warm_short_decode": 22.78947462896857
+    },
+    "layers_with_misses_per_step": {
+     "warm_decode": 19.543307086614174,
+     "fresh_16k": 17.555555555555557,
+     "fresh_120k": 17.88888888888889
+    },
+    "ncu_component_gather": [
+     {
+      "label": "decode gather TMA, 1 missing expert (1.78 MB) per launch",
+      "duration_us": 59.52,
+      "pcie_read_gbps_under_ncu": 29.974193548387095,
+      "warps_active_per_cycle": 1.0,
+      "roofline_class": "PCIe/system-memory latency-bound (1 warp per CTA, 8 CTAs; ~30-33 GB/s of ~63 GB/s PCIe 5.0 x16)"
+     },
+     {
+      "label": "decode gather TMA, 4 missing experts per launch",
+      "duration_us": 214.496,
+      "pcie_read_gbps_under_ncu": 33.237654781441144,
+      "roofline_class": "PCIe/system-memory latency-bound (1 warp per CTA, 8 CTAs; ~30-33 GB/s of ~63 GB/s PCIe 5.0 x16)"
+     }
+    ],
+    "pcie_h2d_memcpy_gbps_same_link": 34.171250592002544,
+    "observation": "8 CTAs x 1 warp move ~30-33 GB/s (ncu) while the copy engine reaches ~34-41 GB/s on the same link; the gather sits serially on the decode critical chain (single-stream graph)."
+   },
+   "estimate": {
+    "assumption": "hide 50% of gather time (more TMA requests in flight to reach copy-engine bandwidth, plus issuing layer L+1's likely misses during layer L on a side stream); transport only -> bit-exact",
+    "ms_per_step_saved": {
+     "decode_16k": 0.7432832983870968,
+     "decode_120k": 0.7967702983870967,
+     "warm_short_decode": 0.9150549126984128
+    },
+    "decode_tok_s_gain_pct": {
+     "decode_16k": 10.09857658369857,
+     "decode_120k": 7.519434852587592,
+     "warm_short_decode": 12.86011346180116
+    }
+   }
+  },
+  {
+   "rank": 2,
+   "name": "Fresh-prompt expert streaming: every fresh prefill copies the whole 18.25 GB NVFP4 expert bank over PCIe",
+   "evidence": {
+    "h2d_gb_per_fresh_prompt": {
+     "short_prompt_prefill_278tok": 18.245224582,
+     "prefill_16k": 18.245969602,
+     "prefill_120k": 18.251025922
+    },
+    "h2d_gbps_while_copying": 34.171250592002544,
+    "exposed_h2d_ms": {
+     "short_prompt_prefill_278tok": 452.064745,
+     "prefill_16k": 78.016603,
+     "prefill_120k": 80.481641
+    },
+    "short_prompt_prefill_ms": 599.156701,
+    "short_prompt_exposed_share_pct": 75.45016925380261,
+    "copy_compute_overlap_pct": {
+     "short_prompt_prefill_278tok": 12.304285524658422,
+     "prefill_16k": 85.38896562034414,
+     "prefill_120k": 84.82440876197919
+    }
+   },
+   "estimate": {
+    "assumption": "skip experts already resident in decode slots (~31% of the bank, 3164 of 40x256) on fresh prefills; same bytes for the rest -> bit-exact",
+    "short_prompt_ttft_ms_saved": 164.98428989492186,
+    "short_prompt_ttft_gain_pct": 27.536083568716002,
+    "prefill_16k_ms_saved_upper": 78.016603,
+    "note": "the single-chunk (short prompt) path overlaps only ~12% of the copy with compute; even a perfect overlap cannot go below ~(1-resident)*18.25 GB / 40 GB/s ~ 0.32 s for a fresh short prompt"
+   }
+  },
+  {
+   "rank": 3,
+   "name": "Decode weight-streaming kernels below the DRAM roofline: MoE NVFP4 marlin (~59% of 896 GB/s) and the out/o-projection still on cuBLAS FP8 xmma + split-K reduce",
+   "evidence": {
+    "marlin_ms_per_step_16k": 1.2367156935483872,
+    "marlin_us_per_layer": 30.91789233870968,
+    "moe_expert_bytes_per_layer_mb": 14.155776,
+    "marlin_effective_gbps": 457.85061429548836,
+    "xmma_plus_splitk_ms_per_step_16k": 0.8513607741935483,
+    "ncu_component_fp8_gemv_2048x4096": {
+     "duration_us": 13.568,
+     "dram_throughput_pct": 70.76,
+     "dram_gbps": 631.9056603773599,
+     "roofline_class": "memory-bound (DRAM)"
+    },
+    "ncu_component_fp8_gemv_12288x2048": {
+     "duration_us": 35.264,
+     "dram_throughput_pct": 90.36,
+     "dram_gbps": 808.15970961887
+    },
+    "note": "marlin/xmma were not profiled with ncu (NOT_RUN); marlin efficiency is bytes/time from the nsys trace"
+   },
+   "estimate": {
+    "assumption": "bit-exact GEMV-style kernels at ~85% of DRAM peak for the 8 routed experts, and the existing QMMA FP8 GEMV (2048x4096 measured) replacing xmma + split-K (needs a bit-exact replica of cuBLAS split-K=3 order)",
+    "ms_per_step_saved_16k": {
+     "moe_marlin": 0.49324006329628645,
+     "out_o_proj": 0.30864077419354835,
+     "total": 0.8018808374898347
+    },
+    "decode_tok_s_gain_pct_16k": 10.982141098463583
+   }
+  }
+ ],
+ "other_candidates": [
+  {
+   "name": "120K prefill attention (65% of 120K TTFT)",
+   "evidence": {
+    "ms": 14327.303872,
+    "share_pct": 65.29779152253084,
+    "ncu_component_prefill": {
+     "duration_us": 58980.064,
+     "sm_throughput_pct": 82.36,
+     "tensor_inst_hmma_pct_peak_active": 44.42,
+     "roofline_class": "compute-bound",
+     "top_stalls": [
+      {
+       "reason": "math_pipe_throttle",
+       "cycles_per_issue": 5.64,
+       "share_pct": 56.23130608175474
+      },
+      {
+       "reason": "wait",
+       "cycles_per_issue": 1.6,
+       "share_pct": 15.952143569292124
+      },
+      {
+       "reason": "selected",
+       "cycles_per_issue": 1.0,
+       "share_pct": 9.970089730807578
+      }
+     ]
+    },
+    "ncu_component_decode_131072": {
+     "duration_us": 342.432,
+     "dram_throughput_pct": 93.98,
+     "dram_gbps": 841.1931595178,
+     "roofline_class": "memory-bound (DRAM)"
+    }
+   },
+   "estimate": "prefill is tensor-pipe bound (SM ~82%, HMMA ~44.5% of instruction peak = pipe ~90% busy; top stall math_pipe_throttle); decode attention already at ~94% of DRAM peak. Bit-exact headroom <= ~5-10% (k=4 grouping, wave tail) ~ -0.7..-1.4 s at 120K; larger gains need non-bit-exact FP8 attention."
+  },
+  {
+   "name": "Prefill MoE expert GEMM (CUDA NVFP4 fast_gemm, 36% of 16K / 17% of 120K prefill)",
+   "evidence": {
+    "ms_16k": 549.895968,
+    "ms_120k": 3779.672822,
+    "ncu_component_gate_up": {
+     "duration_us": 1075.2,
+     "sm_throughput_pct": 82.93,
+     "tensor_inst_hmma_pct_peak_active": 41.15,
+     "dram_throughput_pct": 38.68,
+     "roofline_class": "compute-bound",
+     "top_stalls": [
+      {
+       "reason": "math_pipe_throttle",
+       "cycles_per_issue": 8.5,
+       "share_pct": 50.655542312276516
+      },
+      {
+       "reason": "wait",
+       "cycles_per_issue": 1.85,
+       "share_pct": 11.02502979737783
+      },
+      {
+       "reason": "barrier",
+       "cycles_per_issue": 1.79,
+       "share_pct": 10.66746126340882
+      }
+     ]
+    }
+   },
+   "estimate": "compute-bound on the BF16 HMMA pipe (SM ~83%) because bit-exactness pins the Triton BF16 dequant+HMMA order; headroom ~10% (-50 ms at 16K, -0.36 s at 120K) unless an FP4/FP8 MMA path is accepted with a new quality gate."
+  },
+  {
+   "name": "Decode launch bubbles (~998 graph nodes per step)",
+   "evidence": {
+    "kernels_per_step": 998,
+    "inter_kernel_gap_ms_per_step": 0.48142033333333334,
+    "gpu_idle_ms_per_step_16k": 0.693311129032258
+   },
+   "estimate": "fusing router/top-k/LRU/sum-reduce and norm+quant chains (or PDL) ~ -0.2..-0.3 ms/step (+3-4%)"
+  }
+ ],
+ "note": "Estimates derive from profiler-time shares (nsys) and component ncu; confirm with unprofiled paired A/B."
+}

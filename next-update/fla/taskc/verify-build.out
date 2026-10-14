@@ -1,0 +1,29 @@
+Cuda compilation tools, release 13.4, V13.4.59
+Build cuda_13.4.r13.4/compiler.38657139_0
+before  qfa_prefill_v7b              syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+before  qfa_prefill                  syscall_refs=3   CALL.ABS=4   UBLKCP=4   0 bytes stack frame 
+before  qfa_prefill_v7               syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+before  qfa_prefill_v7s              syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+before  qfa_prefill_v2               syscall_refs=3   CALL.ABS=12  UBLKCP=12  0 bytes stack frame 
+before  qfa_prefill_v7c              syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+before  qfa_prefill_v7si             syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+before  qfa_prefill_v3               syscall_refs=3   CALL.ABS=12  UBLKCP=12  0 bytes stack frame 
+before  qfa_prefill_v5               syscall_refs=3   CALL.ABS=2   UBLKCP=2   416 bytes stack frame 
+before  qfa_prefill_v6               syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+before  qfa_prefill_v4               syscall_refs=3   CALL.ABS=12  UBLKCP=12  0 bytes stack frame 
+before  decode_prefetch_bench        syscall_refs=5   CALL.ABS=15  UBLKCP=18  0 bytes stack frame 16 bytes stack frame 24 bytes stack frame 8 bytes stack frame 
+before  pcie_bench                   syscall_refs=5   CALL.ABS=15  UBLKCP=18  0 bytes stack frame 16 bytes stack frame 32 bytes stack frame 48 bytes stack frame 
+after   qfa_prefill_v7b              syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+after   qfa_prefill_v7c              syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+after   qfa_prefill_v7s              syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+after   qfa_prefill                  syscall_refs=0   CALL.ABS=0   UBLKCP=4   0 bytes stack frame 
+after   qfa_prefill_v2               syscall_refs=0   CALL.ABS=0   UBLKCP=12  0 bytes stack frame 
+after   qfa_prefill_v7               syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+after   qfa_prefill_v7si             syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+after   qfa_prefill_v3               syscall_refs=0   CALL.ABS=0   UBLKCP=12  0 bytes stack frame 
+after   qfa_prefill_v4               syscall_refs=0   CALL.ABS=0   UBLKCP=12  0 bytes stack frame 
+after   qfa_prefill_v5               syscall_refs=0   CALL.ABS=0   UBLKCP=2   8 bytes stack frame 
+after   qfa_prefill_v6               syscall_refs=0   CALL.ABS=0   UBLKCP=0   0 bytes stack frame 
+after   decode_prefetch_bench        syscall_refs=0   CALL.ABS=0   UBLKCP=18  0 bytes stack frame 16 bytes stack frame 24 bytes stack frame 8 bytes stack frame 
+after   pcie_bench                   syscall_refs=0   CALL.ABS=0   UBLKCP=18  0 bytes stack frame 16 bytes stack frame 32 bytes stack frame 48 bytes stack frame 
+artifacts: /tmp/fla-taskc

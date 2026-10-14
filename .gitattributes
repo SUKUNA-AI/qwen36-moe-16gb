@@ -1,0 +1,2 @@
+# Keep every file byte-identical to the qualified sources (some are sha256-pinned; a few use CRLF).
+* -text

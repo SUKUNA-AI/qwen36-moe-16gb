@@ -1,0 +1,319 @@
+{
+ "timings_under_profiler": true,
+ "note": "structure only, not speed evidence",
+ "on": "<workspace>/work/next-update/fla/results/nsys-fla-on.json",
+ "off": "<workspace>/work/next-update/fla/results/nsys-fla-off.json",
+ "by_length": {
+  "16k": {
+   "gpu_window_ms": {
+    "on": 1376.552,
+    "off": 1419.609,
+    "delta_ms": -43.1,
+    "ratio": 0.9697
+   },
+   "compute_busy_ms": {
+    "on": 1279.312,
+    "off": 1310.737,
+    "delta_ms": -31.4
+   },
+   "gdn_core_sum_ms": {
+    "on": 56.969,
+    "off": 89.524,
+    "delta_ms": -32.6,
+    "share_of_window_off": 0.0631,
+    "share_of_window_on": 0.0414
+   },
+   "non_gdn_core_busy_ms": {
+    "on": 1222.3,
+    "off": 1221.2
+   },
+   "idle_host_late_ms": {
+    "on": 34.558,
+    "off": 41.786
+   },
+   "idle_dependency_ms": {
+    "on": 62.682,
+    "off": 67.086
+   },
+   "fused_calls": {
+    "on": 240,
+    "off": 0
+   },
+   "triton_chunk_o_calls": {
+    "on": 30,
+    "off": 270
+   },
+   "core_kernels_on": {
+    "kkt": [
+     270,
+     9.488,
+     38.8
+    ],
+    "wu": [
+     30,
+     0.105,
+     3.5
+    ],
+    "h": [
+     30,
+     0.197,
+     6.6
+    ],
+    "o": [
+     30,
+     0.077,
+     2.6
+    ],
+    "fused_wu_ho": [
+     240,
+     47.103,
+     176.2
+    ]
+   },
+   "core_kernels_off": {
+    "kkt": [
+     270,
+     9.957,
+     38.9
+    ],
+    "wu": [
+     270,
+     18.423,
+     67.0
+    ],
+    "h": [
+     270,
+     34.084,
+     127.4
+    ],
+    "o": [
+     270,
+     27.06,
+     96.8
+    ]
+   },
+   "gdn_tasks_on": {
+    "n": 270,
+    "host_ms_median": 1.265,
+    "gpu_kernel_ms_median": 3.069,
+    "gpu_span_ms_median": 3.166,
+    "core_ms_median": 0.215,
+    "host_gt_gpu_tasks": 37,
+    "sum_host_ms": 440.567,
+    "sum_gpu_kernel_ms": 768.474,
+    "sum_core_ms": 56.969,
+    "launches_median": 32.0
+   },
+   "gdn_tasks_off": {
+    "n": 270,
+    "host_ms_median": 1.421,
+    "gpu_kernel_ms_median": 3.176,
+    "gpu_span_ms_median": 3.295,
+    "core_ms_median": 0.329,
+    "host_gt_gpu_tasks": 37,
+    "sum_host_ms": 455.419,
+    "sum_gpu_kernel_ms": 799.641,
+    "sum_core_ms": 89.524,
+    "launches_median": 34.0
+   },
+   "copy_h2d_on": {
+    "n": 693,
+    "GB": 18.246,
+    "busy_union_ms": 502.301
+   },
+   "copy_h2d_off": {
+    "n": 693,
+    "GB": 18.246,
+    "busy_union_ms": 498.834
+   },
+   "host_blocking_on": {
+    "cudaEventSynchronize_v3020": {
+     "n": 74,
+     "ms": 732.36
+    },
+    "cudaMemcpyAsync_v3020": {
+     "n": 1299,
+     "ms": 17.523
+    },
+    "cudaStreamSynchronize_v3020": {
+     "n": 38,
+     "ms": 20.362
+    },
+    "cudaStreamWaitEvent_v3020": {
+     "n": 453,
+     "ms": 0.98
+    }
+   },
+   "host_blocking_off": {
+    "cudaEventSynchronize_v3020": {
+     "n": 74,
+     "ms": 763.405
+    },
+    "cudaMemcpyAsync_v3020": {
+     "n": 1299,
+     "ms": 26.953
+    },
+    "cudaStreamSynchronize_v3020": {
+     "n": 38,
+     "ms": 19.759
+    },
+    "cudaStreamWaitEvent_v3020": {
+     "n": 453,
+     "ms": 1.068
+    }
+   },
+   "kkt_grid_hist_on": {
+    "1": 30,
+    "32": 240
+   }
+  },
+  "120k": {
+   "gpu_window_ms": {
+    "on": 21653.216,
+    "off": 21847.185,
+    "delta_ms": -194.0,
+    "ratio": 0.9911
+   },
+   "compute_busy_ms": {
+    "on": 21310.91,
+    "off": 21497.54,
+    "delta_ms": -186.6
+   },
+   "gdn_core_sum_ms": {
+    "on": 407.351,
+    "off": 616.958,
+    "delta_ms": -209.6,
+    "share_of_window_off": 0.0282,
+    "share_of_window_on": 0.0188
+   },
+   "non_gdn_core_busy_ms": {
+    "on": 20903.6,
+    "off": 20880.6
+   },
+   "idle_host_late_ms": {
+    "on": 109.998,
+    "off": 105.077
+   },
+   "idle_dependency_ms": {
+    "on": 232.308,
+    "off": 244.568
+   },
+   "fused_calls": {
+    "on": 1770,
+    "off": 0
+   },
+   "triton_chunk_o_calls": {
+    "on": 0,
+    "off": 1770
+   },
+   "core_kernels_on": {
+    "kkt": [
+     1770,
+     73.186,
+     38.8
+    ],
+    "fused_wu_ho": [
+     1770,
+     334.165,
+     176.3
+    ]
+   },
+   "core_kernels_off": {
+    "kkt": [
+     1770,
+     71.61,
+     39.0
+    ],
+    "wu": [
+     1770,
+     125.452,
+     64.9
+    ],
+    "h": [
+     1770,
+     236.631,
+     125.8
+    ],
+    "o": [
+     1770,
+     183.265,
+     95.8
+    ]
+   },
+   "gdn_tasks_on": {
+    "n": 1770,
+    "host_ms_median": 1.307,
+    "gpu_kernel_ms_median": 3.054,
+    "gpu_span_ms_median": 3.127,
+    "core_ms_median": 0.215,
+    "host_gt_gpu_tasks": 72,
+    "sum_host_ms": 3069.016,
+    "sum_gpu_kernel_ms": 5369.901,
+    "sum_core_ms": 407.351,
+    "launches_median": 32.0
+   },
+   "gdn_tasks_off": {
+    "n": 1770,
+    "host_ms_median": 1.41,
+    "gpu_kernel_ms_median": 3.166,
+    "gpu_span_ms_median": 3.245,
+    "core_ms_median": 0.326,
+    "host_gt_gpu_tasks": 148,
+    "sum_host_ms": 3647.056,
+    "sum_gpu_kernel_ms": 5579.833,
+    "sum_core_ms": 616.958,
+    "launches_median": 34.0
+   },
+   "copy_h2d_on": {
+    "n": 3221,
+    "GB": 18.251,
+    "busy_union_ms": 518.102
+   },
+   "copy_h2d_off": {
+    "n": 3221,
+    "GB": 18.251,
+    "busy_union_ms": 496.547
+   },
+   "host_blocking_on": {
+    "cudaEventSynchronize_v3020": {
+     "n": 474,
+     "ms": 17171.589
+    },
+    "cudaMemcpyAsync_v3020": {
+     "n": 7079,
+     "ms": 107.142
+    },
+    "cudaStreamSynchronize_v3020": {
+     "n": 236,
+     "ms": 69.479
+    },
+    "cudaStreamWaitEvent_v3020": {
+     "n": 2753,
+     "ms": 6.769
+    }
+   },
+   "host_blocking_off": {
+    "cudaEventSynchronize_v3020": {
+     "n": 474,
+     "ms": 16781.835
+    },
+    "cudaMemcpyAsync_v3020": {
+     "n": 7079,
+     "ms": 117.629
+    },
+    "cudaStreamSynchronize_v3020": {
+     "n": 236,
+     "ms": 72.026
+    },
+    "cudaStreamWaitEvent_v3020": {
+     "n": 2753,
+     "ms": 7.055
+    }
+   },
+   "kkt_grid_hist_on": {
+    "20": 30,
+    "32": 1740
+   }
+  }
+ }
+}

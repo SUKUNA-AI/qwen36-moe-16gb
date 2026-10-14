@@ -1,0 +1,1 @@
+{"context": 65536, "chunk": 2048, "memory_ratio": 0.75, "qualified": false, "flags": [], "env": {"QWEN36_TEACHER_FIXTURE": "/home/USER/qwen36-api/optimization/config/teacher-fixture.json", "QWEN36_LOGIT_REFERENCE": "/home/USER/qwen36-api/optimization/reports/logit-reference"}}

@@ -1,0 +1,5275 @@
+{
+ "schema": "qwen36-release-metrics",
+ "schema_version": 1,
+ "generated_utc": "2026-10-14T17:31:24+00:00",
+ "scope": "Released Qwen3.6-35B-A3B API build, release f1 (installed 2026-10-14). Assembled from existing reports only; no new runs.",
+ "conventions": {
+  "paths": "$N = <native-harness> (native harness); $W = <workspace>",
+  "percentiles": "percentiles: linear interpolation between closest ranks (numpy \"linear\"); n = sample count",
+  "units": "GiB = 2^30 B, MiB = 2^20 B, GB = 1e9 B; s = seconds; tok/s = tokens per second",
+  "clients": "client = load generator (bench.py/soak.py, SSE timing on the client); server = ingress request_metrics.py (same host, before HTTP client); engine = FreeToken engine telemetry (GPU events per batch)",
+  "NOT_MEASURED": "value not present in any existing report; nothing estimated unless labelled DERIVED"
+ },
+ "release": {
+  "gate_verdicts": {
+   "value": {
+    "CONFIG": "gather=in",
+    "STOP": "FAIL",
+    "A": "PASS",
+    "B.main-release": "PASS",
+    "B.long256-release": "PASS_EQUIV_R1B256",
+    "D.pilot": "PASS",
+    "D.matrix": "PASS",
+    "D.manifest": "PASS",
+    "D.compare": "PASS",
+    "C.c0": "PASS",
+    "C.l4": "PASS",
+    "C.f1": "PASS_WITH_KNOWN_LIMITATION",
+    "E.pilot": "PASS",
+    "E.soak": "PASS"
+   },
+   "unit": "status",
+   "source": "$N/reports/final-gates-f1-summary.json",
+   "definition": "final gates run f1: step -> status (STOP rows are earlier attempts superseded by re-runs, see final-gates-f1.steps)"
+  },
+  "releasable": {
+   "value": true,
+   "unit": "bool",
+   "source": "$N/reports/final-gates-f1-summary.json",
+   "definition": "final-gates summary verdict"
+  },
+  "profiles": {
+   "value": {
+    "main128": {
+     "context": 131072,
+     "memory_ratio": 0.75,
+     "expert_slots": 3164,
+     "default": true
+    },
+    "long256": {
+     "context": 262144,
+     "memory_ratio": 0.73,
+     "expert_slots": 1481
+    },
+    "baseline64": {
+     "context": 65536,
+     "memory_ratio": 0.75,
+     "expert_slots": 3917,
+     "note": "unchanged fallback profile (baseline64-final)"
+    }
+   },
+   "unit": "config",
+   "source": "$N/reports/final-f1-c128-a1-preflight.json, $N/reports/final-f1-l256-a1-preflight.json, $N/reports/final-f1-b64-a1-preflight.json",
+   "definition": "run configuration as recorded by the context-gate preflights (context, memory_ratio, gpu_expert_slots_r1b)"
+  },
+  "build": {
+   "value": "layer-major prefill + bit-exact CUDA NVFP4 prefill (chunk 2048) + CUDA GDN (ABI 2, cluster decode) + FP8 GEMV + attention batching k=2 + tuned decode gather + FP32 GDN snapshot + retained chunk snapshot + fused attention gate; FREETOKEN_DISABLE_JIT=1; KV BF16",
+   "unit": "text",
+   "source": "$N/reports/soak-final-f1-a1.json (run.configuration.env)",
+   "definition": "QWEN36_* switches of the served main-release configuration"
+  },
+  "identity": {
+   "value": {
+    "profile": "main-release",
+    "identity_sha256": "ad500087e7766b39c226814ac3b1a8b31cc36957aca06eae7628b2e29dfa648b",
+    "manifest": "final-f1-m-manifest.json sha256 742a52b0374303be...",
+    "checkpoint": "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 1355db6a",
+    "packages": "torch 2.11.0, triton 3.6.0, flashinfer 0.6.18.post1, sglang-kernel 0.4.5, transformers 5.16.1",
+    "qualification_receipt": "5968b76fe607e281",
+    "profiles_json_sha256": "23bc2bb6858bab8e"
+   },
+   "unit": "ids",
+   "source": "$N/reports/soak-final-f1-a1-analysis.json, $N/reports/final-install-f1.steps",
+   "definition": "candidate identity bound to the matrix manifest (soak analysis) and install receipts (F1/F2)"
+  }
+ },
+ "latency": {
+  "soak": {
+   "source": "$N/reports/soak-final-f1-a1.json",
+   "analysis": "$N/reports/soak-final-f1-a1-analysis.json",
+   "workload": "soak128-original-workload: sequential single client, fresh prompts 64/4K/16K/64K/120K (max_tokens 256, T=0.6, ignore_eos off, all hit length), prefix every 5, arithmetic every 7, tool every 17, cancel every 19; 5 s pause",
+   "window": "2026-10-14T14:02:16.913788+00:00 .. 2026-10-14T16:02:29.236252+00:00 (7212 s, 509 iterations)",
+   "by_length": {
+    "64": {
+     "n_requests": {
+      "value": 102,
+      "unit": "requests",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "scenario rows of this case joined to ingress + engine telemetry"
+     },
+     "prompt_tokens": {
+      "value": {
+       "n": 102,
+       "p50": 93.0,
+       "min": 93,
+       "max": 93,
+       "mean": 93.0
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens (chat template included)"
+     },
+     "output_tokens": {
+      "value": [
+       256
+      ],
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "completion_tokens per request (max_tokens=256, finish_reason=length)"
+     },
+     "cached_prompt_tokens": {
+      "value": {
+       "n": 102,
+       "p50": 0.0,
+       "min": 0,
+       "max": 0,
+       "mean": 0.0
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens_details.cached_tokens"
+     },
+     "ttft_client_s": {
+      "value": {
+       "n": 102,
+       "p50": 0.601,
+       "p90": 0.6363,
+       "p99": 0.6713,
+       "min": 0.5633,
+       "max": 1.3913,
+       "mean": 0.6105
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> first non-empty SSE content delta (rows[].requests[].ttft_content_s)"
+     },
+     "ttft_server_s": {
+      "value": {
+       "n": 102,
+       "p50": 0.5994,
+       "p90": 0.6347,
+       "p99": 0.6697,
+       "min": 0.5615,
+       "max": 1.3892,
+       "mean": 0.6088
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request start -> first engine token acknowledgement (telemetry.requests.ttft_generated_s)"
+     },
+     "decode_client_tps": {
+      "value": {
+       "n": 102,
+       "p10": 126.57,
+       "p5": 120.988,
+       "p50": 133.7449,
+       "p90": 138.5333,
+       "min": 113.948,
+       "max": 142.9424,
+       "mean": 132.7959
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: (completion_tokens-1)/(last content delta - first content delta)"
+     },
+     "decode_server_tps": {
+      "value": {
+       "n": 102,
+       "p10": 126.5681,
+       "p5": 120.9889,
+       "p50": 133.7368,
+       "p90": 138.5228,
+       "min": 113.9439,
+       "max": 142.9449,
+       "mean": 132.7913
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: (acknowledged tokens after the first)/(last ack - first ack) (telemetry.requests.decode_ack_tps)"
+     },
+     "itl_mean_client_ms": {
+      "value": {
+       "n": 102,
+       "p50": 7.4769,
+       "p90": 7.9008,
+       "p99": 8.6876,
+       "min": 6.9958,
+       "max": 8.7759,
+       "mean": 7.5451
+      },
+      "unit": "ms/token",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED per request: 1000/decode_client_tps = mean inter-token latency of that request; per-token ITL distribution NOT_MEASURED"
+     },
+     "prefill_tps_client": {
+      "value": {
+       "n": 102,
+       "p10": 146.1,
+       "p5": 142.2,
+       "p50": 154.7,
+       "min": 66.8,
+       "max": 165.1,
+       "mean": 153.7
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: (prompt_tokens - cached_prompt_tokens)/ttft_client_s (includes HTTP, tokenization, first decode step)"
+     },
+     "prefill_tps_engine": {
+      "value": {
+       "n": 102,
+       "p10": 147.8,
+       "p5": 144.4,
+       "p50": 156.8,
+       "min": 111.8,
+       "max": 167.3,
+       "mean": 156.2
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: engine prefill_forward_tokens/(prefill_gpu_ms/1000) (GPU-event time of prefill batches)"
+     },
+     "e2e_s_256_tokens_client": {
+      "value": {
+       "n": 102,
+       "p50": 2.5149,
+       "p90": 2.6428,
+       "p99": 2.8383,
+       "min": 2.3533,
+       "max": 3.6295,
+       "mean": 2.5348
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> stream end for 256 output tokens (elapsed_s)"
+     },
+     "e2e_s_server": {
+      "value": {
+       "n": 102,
+       "p50": 2.514,
+       "p90": 2.6419,
+       "p99": 2.8371,
+       "min": 2.3524,
+       "max": 3.6282,
+       "mean": 2.5339
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request duration_s"
+     },
+     "engine": {
+      "prefill_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 593.1281,
+        "p90": 629.1064,
+        "p99": 663.1088,
+        "min": 555.7667,
+        "max": 831.9894,
+        "mean": 597.0623
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: sum of GPU-event durations of prefill batches for the request"
+      },
+      "decode_step_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 7.2555,
+        "p90": 7.693,
+        "p99": 8.2519,
+        "min": 6.7812,
+        "max": 8.3768,
+        "mean": 7.3157
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (GPU-event time per decode forward, batch 1)"
+      },
+      "engine_span_s": {
+       "value": {
+        "n": 102,
+        "p50": 2.5064,
+        "p90": 2.6335,
+        "p99": 2.8296,
+        "min": 2.3451,
+        "max": 3.0748,
+        "mean": 2.5207
+       },
+       "unit": "s",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: first batch start -> request completion (monotonic)"
+      },
+      "scheduler_gap_ms": {
+       "value": {
+        "n": 102,
+        "p50": 56.2086,
+        "p90": 66.8995,
+        "p99": 111.0551,
+        "min": 48.1954,
+        "max": 111.2895,
+        "mean": 58.1407
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: engine_span - prefill_gpu - decode_gpu = engine time not covered by GPU-event-timed forwards (CPU scheduling, launch, host sync, sampling, output processing)"
+      },
+      "scheduler_gap_per_decode_step_ms": {
+       "value": {
+        "n": 102,
+        "p50": 0.2204,
+        "p90": 0.2624,
+        "min": 0.189,
+        "max": 0.4364,
+        "mean": 0.228
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: scheduler_gap_ms/decode_forwards"
+      },
+      "non_engine_ms": {
+       "value": {
+        "n": 102,
+        "p50": 7.6277,
+        "p90": 8.264,
+        "p99": 23.7215,
+        "min": 6.3621,
+        "max": 553.4389,
+        "mean": 13.1471
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ingress duration - engine span = tokenization, admission/queue wait before the first batch, stream tail (single client, no contention)"
+      },
+      "ttft_server_minus_prefill_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 6.1448,
+        "p90": 6.9189,
+        "min": 5.0897,
+        "max": 557.2098,
+        "mean": 11.7534
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ttft_server - prefill_gpu_ms = pre-prefill overhead (queue/tokenize/schedule) + non-GPU time inside prefill"
+      },
+      "client_minus_server_ttft_ms": {
+       "value": {
+        "n": 102,
+        "p50": 1.6158,
+        "p90": 1.8248,
+        "min": 1.4205,
+        "max": 2.1502,
+        "mean": 1.6469
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: client TTFT - ingress TTFT = HTTP/SSE delivery + detokenization of the first delta"
+      }
+     },
+     "gpu_energy_per_request_J": {
+      "value": {
+       "n": 102,
+       "p50": 307.6595,
+       "min": 197.89,
+       "max": 412.818,
+       "mean": 286.1906
+      },
+      "unit": "J",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "telemetry.requests.counter_deltas.gpu_energy_mj/1000 (NVML energy counter delta over the request)"
+     },
+     "gpu_mean_power_W": {
+      "value": {
+       "n": 102,
+       "p50": 117.5397,
+       "min": 81.3944,
+       "max": 145.4792,
+       "mean": 112.863
+      },
+      "unit": "W",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: gpu energy delta / ingress duration"
+     }
+    },
+    "4096": {
+     "n_requests": {
+      "value": 102,
+      "unit": "requests",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "scenario rows of this case joined to ingress + engine telemetry"
+     },
+     "prompt_tokens": {
+      "value": {
+       "n": 102,
+       "p50": 4125.0,
+       "min": 4124,
+       "max": 4125,
+       "mean": 4124.7941
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens (chat template included)"
+     },
+     "output_tokens": {
+      "value": [
+       256
+      ],
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "completion_tokens per request (max_tokens=256, finish_reason=length)"
+     },
+     "cached_prompt_tokens": {
+      "value": {
+       "n": 102,
+       "p50": 0.0,
+       "min": 0,
+       "max": 0,
+       "mean": 0.0
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens_details.cached_tokens"
+     },
+     "ttft_client_s": {
+      "value": {
+       "n": 102,
+       "p50": 0.6063,
+       "p90": 0.6341,
+       "p99": 0.6487,
+       "min": 0.5671,
+       "max": 0.6648,
+       "mean": 0.606
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> first non-empty SSE content delta (rows[].requests[].ttft_content_s)"
+     },
+     "ttft_server_s": {
+      "value": {
+       "n": 102,
+       "p50": 0.6047,
+       "p90": 0.6325,
+       "p99": 0.6471,
+       "min": 0.5654,
+       "max": 0.6632,
+       "mean": 0.6043
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request start -> first engine token acknowledgement (telemetry.requests.ttft_generated_s)"
+     },
+     "decode_client_tps": {
+      "value": {
+       "n": 102,
+       "p10": 127.7052,
+       "p5": 125.2233,
+       "p50": 135.0443,
+       "p90": 140.48,
+       "min": 118.6813,
+       "max": 143.3128,
+       "mean": 134.5519
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: (completion_tokens-1)/(last content delta - first content delta)"
+     },
+     "decode_server_tps": {
+      "value": {
+       "n": 102,
+       "p10": 127.7019,
+       "p5": 125.2147,
+       "p50": 135.0427,
+       "p90": 140.4653,
+       "min": 118.6773,
+       "max": 143.3117,
+       "mean": 134.5478
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: (acknowledged tokens after the first)/(last ack - first ack) (telemetry.requests.decode_ack_tps)"
+     },
+     "itl_mean_client_ms": {
+      "value": {
+       "n": 102,
+       "p50": 7.405,
+       "p90": 7.8305,
+       "p99": 8.3991,
+       "min": 6.9777,
+       "max": 8.4259,
+       "mean": 7.4445
+      },
+      "unit": "ms/token",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED per request: 1000/decode_client_tps = mean inter-token latency of that request; per-token ITL distribution NOT_MEASURED"
+     },
+     "prefill_tps_client": {
+      "value": {
+       "n": 102,
+       "p10": 6505.5,
+       "p5": 6414.5,
+       "p50": 6802.2,
+       "min": 6205.2,
+       "max": 7271.9,
+       "mean": 6814.8
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: (prompt_tokens - cached_prompt_tokens)/ttft_client_s (includes HTTP, tokenization, first decode step)"
+     },
+     "prefill_tps_engine": {
+      "value": {
+       "n": 102,
+       "p10": 6641.9,
+       "p5": 6557.7,
+       "p50": 6966.7,
+       "min": 6321.3,
+       "max": 7435.6,
+       "mean": 6973.8
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: engine prefill_forward_tokens/(prefill_gpu_ms/1000) (GPU-event time of prefill batches)"
+     },
+     "e2e_s_256_tokens_client": {
+      "value": {
+       "n": 102,
+       "p50": 2.4915,
+       "p90": 2.6242,
+       "p99": 2.7758,
+       "min": 2.363,
+       "max": 2.783,
+       "mean": 2.5047
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> stream end for 256 output tokens (elapsed_s)"
+     },
+     "e2e_s_server": {
+      "value": {
+       "n": 102,
+       "p50": 2.4906,
+       "p90": 2.6233,
+       "p99": 2.775,
+       "min": 2.362,
+       "max": 2.7821,
+       "mean": 2.5037
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request duration_s"
+     },
+     "engine": {
+      "prefill_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 591.9569,
+        "p90": 620.9195,
+        "p99": 635.6313,
+        "min": 554.6265,
+        "max": 652.56,
+        "mean": 592.187
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: sum of GPU-event durations of prefill batches for the request"
+      },
+      "decode_step_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 7.1707,
+        "p90": 7.5613,
+        "p99": 8.0929,
+        "min": 6.7614,
+        "max": 8.0997,
+        "mean": 7.2123
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (GPU-event time per decode forward, batch 1)"
+      },
+      "engine_span_s": {
+       "value": {
+        "n": 102,
+        "p50": 2.4772,
+        "p90": 2.609,
+        "p99": 2.7604,
+        "min": 2.349,
+        "max": 2.7693,
+        "mean": 2.4899
+       },
+       "unit": "s",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: first batch start -> request completion (monotonic)"
+      },
+      "scheduler_gap_ms": {
+       "value": {
+        "n": 102,
+        "p50": 56.3134,
+        "p90": 69.0587,
+        "p99": 94.3998,
+        "min": 48.8395,
+        "max": 99.9344,
+        "mean": 58.5461
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: engine_span - prefill_gpu - decode_gpu = engine time not covered by GPU-event-timed forwards (CPU scheduling, launch, host sync, sampling, output processing)"
+      },
+      "scheduler_gap_per_decode_step_ms": {
+       "value": {
+        "n": 102,
+        "p50": 0.2208,
+        "p90": 0.2708,
+        "min": 0.1915,
+        "max": 0.3919,
+        "mean": 0.2296
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: scheduler_gap_ms/decode_forwards"
+      },
+      "non_engine_ms": {
+       "value": {
+        "n": 102,
+        "p50": 13.7616,
+        "p90": 14.6936,
+        "p99": 15.1281,
+        "min": 12.2012,
+        "max": 15.1715,
+        "mean": 13.8121
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ingress duration - engine span = tokenization, admission/queue wait before the first batch, stream tail (single client, no contention)"
+      },
+      "ttft_server_minus_prefill_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 12.14,
+        "p90": 12.8653,
+        "min": 10.5399,
+        "max": 13.626,
+        "mean": 12.1268
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ttft_server - prefill_gpu_ms = pre-prefill overhead (queue/tokenize/schedule) + non-GPU time inside prefill"
+      },
+      "client_minus_server_ttft_ms": {
+       "value": {
+        "n": 102,
+        "p50": 1.639,
+        "p90": 1.8683,
+        "min": 1.4691,
+        "max": 2.6129,
+        "mean": 1.6696
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: client TTFT - ingress TTFT = HTTP/SSE delivery + detokenization of the first delta"
+      }
+     },
+     "gpu_energy_per_request_J": {
+      "value": {
+       "n": 102,
+       "p50": 358.5995,
+       "min": 244.375,
+       "max": 417.004,
+       "mean": 337.9341
+      },
+      "unit": "J",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "telemetry.requests.counter_deltas.gpu_energy_mj/1000 (NVML energy counter delta over the request)"
+     },
+     "gpu_mean_power_W": {
+      "value": {
+       "n": 102,
+       "p50": 133.2109,
+       "min": 100.8157,
+       "max": 172.0143,
+       "mean": 135.0954
+      },
+      "unit": "W",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: gpu energy delta / ingress duration"
+     }
+    },
+    "16384": {
+     "n_requests": {
+      "value": 102,
+      "unit": "requests",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "scenario rows of this case joined to ingress + engine telemetry"
+     },
+     "prompt_tokens": {
+      "value": {
+       "n": 102,
+       "p50": 16413.0,
+       "min": 16412,
+       "max": 16413,
+       "mean": 16412.8431
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens (chat template included)"
+     },
+     "output_tokens": {
+      "value": [
+       256
+      ],
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "completion_tokens per request (max_tokens=256, finish_reason=length)"
+     },
+     "cached_prompt_tokens": {
+      "value": {
+       "n": 102,
+       "p50": 0.0,
+       "min": 0,
+       "max": 0,
+       "mean": 0.0
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens_details.cached_tokens"
+     },
+     "ttft_client_s": {
+      "value": {
+       "n": 102,
+       "p50": 1.3601,
+       "p90": 1.4006,
+       "p99": 1.6104,
+       "min": 1.3294,
+       "max": 1.6486,
+       "mean": 1.3731
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> first non-empty SSE content delta (rows[].requests[].ttft_content_s)"
+     },
+     "ttft_server_s": {
+      "value": {
+       "n": 102,
+       "p50": 1.3584,
+       "p90": 1.3989,
+       "p99": 1.6088,
+       "min": 1.3279,
+       "max": 1.6469,
+       "mean": 1.3713
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request start -> first engine token acknowledgement (telemetry.requests.ttft_generated_s)"
+     },
+     "decode_client_tps": {
+      "value": {
+       "n": 102,
+       "p10": 124.0814,
+       "p5": 116.8518,
+       "p50": 129.834,
+       "p90": 134.2272,
+       "min": 114.5882,
+       "max": 137.2141,
+       "mean": 129.2974
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: (completion_tokens-1)/(last content delta - first content delta)"
+     },
+     "decode_server_tps": {
+      "value": {
+       "n": 102,
+       "p10": 124.0582,
+       "p5": 116.8518,
+       "p50": 129.8279,
+       "p90": 134.222,
+       "min": 114.5872,
+       "max": 137.2144,
+       "mean": 129.2941
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: (acknowledged tokens after the first)/(last ack - first ack) (telemetry.requests.decode_ack_tps)"
+     },
+     "itl_mean_client_ms": {
+      "value": {
+       "n": 102,
+       "p50": 7.7021,
+       "p90": 8.0593,
+       "p99": 8.6916,
+       "min": 7.2879,
+       "max": 8.7269,
+       "mean": 7.7446
+      },
+      "unit": "ms/token",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED per request: 1000/decode_client_tps = mean inter-token latency of that request; per-token ITL distribution NOT_MEASURED"
+     },
+     "prefill_tps_client": {
+      "value": {
+       "n": 102,
+       "p10": 11718.9,
+       "p5": 10960.6,
+       "p50": 12067.3,
+       "min": 9955.9,
+       "max": 12345.1,
+       "mean": 11972.5
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: (prompt_tokens - cached_prompt_tokens)/ttft_client_s (includes HTTP, tokenization, first decode step)"
+     },
+     "prefill_tps_engine": {
+      "value": {
+       "n": 102,
+       "p10": 11969.8,
+       "p5": 11217.2,
+       "p50": 12337.1,
+       "min": 10135.9,
+       "max": 12614.3,
+       "mean": 12244.6
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: engine prefill_forward_tokens/(prefill_gpu_ms/1000) (GPU-event time of prefill batches)"
+     },
+     "e2e_s_256_tokens_client": {
+      "value": {
+       "n": 102,
+       "p50": 3.3205,
+       "p90": 3.4386,
+       "p99": 3.8229,
+       "min": 3.1996,
+       "max": 3.8362,
+       "mean": 3.3483
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> stream end for 256 output tokens (elapsed_s)"
+     },
+     "e2e_s_server": {
+      "value": {
+       "n": 102,
+       "p50": 3.3193,
+       "p90": 3.4376,
+       "p99": 3.8218,
+       "min": 3.1985,
+       "max": 3.8352,
+       "mean": 3.3472
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request duration_s"
+     },
+     "engine": {
+      "prefill_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 1330.3748,
+        "p90": 1371.1988,
+        "p99": 1580.6346,
+        "min": 1301.0594,
+        "max": 1619.2899,
+        "mean": 1342.625
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: sum of GPU-event durations of prefill batches for the request"
+      },
+      "decode_step_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 7.4714,
+        "p90": 7.7415,
+        "p99": 8.3768,
+        "min": 7.0631,
+        "max": 8.382,
+        "mean": 7.5019
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (GPU-event time per decode forward, batch 1)"
+      },
+      "engine_span_s": {
+       "value": {
+        "n": 102,
+        "p50": 3.2879,
+        "p90": 3.4004,
+        "p99": 3.79,
+        "min": 3.1697,
+        "max": 3.8056,
+        "mean": 3.3142
+       },
+       "unit": "s",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: first batch start -> request completion (monotonic)"
+      },
+      "scheduler_gap_ms": {
+       "value": {
+        "n": 102,
+        "p50": 56.9751,
+        "p90": 66.0045,
+        "p99": 88.4427,
+        "min": 49.3782,
+        "max": 101.9405,
+        "mean": 58.6036
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: engine_span - prefill_gpu - decode_gpu = engine time not covered by GPU-event-timed forwards (CPU scheduling, launch, host sync, sampling, output processing)"
+      },
+      "scheduler_gap_per_decode_step_ms": {
+       "value": {
+        "n": 102,
+        "p50": 0.2234,
+        "p90": 0.2588,
+        "min": 0.1936,
+        "max": 0.3998,
+        "mean": 0.2298
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: scheduler_gap_ms/decode_forwards"
+      },
+      "non_engine_ms": {
+       "value": {
+        "n": 102,
+        "p50": 30.0404,
+        "p90": 32.5017,
+        "p99": 35.2909,
+        "min": 25.7397,
+        "max": 307.5273,
+        "mean": 32.9856
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ingress duration - engine span = tokenization, admission/queue wait before the first batch, stream tail (single client, no contention)"
+      },
+      "ttft_server_minus_prefill_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 28.5255,
+        "p90": 30.9123,
+        "min": 24.2484,
+        "max": 33.6165,
+        "mean": 28.6978
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ttft_server - prefill_gpu_ms = pre-prefill overhead (queue/tokenize/schedule) + non-GPU time inside prefill"
+      },
+      "client_minus_server_ttft_ms": {
+       "value": {
+        "n": 102,
+        "p50": 1.7003,
+        "p90": 1.9159,
+        "min": 1.5329,
+        "max": 2.4028,
+        "mean": 1.7311
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: client TTFT - ingress TTFT = HTTP/SSE delivery + detokenization of the first delta"
+      }
+     },
+     "gpu_energy_per_request_J": {
+      "value": {
+       "n": 102,
+       "p50": 583.9565,
+       "min": 521.733,
+       "max": 709.603,
+       "mean": 595.5371
+      },
+      "unit": "J",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "telemetry.requests.counter_deltas.gpu_energy_mj/1000 (NVML energy counter delta over the request)"
+     },
+     "gpu_mean_power_W": {
+      "value": {
+       "n": 102,
+       "p50": 173.1992,
+       "min": 157.8572,
+       "max": 214.6081,
+       "mean": 177.961
+      },
+      "unit": "W",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: gpu energy delta / ingress duration"
+     }
+    },
+    "65536": {
+     "n_requests": {
+      "value": 102,
+      "unit": "requests",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "scenario rows of this case joined to ingress + engine telemetry"
+     },
+     "prompt_tokens": {
+      "value": {
+       "n": 102,
+       "p50": 65565.0,
+       "min": 65564,
+       "max": 65565,
+       "mean": 65564.8431
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens (chat template included)"
+     },
+     "output_tokens": {
+      "value": [
+       256
+      ],
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "completion_tokens per request (max_tokens=256, finish_reason=length)"
+     },
+     "cached_prompt_tokens": {
+      "value": {
+       "n": 102,
+       "p50": 0.0,
+       "min": 0,
+       "max": 0,
+       "mean": 0.0
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens_details.cached_tokens"
+     },
+     "ttft_client_s": {
+      "value": {
+       "n": 102,
+       "p50": 8.1401,
+       "p90": 8.5234,
+       "p99": 9.2877,
+       "min": 7.9781,
+       "max": 9.5985,
+       "mean": 8.1913
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> first non-empty SSE content delta (rows[].requests[].ttft_content_s)"
+     },
+     "ttft_server_s": {
+      "value": {
+       "n": 102,
+       "p50": 8.1382,
+       "p90": 8.5215,
+       "p99": 9.2859,
+       "min": 7.9761,
+       "max": 9.5966,
+       "mean": 8.1893
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request start -> first engine token acknowledgement (telemetry.requests.ttft_generated_s)"
+     },
+     "decode_client_tps": {
+      "value": {
+       "n": 102,
+       "p10": 107.0973,
+       "p5": 101.3054,
+       "p50": 112.1788,
+       "p90": 116.46,
+       "min": 95.0324,
+       "max": 119.3897,
+       "mean": 111.5936
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: (completion_tokens-1)/(last content delta - first content delta)"
+     },
+     "decode_server_tps": {
+      "value": {
+       "n": 102,
+       "p10": 107.0956,
+       "p5": 101.303,
+       "p50": 112.1777,
+       "p90": 116.4582,
+       "min": 95.0348,
+       "max": 119.3778,
+       "mean": 111.5906
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: (acknowledged tokens after the first)/(last ack - first ack) (telemetry.requests.decode_ack_tps)"
+     },
+     "itl_mean_client_ms": {
+      "value": {
+       "n": 102,
+       "p50": 8.9143,
+       "p90": 9.3373,
+       "p99": 10.1923,
+       "min": 8.3759,
+       "max": 10.5227,
+       "mean": 8.9758
+      },
+      "unit": "ms/token",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED per request: 1000/decode_client_tps = mean inter-token latency of that request; per-token ITL distribution NOT_MEASURED"
+     },
+     "prefill_tps_client": {
+      "value": {
+       "n": 102,
+       "p10": 7692.5,
+       "p5": 7549.1,
+       "p50": 8054.6,
+       "min": 6830.7,
+       "max": 8218.1,
+       "mean": 8012.5
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: (prompt_tokens - cached_prompt_tokens)/ttft_client_s (includes HTTP, tokenization, first decode step)"
+     },
+     "prefill_tps_engine": {
+      "value": {
+       "n": 102,
+       "p10": 7782.6,
+       "p5": 7637.8,
+       "p50": 8153.5,
+       "min": 6908.9,
+       "max": 8323.6,
+       "mean": 8113.9
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: engine prefill_forward_tokens/(prefill_gpu_ms/1000) (GPU-event time of prefill batches)"
+     },
+     "e2e_s_256_tokens_client": {
+      "value": {
+       "n": 102,
+       "p50": 10.408,
+       "p90": 10.8735,
+       "p99": 11.8193,
+       "min": 10.1145,
+       "max": 12.2822,
+       "mean": 10.4805
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> stream end for 256 output tokens (elapsed_s)"
+     },
+     "e2e_s_server": {
+      "value": {
+       "n": 102,
+       "p50": 10.4067,
+       "p90": 10.8722,
+       "p99": 11.8181,
+       "min": 10.1133,
+       "max": 12.2808,
+       "mean": 10.4792
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request duration_s"
+     },
+     "engine": {
+      "prefill_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 8041.3196,
+        "p90": 8424.6648,
+        "p99": 9179.2155,
+        "min": 7876.9531,
+        "max": 9489.9131,
+        "mean": 8089.0815
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: sum of GPU-event durations of prefill batches for the request"
+      },
+      "decode_step_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 8.6806,
+        "p90": 9.1046,
+        "p99": 9.7815,
+        "min": 8.1671,
+        "max": 10.1742,
+        "mean": 8.7312
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (GPU-event time per decode forward, batch 1)"
+      },
+      "engine_span_s": {
+       "value": {
+        "n": 102,
+        "p50": 10.3016,
+        "p90": 10.7706,
+        "p99": 11.7083,
+        "min": 10.0161,
+        "max": 12.1726,
+        "mean": 10.3776
+       },
+       "unit": "s",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: first batch start -> request completion (monotonic)"
+      },
+      "scheduler_gap_ms": {
+       "value": {
+        "n": 102,
+        "p50": 58.2801,
+        "p90": 75.6027,
+        "p99": 104.2419,
+        "min": 50.8121,
+        "max": 167.4268,
+        "mean": 62.0607
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: engine_span - prefill_gpu - decode_gpu = engine time not covered by GPU-event-timed forwards (CPU scheduling, launch, host sync, sampling, output processing)"
+      },
+      "scheduler_gap_per_decode_step_ms": {
+       "value": {
+        "n": 102,
+        "p50": 0.2285,
+        "p90": 0.2965,
+        "min": 0.1993,
+        "max": 0.6566,
+        "mean": 0.2434
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: scheduler_gap_ms/decode_forwards"
+      },
+      "non_engine_ms": {
+       "value": {
+        "n": 102,
+        "p50": 101.4554,
+        "p90": 105.8815,
+        "p99": 110.6502,
+        "min": 93.7493,
+        "max": 116.3457,
+        "mean": 101.6158
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ingress duration - engine span = tokenization, admission/queue wait before the first batch, stream tail (single client, no contention)"
+      },
+      "ttft_server_minus_prefill_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 100.0284,
+        "p90": 104.8535,
+        "min": 92.705,
+        "max": 115.3101,
+        "mean": 100.2594
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ttft_server - prefill_gpu_ms = pre-prefill overhead (queue/tokenize/schedule) + non-GPU time inside prefill"
+      },
+      "client_minus_server_ttft_ms": {
+       "value": {
+        "n": 102,
+        "p50": 1.9156,
+        "p90": 2.1073,
+        "min": 1.7024,
+        "max": 2.6898,
+        "mean": 1.9418
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: client TTFT - ingress TTFT = HTTP/SSE delivery + detokenization of the first delta"
+      }
+     },
+     "gpu_energy_per_request_J": {
+      "value": {
+       "n": 102,
+       "p50": 2499.774,
+       "min": 2410.292,
+       "max": 2697.097,
+       "mean": 2510.8225
+      },
+      "unit": "J",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "telemetry.requests.counter_deltas.gpu_energy_mj/1000 (NVML energy counter delta over the request)"
+     },
+     "gpu_mean_power_W": {
+      "value": {
+       "n": 102,
+       "p50": 239.6397,
+       "min": 219.4282,
+       "max": 252.0281,
+       "mean": 239.7364
+      },
+      "unit": "W",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: gpu energy delta / ingress duration"
+     }
+    },
+    "120000": {
+     "n_requests": {
+      "value": 101,
+      "unit": "requests",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "scenario rows of this case joined to ingress + engine telemetry"
+     },
+     "prompt_tokens": {
+      "value": {
+       "n": 101,
+       "p50": 120029,
+       "min": 120028,
+       "max": 120029,
+       "mean": 120028.8713
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens (chat template included)"
+     },
+     "output_tokens": {
+      "value": [
+       256
+      ],
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "completion_tokens per request (max_tokens=256, finish_reason=length)"
+     },
+     "cached_prompt_tokens": {
+      "value": {
+       "n": 101,
+       "p50": 0,
+       "min": 0,
+       "max": 0,
+       "mean": 0.0
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens_details.cached_tokens"
+     },
+     "ttft_client_s": {
+      "value": {
+       "n": 101,
+       "p50": 20.9662,
+       "p90": 21.6261,
+       "p99": 22.9229,
+       "min": 20.5314,
+       "max": 23.2879,
+       "mean": 21.0153
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> first non-empty SSE content delta (rows[].requests[].ttft_content_s)"
+     },
+     "ttft_server_s": {
+      "value": {
+       "n": 101,
+       "p50": 20.9643,
+       "p90": 21.6239,
+       "p99": 22.9208,
+       "min": 20.5294,
+       "max": 23.2858,
+       "mean": 21.0132
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request start -> first engine token acknowledgement (telemetry.requests.ttft_generated_s)"
+     },
+     "decode_client_tps": {
+      "value": {
+       "n": 101,
+       "p10": 93.7148,
+       "p5": 92.0165,
+       "p50": 97.458,
+       "p90": 99.7676,
+       "min": 74.9176,
+       "max": 103.0278,
+       "mean": 96.8074
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: (completion_tokens-1)/(last content delta - first content delta)"
+     },
+     "decode_server_tps": {
+      "value": {
+       "n": 101,
+       "p10": 93.7049,
+       "p5": 92.0175,
+       "p50": 97.455,
+       "p90": 99.759,
+       "min": 74.9191,
+       "max": 103.0071,
+       "mean": 96.8052
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: (acknowledged tokens after the first)/(last ack - first ack) (telemetry.requests.decode_ack_tps)"
+     },
+     "itl_mean_client_ms": {
+      "value": {
+       "n": 101,
+       "p50": 10.2608,
+       "p90": 10.6707,
+       "p99": 11.7586,
+       "min": 9.7061,
+       "max": 13.348,
+       "mean": 10.3461
+      },
+      "unit": "ms/token",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED per request: 1000/decode_client_tps = mean inter-token latency of that request; per-token ITL distribution NOT_MEASURED"
+     },
+     "prefill_tps_client": {
+      "value": {
+       "n": 101,
+       "p10": 5550.2,
+       "p5": 5374.9,
+       "p50": 5724.9,
+       "min": 5154.1,
+       "max": 5846.1,
+       "mean": 5715.3
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: (prompt_tokens - cached_prompt_tokens)/ttft_client_s (includes HTTP, tokenization, first decode step)"
+     },
+     "prefill_tps_engine": {
+      "value": {
+       "n": 101,
+       "p10": 5597.2,
+       "p5": 5420.6,
+       "p50": 5774.6,
+       "min": 5194.9,
+       "max": 5898.9,
+       "mean": 5765.7
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: engine prefill_forward_tokens/(prefill_gpu_ms/1000) (GPU-event time of prefill batches)"
+     },
+     "e2e_s_256_tokens_client": {
+      "value": {
+       "n": 101,
+       "p50": 23.5939,
+       "p90": 24.525,
+       "p99": 25.8148,
+       "min": 23.0489,
+       "max": 25.9198,
+       "mean": 23.654
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> stream end for 256 output tokens (elapsed_s)"
+     },
+     "e2e_s_server": {
+      "value": {
+       "n": 101,
+       "p50": 23.5925,
+       "p90": 24.5236,
+       "p99": 25.8134,
+       "min": 23.0477,
+       "max": 25.9184,
+       "mean": 23.6525
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request duration_s"
+     },
+     "engine": {
+      "prefill_gpu_ms": {
+       "value": {
+        "n": 101,
+        "p50": 20785.5586,
+        "p90": 21444.5312,
+        "p99": 22733.8711,
+        "min": 20347.6094,
+        "max": 23105.0352,
+        "mean": 20831.8422
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: sum of GPU-event durations of prefill batches for the request"
+      },
+      "decode_step_gpu_ms": {
+       "value": {
+        "n": 101,
+        "p50": 10.0474,
+        "p90": 10.3963,
+        "p99": 11.1411,
+        "min": 9.5061,
+        "max": 11.3787,
+        "mean": 10.0879
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (GPU-event time per decode forward, batch 1)"
+      },
+      "engine_span_s": {
+       "value": {
+        "n": 101,
+        "p50": 23.4029,
+        "p90": 24.3515,
+        "p99": 25.6325,
+        "min": 22.8715,
+        "max": 25.7363,
+        "mean": 23.4699
+       },
+       "unit": "s",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: first batch start -> request completion (monotonic)"
+      },
+      "scheduler_gap_ms": {
+       "value": {
+        "n": 101,
+        "p50": 57.0853,
+        "p90": 69.1805,
+        "p99": 96.2751,
+        "min": 51.1768,
+        "max": 682.5211,
+        "mean": 65.6722
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: engine_span - prefill_gpu - decode_gpu = engine time not covered by GPU-event-timed forwards (CPU scheduling, launch, host sync, sampling, output processing)"
+      },
+      "scheduler_gap_per_decode_step_ms": {
+       "value": {
+        "n": 101,
+        "p50": 0.2239,
+        "p90": 0.2713,
+        "min": 0.2007,
+        "max": 2.6766,
+        "mean": 0.2575
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: scheduler_gap_ms/decode_forwards"
+      },
+      "non_engine_ms": {
+       "value": {
+        "n": 101,
+        "p50": 182.0877,
+        "p90": 188.9338,
+        "p99": 195.5647,
+        "min": 172.1528,
+        "max": 196.8733,
+        "mean": 182.6183
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ingress duration - engine span = tokenization, admission/queue wait before the first batch, stream tail (single client, no contention)"
+      },
+      "ttft_server_minus_prefill_gpu_ms": {
+       "value": {
+        "n": 101,
+        "p50": 180.8048,
+        "p90": 187.6295,
+        "min": 171.0597,
+        "max": 194.6287,
+        "mean": 181.3672
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ttft_server - prefill_gpu_ms = pre-prefill overhead (queue/tokenize/schedule) + non-GPU time inside prefill"
+      },
+      "client_minus_server_ttft_ms": {
+       "value": {
+        "n": 101,
+        "p50": 2.0803,
+        "p90": 2.3155,
+        "min": 1.907,
+        "max": 2.6246,
+        "mean": 2.1356
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: client TTFT - ingress TTFT = HTTP/SSE delivery + detokenization of the first delta"
+      }
+     },
+     "gpu_energy_per_request_J": {
+      "value": {
+       "n": 101,
+       "p50": 6061.24,
+       "min": 5948.362,
+       "max": 6337.245,
+       "mean": 6086.9219
+      },
+      "unit": "J",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "telemetry.requests.counter_deltas.gpu_energy_mj/1000 (NVML energy counter delta over the request)"
+     },
+     "gpu_mean_power_W": {
+      "value": {
+       "n": 101,
+       "p50": 257.9458,
+       "min": 242.6264,
+       "max": 264.7626,
+       "mean": 257.4438
+      },
+      "unit": "W",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: gpu energy delta / ingress duration"
+     }
+    },
+    "prefix_4096_followup": {
+     "n_requests": {
+      "value": 102,
+      "unit": "requests",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "scenario rows of this case joined to ingress + engine telemetry"
+     },
+     "prompt_tokens": {
+      "value": {
+       "n": 102,
+       "p50": 4400.0,
+       "min": 4397,
+       "max": 4408,
+       "mean": 4399.902
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens (chat template included)"
+     },
+     "output_tokens": {
+      "value": [
+       128
+      ],
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "completion_tokens per request (max_tokens=128, finish_reason=length)"
+     },
+     "cached_prompt_tokens": {
+      "value": {
+       "n": 102,
+       "p50": 4032.0,
+       "min": 4032,
+       "max": 4032,
+       "mean": 4032.0
+      },
+      "unit": "tokens",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "usage.prompt_tokens_details.cached_tokens"
+     },
+     "ttft_client_s": {
+      "value": {
+       "n": 102,
+       "p50": 0.5943,
+       "p90": 0.6544,
+       "p99": 0.7179,
+       "min": 0.5574,
+       "max": 0.723,
+       "mean": 0.6072
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> first non-empty SSE content delta (rows[].requests[].ttft_content_s)"
+     },
+     "ttft_server_s": {
+      "value": {
+       "n": 102,
+       "p50": 0.5929,
+       "p90": 0.6527,
+       "p99": 0.7163,
+       "min": 0.5559,
+       "max": 0.7217,
+       "mean": 0.6057
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request start -> first engine token acknowledgement (telemetry.requests.ttft_generated_s)"
+     },
+     "decode_client_tps": {
+      "value": {
+       "n": 102,
+       "p10": 127.948,
+       "p5": 124.1291,
+       "p50": 138.2252,
+       "p90": 142.8763,
+       "min": 119.5316,
+       "max": 148.8903,
+       "mean": 136.4739
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: (completion_tokens-1)/(last content delta - first content delta)"
+     },
+     "decode_server_tps": {
+      "value": {
+       "n": 102,
+       "p10": 127.951,
+       "p5": 124.1327,
+       "p50": 138.2032,
+       "p90": 142.8669,
+       "min": 119.5245,
+       "max": 148.878,
+       "mean": 136.4586
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: (acknowledged tokens after the first)/(last ack - first ack) (telemetry.requests.decode_ack_tps)"
+     },
+     "itl_mean_client_ms": {
+      "value": {
+       "n": 102,
+       "p50": 7.2346,
+       "p90": 7.8157,
+       "p99": 8.3552,
+       "min": 6.7164,
+       "max": 8.366,
+       "mean": 7.3435
+      },
+      "unit": "ms/token",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED per request: 1000/decode_client_tps = mean inter-token latency of that request; per-token ITL distribution NOT_MEASURED"
+     },
+     "prefill_tps_client": {
+      "value": {
+       "n": 102,
+       "p10": 559.3,
+       "p5": 541.7,
+       "p50": 619.2,
+       "min": 506.2,
+       "max": 663.4,
+       "mean": 608.4
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: (prompt_tokens - cached_prompt_tokens)/ttft_client_s (includes HTTP, tokenization, first decode step)"
+     },
+     "prefill_tps_engine": {
+      "value": {
+       "n": 102,
+       "p10": 572.0,
+       "p5": 552.6,
+       "p50": 634.6,
+       "min": 515.5,
+       "max": 680.4,
+       "mean": 623.2
+      },
+      "unit": "tok/s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: engine prefill_forward_tokens/(prefill_gpu_ms/1000) (GPU-event time of prefill batches)"
+     },
+     "e2e_s_128_tokens_client": {
+      "value": {
+       "n": 102,
+       "p50": 1.5278,
+       "p90": 1.6404,
+       "p99": 1.7336,
+       "min": 1.4341,
+       "max": 1.7544,
+       "mean": 1.5402
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "client: request start -> stream end for 128 output tokens (elapsed_s)"
+     },
+     "e2e_s_server": {
+      "value": {
+       "n": 102,
+       "p50": 1.5269,
+       "p90": 1.6394,
+       "p99": 1.7327,
+       "min": 1.4332,
+       "max": 1.7536,
+       "mean": 1.5394
+      },
+      "unit": "s",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "ingress: request duration_s"
+     },
+     "engine": {
+      "prefill_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 579.7111,
+        "p90": 639.8885,
+        "p99": 702.7252,
+        "min": 543.6044,
+        "max": 709.9831,
+        "mean": 592.8308
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: sum of GPU-event durations of prefill batches for the request"
+      },
+      "decode_step_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 7.0089,
+        "p90": 7.538,
+        "p99": 7.9544,
+        "min": 6.5117,
+        "max": 8.0543,
+        "mean": 7.1113
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (GPU-event time per decode forward, batch 1)"
+      },
+      "engine_span_s": {
+       "value": {
+        "n": 102,
+        "p50": 1.5127,
+        "p90": 1.6247,
+        "p99": 1.7194,
+        "min": 1.4196,
+        "max": 1.7402,
+        "mean": 1.5252
+       },
+       "unit": "s",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "engine telemetry: first batch start -> request completion (monotonic)"
+      },
+      "scheduler_gap_ms": {
+       "value": {
+        "n": 102,
+        "p50": 27.883,
+        "p90": 35.38,
+        "p99": 41.7102,
+        "min": 25.1225,
+        "max": 50.2706,
+        "mean": 29.1922
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: engine_span - prefill_gpu - decode_gpu = engine time not covered by GPU-event-timed forwards (CPU scheduling, launch, host sync, sampling, output processing)"
+      },
+      "scheduler_gap_per_decode_step_ms": {
+       "value": {
+        "n": 102,
+        "p50": 0.2196,
+        "p90": 0.2786,
+        "min": 0.1978,
+        "max": 0.3958,
+        "mean": 0.2299
+       },
+       "unit": "ms/step",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: scheduler_gap_ms/decode_forwards"
+      },
+      "non_engine_ms": {
+       "value": {
+        "n": 102,
+        "p50": 14.2216,
+        "p90": 15.2343,
+        "p99": 15.9924,
+        "min": 11.866,
+        "max": 16.2347,
+        "mean": 14.218
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ingress duration - engine span = tokenization, admission/queue wait before the first batch, stream tail (single client, no contention)"
+      },
+      "ttft_server_minus_prefill_gpu_ms": {
+       "value": {
+        "n": 102,
+        "p50": 12.781,
+        "p90": 13.6614,
+        "min": 10.1615,
+        "max": 22.4474,
+        "mean": 12.8276
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: ttft_server - prefill_gpu_ms = pre-prefill overhead (queue/tokenize/schedule) + non-GPU time inside prefill"
+      },
+      "client_minus_server_ttft_ms": {
+       "value": {
+        "n": 102,
+        "p50": 1.4843,
+        "p90": 1.7335,
+        "min": 1.2371,
+        "max": 4.6591,
+        "mean": 1.5628
+       },
+       "unit": "ms",
+       "source": "$N/reports/soak-final-f1-a1.json",
+       "definition": "DERIVED: client TTFT - ingress TTFT = HTTP/SSE delivery + detokenization of the first delta"
+      }
+     },
+     "gpu_energy_per_request_J": {
+      "value": {
+       "n": 102,
+       "p50": 143.6135,
+       "min": 93.364,
+       "max": 293.106,
+       "mean": 203.0488
+      },
+      "unit": "J",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "telemetry.requests.counter_deltas.gpu_energy_mj/1000 (NVML energy counter delta over the request)"
+     },
+     "gpu_mean_power_W": {
+      "value": {
+       "n": 102,
+       "p50": 95.9113,
+       "min": 53.8831,
+       "max": 200.092,
+       "mean": 131.7846
+      },
+      "unit": "W",
+      "source": "$N/reports/soak-final-f1-a1.json",
+      "definition": "DERIVED: gpu energy delta / ingress duration"
+     },
+     "note": "prefix case: fresh 4K conversation + real answer + follow-up (prefix-cache hit expected); max_tokens 128"
+    },
+    "arithmetic_nonstream_32tok": {
+     "value": {
+      "n": 73,
+      "p50": 0.6201,
+      "p90": 0.6545,
+      "p99": 0.6854,
+      "min": 0.5836,
+      "max": 0.6878,
+      "mean": 0.6232
+     },
+     "unit": "s",
+     "source": "$N/reports/soak-final-f1-a1.json",
+     "definition": "client wall time of the non-streaming arithmetic request (max_tokens 32, T=0)"
+    },
+    "tool_cycle_two_requests": {
+     "value": {
+      "n": 30,
+      "p50": 1.7008,
+      "p90": 1.7874,
+      "p99": 1.9523,
+      "min": 1.6203,
+      "max": 1.9903,
+      "mean": 1.7175
+     },
+     "unit": "s",
+     "source": "$N/reports/soak-final-f1-a1.json",
+     "definition": "client: tool_call request + tool_final request wall times summed"
+    }
+   }
+  },
+  "matrix": {
+   "source": "$N/reports/final-f1-m-{0..4}-{bf128,main-release}.json",
+   "comparison": "$N/reports/final-f1-m-main-release-vs-bf128-comparison.json",
+   "tool_task_source": "$N/reports/final-f1-m-{0..4}-{arm}-tool-task.json",
+   "design": "5 rotating pairs, same session, bf128 (original FreeToken + FP32 fix, Triton) vs main-release; output 128 tokens, T=0.6, ignore_eos; harness v6 warm-up; one request per case per arm per repeat",
+   "definitions": {
+    "release_median/bf128_median": "median over the 5 repeats of: client ttft_content_s, client elapsed_s (128 output tokens), client decode tps, engine prefill_gpu_ms, engine decode_gpu_ms/decode_forwards; expert counters are logical weight payload, not PCIe packet bytes",
+    "prefill_h2d_GB": "expert_counter_deltas.prefill_h2d_bytes per request (logical expert-weight payload streamed host->GPU during prefill)",
+    "decode_h2d_logical_GBps": "DERIVED: decode_h2d_payload_bytes / decode_gpu_ms (average over decode GPU time, not the copy-engine peak)",
+    "speedup_ratio_of_medians": "latency: bf128/release; throughput: release/bf128",
+    "paired_geomean_ratio": "compare-ab: geometric mean of the 5 per-pair ratios with Student-t (df=4) one-sided 97.5% bounds; only elapsed is gating"
+   },
+   "verdict": {
+    "value": {
+     "verdict": "PASS",
+     "reasons": [
+      "noninferior_all_gating_cases",
+      "gain_at_least_5pct_bonferroni"
+     ],
+     "output_content_differs": "15/40"
+    },
+    "unit": "status",
+    "source": "$N/reports/final-f1-m-main-release-vs-bf128-comparison.json",
+    "definition": "compare-ab verdict; output differences are observations only (quality gated by teacher forcing)"
+   },
+   "cases": {
+    "fresh@64": {
+     "release_median": {
+      "ttft_s": 0.7921,
+      "elapsed_s": 1.7754,
+      "decode_client_tps": 122.8124,
+      "prompt_tokens": 128,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 783.6929,
+      "decode_step_gpu_ms": 7.7013,
+      "prefill_h2d_GB": 18.2452,
+      "decode_expert_miss_rate": 0.0903,
+      "decode_misses_per_token": 28.8976,
+      "decode_h2d_MB_per_token": 51.4887,
+      "decode_h2d_logical_GBps": 6.6857,
+      "min_gpu_free_MiB": 1283.3164,
+      "n": 5
+     },
+     "bf128_median": {
+      "ttft_s": 0.7481,
+      "elapsed_s": 1.9694,
+      "decode_client_tps": 96.3611,
+      "prompt_tokens": 128,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 739.9447,
+      "decode_step_gpu_ms": 10.0307,
+      "prefill_h2d_GB": 18.2452,
+      "decode_expert_miss_rate": 0.0903,
+      "decode_misses_per_token": 28.8976,
+      "decode_h2d_MB_per_token": 51.4887,
+      "decode_h2d_logical_GBps": 5.2072,
+      "min_gpu_free_MiB": 1346.6289,
+      "n": 5
+     },
+     "speedup_ratio_of_medians": {
+      "ttft": 0.944,
+      "elapsed": 1.109,
+      "decode_tps": 1.275
+     },
+     "paired_geomean_ratio": {
+      "ttft": {
+       "geomean": 0.9371,
+       "lower_975": 0.8448,
+       "upper_975": 1.0396,
+       "gating": false,
+       "pair_ratios": [
+        0.8852,
+        1.0069,
+        1.0411,
+        0.8608,
+        0.9048
+       ]
+      },
+      "elapsed": {
+       "geomean": 1.1295,
+       "lower_975": 1.0409,
+       "upper_975": 1.2256,
+       "gating": true,
+       "pair_ratios": [
+        1.0764,
+        1.1927,
+        1.2321,
+        1.0862,
+        1.0699
+       ]
+      },
+      "decode_tps": {
+       "geomean": 1.2681,
+       "lower_975": 1.1634,
+       "upper_975": 1.3823,
+       "gating": false,
+       "pair_ratios": [
+        1.1844,
+        1.3372,
+        1.3906,
+        1.2361,
+        1.2047
+       ]
+      }
+     }
+    },
+    "fresh@4096": {
+     "release_median": {
+      "ttft_s": 0.7706,
+      "elapsed_s": 1.7914,
+      "decode_client_tps": 124.4659,
+      "prompt_tokens": 4162,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 757.3864,
+      "decode_step_gpu_ms": 7.6167,
+      "prefill_h2d_GB": 18.2452,
+      "decode_expert_miss_rate": 0.0843,
+      "decode_misses_per_token": 26.9764,
+      "decode_h2d_MB_per_token": 48.0654,
+      "decode_h2d_logical_GBps": 6.4123,
+      "min_gpu_free_MiB": 1083.3164,
+      "n": 5
+     },
+     "bf128_median": {
+      "ttft_s": 2.2435,
+      "elapsed_s": 3.5275,
+      "decode_client_tps": 98.9293,
+      "prompt_tokens": 4162,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 2231.6627,
+      "decode_step_gpu_ms": 9.8355,
+      "prefill_h2d_GB": 54.7357,
+      "decode_expert_miss_rate": 0.0833,
+      "decode_misses_per_token": 26.6535,
+      "decode_h2d_MB_per_token": 47.4902,
+      "decode_h2d_logical_GBps": 5.3463,
+      "min_gpu_free_MiB": 1034.0508,
+      "n": 5
+     },
+     "speedup_ratio_of_medians": {
+      "ttft": 2.911,
+      "elapsed": 1.969,
+      "decode_tps": 1.258
+     },
+     "paired_geomean_ratio": {
+      "ttft": {
+       "geomean": 2.9448,
+       "lower_975": 2.5627,
+       "upper_975": 3.3837,
+       "gating": false,
+       "pair_ratios": [
+        3.2615,
+        3.1899,
+        3.0712,
+        2.4881,
+        2.7854
+       ]
+      },
+      "elapsed": {
+       "geomean": 1.9458,
+       "lower_975": 1.7607,
+       "upper_975": 2.1504,
+       "gating": true,
+       "pair_ratios": [
+        1.9433,
+        2.1144,
+        2.0946,
+        1.7516,
+        1.8502
+       ]
+      },
+      "decode_tps": {
+       "geomean": 1.2249,
+       "lower_975": 1.1424,
+       "upper_975": 1.3133,
+       "gating": false,
+       "pair_ratios": [
+        1.2084,
+        1.303,
+        1.2955,
+        1.1591,
+        1.1662
+       ]
+      }
+     }
+    },
+    "fresh@16384": {
+     "release_median": {
+      "ttft_s": 1.5891,
+      "elapsed_s": 2.6504,
+      "decode_client_tps": 119.1219,
+      "prompt_tokens": 16451,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 1561.6234,
+      "decode_step_gpu_ms": 8.0097,
+      "prefill_h2d_GB": 18.2452,
+      "decode_expert_miss_rate": 0.0841,
+      "decode_misses_per_token": 26.8976,
+      "decode_h2d_MB_per_token": 47.9251,
+      "decode_h2d_logical_GBps": 6.0149,
+      "min_gpu_free_MiB": 1083.0664,
+      "n": 5
+     },
+     "bf128_median": {
+      "ttft_s": 6.7759,
+      "elapsed_s": 8.1244,
+      "decode_client_tps": 94.2002,
+      "prompt_tokens": 16451,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 6745.5413,
+      "decode_step_gpu_ms": 10.2641,
+      "prefill_h2d_GB": 164.207,
+      "decode_expert_miss_rate": 0.0878,
+      "decode_misses_per_token": 28.0866,
+      "decode_h2d_MB_per_token": 50.0436,
+      "decode_h2d_logical_GBps": 4.8756,
+      "min_gpu_free_MiB": 1039.0039,
+      "n": 5
+     },
+     "speedup_ratio_of_medians": {
+      "ttft": 4.264,
+      "elapsed": 3.065,
+      "decode_tps": 1.265
+     },
+     "paired_geomean_ratio": {
+      "ttft": {
+       "geomean": 4.2302,
+       "lower_975": 3.7488,
+       "upper_975": 4.7735,
+       "gating": false,
+       "pair_ratios": [
+        3.8697,
+        4.4401,
+        4.8297,
+        3.8283,
+        4.2641
+       ]
+      },
+      "elapsed": {
+       "geomean": 3.0267,
+       "lower_975": 2.6939,
+       "upper_975": 3.4007,
+       "gating": true,
+       "pair_ratios": [
+        2.7983,
+        3.2189,
+        3.3978,
+        2.7153,
+        3.0566
+       ]
+      },
+      "decode_tps": {
+       "geomean": 1.2252,
+       "lower_975": 1.1055,
+       "upper_975": 1.3578,
+       "gating": false,
+       "pair_ratios": [
+        1.139,
+        1.3003,
+        1.3349,
+        1.1067,
+        1.2617
+       ]
+      }
+     }
+    },
+    "fresh@65536": {
+     "release_median": {
+      "ttft_s": 9.1376,
+      "elapsed_s": 10.3654,
+      "decode_client_tps": 99.3357,
+      "prompt_tokens": 65603,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 9027.8369,
+      "decode_step_gpu_ms": 9.7768,
+      "prefill_h2d_GB": 18.2452,
+      "decode_expert_miss_rate": 0.0916,
+      "decode_misses_per_token": 29.3071,
+      "decode_h2d_MB_per_token": 52.2182,
+      "decode_h2d_logical_GBps": 5.6477,
+      "min_gpu_free_MiB": 1177.9414,
+      "n": 5
+     },
+     "bf128_median": {
+      "ttft_s": 28.4614,
+      "elapsed_s": 29.9521,
+      "decode_client_tps": 84.424,
+      "prompt_tokens": 65603,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 28327.7127,
+      "decode_step_gpu_ms": 11.4934,
+      "prefill_h2d_GB": 602.0923,
+      "decode_expert_miss_rate": 0.0824,
+      "decode_misses_per_token": 26.378,
+      "decode_h2d_MB_per_token": 46.9992,
+      "decode_h2d_logical_GBps": 4.4388,
+      "min_gpu_free_MiB": 1022.3789,
+      "n": 5
+     },
+     "speedup_ratio_of_medians": {
+      "ttft": 3.115,
+      "elapsed": 2.89,
+      "decode_tps": 1.177
+     },
+     "paired_geomean_ratio": {
+      "ttft": {
+       "geomean": 3.0942,
+       "lower_975": 2.8716,
+       "upper_975": 3.334,
+       "gating": false,
+       "pair_ratios": [
+        2.9407,
+        3.266,
+        3.2443,
+        2.8638,
+        3.1783
+       ]
+      },
+      "elapsed": {
+       "geomean": 2.8632,
+       "lower_975": 2.6659,
+       "upper_975": 3.0751,
+       "gating": true,
+       "pair_ratios": [
+        2.7266,
+        3.0189,
+        2.983,
+        2.6585,
+        2.948
+       ]
+      },
+      "decode_tps": {
+       "geomean": 1.2059,
+       "lower_975": 1.1294,
+       "upper_975": 1.2876,
+       "gating": false,
+       "pair_ratios": [
+        1.1338,
+        1.2735,
+        1.1456,
+        1.2465,
+        1.2369
+       ]
+      }
+     }
+    },
+    "fresh@120000": {
+     "release_median": {
+      "ttft_s": 22.0704,
+      "elapsed_s": 23.4135,
+      "decode_client_tps": 94.5802,
+      "prompt_tokens": 120068,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 21870.5215,
+      "decode_step_gpu_ms": 10.3197,
+      "prefill_h2d_GB": 18.2452,
+      "decode_expert_miss_rate": 0.0808,
+      "decode_misses_per_token": 25.8425,
+      "decode_h2d_MB_per_token": 46.0452,
+      "decode_h2d_logical_GBps": 4.6871,
+      "min_gpu_free_MiB": 1164.0664,
+      "n": 5
+     },
+     "bf128_median": {
+      "ttft_s": 54.7687,
+      "elapsed_s": 56.3426,
+      "decode_client_tps": 80.7089,
+      "prompt_tokens": 120068,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 54561.8502,
+      "decode_step_gpu_ms": 12.01,
+      "prefill_h2d_GB": 1076.4681,
+      "decode_expert_miss_rate": 0.0749,
+      "decode_misses_per_token": 23.9606,
+      "decode_h2d_MB_per_token": 42.6921,
+      "decode_h2d_logical_GBps": 3.5988,
+      "min_gpu_free_MiB": 1010.6914,
+      "n": 5
+     },
+     "speedup_ratio_of_medians": {
+      "ttft": 2.482,
+      "elapsed": 2.406,
+      "decode_tps": 1.172
+     },
+     "paired_geomean_ratio": {
+      "ttft": {
+       "geomean": 2.5206,
+       "lower_975": 2.2724,
+       "upper_975": 2.796,
+       "gating": false,
+       "pair_ratios": [
+        2.3271,
+        2.6537,
+        2.8431,
+        2.4282,
+        2.3868
+       ]
+      },
+      "elapsed": {
+       "geomean": 2.445,
+       "lower_975": 2.2052,
+       "upper_975": 2.711,
+       "gating": true,
+       "pair_ratios": [
+        2.2572,
+        2.5706,
+        2.7576,
+        2.3604,
+        2.3137
+       ]
+      },
+      "decode_tps": {
+       "geomean": 1.2,
+       "lower_975": 1.0879,
+       "upper_975": 1.3237,
+       "gating": false,
+       "pair_ratios": [
+        1.1033,
+        1.2751,
+        1.3172,
+        1.2055,
+        1.114
+       ]
+      }
+     }
+    },
+    "history_continuation@4096": {
+     "release_median": {
+      "ttft_s": 0.7812,
+      "elapsed_s": 1.7465,
+      "decode_client_tps": 126.8778,
+      "prompt_tokens": 4218,
+      "cached_prompt_tokens": 4032,
+      "prefill_gpu_ms": 769.6167,
+      "decode_step_gpu_ms": 7.5946,
+      "prefill_h2d_GB": 18.2452,
+      "decode_expert_miss_rate": 0.0787,
+      "decode_misses_per_token": 25.1811,
+      "decode_h2d_MB_per_token": 44.8667,
+      "decode_h2d_logical_GBps": 5.9077,
+      "min_gpu_free_MiB": 1083.3164,
+      "n": 5
+     },
+     "bf128_median": {
+      "ttft_s": 2.1958,
+      "elapsed_s": 3.3895,
+      "decode_client_tps": 106.4151,
+      "prompt_tokens": 4218,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 2183.9773,
+      "decode_step_gpu_ms": 9.1328,
+      "prefill_h2d_GB": 54.7357,
+      "decode_expert_miss_rate": 0.0694,
+      "decode_misses_per_token": 22.1969,
+      "decode_h2d_MB_per_token": 39.5495,
+      "decode_h2d_logical_GBps": 4.6993,
+      "min_gpu_free_MiB": 1034.0508,
+      "n": 5
+     },
+     "speedup_ratio_of_medians": {
+      "ttft": 2.811,
+      "elapsed": 1.941,
+      "decode_tps": 1.192
+     },
+     "paired_geomean_ratio": {
+      "ttft": {
+       "geomean": 2.8765,
+       "lower_975": 2.5898,
+       "upper_975": 3.1949,
+       "gating": false,
+       "pair_ratios": [
+        3.0727,
+        3.1406,
+        2.8641,
+        2.535,
+        2.8107
+       ]
+      },
+      "elapsed": {
+       "geomean": 1.9142,
+       "lower_975": 1.7217,
+       "upper_975": 2.1282,
+       "gating": true,
+       "pair_ratios": [
+        1.886,
+        2.1067,
+        1.9672,
+        1.6722,
+        1.9662
+       ]
+      },
+      "decode_tps": {
+       "geomean": 1.1935,
+       "lower_975": 1.0638,
+       "upper_975": 1.3391,
+       "gating": false,
+       "pair_ratios": [
+        1.1604,
+        1.3106,
+        1.2172,
+        1.0329,
+        1.2666
+       ]
+      }
+     }
+    },
+    "last_message_edit@16384": {
+     "release_median": {
+      "ttft_s": 0.7786,
+      "elapsed_s": 1.8816,
+      "decode_client_tps": 112.369,
+      "prompt_tokens": 16473,
+      "cached_prompt_tokens": 16320,
+      "prefill_gpu_ms": 752.5753,
+      "decode_step_gpu_ms": 8.4986,
+      "prefill_h2d_GB": 18.2452,
+      "decode_expert_miss_rate": 0.12,
+      "decode_misses_per_token": 38.3937,
+      "decode_h2d_MB_per_token": 68.4084,
+      "decode_h2d_logical_GBps": 7.6501,
+      "min_gpu_free_MiB": 1179.9414,
+      "n": 5
+     },
+     "bf128_median": {
+      "ttft_s": 6.8476,
+      "elapsed_s": 8.2534,
+      "decode_client_tps": 90.3584,
+      "prompt_tokens": 16473,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 6818.9086,
+      "decode_step_gpu_ms": 10.7991,
+      "prefill_h2d_GB": 164.207,
+      "decode_expert_miss_rate": 0.1265,
+      "decode_misses_per_token": 40.4724,
+      "decode_h2d_MB_per_token": 72.1122,
+      "decode_h2d_logical_GBps": 6.0904,
+      "min_gpu_free_MiB": 1065.7539,
+      "n": 5
+     },
+     "speedup_ratio_of_medians": {
+      "ttft": 8.795,
+      "elapsed": 4.386,
+      "decode_tps": 1.244
+     },
+     "paired_geomean_ratio": {
+      "ttft": {
+       "geomean": 9.0764,
+       "lower_975": 7.8508,
+       "upper_975": 10.4932,
+       "gating": false,
+       "pair_ratios": [
+        10.427,
+        9.7317,
+        9.0156,
+        7.6429,
+        8.8096
+       ]
+      },
+      "elapsed": {
+       "geomean": 4.4389,
+       "lower_975": 3.905,
+       "upper_975": 5.0457,
+       "gating": true,
+       "pair_ratios": [
+        4.4044,
+        4.8425,
+        4.7738,
+        3.7405,
+        4.5249
+       ]
+      },
+      "decode_tps": {
+       "geomean": 1.3163,
+       "lower_975": 1.0995,
+       "upper_975": 1.5759,
+       "gating": false,
+       "pair_ratios": [
+        1.1739,
+        1.4987,
+        1.5219,
+        1.0988,
+        1.3433
+       ]
+      }
+     }
+    },
+    "tool_result_edit@16384": {
+     "release_median": {
+      "ttft_s": 0.7572,
+      "elapsed_s": 1.8687,
+      "decode_client_tps": 113.4239,
+      "prompt_tokens": 16517,
+      "cached_prompt_tokens": 16448,
+      "prefill_gpu_ms": 731.7333,
+      "decode_step_gpu_ms": 8.4844,
+      "prefill_h2d_GB": 18.2452,
+      "decode_expert_miss_rate": 0.1224,
+      "decode_misses_per_token": 39.1575,
+      "decode_h2d_MB_per_token": 69.7692,
+      "decode_h2d_logical_GBps": 8.4864,
+      "min_gpu_free_MiB": 1179.9414,
+      "n": 5
+     },
+     "bf128_median": {
+      "ttft_s": 7.1139,
+      "elapsed_s": 8.4519,
+      "decode_client_tps": 94.9397,
+      "prompt_tokens": 16517,
+      "cached_prompt_tokens": 0,
+      "prefill_gpu_ms": 7085.3226,
+      "decode_step_gpu_ms": 10.2505,
+      "prefill_h2d_GB": 164.207,
+      "decode_expert_miss_rate": 0.1066,
+      "decode_misses_per_token": 34.1102,
+      "decode_h2d_MB_per_token": 60.7763,
+      "decode_h2d_logical_GBps": 5.815,
+      "min_gpu_free_MiB": 1051.668,
+      "n": 5
+     },
+     "speedup_ratio_of_medians": {
+      "ttft": 9.395,
+      "elapsed": 4.523,
+      "decode_tps": 1.195
+     },
+     "paired_geomean_ratio": {
+      "ttft": {
+       "geomean": 9.4688,
+       "lower_975": 8.5197,
+       "upper_975": 10.5238,
+       "gating": false,
+       "pair_ratios": [
+        10.6604,
+        9.7162,
+        9.2909,
+        8.4189,
+        9.3952
+       ]
+      },
+      "elapsed": {
+       "geomean": 4.4863,
+       "lower_975": 4.1561,
+       "upper_975": 4.8427,
+       "gating": true,
+       "pair_ratios": [
+        4.3655,
+        4.8522,
+        4.6265,
+        4.1187,
+        4.5024
+       ]
+      },
+      "decode_tps": {
+       "geomean": 1.2503,
+       "lower_975": 1.0845,
+       "upper_975": 1.4415,
+       "gating": false,
+       "pair_ratios": [
+        1.1031,
+        1.4455,
+        1.3746,
+        1.167,
+        1.1947
+       ]
+      }
+     }
+    },
+    "tool_cycle_task": {
+     "release_median_s": 1.9933,
+     "bf128_median_s": 2.1847,
+     "speedup_ratio_of_medians": 1.096,
+     "paired_geomean_ratio": {
+      "geomean": 1.0807,
+      "lower_975": 0.9719,
+      "upper_975": 1.2018,
+      "gating": true
+     }
+    }
+   }
+  },
+  "context_gates": {
+   "source": "$N/reports/final-f1-{c128,l256,b64}-a1-*",
+   "note": "single runs per profile (not acceptance for speed); T=0 functional/boundary fixtures",
+   "profiles": {
+    "main128": {
+     "context": {
+      "value": 131072,
+      "unit": "tokens",
+      "source": "$N/reports/final-f1-c128-a1-evaluation.json",
+      "definition": "served context of the profile"
+     },
+     "verdict": {
+      "value": {
+       "verdict": "PASS",
+       "class": "TARGET",
+       "warnings": [
+        "fp32-basis known limitations (identical to reference): ['executable-code', 'long-facts-16384']"
+       ]
+      },
+      "unit": "status",
+      "source": "$N/reports/final-f1-c128-a1-evaluation.json",
+      "definition": "evaluate-gates-r1b verdict"
+     },
+     "long_fresh": {
+      "prompt_tokens": {
+       "value": 120067,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-c128-a1-functional.json",
+       "definition": "long-facts-120000: usage.prompt_tokens (fresh, 0 cached)"
+      },
+      "ttft_client_s": {
+       "value": 23.686,
+       "unit": "s",
+       "source": "$N/reports/final-f1-c128-a1-functional.json",
+       "definition": "long-facts-120000: client TTFT (single run)"
+      },
+      "prefill_tps_client": {
+       "value": 5069.1,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-c128-a1-functional.json",
+       "definition": "DERIVED: prompt_tokens/ttft_client_s"
+      },
+      "prefill_gpu_ms": {
+       "value": 23495.2,
+       "unit": "ms",
+       "source": "$N/reports/final-f1-c128-a1-functional.json",
+       "definition": "engine prefill GPU-event time"
+      },
+      "prefill_tps_engine": {
+       "value": 5110.3,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-c128-a1-functional.json",
+       "definition": "DERIVED: prefill_forward_tokens/prefill_gpu_s"
+      },
+      "decode_step_gpu_ms": {
+       "value": 10.774,
+       "unit": "ms/step",
+       "source": "$N/reports/final-f1-c128-a1-functional.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (44 steps)"
+      },
+      "decode_expert_miss_rate": {
+       "value": 0.2167,
+       "unit": "fraction",
+       "source": "$N/reports/final-f1-c128-a1-functional.json",
+       "definition": "engine expert_decode_stats.miss_rate (decode expert lookups not resident in the GPU slot cache)"
+      },
+      "prefill_h2d_GB": {
+       "value": 18.25,
+       "unit": "GB",
+       "source": "$N/reports/final-f1-c128-a1-functional.json",
+       "definition": "expert_counter_deltas.prefill_h2d_bytes (logical weight payload)"
+      },
+      "layer_major": {
+       "value": {
+        "prefills": 2,
+        "aborted": 0,
+        "last_chunks": 59,
+        "last_windows": 1,
+        "last_window_chunks": 59,
+        "last_borrowed_slots": 624,
+        "last_attn_batch": 2,
+        "attn_groups": 330,
+        "attn_grouped_chunks": 660,
+        "attn_fallback_groups": 0,
+        "attn_member_probes": 66
+       },
+       "unit": "counters",
+       "source": "$N/reports/final-f1-c128-a1-functional.json",
+       "definition": "layer-major prefill counters (windows/chunks/borrowed slots)"
+      }
+     },
+     "long_fresh_pass": {
+      "value": true,
+      "unit": "bool",
+      "source": "$N/reports/final-f1-c128-a1-functional.json",
+      "definition": "long-facts-120000 functional field check (code/count/owner/total)"
+     },
+     "boundary": {
+      "prompt_tokens": {
+       "value": 130396,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "near-context-limit: usage.prompt_tokens (fresh, 0 cached)"
+      },
+      "ttft_client_s": {
+       "value": 25.136,
+       "unit": "s",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "near-context-limit: client TTFT (single run)"
+      },
+      "prefill_tps_client": {
+       "value": 5187.7,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "DERIVED: prompt_tokens/ttft_client_s"
+      },
+      "prefill_gpu_ms": {
+       "value": 24932.3,
+       "unit": "ms",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "engine prefill GPU-event time"
+      },
+      "prefill_tps_engine": {
+       "value": 5230.0,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "DERIVED: prefill_forward_tokens/prefill_gpu_s"
+      },
+      "decode_step_gpu_ms": {
+       "value": 12.055,
+       "unit": "ms/step",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (27 steps)"
+      },
+      "decode_expert_miss_rate": {
+       "value": 0.2142,
+       "unit": "fraction",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "engine expert_decode_stats.miss_rate (decode expert lookups not resident in the GPU slot cache)"
+      },
+      "prefill_h2d_GB": {
+       "value": 18.25,
+       "unit": "GB",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "expert_counter_deltas.prefill_h2d_bytes (logical weight payload)"
+      },
+      "layer_major": {
+       "value": {
+        "prefills": 3,
+        "aborted": 0,
+        "last_chunks": 64,
+        "last_windows": 1,
+        "last_window_chunks": 64,
+        "last_borrowed_slots": 672,
+        "last_attn_batch": 2,
+        "attn_groups": 640,
+        "attn_grouped_chunks": 1280,
+        "attn_fallback_groups": 0,
+        "attn_member_probes": 128
+       },
+       "unit": "counters",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "layer-major prefill counters (windows/chunks/borrowed slots)"
+      },
+      "requested_output": {
+       "value": 676,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "prompt + requested output = context"
+      },
+      "completion_tokens": {
+       "value": 28,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "finish_reason stop"
+      },
+      "decode_client_tps": {
+       "value": 84.9,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "client decode tps at the context limit (single run)"
+      },
+      "plus_one_rejected": {
+       "value": "400 context_length_exceeded",
+       "unit": "status",
+       "source": "$N/reports/final-f1-c128-a1-boundary.json",
+       "definition": "prompt+1 over budget -> HTTP 400"
+      }
+     },
+     "cancel_recovery_s": {
+      "value": 0.982,
+      "unit": "s",
+      "source": "$N/reports/final-f1-c128-a1-prefill-cancel.json",
+      "definition": "cancel during a 120000-token prefill -> first correct follow-up answer (followup statuses [429, 429, 429, 429, 200])"
+     }
+    },
+    "long256": {
+     "context": {
+      "value": 262144,
+      "unit": "tokens",
+      "source": "$N/reports/final-f1-l256-a1-evaluation.json",
+      "definition": "served context of the profile"
+     },
+     "verdict": {
+      "value": {
+       "verdict": "PASS",
+       "class": "TARGET",
+       "warnings": [
+        "fp32-basis known limitations (identical to reference): ['executable-code', 'long-facts-16384']"
+       ]
+      },
+      "unit": "status",
+      "source": "$N/reports/final-f1-l256-a1-evaluation.json",
+      "definition": "evaluate-gates-r1b verdict"
+     },
+     "long_fresh": {
+      "prompt_tokens": {
+       "value": 250069,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-l256-a1-functional.json",
+       "definition": "long-facts-250000: usage.prompt_tokens (fresh, 0 cached)"
+      },
+      "ttft_client_s": {
+       "value": 80.359,
+       "unit": "s",
+       "source": "$N/reports/final-f1-l256-a1-functional.json",
+       "definition": "long-facts-250000: client TTFT (single run)"
+      },
+      "prefill_tps_client": {
+       "value": 3111.9,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-l256-a1-functional.json",
+       "definition": "DERIVED: prompt_tokens/ttft_client_s"
+      },
+      "prefill_gpu_ms": {
+       "value": 79910.7,
+       "unit": "ms",
+       "source": "$N/reports/final-f1-l256-a1-functional.json",
+       "definition": "engine prefill GPU-event time"
+      },
+      "prefill_tps_engine": {
+       "value": 3129.4,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-l256-a1-functional.json",
+       "definition": "DERIVED: prefill_forward_tokens/prefill_gpu_s"
+      },
+      "decode_step_gpu_ms": {
+       "value": 19.073,
+       "unit": "ms/step",
+       "source": "$N/reports/final-f1-l256-a1-functional.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (44 steps)"
+      },
+      "decode_expert_miss_rate": {
+       "value": 0.3844,
+       "unit": "fraction",
+       "source": "$N/reports/final-f1-l256-a1-functional.json",
+       "definition": "engine expert_decode_stats.miss_rate (decode expert lookups not resident in the GPU slot cache)"
+      },
+      "prefill_h2d_GB": {
+       "value": 36.49,
+       "unit": "GB",
+       "source": "$N/reports/final-f1-l256-a1-functional.json",
+       "definition": "expert_counter_deltas.prefill_h2d_bytes (logical weight payload)"
+      },
+      "layer_major": {
+       "value": {
+        "prefills": 2,
+        "aborted": 0,
+        "last_chunks": 123,
+        "last_windows": 2,
+        "last_window_chunks": 62,
+        "last_borrowed_slots": 648,
+        "last_attn_batch": 2,
+        "attn_groups": 650,
+        "attn_grouped_chunks": 1300,
+        "attn_fallback_groups": 0,
+        "attn_member_probes": 130
+       },
+       "unit": "counters",
+       "source": "$N/reports/final-f1-l256-a1-functional.json",
+       "definition": "layer-major prefill counters (windows/chunks/borrowed slots)"
+      }
+     },
+     "long_fresh_pass": {
+      "value": true,
+      "unit": "bool",
+      "source": "$N/reports/final-f1-l256-a1-functional.json",
+      "definition": "long-facts-250000 functional field check (code/count/owner/total)"
+     },
+     "boundary": {
+      "prompt_tokens": {
+       "value": 261468,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "near-context-limit: usage.prompt_tokens (fresh, 0 cached)"
+      },
+      "ttft_client_s": {
+       "value": 91.302,
+       "unit": "s",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "near-context-limit: client TTFT (single run)"
+      },
+      "prefill_tps_client": {
+       "value": 2863.8,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "DERIVED: prompt_tokens/ttft_client_s"
+      },
+      "prefill_gpu_ms": {
+       "value": 90904.4,
+       "unit": "ms",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "engine prefill GPU-event time"
+      },
+      "prefill_tps_engine": {
+       "value": 2876.3,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "DERIVED: prefill_forward_tokens/prefill_gpu_s"
+      },
+      "decode_step_gpu_ms": {
+       "value": 19.158,
+       "unit": "ms/step",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (27 steps)"
+      },
+      "decode_expert_miss_rate": {
+       "value": 0.3732,
+       "unit": "fraction",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "engine expert_decode_stats.miss_rate (decode expert lookups not resident in the GPU slot cache)"
+      },
+      "prefill_h2d_GB": {
+       "value": 36.49,
+       "unit": "GB",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "expert_counter_deltas.prefill_h2d_bytes (logical weight payload)"
+      },
+      "layer_major": {
+       "value": {
+        "prefills": 3,
+        "aborted": 0,
+        "last_chunks": 128,
+        "last_windows": 2,
+        "last_window_chunks": 64,
+        "last_borrowed_slots": 672,
+        "last_attn_batch": 2,
+        "attn_groups": 1280,
+        "attn_grouped_chunks": 2560,
+        "attn_fallback_groups": 0,
+        "attn_member_probes": 256
+       },
+       "unit": "counters",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "layer-major prefill counters (windows/chunks/borrowed slots)"
+      },
+      "requested_output": {
+       "value": 676,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "prompt + requested output = context"
+      },
+      "completion_tokens": {
+       "value": 28,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "finish_reason stop"
+      },
+      "decode_client_tps": {
+       "value": 52.47,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "client decode tps at the context limit (single run)"
+      },
+      "plus_one_rejected": {
+       "value": "400 context_length_exceeded",
+       "unit": "status",
+       "source": "$N/reports/final-f1-l256-a1-boundary.json",
+       "definition": "prompt+1 over budget -> HTTP 400"
+      }
+     },
+     "cancel_recovery_s": {
+      "value": 1.032,
+      "unit": "s",
+      "source": "$N/reports/final-f1-l256-a1-prefill-cancel.json",
+      "definition": "cancel during a 250000-token prefill -> first correct follow-up answer (followup statuses [429, 429, 429, 429, 200])"
+     }
+    },
+    "baseline64": {
+     "context": {
+      "value": 65536,
+      "unit": "tokens",
+      "source": "$N/reports/final-f1-b64-a1-evaluation.json",
+      "definition": "served context of the profile"
+     },
+     "verdict": {
+      "value": {
+       "verdict": "PASS_WITH_KNOWN_LIMITATION",
+       "class": "FLOOR",
+       "warnings": [
+        "fp32-basis known limitations (identical to reference): ['executable-code', 'long-facts-16384']",
+        "min GPU free 0.789 GiB is below the ~1.0 GiB target (floor 0.5 GiB holds)"
+       ]
+      },
+      "unit": "status",
+      "source": "$N/reports/final-f1-b64-a1-evaluation.json",
+      "definition": "evaluate-gates-r1b verdict"
+     },
+     "long_fresh": {
+      "prompt_tokens": {
+       "value": 60069,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-b64-a1-functional.json",
+       "definition": "long-facts-60000: usage.prompt_tokens (fresh, 0 cached)"
+      },
+      "ttft_client_s": {
+       "value": 25.684,
+       "unit": "s",
+       "source": "$N/reports/final-f1-b64-a1-functional.json",
+       "definition": "long-facts-60000: client TTFT (single run)"
+      },
+      "prefill_tps_client": {
+       "value": 2338.8,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-b64-a1-functional.json",
+       "definition": "DERIVED: prompt_tokens/ttft_client_s"
+      },
+      "prefill_gpu_ms": {
+       "value": 25580.7,
+       "unit": "ms",
+       "source": "$N/reports/final-f1-b64-a1-functional.json",
+       "definition": "engine prefill GPU-event time"
+      },
+      "prefill_tps_engine": {
+       "value": 2348.2,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-b64-a1-functional.json",
+       "definition": "DERIVED: prefill_forward_tokens/prefill_gpu_s"
+      },
+      "decode_step_gpu_ms": {
+       "value": 10.119,
+       "unit": "ms/step",
+       "source": "$N/reports/final-f1-b64-a1-functional.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (44 steps)"
+      },
+      "decode_expert_miss_rate": {
+       "value": 0.1774,
+       "unit": "fraction",
+       "source": "$N/reports/final-f1-b64-a1-functional.json",
+       "definition": "engine expert_decode_stats.miss_rate (decode expert lookups not resident in the GPU slot cache)"
+      },
+      "prefill_h2d_GB": {
+       "value": 547.36,
+       "unit": "GB",
+       "source": "$N/reports/final-f1-b64-a1-functional.json",
+       "definition": "expert_counter_deltas.prefill_h2d_bytes (logical weight payload)"
+      },
+      "layer_major": {
+       "value": null,
+       "unit": "counters",
+       "source": "$N/reports/final-f1-b64-a1-functional.json",
+       "definition": "layer-major prefill counters (windows/chunks/borrowed slots)"
+      }
+     },
+     "long_fresh_pass": {
+      "value": false,
+      "unit": "bool",
+      "source": "$N/reports/final-f1-b64-a1-functional.json",
+      "definition": "long-facts-60000 functional field check (code/count/owner/total)"
+     },
+     "boundary": {
+      "prompt_tokens": {
+       "value": 64860,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "near-context-limit: usage.prompt_tokens (fresh, 0 cached)"
+      },
+      "ttft_client_s": {
+       "value": 27.209,
+       "unit": "s",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "near-context-limit: client TTFT (single run)"
+      },
+      "prefill_tps_client": {
+       "value": 2383.8,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "DERIVED: prompt_tokens/ttft_client_s"
+      },
+      "prefill_gpu_ms": {
+       "value": 27102.6,
+       "unit": "ms",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "engine prefill GPU-event time"
+      },
+      "prefill_tps_engine": {
+       "value": 2393.1,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "DERIVED: prefill_forward_tokens/prefill_gpu_s"
+      },
+      "decode_step_gpu_ms": {
+       "value": 12.555,
+       "unit": "ms/step",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "DERIVED: decode_gpu_ms/decode_forwards (26 steps)"
+      },
+      "decode_expert_miss_rate": {
+       "value": 0.1724,
+       "unit": "fraction",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "engine expert_decode_stats.miss_rate (decode expert lookups not resident in the GPU slot cache)"
+      },
+      "prefill_h2d_GB": {
+       "value": 583.85,
+       "unit": "GB",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "expert_counter_deltas.prefill_h2d_bytes (logical weight payload)"
+      },
+      "layer_major": {
+       "value": null,
+       "unit": "counters",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "layer-major prefill counters (windows/chunks/borrowed slots)"
+      },
+      "requested_output": {
+       "value": 676,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "prompt + requested output = context"
+      },
+      "completion_tokens": {
+       "value": 27,
+       "unit": "tokens",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "finish_reason stop"
+      },
+      "decode_client_tps": {
+       "value": 81.56,
+       "unit": "tok/s",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "client decode tps at the context limit (single run)"
+      },
+      "plus_one_rejected": {
+       "value": "400 context_length_exceeded",
+       "unit": "status",
+       "source": "$N/reports/final-f1-b64-a1-boundary.json",
+       "definition": "prompt+1 over budget -> HTTP 400"
+      }
+     },
+     "cancel_recovery_s": {
+      "value": 0.802,
+      "unit": "s",
+      "source": "$N/reports/final-f1-b64-a1-prefill-cancel.json",
+      "definition": "cancel during a 60000-token prefill -> first correct follow-up answer (followup statuses [429, 429, 200])"
+     }
+    }
+   }
+  },
+  "pre_release_screens": {
+   "value": {
+    "r2-base": {
+     "16384": [
+      {
+       "round": "r2-ab-1",
+       "ttft_s": 1.544,
+       "decode_client_tps": 93.04,
+       "prefill_engine_tps": 10908.1,
+       "min_gpu_free_MiB": 1839.0
+      },
+      {
+       "round": "r2-ab-2",
+       "ttft_s": 1.625,
+       "decode_client_tps": 97.76,
+       "prefill_engine_tps": 10341.1,
+       "min_gpu_free_MiB": 984.0
+      },
+      {
+       "round": "r2-ab-3",
+       "ttft_s": 1.56,
+       "decode_client_tps": 96.25,
+       "prefill_engine_tps": 10725.0,
+       "min_gpu_free_MiB": 1187.0
+      }
+     ],
+     "65536": [
+      {
+       "round": "r2-ab-1",
+       "ttft_s": 9.067,
+       "decode_client_tps": 94.09,
+       "prefill_engine_tps": 7341.5,
+       "min_gpu_free_MiB": 1835.0
+      },
+      {
+       "round": "r2-ab-2",
+       "ttft_s": 9.093,
+       "decode_client_tps": 90.57,
+       "prefill_engine_tps": 7326.1,
+       "min_gpu_free_MiB": 980.0
+      },
+      {
+       "round": "r2-ab-3",
+       "ttft_s": 9.187,
+       "decode_client_tps": 94.06,
+       "prefill_engine_tps": 7228.6,
+       "min_gpu_free_MiB": 1194.0
+      }
+     ],
+     "120000": [
+      {
+       "round": "r2-ab-1",
+       "ttft_s": 23.11,
+       "decode_client_tps": 77.21,
+       "prefill_engine_tps": 5249.9,
+       "min_gpu_free_MiB": 1829.0
+      },
+      {
+       "round": "r2-ab-2",
+       "ttft_s": 23.099,
+       "decode_client_tps": 78.19,
+       "prefill_engine_tps": 5248.9,
+       "min_gpu_free_MiB": 967.0
+      },
+      {
+       "round": "r2-ab-3",
+       "ttft_s": 23.246,
+       "decode_client_tps": 81.95,
+       "prefill_engine_tps": 5209.3,
+       "min_gpu_free_MiB": 1160.0
+      }
+     ]
+    },
+    "r2-attn": {
+     "16384": [
+      {
+       "round": "r2-ab-1",
+       "ttft_s": 1.427,
+       "decode_client_tps": 103.86,
+       "prefill_engine_tps": 11756.7,
+       "min_gpu_free_MiB": 1719.0
+      },
+      {
+       "round": "r2-ab-2",
+       "ttft_s": 1.474,
+       "decode_client_tps": 104.91,
+       "prefill_engine_tps": 11405.4,
+       "min_gpu_free_MiB": 1696.0
+      },
+      {
+       "round": "r2-ab-3",
+       "ttft_s": 1.595,
+       "decode_client_tps": 115.27,
+       "prefill_engine_tps": 10484.2,
+       "min_gpu_free_MiB": 1292.0
+      },
+      {
+       "round": "r3-ab-1",
+       "ttft_s": 1.542,
+       "decode_client_tps": 120.29,
+       "prefill_engine_tps": 10856.1,
+       "min_gpu_free_MiB": 1220.0
+      },
+      {
+       "round": "r3-ab-2",
+       "ttft_s": 1.633,
+       "decode_client_tps": 118.56,
+       "prefill_engine_tps": 10241.5,
+       "min_gpu_free_MiB": 1152.0
+      },
+      {
+       "round": "r3-ab-3",
+       "ttft_s": 1.595,
+       "decode_client_tps": 114.12,
+       "prefill_engine_tps": 10495.1,
+       "min_gpu_free_MiB": 1215.0
+      }
+     ],
+     "65536": [
+      {
+       "round": "r2-ab-1",
+       "ttft_s": 8.121,
+       "decode_client_tps": 96.72,
+       "prefill_engine_tps": 8197.0,
+       "min_gpu_free_MiB": 1717.0
+      },
+      {
+       "round": "r2-ab-2",
+       "ttft_s": 8.916,
+       "decode_client_tps": 91.51,
+       "prefill_engine_tps": 7456.7,
+       "min_gpu_free_MiB": 1692.0
+      },
+      {
+       "round": "r2-ab-3",
+       "ttft_s": 8.871,
+       "decode_client_tps": 99.79,
+       "prefill_engine_tps": 7487.6,
+       "min_gpu_free_MiB": 1287.0
+      }
+     ],
+     "120000": [
+      {
+       "round": "r2-ab-1",
+       "ttft_s": 20.841,
+       "decode_client_tps": 85.97,
+       "prefill_engine_tps": 5824.2,
+       "min_gpu_free_MiB": 1711.0
+      },
+      {
+       "round": "r2-ab-2",
+       "ttft_s": 21.941,
+       "decode_client_tps": 81.49,
+       "prefill_engine_tps": 5523.5,
+       "min_gpu_free_MiB": 1679.0
+      },
+      {
+       "round": "r2-ab-3",
+       "ttft_s": 22.513,
+       "decode_client_tps": 86.01,
+       "prefill_engine_tps": 5379.5,
+       "min_gpu_free_MiB": 1275.0
+      },
+      {
+       "round": "r3-ab-1",
+       "ttft_s": 22.995,
+       "decode_client_tps": 85.99,
+       "prefill_engine_tps": 5268.4,
+       "min_gpu_free_MiB": 1152.0
+      },
+      {
+       "round": "r3-ab-2",
+       "ttft_s": 23.086,
+       "decode_client_tps": 85.86,
+       "prefill_engine_tps": 5244.4,
+       "min_gpu_free_MiB": 1160.0
+      },
+      {
+       "round": "r3-ab-3",
+       "ttft_s": 23.26,
+       "decode_client_tps": 84.17,
+       "prefill_engine_tps": 5204.7,
+       "min_gpu_free_MiB": 991.0
+      }
+     ]
+    },
+    "main-candidate-r2": {
+     "16384": [
+      {
+       "round": "r2-ab-1",
+       "ttft_s": 1.694,
+       "decode_client_tps": 97.09,
+       "prefill_engine_tps": 9893.9,
+       "min_gpu_free_MiB": 1773.0
+      },
+      {
+       "round": "r2-ab-2",
+       "ttft_s": 1.632,
+       "decode_client_tps": 102.45,
+       "prefill_engine_tps": 10298.1,
+       "min_gpu_free_MiB": 1006.0
+      },
+      {
+       "round": "r2-ab-3",
+       "ttft_s": 1.601,
+       "decode_client_tps": 96.02,
+       "prefill_engine_tps": 10495.5,
+       "min_gpu_free_MiB": 1266.0
+      }
+     ],
+     "65536": [
+      {
+       "round": "r2-ab-1",
+       "ttft_s": 8.54,
+       "decode_client_tps": 95.63,
+       "prefill_engine_tps": 7802.8,
+       "min_gpu_free_MiB": 1769.0
+      },
+      {
+       "round": "r2-ab-2",
+       "ttft_s": 8.669,
+       "decode_client_tps": 90.59,
+       "prefill_engine_tps": 7673.3,
+       "min_gpu_free_MiB": 1002.0
+      },
+      {
+       "round": "r2-ab-3",
+       "ttft_s": 8.839,
+       "decode_client_tps": 90.34,
+       "prefill_engine_tps": 7511.1,
+       "min_gpu_free_MiB": 1240.0
+      }
+     ],
+     "120000": [
+      {
+       "round": "r2-ab-1",
+       "ttft_s": 22.139,
+       "decode_client_tps": 78.04,
+       "prefill_engine_tps": 5479.0,
+       "min_gpu_free_MiB": 1718.0
+      },
+      {
+       "round": "r2-ab-2",
+       "ttft_s": 21.941,
+       "decode_client_tps": 79.28,
+       "prefill_engine_tps": 5527.0,
+       "min_gpu_free_MiB": 988.0
+      },
+      {
+       "round": "r2-ab-3",
+       "ttft_s": 23.044,
+       "decode_client_tps": 78.42,
+       "prefill_engine_tps": 5263.8,
+       "min_gpu_free_MiB": 1239.0
+      }
+     ]
+    },
+    "main-candidate-r3": {
+     "16384": [
+      {
+       "round": "r3-ab-1",
+       "ttft_s": 1.583,
+       "decode_client_tps": 122.89,
+       "prefill_engine_tps": 10565.6,
+       "min_gpu_free_MiB": 1267.0
+      },
+      {
+       "round": "r3-ab-2",
+       "ttft_s": 1.567,
+       "decode_client_tps": 125.25,
+       "prefill_engine_tps": 10669.3,
+       "min_gpu_free_MiB": 1267.0
+      },
+      {
+       "round": "r3-ab-3",
+       "ttft_s": 1.576,
+       "decode_client_tps": 123.96,
+       "prefill_engine_tps": 10615.9,
+       "min_gpu_free_MiB": 1255.0
+      }
+     ],
+     "120000": [
+      {
+       "round": "r3-ab-1",
+       "ttft_s": 23.196,
+       "decode_client_tps": 89.51,
+       "prefill_engine_tps": 5218.2,
+       "min_gpu_free_MiB": 1251.0
+      },
+      {
+       "round": "r3-ab-2",
+       "ttft_s": 22.882,
+       "decode_client_tps": 89.99,
+       "prefill_engine_tps": 5294.7,
+       "min_gpu_free_MiB": 1135.0
+      },
+      {
+       "round": "r3-ab-3",
+       "ttft_s": 23.223,
+       "decode_client_tps": 89.97,
+       "prefill_engine_tps": 5213.5,
+       "min_gpu_free_MiB": 1239.0
+      }
+     ]
+    }
+   },
+   "unit": "per round",
+   "source": "$N/reports/r2-ab-{1..3}-chunk-screen.json, $N/reports/r3-ab-{1..3}-chunk-screen.json",
+   "definition": "screen-chunk.py summaries, output 512 tokens, 1 request per length per round, rotating arms, NOT acceptance. main-candidate-r3 = release kernel set (release adds FREETOKEN_DISABLE_JIT=1); r2-attn = r3 without tuned gather"
+  },
+  "e2e_derived_estimate": {
+   "value": {
+    "64": {
+     "128_tokens_s": 1.55,
+     "512_tokens_s": 4.42,
+     "1024_tokens_s": 8.25,
+     "4096_tokens_s": 31.22
+    },
+    "4096": {
+     "128_tokens_s": 1.55,
+     "512_tokens_s": 4.39,
+     "1024_tokens_s": 8.18,
+     "4096_tokens_s": 30.93
+    },
+    "16384": {
+     "128_tokens_s": 2.34,
+     "512_tokens_s": 5.3,
+     "1024_tokens_s": 9.24,
+     "4096_tokens_s": 32.9
+    },
+    "65536": {
+     "128_tokens_s": 9.27,
+     "512_tokens_s": 12.7,
+     "1024_tokens_s": 17.26,
+     "4096_tokens_s": 44.64
+    },
+    "120000": {
+     "128_tokens_s": 22.27,
+     "512_tokens_s": 26.21,
+     "1024_tokens_s": 31.46,
+     "4096_tokens_s": 62.98
+    }
+   },
+   "unit": "s",
+   "source": "$N/reports/soak-final-f1-a1.json",
+   "definition": "DERIVED (not measured): soak ttft_client p50 + (N-1)/decode_client_tps p50; assumes decode rate measured over 256 tokens holds for N tokens (KV growth ignored)"
+  }
+ },
+ "memory": {
+  "host": {
+   "service_anon_GiB": {
+    "value": {
+     "n": 720,
+     "min": 19.6207,
+     "p5": 19.6981,
+     "median": 19.7249,
+     "max": 19.7464,
+     "early_median_600_2400s": 19.7101,
+     "late_median_last_1800s": 19.7397,
+     "late_minus_early": 0.0296
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "cgroup memory.stat anon of the inference unit; service state rows (~10 s period, 720 rows with populated engine state); early = 600..2400 s after soak start, late = last 1800 s; values in the stated unit"
+   },
+   "service_cgroup_total_GiB": {
+    "value": {
+     "n": 720,
+     "min": 19.7876,
+     "p5": 19.8672,
+     "median": 19.9019,
+     "max": 19.934,
+     "early_median_600_2400s": 19.8831,
+     "late_median_last_1800s": 19.923,
+     "late_minus_early": 0.0399
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "cgroup memory.current (anon+file+kernel); service state rows (~10 s period, 720 rows with populated engine state); early = 600..2400 s after soak start, late = last 1800 s; values in the stated unit"
+   },
+   "service_shmem_GiB": {
+    "value": {
+     "n": 720,
+     "min": 0.1052,
+     "p5": 0.1052,
+     "median": 0.1052,
+     "max": 0.1052,
+     "early_median_600_2400s": 0.1052,
+     "late_median_last_1800s": 0.1052,
+     "late_minus_early": 0.0
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "cgroup shmem; service state rows (~10 s period, 720 rows with populated engine state); early = 600..2400 s after soak start, late = last 1800 s; values in the stated unit"
+   },
+   "service_file_GiB": {
+    "value": {
+     "n": 720,
+     "min": 0.1156,
+     "p5": 0.1158,
+     "median": 0.1177,
+     "max": 0.1199,
+     "early_median_600_2400s": 0.1165,
+     "late_median_last_1800s": 0.1193,
+     "late_minus_early": 0.0029
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "cgroup file pages; service state rows (~10 s period, 720 rows with populated engine state); early = 600..2400 s after soak start, late = last 1800 s; values in the stated unit"
+   },
+   "service_file_cache_estimate_GiB": {
+    "value": {
+     "n": 720,
+     "min": 0.0104,
+     "p5": 0.0106,
+     "median": 0.0125,
+     "max": 0.0147,
+     "early_median_600_2400s": 0.0112,
+     "late_median_last_1800s": 0.0141,
+     "late_minus_early": 0.0029
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "file - shmem - mapped estimate of reclaimable page cache; service state rows (~10 s period, 720 rows with populated engine state); early = 600..2400 s after soak start, late = last 1800 s; values in the stated unit"
+   },
+   "service_kernel_GiB": {
+    "value": {
+     "n": 720,
+     "min": 0.0497,
+     "p5": 0.0517,
+     "median": 0.0581,
+     "max": 0.0631,
+     "early_median_600_2400s": 0.0546,
+     "late_median_last_1800s": 0.0626,
+     "late_minus_early": 0.008
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "cgroup kernel memory; service state rows (~10 s period, 720 rows with populated engine state); early = 600..2400 s after soak start, late = last 1800 s; values in the stated unit"
+   },
+   "service_memory_peak_GiB": {
+    "value": 27.771,
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "cgroup memory.peak of the unit lifetime (includes model load; reclaimable file cache)"
+   },
+   "wsl_mem_available_GiB": {
+    "value": {
+     "n": 720,
+     "min": 24.6446,
+     "p5": 24.9847,
+     "median": 25.0252,
+     "max": 25.2234,
+     "early_median_600_2400s": 25.0429,
+     "late_median_last_1800s": 25.0035,
+     "late_minus_early": -0.0394
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "WSL VM /proc/meminfo MemAvailable; service state rows (~10 s period, 720 rows with populated engine state); early = 600..2400 s after soak start, late = last 1800 s; values in the stated unit"
+   },
+   "wsl_swap_free_GiB": {
+    "value": {
+     "n": 720,
+     "min": 15.9728,
+     "p5": 15.9728,
+     "median": 15.9728,
+     "max": 15.9728,
+     "early_median_600_2400s": 15.9728,
+     "late_median_last_1800s": 15.9728,
+     "late_minus_early": 0.0
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "WSL SwapFree (unit has MemorySwapMax=0); service state rows (~10 s period, 720 rows with populated engine state); early = 600..2400 s after soak start, late = last 1800 s; values in the stated unit"
+   },
+   "pinned_expert_bank": {
+    "value": {
+     "bytes": 18245222400,
+     "GB": 18.245,
+     "GiB": 16.992,
+     "fully_pinned": true
+    },
+    "unit": "bytes",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "engine host_expert_bytes == host_pinned_expert_bytes: all 40 layers x 256 experts x 1,781,760 B NVFP4 expert weights in pinned host RAM (part of service anon)"
+   },
+   "soak_analysis_leak_view": {
+    "value": {
+     "request_anon_late_minus_early_MB_by_length": {
+      "64": 47.8,
+      "4096": 47.5,
+      "16384": 47.2,
+      "65536": 47.0,
+      "120000": 45.1
+     },
+     "request_shmem_late_minus_early_MB": 0.0,
+     "idle_anon_late_minus_early_MB": 40.4,
+     "idle_cgroup_late_minus_early_MB": 55.0,
+     "flag_threshold_anon_MB": 268.4,
+     "status": "NO_THRESHOLD_EXCEEDED_REVIEW_REQUIRED",
+     "leak_verdict": "not_determined_automatically"
+    },
+    "unit": "MB",
+    "source": "$N/reports/soak-final-f1-a1-analysis.json",
+    "definition": "per prompt length: median of request/engine values for fresh requests 3..7 vs last 5; idle state samples 600..1800 s vs last 1200 s"
+   },
+   "tunables": {
+    "value": "GLIBC_TUNABLES arena_max=2, mmap_threshold=1 MiB, trim_threshold=4 MiB: PASS pre and post soak, and in the installed qwen36-inference unit",
+    "unit": "status",
+    "source": "$N/reports/soak-final-f1-a1-tunables-pre.json, $N/reports/soak-final-f1-a1-tunables-post.json, $N/reports/final-f1-install-tunables-inference-163729.json",
+    "definition": "glibc-tunables-check verdicts"
+   },
+   "startup_cgroup_peak_GiB": {
+    "value": {
+     "main-release": {
+      "n": 5,
+      "p50": 27.7716,
+      "min": 27.7693,
+      "max": 27.772,
+      "mean": 27.7713
+     },
+     "bf128": {
+      "n": 5,
+      "p50": 27.6264,
+      "min": 27.6254,
+      "max": 27.6273,
+      "mean": 27.6264
+     }
+    },
+    "unit": "GiB",
+    "source": "$N/reports/final-f1-m-matrix.json",
+    "definition": "cgroup memory peak through loaded-model readiness (before benchmark warm-up), per matrix arm start; includes reclaimable page cache from loading the checkpoint"
+   },
+   "context_gate_host": {
+    "value": {
+     "main128": {
+      "host_nonreclaimable_anon_plus_shmem_below_MemoryHigh": {
+       "anon_GiB": 19.683,
+       "shmem_GiB": 1.402,
+       "sum_GiB": 21.085
+      },
+      "host_cgroup_total_and_file_cache_report_only": {
+       "cgroup_peak_GiB": 27.673,
+       "file_cache_estimate_peak_GiB": 8.602
+      }
+     },
+     "long256": {
+      "host_nonreclaimable_anon_plus_shmem_below_MemoryHigh": {
+       "anon_GiB": 19.79,
+       "shmem_GiB": 1.394,
+       "sum_GiB": 21.184
+      },
+      "host_cgroup_total_and_file_cache_report_only": {
+       "cgroup_peak_GiB": 27.612,
+       "file_cache_estimate_peak_GiB": 8.571
+      }
+     },
+     "baseline64": {
+      "host_nonreclaimable_anon_plus_shmem_below_MemoryHigh": {
+       "anon_GiB": 19.543,
+       "shmem_GiB": 1.4,
+       "sum_GiB": 20.944
+      },
+      "host_cgroup_total_and_file_cache_report_only": {
+       "cgroup_peak_GiB": 27.56,
+       "file_cache_estimate_peak_GiB": 8.615
+      }
+     }
+    },
+    "unit": "GiB",
+    "source": "$N/reports/final-f1-{c128,l256,b64}-a1-evaluation.json",
+    "definition": "evaluator host-memory checks (anon+shmem peak vs MemoryHigh 32 GiB; cgroup and file-cache peaks report-only, include model load)"
+   }
+  },
+  "vram": {
+   "gpu_total_GiB": {
+    "value": 15.921,
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "NVML total (RTX 5070 Ti 16 GB)"
+   },
+   "gpu_free_MiB_soak": {
+    "value": {
+     "n": 720,
+     "median": 1667.0,
+     "p5": 697.0,
+     "min": 436.0,
+     "samples_below_1GiB": 268,
+     "samples_below_512MiB": 1,
+     "analysis_min_MiB": 436.0,
+     "request_1Hz_min_MiB": 367.0,
+     "requests_with_min_below_512MiB": 4,
+     "requests_with_min_below_1GiB": 310,
+     "requests_total": 825
+    },
+    "unit": "MiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "NVML free (includes foreign Windows/desktop use): state rows (~10 s) and per-request minima of the 1 Hz request sampler; owner floor 0.5 GiB, target ~1 GiB; state dip 436 MiB at 14:15:59Z attributed to desktop/browser load in STATE.md; request-level dips 366-496 MiB (14:16, 14:31, 14:52Z, 64K/120K requests) are not attributed in any report; no stall or error"
+   },
+   "gpu_total_used_GiB_soak": {
+    "value": {
+     "n": 720,
+     "min": 13.9167,
+     "p5": 13.9921,
+     "median": 14.2928,
+     "max": 15.495,
+     "early_median_600_2400s": 15.061,
+     "late_median_last_1800s": 14.2633,
+     "late_minus_early": -0.7977
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "NVML used (all processes incl. desktop); service state rows (~10 s period, 720 rows with populated engine state); early = 600..2400 s after soak start, late = last 1800 s; values in the stated unit"
+   },
+   "torch_allocated_GiB": {
+    "value": {
+     "n": 798,
+     "p50": 11.1499,
+     "min": 11.1494,
+     "max": 11.1518,
+     "mean": 11.1501
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "torch.cuda.memory_allocated at request completion (engine rows)"
+   },
+   "torch_reserved_GiB": {
+    "value": {
+     "n": 798,
+     "p50": 11.3867,
+     "min": 11.1719,
+     "max": 11.3867,
+     "mean": 11.3852
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "torch.cuda.memory_reserved at request completion"
+   },
+   "torch_request_peak_reserved_GiB": {
+    "value": {
+     "n": 798,
+     "p50": 11.3867,
+     "min": 11.1719,
+     "max": 11.3867,
+     "mean": 11.3852
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "torch max_memory_reserved during one request"
+   },
+   "components_GiB": {
+    "value": {
+     "model_dense_weights_and_scales": 2.523,
+     "kv_cache_bf16": 2.501,
+     "gdn_state_pool": 0.54,
+     "gpu_expert_slot_cache": 5.25,
+     "allocator_outside_named_components": 0.336,
+     "sum_vs_torch_allocated": 11.149
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json; model_cuda_state_storage from $N/reports/final-f1-m-{0..4}-{bf128,main-release}.json",
+    "definition": "engine component inventory (main128): model.state_dict CUDA storages, KV pool, GDN/mamba pool, expert slot cache, allocator remainder"
+   },
+   "nvml_used_minus_torch_reserved_GiB": {
+    "value": {
+     "n": 798,
+     "p50": 2.9161,
+     "min": 2.5318,
+     "max": 4.1762,
+     "mean": 3.1639
+    },
+    "unit": "GiB",
+    "source": "$N/reports/soak-final-f1-a1.json",
+    "definition": "DERIVED per request: peak NVML used - torch request peak reserved = foreign/desktop + CUDA context/driver + non-torch allocations (not separable here)"
+   },
+   "foreign_gpu_used_pre_start_GiB": {
+    "value": {
+     "matrix_arms": {
+      "n": 10,
+      "p50": 2.8394,
+      "min": 2.7646,
+      "max": 2.9883,
+      "mean": 2.847
+     },
+     "context_gates_idle_median_MiB": {
+      "main128": 2615,
+      "long256": 2760,
+      "baseline64": 3023
+     }
+    },
+    "unit": "GiB / MiB",
+    "source": "$N/reports/final-f1-m-matrix.json, $N/reports/final-f1-*-a1-evaluation.json",
+    "definition": "nvidia-smi used with no model loaded (desktop/browser/driver), before each start"
+   },
+   "min_gpu_free_MiB_by_gate": {
+    "value": {
+     "matrix_release_arms": {
+      "n": 5,
+      "p50": 1071.0,
+      "min": 1029.0,
+      "max": 1185.0,
+      "mean": 1101.0
+     },
+     "matrix_bf128_arms": {
+      "n": 5,
+      "p50": 874.0,
+      "min": 694.0,
+      "max": 1023.0,
+      "mean": 878.0
+     },
+     "c128_main128": 1226,
+     "l256_long256": 1440,
+     "b64_baseline64": 808
+    },
+    "unit": "MiB",
+    "source": "$N/reports/final-f1-m-matrix.json, $N/reports/final-gates-f1-summary.json",
+    "definition": "minimum NVML free during requests (service sampler); context gates min_free_GiB*1024"
+   },
+   "expert_slots": {
+    "value": {
+     "main128": 3164,
+     "long256": 1481,
+     "baseline64": 3917,
+     "bytes_per_slot": 1781760,
+     "total_experts": 10240,
+     "resident_fraction": {
+      "main128": 0.309,
+      "long256": 0.1446,
+      "baseline64": 0.3825
+     }
+    },
+    "unit": "slots",
+    "source": "$N/reports/final-f1-{c128,l256,b64}-a1-sizing.log; $N/reports/soak-final-f1-a1.json",
+    "definition": "--moe-cache-auto resolved moe_cache_size; resident_fraction = slots / (40 layers x 256 experts)"
+   },
+   "cuda_graph_memory": {
+    "value": "NOT_MEASURED",
+    "unit": null,
+    "source": "-",
+    "definition": "no release-build log line separates CUDA-graph capture memory; historical pre-release attribution in historical_attribution.vram"
+   },
+   "startup_journal_free_memory": {
+    "value": {
+     "main128": {
+      "free_before_load_GiB": 14.65,
+      "free_after_init_GiB": 2.0,
+      "kv_tokens": 131111,
+      "kv_GiB": 2.5,
+      "load_to_init_s": 106.0
+     },
+     "long256": {
+      "free_before_load_GiB": 14.65,
+      "free_after_init_GiB": 2.18,
+      "kv_tokens": 262175,
+      "kv_GiB": 5.0,
+      "load_to_init_s": 106.0
+     },
+     "baseline64": {
+      "free_before_load_GiB": 14.65,
+      "free_after_init_GiB": 1.9,
+      "kv_tokens": 65600,
+      "kv_GiB": 1.25,
+      "load_to_init_s": 135.0
+     }
+    },
+    "unit": "GiB",
+    "source": "$N/reports/final-f1-{c128,l256,b64}-a1-sizing.log",
+    "definition": "engine journal lines: free VRAM before model load and after initialization (KV + experts + graphs), KV allocation; load_to_init_s = timestamp difference of the two lines (1 s resolution)"
+   }
+  }
+ },
+ "kv_cache": {
+  "total_pages": {
+   "value": {
+    "main128": 131111,
+    "long256": 262175,
+    "baseline64": 65600,
+    "page_size_tokens": 1
+   },
+   "unit": "pages (tokens)",
+   "source": "$N/reports/final-f1-{c128,l256,b64}-a1-sizing.log; $N/reports/soak-final-f1-a1.json state.kv_total_pages",
+   "definition": "KV pool size; state rows report kv_total_pages=131111 for main128 (1 token per page)"
+  },
+  "size_GiB": {
+   "value": {
+    "main128": 2.5,
+    "long256": 5.0,
+    "baseline64": 1.25
+   },
+   "unit": "GiB",
+   "source": "$N/reports/final-f1-{c128,l256,b64}-a1-sizing.log",
+   "definition": "journal \"K + V = x GiB\" (BF16)"
+  },
+  "kv_bytes_per_token": {
+   "value": 20480.0,
+   "unit": "B/token",
+   "source": "$N/reports/soak-final-f1-a1.json",
+   "definition": "engine kv_bytes 2685173760 / 131112 allocated pages (131111 usable + 1 reserved) = 20 KiB = 10 full-attention layers x 2 KV heads x 256 dim x (K+V) x 2 B; long256 5369364480 B / 262176 = 20480 (journal \"2.50 GiB / 131111 tokens\" is the rounded form)"
+  },
+  "used_pages_over_soak": {
+   "value": {
+    "n_samples": 720,
+    "median": 0.0,
+    "p90": 16477.0,
+    "max": 120284,
+    "max_fraction_of_pool": 0.9174,
+    "samples_zero": 609
+   },
+   "unit": "pages",
+   "source": "$N/reports/soak-final-f1-a1.json",
+   "definition": "state.kv_used_pages (pages held by running requests; 0 between requests; ~10 s sampling)"
+  },
+  "used_pages_by_active_request": {
+   "value": {
+    "arithmetic": {
+     "n_samples": 7,
+     "samples_nonzero": 0,
+     "median_nonzero": null,
+     "max": 0
+    },
+    "cancel": {
+     "n_samples": 2,
+     "samples_nonzero": 1,
+     "median_nonzero": 36,
+     "max": 36
+    },
+    "fresh@120000": {
+     "n_samples": 234,
+     "samples_nonzero": 28,
+     "median_nonzero": 120188.5,
+     "max": 120284
+    },
+    "fresh@16384": {
+     "n_samples": 27,
+     "samples_nonzero": 10,
+     "median_nonzero": 16554.0,
+     "max": 16666
+    },
+    "fresh@4096": {
+     "n_samples": 16,
+     "samples_nonzero": 12,
+     "median_nonzero": 4222.5,
+     "max": 4365
+    },
+    "fresh@64": {
+     "n_samples": 18,
+     "samples_nonzero": 12,
+     "median_nonzero": 205.0,
+     "max": 346
+    },
+    "fresh@65536": {
+     "n_samples": 107,
+     "samples_nonzero": 37,
+     "median_nonzero": 65716,
+     "max": 65818
+    },
+    "prefix@4096": {
+     "n_samples": 11,
+     "samples_nonzero": 8,
+     "median_nonzero": 4445.5,
+     "max": 4518
+    },
+    "tool": {
+     "n_samples": 8,
+     "samples_nonzero": 3,
+     "median_nonzero": 335,
+     "max": 346
+    }
+   },
+   "unit": "pages",
+   "source": "$N/reports/soak-final-f1-a1.json",
+   "definition": "DERIVED: state samples taken while exactly one request was in flight, joined by ingress start/duration; most in-flight samples read 0 (e.g. during a long prefill), so only the nonzero samples show held pages (~prompt + generated tokens); short requests are rarely sampled"
+  },
+  "prefix_cache_soak": {
+   "value": {
+    "hits": 102,
+    "prefix_requests": 102,
+    "cached_tokens_median": 4032.0,
+    "prompt_tokens_median": 4400.0,
+    "token_hit_ratio_median": 0.9164,
+    "token_hit_ratio_min": 0.9147,
+    "ttft_prefix_hit_median_s": 0.594,
+    "ttft_fresh_4k_median_s": 0.606,
+    "all_200_requests_cached_token_share": 0.0197
+   },
+   "unit": "tokens",
+   "source": "$N/reports/soak-final-f1-a1.json; $N/reports/soak-final-f1-a1-analysis.json",
+   "definition": "prefix rows: usage cached_tokens / prompt_tokens; all_200_requests share = sum cached / sum prompt over every completed soak request (fresh prompts are unique, so mostly 0)"
+  },
+  "prefix_cache_matrix": {
+   "value": {
+    "history_continuation@4096": {
+     "cached_tokens": 4032,
+     "prompt_tokens": 4218,
+     "ttft_release_s": 0.7812,
+     "ttft_bf128_s": 2.1958
+    },
+    "last_message_edit@16384": {
+     "cached_tokens": 16320,
+     "prompt_tokens": 16473,
+     "ttft_release_s": 0.7786,
+     "ttft_bf128_s": 6.8476
+    },
+    "tool_result_edit@16384": {
+     "cached_tokens": 16448,
+     "prompt_tokens": 16517,
+     "ttft_release_s": 0.7572,
+     "ttft_bf128_s": 7.1139
+    }
+   },
+   "unit": "tokens",
+   "source": "$N/reports/final-f1-m-{0..4}-{bf128,main-release}.json",
+   "definition": "median over 5 repeats; release uses retained chunk snapshots so edits of the last message/tool result hit 16320/16448 cached tokens"
+  },
+  "mamba_gdn_slots": {
+   "value": {
+    "total_slots": 8,
+    "used_distribution": {
+     "0": 609,
+     "3": 1,
+     "4": 110
+    },
+    "used_by_active_request": {
+     "arithmetic": {
+      "n_samples": 7,
+      "samples_nonzero": 0,
+      "median_nonzero": null,
+      "max": 0
+     },
+     "cancel": {
+      "n_samples": 2,
+      "samples_nonzero": 1,
+      "median_nonzero": 3,
+      "max": 3
+     },
+     "fresh@120000": {
+      "n_samples": 234,
+      "samples_nonzero": 28,
+      "median_nonzero": 4.0,
+      "max": 4
+     },
+     "fresh@16384": {
+      "n_samples": 27,
+      "samples_nonzero": 10,
+      "median_nonzero": 4.0,
+      "max": 4
+     },
+     "fresh@4096": {
+      "n_samples": 16,
+      "samples_nonzero": 12,
+      "median_nonzero": 4.0,
+      "max": 4
+     },
+     "fresh@64": {
+      "n_samples": 18,
+      "samples_nonzero": 12,
+      "median_nonzero": 4.0,
+      "max": 4
+     },
+     "fresh@65536": {
+      "n_samples": 107,
+      "samples_nonzero": 37,
+      "median_nonzero": 4,
+      "max": 4
+     },
+     "prefix@4096": {
+      "n_samples": 11,
+      "samples_nonzero": 8,
+      "median_nonzero": 4.0,
+      "max": 4
+     },
+     "tool": {
+      "n_samples": 8,
+      "samples_nonzero": 3,
+      "median_nonzero": 4,
+      "max": 4
+     }
+    },
+    "gdn_pool_GiB": 0.5397,
+    "gdn_pool_per_slot_MiB_derived": 69.1
+   },
+   "unit": "slots",
+   "source": "$N/reports/soak-final-f1-a1.json",
+   "definition": "state.mamba_used_slots / mamba_total_slots (GDN recurrent-state + snapshot slots); per-slot size DERIVED as gdn_bytes/8 assuming equal slots"
+  },
+  "decode_kv_read_bandwidth_estimate": {
+   "value": {
+    "16384": {
+     "context_tokens": 16451,
+     "kv_bytes_read_per_decode_step_GB": 0.337,
+     "at_release_decode_tps": 119.1,
+     "kv_read_GBps_at_that_rate": 40.1,
+     "decode_step_gpu_ms": 8.01,
+     "kv_read_time_ms_at_700GBps": 0.48,
+     "kv_read_share_of_step_at_700GBps": 0.06
+    },
+    "120000": {
+     "context_tokens": 120068,
+     "kv_bytes_read_per_decode_step_GB": 2.459,
+     "at_release_decode_tps": 94.6,
+     "kv_read_GBps_at_that_rate": 232.6,
+     "decode_step_gpu_ms": 10.32,
+     "kv_read_time_ms_at_700GBps": 3.51,
+     "kv_read_share_of_step_at_700GBps": 0.34
+    }
+   },
+   "unit": "GB, GB/s",
+   "source": "$N/reports/final-f1-m-{0..4}-{bf128,main-release}.json; 700 GB/s from $W/outputs/qwen36-api/optimization/STATE.md (FlashInfer decode DRAM-bound 702-729 GB/s, cuda-attention agent)",
+   "definition": "DERIVED: every decode step reads the whole BF16 KV of the 10 full-attention layers once: context_tokens x 20480 B; x release decode tok/s (matrix median) = average KV read rate; time at ~700 GB/s achieved DRAM rate vs the measured decode step (GDN/MoE/expert-miss time excluded)"
+  }
+ },
+ "engine_timings": {
+  "soak_by_length": {
+   "value": {
+    "64": {
+     "prefill_gpu_ms_p50": 593.1281,
+     "decode_step_gpu_ms_p50": 7.2555,
+     "decode_step_gpu_ms_p99": 8.2519,
+     "scheduler_gap_per_decode_step_ms_p50": 0.2204,
+     "scheduler_gap_ms_p50": 56.2086,
+     "non_engine_ms_p50 (queue/tokenize/tail proxy)": 7.6277,
+     "ttft_server_minus_prefill_gpu_ms_p50": 6.1448,
+     "client_minus_server_ttft_ms_p50": 1.6158
+    },
+    "4096": {
+     "prefill_gpu_ms_p50": 591.9569,
+     "decode_step_gpu_ms_p50": 7.1707,
+     "decode_step_gpu_ms_p99": 8.0929,
+     "scheduler_gap_per_decode_step_ms_p50": 0.2208,
+     "scheduler_gap_ms_p50": 56.3134,
+     "non_engine_ms_p50 (queue/tokenize/tail proxy)": 13.7616,
+     "ttft_server_minus_prefill_gpu_ms_p50": 12.14,
+     "client_minus_server_ttft_ms_p50": 1.639
+    },
+    "16384": {
+     "prefill_gpu_ms_p50": 1330.3748,
+     "decode_step_gpu_ms_p50": 7.4714,
+     "decode_step_gpu_ms_p99": 8.3768,
+     "scheduler_gap_per_decode_step_ms_p50": 0.2234,
+     "scheduler_gap_ms_p50": 56.9751,
+     "non_engine_ms_p50 (queue/tokenize/tail proxy)": 30.0404,
+     "ttft_server_minus_prefill_gpu_ms_p50": 28.5255,
+     "client_minus_server_ttft_ms_p50": 1.7003
+    },
+    "65536": {
+     "prefill_gpu_ms_p50": 8041.3196,
+     "decode_step_gpu_ms_p50": 8.6806,
+     "decode_step_gpu_ms_p99": 9.7815,
+     "scheduler_gap_per_decode_step_ms_p50": 0.2285,
+     "scheduler_gap_ms_p50": 58.2801,
+     "non_engine_ms_p50 (queue/tokenize/tail proxy)": 101.4554,
+     "ttft_server_minus_prefill_gpu_ms_p50": 100.0284,
+     "client_minus_server_ttft_ms_p50": 1.9156
+    },
+    "120000": {
+     "prefill_gpu_ms_p50": 20785.5586,
+     "decode_step_gpu_ms_p50": 10.0474,
+     "decode_step_gpu_ms_p99": 11.1411,
+     "scheduler_gap_per_decode_step_ms_p50": 0.2239,
+     "scheduler_gap_ms_p50": 57.0853,
+     "non_engine_ms_p50 (queue/tokenize/tail proxy)": 182.0877,
+     "ttft_server_minus_prefill_gpu_ms_p50": 180.8048,
+     "client_minus_server_ttft_ms_p50": 2.0803
+    }
+   },
+   "unit": "ms",
+   "source": "$N/reports/soak-final-f1-a1.json",
+   "definition": "summary of latency.soak.by_length.*.engine (definitions there); 256 output tokens, batch 1"
+  },
+  "queue_wait": {
+   "value": "NOT_MEASURED as a separate field",
+   "unit": null,
+   "source": "$N/reports/soak-final-f1-a1.json",
+   "definition": "single sequential client, so admission wait is ~0; non_engine_ms (ingress duration - engine span) is the closest proxy and grows with prompt length (tokenization)"
+  }
+ },
+ "expert_streaming": {
+  "matrix_release": {
+   "value": {
+    "fresh@64": {
+     "prefill_h2d_GB": 18.2452,
+     "decode_expert_miss_rate": 0.0903,
+     "decode_misses_per_token": 28.8976,
+     "decode_h2d_MB_per_token": 51.4887,
+     "decode_h2d_avg_GBps": 6.6857,
+     "bf128_prefill_h2d_GB": 18.2452
+    },
+    "fresh@4096": {
+     "prefill_h2d_GB": 18.2452,
+     "decode_expert_miss_rate": 0.0843,
+     "decode_misses_per_token": 26.9764,
+     "decode_h2d_MB_per_token": 48.0654,
+     "decode_h2d_avg_GBps": 6.4123,
+     "bf128_prefill_h2d_GB": 54.7357
+    },
+    "fresh@16384": {
+     "prefill_h2d_GB": 18.2452,
+     "decode_expert_miss_rate": 0.0841,
+     "decode_misses_per_token": 26.8976,
+     "decode_h2d_MB_per_token": 47.9251,
+     "decode_h2d_avg_GBps": 6.0149,
+     "bf128_prefill_h2d_GB": 164.207
+    },
+    "fresh@65536": {
+     "prefill_h2d_GB": 18.2452,
+     "decode_expert_miss_rate": 0.0916,
+     "decode_misses_per_token": 29.3071,
+     "decode_h2d_MB_per_token": 52.2182,
+     "decode_h2d_avg_GBps": 5.6477,
+     "bf128_prefill_h2d_GB": 602.0923
+    },
+    "fresh@120000": {
+     "prefill_h2d_GB": 18.2452,
+     "decode_expert_miss_rate": 0.0808,
+     "decode_misses_per_token": 25.8425,
+     "decode_h2d_MB_per_token": 46.0452,
+     "decode_h2d_avg_GBps": 4.6871,
+     "bf128_prefill_h2d_GB": 1076.4681
+    },
+    "last_message_edit@16384": {
+     "prefill_h2d_GB": 18.2452,
+     "decode_expert_miss_rate": 0.12,
+     "decode_misses_per_token": 38.3937,
+     "decode_h2d_MB_per_token": 68.4084,
+     "decode_h2d_avg_GBps": 7.6501,
+     "bf128_prefill_h2d_GB": 164.207
+    }
+   },
+   "unit": "GB, fraction, MB, GB/s",
+   "source": "$N/reports/final-f1-m-{0..4}-{bf128,main-release}.json",
+   "definition": "release medians (5 repeats, 128 output tokens): expert_counter_deltas (logical expert-weight payload, not PCIe packet bytes); miss = decode expert lookup not resident in the 3164-slot GPU cache; decode_h2d_avg_GBps = decode_h2d_payload_bytes/decode_gpu_ms"
+  },
+  "long_contexts": {
+   "value": {
+    "main128": {
+     "prefill_h2d_GB": 18.25,
+     "decode_expert_miss_rate": 0.2167,
+     "decode_step_gpu_ms": 10.774,
+     "layer_major_windows": 1
+    },
+    "long256": {
+     "prefill_h2d_GB": 36.49,
+     "decode_expert_miss_rate": 0.3844,
+     "decode_step_gpu_ms": 19.073,
+     "layer_major_windows": 2
+    },
+    "baseline64": {
+     "prefill_h2d_GB": 547.36,
+     "decode_expert_miss_rate": 0.1774,
+     "decode_step_gpu_ms": 10.119,
+     "layer_major_windows": null
+    }
+   },
+   "unit": "GB, fraction, ms",
+   "source": "$N/reports/final-f1-{c128,l256,b64}-a1-functional.json",
+   "definition": "long fresh case per profile (single run): main128 120K 1 window, long256 250K 2 windows (2 x 18.245 GB), baseline64 is the unchanged chunk-major fallback (bank re-streamed per chunk); long256 has 1481 slots so decode misses ~0.38"
+  },
+  "short_prompt_ttft_floor": {
+   "value": {
+    "soak_64tok_prefill_gpu_ms_p50": 593.1,
+    "bank_GB": 18.245,
+    "implied_logical_stream_GBps": 30.8
+   },
+   "unit": "ms, GB, GB/s",
+   "source": "$N/reports/soak-final-f1-a1.json; $N/reports/final-f1-m-{0..4}-{bf128,main-release}.json",
+   "definition": "DERIVED: every fresh or prefix-hit prefill (even 64 tokens / 186 uncached tokens) streams the full 18.245 GB expert bank once (matrix prefill_h2d_GB), so prefill GPU time >= ~0.58 s; implied rate = bank bytes / soak 64-token prefill_gpu p50 (a lower bound of the actual copy rate, since prefill time also contains compute)"
+  }
+ },
+ "throughput_capacity": {
+  "max_context": {
+   "value": {
+    "main128": {
+     "context": 131072,
+     "boundary_prompt_plus_output": "130396 + 676 accepted, +1 -> 400 context_length_exceeded"
+    },
+    "long256": {
+     "context": 262144,
+     "boundary_prompt_plus_output": "261468 + 676 accepted, +1 -> 400"
+    },
+    "baseline64": {
+     "context": 65536,
+     "boundary_prompt_plus_output": "64860 + 676 accepted, +1 -> 400"
+    }
+   },
+   "unit": "tokens",
+   "source": "$N/reports/final-f1-{c128,l256,b64}-a1-evaluation.json",
+   "definition": "boundary_exact_total / boundary_plus_one_rejected checks"
+  },
+  "prefill_tps_by_length_main128": {
+   "value": {
+    "64": {
+     "client_p50": 154.7,
+     "engine_p50": 156.8
+    },
+    "4096": {
+     "client_p50": 6802.2,
+     "engine_p50": 6966.7
+    },
+    "16384": {
+     "client_p50": 12067.3,
+     "engine_p50": 12337.1
+    },
+    "65536": {
+     "client_p50": 8054.6,
+     "engine_p50": 8153.5
+    },
+    "120000": {
+     "client_p50": 5724.9,
+     "engine_p50": 5774.6
+    }
+   },
+   "unit": "tok/s",
+   "source": "$N/reports/soak-final-f1-a1.json",
+   "definition": "soak medians; see latency.soak.by_length for definitions"
+  },
+  "prefill_tps_long_contexts": {
+   "value": {
+    "main128_120K": 5069.1,
+    "main128_130K_boundary": 5187.7,
+    "long256_250K": 3111.9,
+    "long256_261K_boundary": 2863.8,
+    "baseline64_60K": 2338.8
+   },
+   "unit": "tok/s",
+   "source": "$N/reports/final-f1-{c128,l256,b64}-a1-{functional,boundary}.json",
+   "definition": "DERIVED: prompt_tokens / client TTFT, single runs"
+  },
+  "soak_requests": {
+   "value": {
+    "elapsed_s": 7212.3,
+    "completed_requests": 771,
+    "completed_per_hour": 384.8,
+    "scenario_rows": 741,
+    "scenario_rows_passed": 741,
+    "rows_per_hour": 369.9,
+    "http_outcomes": {
+     "200:completed": 771,
+     "429:rejected": 27,
+     "200:cancelled": 27
+    },
+    "generated_tokens_per_hour": 72643.0,
+    "uncached_prompt_tokens_per_hour": 10464551.0,
+    "errors": 0,
+    "stall_events": 0,
+    "metrics_dropped": 0
+   },
+   "unit": "count",
+   "source": "$N/reports/soak-final-f1-a1.json; $N/reports/soak-final-f1-a1-analysis.json",
+   "definition": "sequential single-client soak with 5 s pauses (not a saturation test): completed_requests from the last state row; 429 = deliberate follow-up probes while a cancelled stream drains"
+  },
+  "soak_engine_busy_fraction": {
+   "value": {
+    "engine_span": 0.6329,
+    "gpu_forward_time": 0.6281
+   },
+   "unit": "fraction",
+   "source": "$N/reports/soak-final-f1-a1.json",
+   "definition": "DERIVED: sum(engine_span_s) / soak elapsed; sum(prefill_gpu_ms+decode_gpu_ms) / soak elapsed"
+  },
+  "concurrency_throughput": {
+   "value": "NOT_MEASURED",
+   "unit": null,
+   "source": "-",
+   "definition": "no multi-client/saturation run exists for the release (all gates are batch-1 sequential)"
+  },
+  "cancel_recovery": {
+   "value": {
+    "soak": {
+     "n": 27,
+     "median_s": 1.447,
+     "max_s": 1.611,
+     "after_disconnect_median_s": 0.867,
+     "after_disconnect_max_s": 0.958,
+     "followup_attempts_max": 2
+    },
+    "prefill_cancel_s": {
+     "main128_120K": 0.982,
+     "long256_250K": 1.032,
+     "baseline64_60K": 0.802
+    }
+   },
+   "unit": "s",
+   "source": "$N/reports/soak-final-f1-a1-analysis.json; $N/reports/final-f1-{c128,l256,b64}-a1-prefill-cancel.json",
+   "definition": "soak: client disconnect after first content delta of an 8192-token stream -> first correct follow-up (recovery_s from cancel start; after_disconnect from the disconnect); context gates: cancel during a long prefill -> correct follow-up"
+  }
+ },
+ "startup_ops": {
+  "live_install_readiness": {
+   "value": [
+    {
+     "utc": "2026-10-14T16:23:16Z",
+     "profile": "main128",
+     "rc": 1,
+     "readiness_wait_s": 603,
+     "ok": false,
+     "instance": "None"
+    },
+    {
+     "utc": "2026-10-14T16:36:42Z",
+     "profile": "main128",
+     "rc": 1,
+     "readiness_wait_s": 603,
+     "ok": false,
+     "instance": "d9741e20"
+    },
+    {
+     "utc": "2026-10-14T16:39:03Z",
+     "profile": "main128",
+     "rc": 0,
+     "readiness_wait_s": 2,
+     "ok": true,
+     "instance": "d9741e20"
+    },
+    {
+     "utc": "2026-10-14T16:53:31Z",
+     "profile": "main128",
+     "rc": 0,
+     "readiness_wait_s": 132,
+     "ok": true,
+     "instance": "536fc720"
+    },
+    {
+     "utc": "2026-10-14T16:55:54Z",
+     "profile": "main128",
+     "rc": 0,
+     "readiness_wait_s": 125,
+     "ok": true,
+     "instance": "4e127624"
+    },
+    {
+     "utc": "2026-10-14T16:57:53Z",
+     "profile": "long256",
+     "rc": 0,
+     "readiness_wait_s": 103,
+     "ok": true,
+     "instance": "beb67a7d"
+    },
+    {
+     "utc": "2026-10-14T16:59:55Z",
+     "profile": "baseline64",
+     "rc": 0,
+     "readiness_wait_s": 105,
+     "ok": true,
+     "instance": "f57a0d68"
+    },
+    {
+     "utc": "2026-10-14T17:02:01Z",
+     "profile": "main128",
+     "rc": 0,
+     "readiness_wait_s": 110,
+     "ok": true,
+     "instance": "6f155539"
+    }
+   ],
+   "unit": "s",
+   "source": "$N/reports/final-install.log",
+   "definition": "final-install.sh readiness(): seconds from the first readiness.py --edge poll (issued right after the qwen36 start/restart command returned) until edge-ready (tunnel + https + profile + instance verified), 10 s poll period, 600 s cap; the two 603 s rc=1 rows were WSL->Windows interop failures, not startup time"
+  },
+  "cold_start_main128_to_edge_ready_s": {
+   "value": 132,
+   "unit": "s",
+   "source": "$N/reports/final-install.log (16:53:31Z, instance 536fc720); $W/outputs/qwen36-api/optimization/STATE.md",
+   "definition": "first main128 start after a full stop; readiness wait as above"
+  },
+  "restart_main128_s": {
+   "value": 125,
+   "unit": "s",
+   "source": "$N/reports/final-install-f1.steps F5.restart",
+   "definition": "qwen36 restart -> edge-ready on a new instance"
+  },
+  "profile_switch_s": {
+   "value": {
+    "to_long256": 103,
+    "to_baseline64": 105,
+    "back_to_main128": 110
+   },
+   "unit": "s",
+   "source": "$N/reports/final-install-f1.steps F5.extra-*/F5.reselect",
+   "definition": "stop -> start --profile P -> edge-ready (readiness wait)"
+  },
+  "experiment_load_ready_s": {
+   "value": {
+    "matrix_release_arms": {
+     "n": 5,
+     "p50": 123.8,
+     "min": 103.7,
+     "max": 131.9,
+     "mean": 122.2
+    },
+    "matrix_bf128_arms": {
+     "n": 5,
+     "p50": 135.9,
+     "min": 102.7,
+     "max": 149.0,
+     "mean": 130.5
+    },
+    "context_gates_start_to_ready": {
+     "main128": {
+      "start_to_ready_s": 113.8,
+      "stop_requested_to_stopped_s": 0.6
+     },
+     "long256": {
+      "start_to_ready_s": 112.8,
+      "stop_requested_to_stopped_s": 0.79
+     },
+     "baseline64": {
+      "start_to_ready_s": 142.9,
+      "stop_requested_to_stopped_s": 0.6
+     }
+    }
+   },
+   "unit": "s",
+   "source": "$N/reports/final-f1-m-matrix.json; $N/reports/final-f1-{c128,l256,b64}-a1-phases.jsonl",
+   "definition": "experiment unit start -> loaded-model readiness (harness, local, no edge/tunnel)"
+  },
+  "network_acceptance": {
+   "value": {
+    "pass_rows": 59,
+    "rows": 60,
+    "failed": [
+     "auto-tool-cycle"
+    ],
+    "tls_verified": true,
+    "same_instance": true,
+    "external_e2e": "NOT_RUN",
+    "small_request_latency_s": {
+     "lan_local_nonstream": 0.622,
+     "lan_local_stream": 0.575,
+     "edge_https_nonstream": 0.652,
+     "edge_https_stream": 0.608
+    },
+    "gate_status": "PASS_WITH_KNOWN_LIMITATION"
+   },
+   "unit": "rows",
+   "source": "$N/reports/network-release-final-f1-20261014T163937.json",
+   "definition": "network-acceptance.py run 3 (runs 1-2 aborted by WSL interop); auto-tool-cycle FAIL = FP32-basis near-tie (direct answer \"42\" instead of fixture_add on a cold cache), identical on the bf128 reference; latencies are 30-prompt/3-token requests"
+  },
+  "graceful_stop_s": {
+   "value": {
+    "main128": 0.6,
+    "long256": 0.79,
+    "baseline64": 0.6
+   },
+   "unit": "s",
+   "source": "$N/reports/final-f1-{c128,l256,b64}-a1-phases.jsonl",
+   "definition": "experiment unit stop requested -> stopped"
+  }
+ },
+ "quality": {
+  "teacher_forcing": {
+   "value": {
+    "main-release (B gate)": {
+     "cases_bitexact": "20/20",
+     "tokens_nll_bitexact": "943/943",
+     "logit_checkpoints_zero_diff": "125/125",
+     "max_abs_logit_diff": 0.0,
+     "differing_cases": []
+    },
+    "long256-release (B gate, standard fixture order)": {
+     "cases_bitexact": "19/20",
+     "tokens_nll_bitexact": "908/943",
+     "logit_checkpoints_zero_diff": "121/125",
+     "max_abs_logit_diff": 1.232421875,
+     "differing_cases": [
+      "long-120000"
+     ]
+    },
+    "long256-release (first attempt)": {
+     "cases_bitexact": "19/20",
+     "tokens_nll_bitexact": "908/943",
+     "logit_checkpoints_zero_diff": "121/125",
+     "max_abs_logit_diff": 1.232421875,
+     "differing_cases": [
+      "long-120000"
+     ]
+    },
+    "long256-release confirm-C (clean cache, long-120000 only)": {
+     "cases_bitexact": "1/1",
+     "tokens_nll_bitexact": "38/38",
+     "logit_checkpoints_zero_diff": "5/5",
+     "max_abs_logit_diff": 0.0,
+     "differing_cases": []
+    },
+    "main-release confirm-D (ru-0 -> long-4096 -> long-120000 at 128K)": {
+     "cases_bitexact": "2/3",
+     "tokens_nll_bitexact": "106/141",
+     "logit_checkpoints_zero_diff": "15/19",
+     "max_abs_logit_diff": 1.232421875,
+     "differing_cases": [
+      "long-120000"
+     ]
+    },
+    "reference": "teacher-bf128 run 345788b2 (original FreeToken + FP32 fix), 20 cases / 943 forced tokens"
+   },
+   "unit": "counts",
+   "source": "$N/reports/teacher.jsonl; $N/reports/final-f1-l256-confirm-C.json; $N/reports/final-f1-l256-confirm-D.json",
+   "definition": "per-token NLL lists compared for exact float equality with the reference run; logit checkpoints every 8 positions (max_abs of logit difference). The long-120000 deviation is prefix-cache header-KV dedup (cache-state dependent, reproduced at 128K by confirm-D, absent with a clean cache in confirm-C); accepted as PASS_EQUIV_R1B256"
+  },
+  "perplexity": {
+   "value": {
+    "baseline_ppl": 3.176402,
+    "tokens": 943,
+    "main-release": {
+     "relative_growth": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "max_abs_logit": 0.0
+    },
+    "long256-release": {
+     "relative_growth": 0.0007152,
+     "ci95": [
+      0.0,
+      0.0024223
+     ],
+     "max_abs_logit": 1.232421875,
+     "max_relative_l2": 0.0953,
+     "long-120000_mean_nll_delta": 0.017742
+    }
+   },
+   "unit": "ratio",
+   "source": "$N/reports/quality-main-release.json; $N/reports/quality-long256-release.json",
+   "definition": "paired cluster bootstrap over 20 fixed cases, 20000 resamples, equal token weights; relative PPL growth vs teacher-bf128"
+  },
+  "functional": {
+   "value": {
+    "main128": {
+     "pass": [
+      "russian",
+      "tool-cycle",
+      "long-facts-120000"
+     ],
+     "fail_known_limitation": [
+      "executable-code",
+      "long-facts-16384"
+     ]
+    },
+    "long256": {
+     "pass": [
+      "russian",
+      "tool-cycle",
+      "long-facts-250000"
+     ],
+     "fail_known_limitation": [
+      "executable-code",
+      "long-facts-16384"
+     ]
+    },
+    "baseline64": {
+     "pass": [
+      "russian",
+      "tool-cycle"
+     ],
+     "fail_known_limitation": [
+      "executable-code",
+      "long-facts-16384",
+      "long-facts-60000"
+     ]
+    }
+   },
+   "unit": "cases",
+   "source": "$N/reports/final-f1-{c128,l256,b64}-a1-functional.json",
+   "definition": "T=0 functional fixtures; executable-code and long-facts-16384 are FP32-basis first-token near-ties (margins 0.48/0.09 logit) with output hashes identical to the reference; baseline64 long-facts-60000 identical-sha known limitation"
+  },
+  "backend_api_checks": {
+   "value": {
+    "main128": true,
+    "long256": true,
+    "baseline64": true
+   },
+   "unit": "bool",
+   "source": "$N/reports/final-f1-{c128,l256,b64}-a1-backend.json",
+   "definition": "13 backend checks (forced tool choice 400s, penalty, seed, conflict, NaN, media, deep JSON, strict context, nonstream, seed repeat)"
+  },
+  "soak_correctness": {
+   "value": {
+    "arithmetic": 73,
+    "tool": 30,
+    "cancel": 27,
+    "prefix": 102,
+    "rows_passed": "741/741"
+   },
+   "unit": "count",
+   "source": "$N/reports/soak-final-f1-a1-analysis.json",
+   "definition": "soak rows with all facts true (arithmetic expected \"56\", tool cycle expected \"42\", cancel follow-up expected \"7\")"
+  },
+  "matrix_output_vs_bf128": {
+   "value": "15/40 differ",
+   "unit": "count",
+   "source": "$N/reports/final-f1-m-main-release-vs-bf128-comparison.json",
+   "definition": "sampled T=0.6 outputs; observation only (prefix-hit cases and snapshot flags differ); quality gated by teacher forcing"
+  },
+  "network_tool_cycle": {
+   "value": "auto-tool-cycle FAIL on cold cache (answers \"42\" directly); warm-cache retry calls fixture_add; identical on bf128 reference",
+   "unit": "status",
+   "source": "$N/reports/network-release-final-f1-20261014T163937.json",
+   "definition": "known FP32-basis near-tie (STATE.md driver 26)"
+  }
+ },
+ "historical_attribution": {
+  "note": "Numbers quoted from STATE.md agent reports on pre-release builds; context only, NOT re-measured on release f1.",
+  "pcie": {
+   "copy_engine_GBps": {
+    "value": 47.0,
+    "unit": "GB/s",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:193",
+    "definition": "pcie-transfer microbench: single copy engine (asyncEngineCount=1 under WSL); THP banks 48.4-49.4"
+   },
+   "sm_gather_GBps": {
+    "value": "41-44",
+    "unit": "GB/s",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:193",
+    "definition": "SM LDG.128 gather microbench; TMA 43-45"
+   },
+   "chunk_major_prefill_h2d_per_chunk_GB": {
+    "value": 18.18,
+    "unit": "GB",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:193",
+    "definition": "pre-layer-major: full layer bank copied per chunk per layer"
+   },
+   "layer_major_prefill_h2d_per_prompt_GB": {
+    "value": 18.2,
+    "unit": "GB",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:265",
+    "definition": "layer-major: bank streamed once per window (release matrix confirms 18.245 GB at <=120K, 2 windows = 36.5 GB at 250K)"
+   },
+   "decode_miss_cost_us": {
+    "value": 84.6,
+    "unit": "us/miss",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:164",
+    "definition": "pre-tuned-gather regression over engine.jsonl (~21 GB/s effective)"
+   },
+   "expert_misses_per_token": {
+    "value": {
+     "64K": 41,
+     "128K": 50,
+     "256K": 100
+    },
+    "unit": "misses/token",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:164",
+    "definition": "by profile slot count (pre-release)"
+   }
+  },
+  "bandwidth": {
+   "flashinfer_decode_dram_GBps": {
+    "value": "702-729",
+    "unit": "GB/s",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:270",
+    "definition": "FlashInfer decode attention is DRAM-bound"
+   },
+   "attention_share": {
+    "value": {
+     "fresh_120K_ttft": 0.48,
+     "16K_ttft": 0.09,
+     "decode_120K": 0.29,
+     "decode_256K": 0.39
+    },
+    "unit": "fraction",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:270",
+    "definition": "estimate (cuda-attention agent)"
+   },
+   "fp8_gemv_GBps": {
+    "value": {
+     "fp8_gemv": 708,
+     "cutlass": 409
+    },
+    "unit": "GB/s",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:281",
+    "definition": "component microbench, graph 1.45-1.47x"
+   },
+   "gpu_dram_peak_GBps": {
+    "value": 896,
+    "unit": "GB/s",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:313",
+    "definition": "RTX 5070 Ti DRAM reference used by the decode analysis"
+   }
+  },
+  "vram": {
+   "fp8_gemv_cost_MiB": {
+    "value": -252,
+    "unit": "MiB",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:375",
+    "definition": "driver 16 attribution at 16K (min free delta)"
+   },
+   "cuda_graph_capture_GiB": {
+    "value": {
+     "gdn": "2.05 -> 2.03",
+     "fp8": "1.95 -> 1.94",
+     "old_gather": "1.82 -> 0.78"
+    },
+    "unit": "GiB free before -> after capture",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:375",
+    "definition": "engine log, driver 16 (old gather bug)"
+   },
+   "gather_fix_cost_MiB": {
+    "value": 0,
+    "unit": "MiB",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:382",
+    "definition": ".shared::cta fix removed the 1373 MiB context stack-limit growth"
+   },
+   "wddm_desktop_slowdown": {
+    "value": "+0.19-0.42 ms every ~2.3 ms, 10-12% of decode-graph GPU time",
+    "unit": "text",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:315",
+    "definition": "environment finding: WDDM time-slicing with the 4K@159Hz desktop (hypothesis)"
+   },
+   "noise": {
+    "value": "CV 0.4-1.7% quiet, 3-6% under agent CPU load, up to 30% between sessions",
+    "unit": "text",
+    "source": "$W/outputs/qwen36-api/optimization/STATE.md:298",
+    "definition": "engine GPU-event time variance"
+   }
+  }
+ },
+ "not_measured": [
+  "per-token inter-token latency distribution (only per-request mean ITL is derivable)",
+  "separate queue-wait metric (single sequential client; only ingress-minus-engine-span is available)",
+  "multi-client concurrency / saturation throughput",
+  "CUDA-graph memory of the release build",
+  "external (outside-LAN) end-to-end latency (network acceptance external_e2e NOT_RUN)",
+  "long256 and baseline64 soak (2 h soak covers main128 only; long256 soak is planned phase 3)",
+  "matrix for long256/baseline64 (performance acceptance is main128 vs bf128 only)",
+  "bf256 (Triton 256K) teacher comparison",
+  "final Nsight profile of the release build (planned nsight-final agent)",
+  "VRAM breakdown of foreign/desktop vs CUDA-context bytes (only their sum is derivable)"
+ ],
+ "sources": {
+  "final-gates-f1-summary.json": {
+   "path": "$N/reports/final-gates-f1-summary.json",
+   "sha256": "7441269847ea8270d068ecf5fbc447bafcb3838b3bc22aa01ce13c6cd69786b7",
+   "bytes": 3606
+  },
+  "final-gates-f1.steps": {
+   "path": "$N/reports/final-gates-f1.steps",
+   "sha256": "aaebdb300489cf93ba5f526103bf03c852d008e1e9e4fa712bfd9976586bbb82",
+   "bytes": 1066
+  },
+  "final-gates.log": {
+   "path": "$N/reports/final-gates.log",
+   "sha256": "3509a8cf0699221dfff438664ebb178849d13e5cb8ad068db72be2fd74e88403",
+   "bytes": 213050
+  },
+  "final-install-f1.steps": {
+   "path": "$N/reports/final-install-f1.steps",
+   "sha256": "267a7ce423990a81c6d840d81061e14273b41a5a986b432daad1b31e40f3ee44",
+   "bytes": 1388
+  },
+  "final-install.log": {
+   "path": "$N/reports/final-install.log",
+   "sha256": "f9645e32d526fea08db13b309a634ccd091dc2f3d3cf7c13dae20af7c6fef5b2",
+   "bytes": 39402
+  },
+  "final-f1-c128-a1-preflight.json": {
+   "path": "$N/reports/final-f1-c128-a1-preflight.json",
+   "sha256": "d5350060aca70941cb0c19185e290cee92e2aef80776b7d25025fe02c61e3320",
+   "bytes": 443
+  },
+  "final-f1-l256-a1-preflight.json": {
+   "path": "$N/reports/final-f1-l256-a1-preflight.json",
+   "sha256": "fc61be24efc912ac91ac6e9e91f7424d620bb09248906cb6c6b6f2efbcf0c05a",
+   "bytes": 405
+  },
+  "final-f1-b64-a1-preflight.json": {
+   "path": "$N/reports/final-f1-b64-a1-preflight.json",
+   "sha256": "36d620dfd087e59b89d432a1597016a59f52d1bb0d72026199104e799be44a67",
+   "bytes": 400
+  },
+  "soak-final-f1-a1.json": {
+   "path": "$N/reports/soak-final-f1-a1.json",
+   "sha256": "83fb15d0ba54b49c7a32706b08966c3a5b3085a72fc11bc07b066afc8f7a9965",
+   "bytes": 3890007
+  },
+  "soak-final-f1-a1-analysis.json": {
+   "path": "$N/reports/soak-final-f1-a1-analysis.json",
+   "sha256": "fb08810e6a38ef09b262a69231c8043d8523ab4b91b9c536100b008dcf03e138",
+   "bytes": 18577
+  },
+  "final-f1-m-main-release-vs-bf128-comparison.json": {
+   "path": "$N/reports/final-f1-m-main-release-vs-bf128-comparison.json",
+   "sha256": "c9266947bc0a087bf5345c06b83cf2f60f7372de90239c1611dc6675eeca0923",
+   "bytes": 33495
+  },
+  "final-f1-m-matrix.json": {
+   "path": "$N/reports/final-f1-m-matrix.json",
+   "sha256": "28ceb5df13653b35fdfb121d200e0ebc3ac7736ce24aae53d794e65cfec22c94",
+   "bytes": 16231
+  },
+  "final-f1-m-0-bf128.json": {
+   "path": "$N/reports/final-f1-m-0-bf128.json",
+   "sha256": "9e68e2ea2642b8b25a97a22fb5428cb1311a9fea9c2177ef71378602b1065fec",
+   "bytes": 106137
+  },
+  "final-f1-m-0-bf128-tool-task.json": {
+   "path": "$N/reports/final-f1-m-0-bf128-tool-task.json",
+   "sha256": "313d56b8dc2f241b8f35f857943040ae32bb6c2ddf7bd23b1d9d9e9a5d80de2c",
+   "bytes": 60053
+  },
+  "final-f1-m-0-main-release.json": {
+   "path": "$N/reports/final-f1-m-0-main-release.json",
+   "sha256": "3e01dfc321017f31eddde80076a846337356e7a8e4279bc670744bfc5b313da3",
+   "bytes": 112157
+  },
+  "final-f1-m-0-main-release-tool-task.json": {
+   "path": "$N/reports/final-f1-m-0-main-release-tool-task.json",
+   "sha256": "fe283f3333f04d96e917b63e36150d5f9e48e67d51b71afc97d1c3c31d23338c",
+   "bytes": 62967
+  },
+  "final-f1-m-1-bf128.json": {
+   "path": "$N/reports/final-f1-m-1-bf128.json",
+   "sha256": "7a5ed947f4792e6dc232e85da3be8e57974fe26a8a470b568a01119d280e8550",
+   "bytes": 106112
+  },
+  "final-f1-m-1-bf128-tool-task.json": {
+   "path": "$N/reports/final-f1-m-1-bf128-tool-task.json",
+   "sha256": "f4e0150876d938ccc319f5bcd7f0d3f14d004c179a42d59bf1c24b883f715ce6",
+   "bytes": 60055
+  },
+  "final-f1-m-1-main-release.json": {
+   "path": "$N/reports/final-f1-m-1-main-release.json",
+   "sha256": "edf7430b6d81fea0fe9efc61518a5f09e19b6a6e86de1671871501252ccded77",
+   "bytes": 112152
+  },
+  "final-f1-m-1-main-release-tool-task.json": {
+   "path": "$N/reports/final-f1-m-1-main-release-tool-task.json",
+   "sha256": "a33744c0726d6d2689e7c281a0f37c2b9dbe5430eae093389802dd95746756ec",
+   "bytes": 62966
+  },
+  "final-f1-m-2-bf128.json": {
+   "path": "$N/reports/final-f1-m-2-bf128.json",
+   "sha256": "b13ca3e8bf152218122fc84431ed8bc6cbdbe9c0bc216ebc7d3f5c8ed9cf881f",
+   "bytes": 106118
+  },
+  "final-f1-m-2-bf128-tool-task.json": {
+   "path": "$N/reports/final-f1-m-2-bf128-tool-task.json",
+   "sha256": "c9ea5e5a204cc6164c9a98a53e387ad0a279514e77a268e9e0388aa76dfb44d1",
+   "bytes": 60049
+  },
+  "final-f1-m-2-main-release.json": {
+   "path": "$N/reports/final-f1-m-2-main-release.json",
+   "sha256": "1177205373c2bc811391be84e96ea0088d7651d12354c6cbb746f59495f9f643",
+   "bytes": 112161
+  },
+  "final-f1-m-2-main-release-tool-task.json": {
+   "path": "$N/reports/final-f1-m-2-main-release-tool-task.json",
+   "sha256": "eda46caac877a49a5da5ca73d7064cfcb6a3e65eea6899b8c020c7a20246db77",
+   "bytes": 62969
+  },
+  "final-f1-m-3-bf128.json": {
+   "path": "$N/reports/final-f1-m-3-bf128.json",
+   "sha256": "3ede05b8c16d17fdb41b2427551cfc39d806e507e4dc8298baa06cd7516c209e",
+   "bytes": 106080
+  },
+  "final-f1-m-3-bf128-tool-task.json": {
+   "path": "$N/reports/final-f1-m-3-bf128-tool-task.json",
+   "sha256": "986b58ccb4c286b8ac6d69028fb849c71afcccb82f95e8911f78f6e2f2b57241",
+   "bytes": 60050
+  },
+  "final-f1-m-3-main-release.json": {
+   "path": "$N/reports/final-f1-m-3-main-release.json",
+   "sha256": "390efff32b4ffb53768ce4c176ebb29ebb27ec7a5195351ff971c2a9fce66dc0",
+   "bytes": 112161
+  },
+  "final-f1-m-3-main-release-tool-task.json": {
+   "path": "$N/reports/final-f1-m-3-main-release-tool-task.json",
+   "sha256": "80a5c239552f4a75010721e3c74dabaccadd803f8f874d32837e3161c92f0b2c",
+   "bytes": 62952
+  },
+  "final-f1-m-4-bf128.json": {
+   "path": "$N/reports/final-f1-m-4-bf128.json",
+   "sha256": "734548286498be4cb09a1ff7f45a97dc0c20954a0e2091edcfdcb77afafde510",
+   "bytes": 106117
+  },
+  "final-f1-m-4-bf128-tool-task.json": {
+   "path": "$N/reports/final-f1-m-4-bf128-tool-task.json",
+   "sha256": "c62d316caf806b128d9850a988787645c7e88acf86b54fb2e1a42d18573acf17",
+   "bytes": 60046
+  },
+  "final-f1-m-4-main-release.json": {
+   "path": "$N/reports/final-f1-m-4-main-release.json",
+   "sha256": "4cbddf9a9536c017ac6713e882afe8d740a7b94c23c5d5f21b7b3a4aab52c937",
+   "bytes": 112167
+  },
+  "final-f1-m-4-main-release-tool-task.json": {
+   "path": "$N/reports/final-f1-m-4-main-release-tool-task.json",
+   "sha256": "5a45ecb8df5e1ee5c0f1bb1cee9f5ca5a43e798278f30d5a48a448ae2b827e66",
+   "bytes": 62966
+  },
+  "final-f1-c128-a1-evaluation.json": {
+   "path": "$N/reports/final-f1-c128-a1-evaluation.json",
+   "sha256": "a33ccc8d1248de82584ba4d1d254599b26b705180989ae9ffc6f8619dc603c1e",
+   "bytes": 20241
+  },
+  "final-f1-c128-a1-functional.json": {
+   "path": "$N/reports/final-f1-c128-a1-functional.json",
+   "sha256": "ed4d12d49b29293ae96231b9a9e2277436a7901baaddcdb2d9748fb8dfbf7b20",
+   "bytes": 58161
+  },
+  "final-f1-c128-a1-boundary.json": {
+   "path": "$N/reports/final-f1-c128-a1-boundary.json",
+   "sha256": "24739d7702cf15c80d564167d0f3ec5a00162e302c0caff2a0ac44903e14b649",
+   "bytes": 5300
+  },
+  "final-f1-c128-a1-prefill-cancel.json": {
+   "path": "$N/reports/final-f1-c128-a1-prefill-cancel.json",
+   "sha256": "e6c8b3ab5d5e5c1200fb45cd5bec55cf94d76d4f1e69073452e54e745a5bc03b",
+   "bytes": 50486
+  },
+  "final-f1-c128-a1-sizing.log": {
+   "path": "$N/reports/final-f1-c128-a1-sizing.log",
+   "sha256": "545a3ca189fe9b6e5df984960680770363bccd2a0bfd6ea8aa2da3d139255aae",
+   "bytes": 469
+  },
+  "final-f1-c128-a1-phases.jsonl": {
+   "path": "$N/reports/final-f1-c128-a1-phases.jsonl",
+   "sha256": "38ea09e55c0d487a8ab7c1dc3ca958f3e2e53bd02a835363ea3e1e225ef755c3",
+   "bytes": 677
+  },
+  "final-f1-c128-a1-gpu-sampler.csv": {
+   "path": "$N/reports/final-f1-c128-a1-gpu-sampler.csv",
+   "sha256": "3f0571b67c7ed294329c18c49c01bf9d1574db78972943144231ae3eb0ca3724",
+   "bytes": 12299
+  },
+  "final-f1-l256-a1-evaluation.json": {
+   "path": "$N/reports/final-f1-l256-a1-evaluation.json",
+   "sha256": "14914f333056302291b49fac8c6b6cc4aec6a722c458bef0a0f305d793e274e1",
+   "bytes": 20414
+  },
+  "final-f1-l256-a1-functional.json": {
+   "path": "$N/reports/final-f1-l256-a1-functional.json",
+   "sha256": "23a4a28ecdf48db6c4121f700fff250c0ff71899ef7069051d0a74deceda1993",
+   "bytes": 58163
+  },
+  "final-f1-l256-a1-boundary.json": {
+   "path": "$N/reports/final-f1-l256-a1-boundary.json",
+   "sha256": "ff68e4b470674aedb3694f67354c3c27cafdf5ce7792a6a70c2bb09299f18706",
+   "bytes": 5300
+  },
+  "final-f1-l256-a1-prefill-cancel.json": {
+   "path": "$N/reports/final-f1-l256-a1-prefill-cancel.json",
+   "sha256": "5d45ae8b3c0d595ff935181634448899133f516e32ef4187daef624b5137ce16",
+   "bytes": 50489
+  },
+  "final-f1-l256-a1-sizing.log": {
+   "path": "$N/reports/final-f1-l256-a1-sizing.log",
+   "sha256": "05a9e0e12648f902bc7e9467e08e7de8818632ee9e6efbac5b148daad0168e85",
+   "bytes": 469
+  },
+  "final-f1-l256-a1-phases.jsonl": {
+   "path": "$N/reports/final-f1-l256-a1-phases.jsonl",
+   "sha256": "6ef9927da93f73edd16c1279dad0a64140f5f9b3d9d38ae8b9df4ab1d7d367aa",
+   "bytes": 677
+  },
+  "final-f1-l256-a1-gpu-sampler.csv": {
+   "path": "$N/reports/final-f1-l256-a1-gpu-sampler.csv",
+   "sha256": "97b641ce8fabd72cbeca4d268c8b27a192bcdde0489078e9b84c2ac6dfbff6ee",
+   "bytes": 18473
+  },
+  "final-f1-b64-a1-evaluation.json": {
+   "path": "$N/reports/final-f1-b64-a1-evaluation.json",
+   "sha256": "ca68c5871e80acbfd592040f091eea0cc1565dee0230a03d731bff02ff2d6d9f",
+   "bytes": 17253
+  },
+  "final-f1-b64-a1-functional.json": {
+   "path": "$N/reports/final-f1-b64-a1-functional.json",
+   "sha256": "d1882191af79ab3f460e84fade163a0a6981852868997b7420493071bccdb959",
+   "bytes": 55372
+  },
+  "final-f1-b64-a1-boundary.json": {
+   "path": "$N/reports/final-f1-b64-a1-boundary.json",
+   "sha256": "0a9cecec1ecbc90c5f4a7e1cb9a211077cd753e8d01daabc9bbcffe60fca7f2e",
+   "bytes": 4915
+  },
+  "final-f1-b64-a1-prefill-cancel.json": {
+   "path": "$N/reports/final-f1-b64-a1-prefill-cancel.json",
+   "sha256": "7ee43abbdc8df792fe5954f5bccbbf3ece26792963571f128531be4ddb3e8cdc",
+   "bytes": 48483
+  },
+  "final-f1-b64-a1-sizing.log": {
+   "path": "$N/reports/final-f1-b64-a1-sizing.log",
+   "sha256": "f3c2085996b03eff33bedee62860ebf23c6eb2fd87928a8bba9bcc7f8d2bce4d",
+   "bytes": 467
+  },
+  "final-f1-b64-a1-phases.jsonl": {
+   "path": "$N/reports/final-f1-b64-a1-phases.jsonl",
+   "sha256": "79134588861f9db69f691b46e35ef976467be9abfaf85ccdf43a64cea09f3e80",
+   "bytes": 677
+  },
+  "final-f1-b64-a1-gpu-sampler.csv": {
+   "path": "$N/reports/final-f1-b64-a1-gpu-sampler.csv",
+   "sha256": "bd48587bb9dd32f47c11877be90b9026c471b065986af507ec5cf1a9d08af98b",
+   "bytes": 14045
+  },
+  "r2-ab-1-chunk-screen.json": {
+   "path": "$N/reports/r2-ab-1-chunk-screen.json",
+   "sha256": "e2db31176435b33f46bb94ce5dee0eb5e83c07c534d2581a944dcb239cb3eec1",
+   "bytes": 5194
+  },
+  "r2-ab-2-chunk-screen.json": {
+   "path": "$N/reports/r2-ab-2-chunk-screen.json",
+   "sha256": "2c2f7c3f5b67d0e341679c81ea9d212e8b8b3b17cec0f8ea0a6e629bb10d2970",
+   "bytes": 5196
+  },
+  "r2-ab-3-chunk-screen.json": {
+   "path": "$N/reports/r2-ab-3-chunk-screen.json",
+   "sha256": "4bd6ee7acb4afd92f1b5124a015a9d36af93cdd18123a09a697cddfd6a346630",
+   "bytes": 5196
+  },
+  "r3-ab-1-chunk-screen.json": {
+   "path": "$N/reports/r3-ab-1-chunk-screen.json",
+   "sha256": "47f41bd77fe5bbcfc6865ab5ea9b3ffd98c365ae119066c00d07b0fb8911aa26",
+   "bytes": 2651
+  },
+  "r3-ab-2-chunk-screen.json": {
+   "path": "$N/reports/r3-ab-2-chunk-screen.json",
+   "sha256": "5ad6e7c1351ebfa084ced185cdf4e8b8ad0c49d5182d3fd296e888eeae040629",
+   "bytes": 2654
+  },
+  "r3-ab-3-chunk-screen.json": {
+   "path": "$N/reports/r3-ab-3-chunk-screen.json",
+   "sha256": "b70ef17c96e9d6b748a5b494326c594f64a8c6744d8843e6821f9cc0fb059220",
+   "bytes": 2654
+  },
+  "soak-final-f1-a1-tunables-pre.json": {
+   "path": "$N/reports/soak-final-f1-a1-tunables-pre.json",
+   "sha256": "e31149442806b651a1d6f2bf6d37bd5fc05ba44e92b7f9d1b2201d43f57f6876",
+   "bytes": 1196
+  },
+  "soak-final-f1-a1-tunables-post.json": {
+   "path": "$N/reports/soak-final-f1-a1-tunables-post.json",
+   "sha256": "93cd34587fadbb1ba9ab131dbec943f5b262b1302b93497c60e60af29bc72379",
+   "bytes": 1196
+  },
+  "final-f1-install-tunables-inference-163729.json": {
+   "path": "$N/reports/final-f1-install-tunables-inference-163729.json",
+   "sha256": "5e919182a305f2791968cfce83ead712d9a1a6c0340381a24fd9a2ed6d7ee796",
+   "bytes": 1195
+  },
+  "network-release-final-f1-20261014T163937.json": {
+   "path": "$N/reports/network-release-final-f1-20261014T163937.json",
+   "sha256": "52e0f173d620706dff19fdd416346c6898f075192d8a2553afc1d6691f9e532e",
+   "bytes": 14623
+  },
+  "network-release-final-f1-20261014T163907.json": {
+   "path": "$N/reports/network-release-final-f1-20261014T163907.json",
+   "sha256": "ddfa3bac0b01d76436be4363c8e9b8ffe988430c8b52bb6bec0f090cb4766605",
+   "bytes": 9172
+  },
+  "network-release-final-f1-20261014T163735.json": {
+   "path": "$N/reports/network-release-final-f1-20261014T163735.json",
+   "sha256": "1f5ed4bbc45dc31bb921ff9d654a38a5bdaa65104e40e61587c67bdd4b285e54",
+   "bytes": 211
+  },
+  "quality-main-release.json": {
+   "path": "$N/reports/quality-main-release.json",
+   "sha256": "92569dead38657dffb042effb44000e4da15ed7da9b82623ccf679843f0da0bc",
+   "bytes": 4001
+  },
+  "quality-long256-release.json": {
+   "path": "$N/reports/quality-long256-release.json",
+   "sha256": "38adcf6386a4b6c2bc0e7132aca3c50fdc18916d34a59b34b19848384116b0ce",
+   "bytes": 4079
+  },
+  "final-f1-l256-confirm-C.json": {
+   "path": "$N/reports/final-f1-l256-confirm-C.json",
+   "sha256": "a1a6f042a0aad35c29e2a6ff840ae8b8e946cbaeae96c6111eadbd934295ad19",
+   "bytes": 978
+  },
+  "final-f1-l256-confirm-D.json": {
+   "path": "$N/reports/final-f1-l256-confirm-D.json",
+   "sha256": "abd6dadfd3d073c68e03232472bfffc5e867b9b4ef107fc2b693cd3673bc3933",
+   "bytes": 3095
+  },
+  "teacher.jsonl": {
+   "path": "$N/reports/teacher.jsonl",
+   "sha256": "057a42756a7d8a5c34b09f9b463c5a997c06aeb21eed370631e1e7eca04bc6c5",
+   "bytes": 690302
+  },
+  "final-f1-c128-a1-backend.json": {
+   "path": "$N/reports/final-f1-c128-a1-backend.json",
+   "sha256": "972624df7e488eb23e7029c692a705371b71891b8c2a9ff024b222bc97368fdb",
+   "bytes": 394
+  },
+  "final-f1-l256-a1-backend.json": {
+   "path": "$N/reports/final-f1-l256-a1-backend.json",
+   "sha256": "972624df7e488eb23e7029c692a705371b71891b8c2a9ff024b222bc97368fdb",
+   "bytes": 394
+  },
+  "final-f1-b64-a1-backend.json": {
+   "path": "$N/reports/final-f1-b64-a1-backend.json",
+   "sha256": "972624df7e488eb23e7029c692a705371b71891b8c2a9ff024b222bc97368fdb",
+   "bytes": 394
+  }
+ }
+}
