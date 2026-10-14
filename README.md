@@ -1,171 +1,137 @@
 # qwen36-moe-16gb
 
-Qwen3.6-35B-A3B (NVFP4, all 256 experts, top-8 routing) served from a single 16 GB consumer GPU,
-an RTX 5070 Ti (SM120), through a modified [FreeToken](https://github.com/FlashML-org/FreeToken) engine.
-The full expert set (18.25 GB) lives in pinned host RAM. The GPU holds the dense weights, the KV cache
-and a cache of expert slots.
+[English version](README.en.md)
 
-The engine changes and CUDA kernels in this repository make the server 2.5-9x faster on prompts of
-4K tokens and up and about 20-30% faster at decode than the original FreeToken setup on the same
-machine. Teacher forcing shows **bit-identical logits** against the reference build. Release **f1**
-passed every gate on 2026-10-14.
+Qwen3.6-35B-A3B (NVFP4, все 256 экспертов, маршрутизация top-8) работает на одной потребительской видеокарте с 16 ГБ, RTX 5070 Ti (SM120), через доработанный движок [FreeToken](https://github.com/FlashML-org/FreeToken). Полный набор экспертов (18.25 ГБ) лежит в закреплённой оперативной памяти хоста. На GPU находятся плотные веса, KV-кэш и кэш слотов экспертов.
 
-> Status: a single-user home deployment (batch 1). The numbers below are from one machine. Every
-> number has a definition and a source file; see [docs/RESULTS.md](docs/RESULTS.md).
+Наши изменения в движке и CUDA-ядра ускоряют сервер в 2.5–9 раз на промптах от 4K токенов и на 20–30% в decode по сравнению с исходным FreeToken на той же машине. Teacher-forcing показывает **побитово одинаковые логиты** с эталонной сборкой. Выпуск **f1** прошёл все гейты 14.10.2026.
 
-## Headline results
+> Статус: домашний сервер на одного пользователя (batch 1). Все цифры сняты на одной машине. У каждой цифры есть определение и файл-источник, см. [docs/RESULTS.md](docs/RESULTS.md).
 
-### 1. Paired matrix, release f1 vs the FreeToken baseline at 128K
+## Главные результаты
 
-The baseline `bf128` is upstream FreeToken mechanics: Triton NVFP4 MoE, chunk 2048, BF16 KV,
-131072 context, plus the FP32 global-scale fix (see "Quality" below). The protocol was 5 paired rounds
-in rotating order with exactly 128 output tokens per request, run in one session. The table shows
-medians.
+### 1. Парная матрица: выпуск f1 против базового FreeToken на 128K
 
-| Case | TTFT bf128 | TTFT f1 | TTFT speedup | Decode bf128 | Decode f1 | Full request, geomean speedup |
+База `bf128` — механика исходного FreeToken: Triton NVFP4 MoE, чанк 2048, KV в BF16, контекст 131072 и исправление FP32-масштабов (см. «Качество» ниже). Протокол: 5 парных раундов в чередующемся порядке, ровно 128 токенов ответа на запрос, одна сессия. В таблице медианы.
+
+| Случай | TTFT bf128 | TTFT f1 | Ускорение TTFT | Decode bf128 | Decode f1 | Весь запрос, ускорение (геом. среднее) |
 |---|---:|---:|---:|---:|---:|---:|
-| 64-token prompt | 0.75 s | 0.79 s | 0.94x (non-gating) | 96.4 tok/s | 122.8 tok/s | 1.13x |
-| 4K | 2.24 s | 0.77 s | 2.9x | - | - | 1.95x |
-| 16K | 6.78 s | 1.59 s | 4.3x | 94.2 tok/s | 119.1 tok/s | 3.03x |
-| 64K | 28.46 s | 9.14 s | 3.1x | 84.4 tok/s | 99.3 tok/s | 2.86x |
-| 120K | 54.77 s | 22.07 s | 2.5x | 80.7 tok/s | 94.6 tok/s | 2.45x |
-| Last-message edit at 16K | 6.85 s | 0.78 s | 8.8x | | | 4.44x |
-| Tool-result edit at 16K | 7.11 s | 0.76 s | 9.4x | | | 4.49x |
-| Tool-call cycle (natural EOS) | | | | | | 1.08x (CI 0.97-1.20) |
+| Промпт 64 токена | 0.75 с | 0.79 с | ×0.94 (вне гейта) | 96.4 ток/с | 122.8 ток/с | ×1.13 |
+| 4K | 2.24 с | 0.77 с | ×2.9 | — | — | ×1.95 |
+| 16K | 6.78 с | 1.59 с | ×4.3 | 94.2 ток/с | 119.1 ток/с | ×3.03 |
+| 64K | 28.46 с | 9.14 с | ×3.1 | 84.4 ток/с | 99.3 ток/с | ×2.86 |
+| 120K | 54.77 с | 22.07 с | ×2.5 | 80.7 ток/с | 94.6 ток/с | ×2.45 |
+| Правка последнего сообщения, 16K | 6.85 с | 0.78 с | ×8.8 | | | ×4.44 |
+| Правка результата инструмента, 16K | 7.11 с | 0.76 с | ×9.4 | | | ×4.49 |
+| Цикл вызова инструмента (естественный EOS) | | | | | | ×1.08 (ДИ 0.97–1.20) |
 
-Verdict: **PASS**. f1 is non-inferior on all 9 gating cases, and the gain of at least 5% holds
-under Bonferroni correction. Decode across the matrix is 1.19-1.32x.
+Вердикт: **PASS**. f1 не хуже базы во всех 9 гейтовых случаях, выигрыш ≥ 5% держится с поправкой Бонферрони. Decode по всей матрице ×1.19–1.32.
 
-### 2. Like-for-like at 64K context (original FreeToken vs release)
+### 2. Одинаковые условия на контексте 64K (исходный FreeToken против выпуска)
 
-The three arms ran in one session at context 65536 with 192 output tokens, a 60 s warm-up and 2 valid
-rounds in opposite order. Each cell shows TTFT / decode, as the mean of the 2 rounds.
+Три варианта прогнаны в одной сессии: контекст 65536, ответ 192 токена, прогрев 60 с, 2 действительных раунда в обратном порядке. В ячейках TTFT / decode, среднее по 2 раундам.
 
-| Prompt | Original FreeToken (FP16 globals) | + FP32 global fix | Release f1 at 64K | f1 vs original |
+| Промпт | Исходный FreeToken (FP16-масштабы) | + исправление FP32 | Выпуск f1 на 64K | f1 против исходного |
 |---|---:|---:|---:|---|
-| 4K | 1.93 s / 116.0 tok/s | 1.85 s / 118.1 | **0.58 s / 142.4** | TTFT 3.3x, decode +23% |
-| 16K | 6.04 s / 111.3 | 5.86 s / 115.7 | **1.49 s / 138.0** | TTFT 4.1x, decode +24% |
-| 60K | 22.86 s / 101.3 | 22.43 s / 107.6 | **7.50 s / 122.2** | TTFT 3.0x, decode +21% |
+| 4K | 1.93 с / 116.0 ток/с | 1.85 с / 118.1 | **0.58 с / 142.4** | TTFT ×3.3, decode +23% |
+| 16K | 6.04 с / 111.3 | 5.86 с / 115.7 | **1.49 с / 138.0** | TTFT ×4.1, decode +24% |
+| 60K | 22.86 с / 101.3 | 22.43 с / 107.6 | **7.50 с / 122.2** | TTFT ×3.0, decode +21% |
 
-### 3. 250K-class context (`long256` profile, 262144 tokens)
+### 3. Контекст около 250K (профиль `long256`, 262144 токена)
 
-| Measurement | Original FreeToken mechanics | Release f1 |
+| Замер | Механика исходного FreeToken | Выпуск f1 |
 |---|---:|---:|
-| Fresh 250K prompt, TTFT | 126.5 s (single run, 2026-10-13, Triton, chunk 4096) | **77.4 s** p50 of 11 (30-min test); 80.4 s in the release gate |
-| Fresh 250K prompt, decode | - | 60.8 tok/s p50 |
-| 261,468-token prompt at the context limit, TTFT | 139.5 s (median of 5, `bf256`, chunk 2048) | **91.3 s** (single run) |
-| Same, decode | ~52.5 tok/s | 52.5 tok/s |
-| 250K continuation (prefix-cache hit) | - | 1.06 s TTFT, 11/11 hits |
+| Свежий промпт 250K, TTFT | 126.5 с (один прогон, 13.10.2026, Triton, чанк 4096) | **77.4 с**, медиана 11 прогонов (тест 30 мин); 80.4 с в гейте выпуска |
+| Свежий промпт 250K, decode | — | 60.8 ток/с, медиана |
+| Промпт 261 468 токенов у предела контекста, TTFT | 139.5 с (медиана 5, `bf256`, чанк 2048) | **91.3 с** (один прогон) |
+| То же, decode | ~52.5 ток/с | 52.5 ток/с |
+| Продолжение на 250K (попадание в кэш префиксов) | — | TTFT 1.06 с, попаданий 11/11 |
 
-These are cross-session comparisons, not paired rounds. The 256K paired matrix ran on an earlier
-build; see [docs/RESULTS.md](docs/RESULTS.md).
+Это сравнения между разными сессиями, а не парные раунды. Парная матрица на 256K прогонялась на более ранней сборке, см. [docs/RESULTS.md](docs/RESULTS.md).
 
-### 4. Latency under a 2-hour soak (main128, 256 output tokens, sequential)
+### 4. Задержки под нагрузкой: soak 2 часа (main128, ответ 256 токенов, последовательно)
 
-| Prompt tokens | TTFT p50 / p99 | Decode p50 |
+| Токенов в промпте | TTFT p50 / p99 | Decode p50 |
 |---:|---:|---:|
-| 93 | 0.60 / 0.67 s | 133.7 tok/s |
-| 4K | 0.61 / 0.65 s | 135.0 tok/s |
-| 16K | 1.36 / 1.61 s | 129.8 tok/s |
-| 64K | 8.14 / 9.29 s | 112.2 tok/s |
-| 120K | 20.97 / 22.92 s | 97.5 tok/s |
+| 93 | 0.60 / 0.67 с | 133.7 ток/с |
+| 4K | 0.61 / 0.65 с | 135.0 ток/с |
+| 16K | 1.36 / 1.61 с | 129.8 ток/с |
+| 64K | 8.14 / 9.29 с | 112.2 ток/с |
+| 120K | 20.97 / 22.92 с | 97.5 ток/с |
 
-The soak ran for 7212 s: 741/741 checks passed with 0 errors and 0 stalls. Host memory grew by only
-45-48 MB over the 2 hours.
+Soak длился 7212 с: 741/741 проверок пройдено, 0 ошибок, 0 зависаний. Память хоста за 2 часа выросла всего на 45–48 МБ.
 
-## Quality guarantee
+## Гарантия качества
 
-- **Bit-exact teacher forcing.** The release build and the reference `bf128` are fed the same 20
-  fixed cases (943 forced target tokens). At all **125/125** logit checkpoints the logits are
-  identical: max |Δlogit| = 0. Relative perplexity growth is **+0.0%** (CI [0, 0]), and there are no
-  new functional failures. The 256K profile is also 125/125 bit-exact when the 120K case runs on a
-  clean prefix cache (harness v7). See [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
-- Every speed change in f1 is bit-exact by construction and was gated individually: layer-major
-  prefill, the CUDA MoE / GDN / FP8 GEMV kernels, attention batching and the TMA gather.
-  Non-bit-exact options were measured and left out, such as FP8 KV, larger chunks and fused FLA in f1.
-- The reference keeps the NVFP4 global scales (`weight_scale_2`) in **FP32**. Upstream FreeToken casts
-  them to FP16, and 94% of them become subnormal. That fix changes numerics on purpose. Relative to the
-  FP16 basis, perplexity improves by 1.13% (CI [-2.27%, -0.08%]), and a pre-registered 60-case eval
-  scores 59/60 vs 57/60.
-- Scope: bit-exactness is proven on fixed fixtures. It is not a proof for arbitrary inputs. Prefix-cache
-  state can change rounding in both builds in the same way. See the header-dedup note in
-  [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+- **Побитовый teacher-forcing.** Выпускная сборка и эталон `bf128` получают одни и те же 20 фиксированных кейсов (943 принудительных целевых токена). Во всех **125/125** контрольных точках логиты одинаковы: max |Δlogit| = 0. Относительный рост перплексии **+0.0%** (ДИ [0, 0]), новых функциональных провалов нет. Профиль 256K тоже даёт 125/125 побитово, если кейс 120K идёт на чистом кэше префиксов (харнесс v7). См. [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
+- Каждое ускорение в f1 побитово точно по построению и проходило гейт по отдельности: послойный prefill, CUDA-ядра MoE / GDN / FP8 GEMV, пакетный attention и TMA gather. Варианты без побитовой точности замерены и не включены: FP8 KV, большие чанки, слитый FLA в f1.
+- Эталон хранит глобальные масштабы NVFP4 (`weight_scale_2`) в **FP32**. Исходный FreeToken приводит их к FP16, и 94% из них становятся субнормальными числами. Это исправление меняет вычисления намеренно. Относительно FP16-базы перплексия лучше на 1.13% (ДИ [−2.27%, −0.08%]), а заранее зарегистрированный eval из 60 кейсов даёт 59/60 против 57/60.
+- Границы гарантии: побитовая точность доказана на фиксированных кейсах, это не доказательство для произвольных входов. Состояние кэша префиксов может одинаково менять округление в обеих сборках. См. заметку о дедупликации заголовка в [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Hardware and software
+## Железо и софт
 
-| Item | Value |
+| Что | Значение |
 |---|---|
-| GPU | NVIDIA RTX 5070 Ti 16 GB (SM120, Blackwell), PCIe 5.0 x16. It also drives the Windows desktop (4K at 159 Hz), which uses about 2.5-3 GiB of VRAM |
-| CPU / RAM | Intel Core i7-14700KF. The WSL2 VM sees about 47 GiB, and the service is capped at MemoryHigh 32 GiB |
-| OS | Windows 11 + WSL2 (WSL 2.7.3, Arch Linux, kernel 6.6, systemd 262); NVIDIA Windows driver 617.14 |
+| GPU | NVIDIA RTX 5070 Ti 16 ГБ (SM120, Blackwell), PCIe 5.0 x16. Она же выводит рабочий стол Windows (4K, 159 Гц), который занимает ~2.5–3 ГиБ VRAM |
+| CPU / RAM | Intel Core i7-14700KF. Виртуальной машине WSL2 видно ~47 ГиБ, сервис ограничен MemoryHigh 32 ГиБ |
+| ОС | Windows 11 + WSL2 (WSL 2.7.3, Arch Linux, ядро 6.6, systemd 262); драйвер NVIDIA для Windows 617.14 |
 | CUDA | CUDA 13.4 (toolkit 13.4.1, nvcc 13.4.59), GCC 15.3 |
-| Python stack | Python 3.12.14, torch 2.11.0 (cu130), Triton 3.6.0, FlashInfer 0.6.18.post1, sglang-kernel 0.4.5, transformers 5.16.1 |
-| Engine | FreeToken 0.1.3 (`cac247a860e316e06580d05aeb05f2e647bde214`) + the changes in `freetoken/` |
-| Checkpoint | `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0f2c3c5`: NVFP4 experts, FP8 dense, selected BF16 |
+| Python | Python 3.12.14, torch 2.11.0 (cu130), Triton 3.6.0, FlashInfer 0.6.18.post1, sglang-kernel 0.4.5, transformers 5.16.1 |
+| Движок | FreeToken 0.1.3 (`cac247a860e316e06580d05aeb05f2e647bde214`) + изменения в `freetoken/` |
+| Чекпойнт | `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0f2c3c5`: эксперты NVFP4, плотные слои FP8, отдельные слои BF16 |
 
-## Profiles
+## Профили
 
-| Profile | Context | Expert slots on GPU | Use |
+| Профиль | Контекст | Слотов экспертов на GPU | Назначение |
 |---|---:|---:|---|
-| `main128` (default) | 131,072 | 3164 | everyday use; all f1 switches |
-| `long256` | 262,144 | 1481 | long documents; same switches, more KV and fewer slots (slower decode) |
-| `baseline64` | 65,536 | 3917 | unchanged fallback (original mechanics, FP32 globals) |
+| `main128` (по умолчанию) | 131 072 | 3164 | повседневная работа; все переключатели f1 |
+| `long256` | 262 144 | 1481 | длинные документы; те же переключатели, больше KV и меньше слотов (decode медленнее) |
+| `baseline64` | 65 536 | 3917 | неизменный запасной вариант (исходная механика, FP32-масштабы) |
 
-## Repository layout
+## Структура репозитория
 
-| Path | Contents |
+| Путь | Что внутри |
 |---|---|
-| `freetoken/` | The modified FreeToken engine (Apache-2.0). `freetoken/MODIFICATIONS.md` lists every switch and change |
-| `kernels/` | CUDA sources for the bit-exact kernels: `nvfp4-moe`, `gdn`, `fp8-gemv`, `attention-gate`. The TMA decode gather lives in `freetoken/` as a JIT module |
-| `serving/` | API ingress/guard, profile runtime validator, service and launcher scripts |
-| `harness/` | Qualification and benchmark harness: teacher forcing, paired matrix, soak, context gates, run configs |
-| `config/` | Profile definitions |
-| `docs/` | [ARCHITECTURE](docs/ARCHITECTURE.md), [RESULTS](docs/RESULTS.md), [METHODOLOGY](docs/METHODOLOGY.md), [ROADMAP](docs/ROADMAP.md), [upstream-notes](docs/upstream-notes/00-INDEX.md) (unposted issue drafts) |
-| `results/` | Evidence: dashboard, metrics, Nsight summaries, matrix/soak/gate JSONs, experiment results. See [docs/RESULTS.md](docs/RESULTS.md) for the file map |
-| `local/` | Machine-specific material. It is **gitignored** and not part of the public tree |
+| `freetoken/` | Доработанный движок FreeToken (Apache-2.0). Все переключатели и изменения перечислены в `freetoken/MODIFICATIONS.md` |
+| `kernels/` | Исходники побитово точных CUDA-ядер: `nvfp4-moe`, `gdn`, `fp8-gemv`, `attention-gate`. TMA gather для decode лежит в `freetoken/` как JIT-модуль |
+| `serving/` | Входной guard API, валидатор профилей, скрипты сервиса и запуска |
+| `harness/` | Харнесс квалификации и бенчмарков: teacher-forcing, парная матрица, soak, гейты контекста, конфиги прогонов |
+| `config/` | Описания профилей |
+| `docs/` | [ARCHITECTURE](docs/ARCHITECTURE.md), [RESULTS](docs/RESULTS.md), [METHODOLOGY](docs/METHODOLOGY.md), [ROADMAP](docs/ROADMAP.md), [upstream-notes](docs/upstream-notes/00-INDEX.md) (черновики issue, не отправлялись) |
+| `results/` | Доказательства: дашборд, метрики, сводки Nsight, JSON матрицы, soak и гейтов, результаты экспериментов. Карта файлов в [docs/RESULTS.md](docs/RESULTS.md) |
+| `next-update/` | Заготовки следующего обновления: патчи, планы, результаты замеров |
+| `AGENT-TASKS.md` | Задачи и правила для удалённого агента-разработчика |
+| `local/` | Данные конкретной машины. Папка в **.gitignore** и в публичное дерево не входит |
 
-## Quick start (pointers)
+## Быстрый старт (ориентиры)
 
-The project targets one specific setup: Linux (WSL2) with the checkpoint on local disk and a 16 GB SM120
-GPU. It is not a one-command install.
+Проект рассчитан на конкретную конфигурацию: Linux (WSL2), чекпойнт на локальном диске и GPU SM120 с 16 ГБ. Установки одной командой нет.
 
-1. Install the Python stack above in a venv and install `freetoken/` from source. Follow
-   `freetoken/README.md` for upstream's instructions, then read `freetoken/MODIFICATIONS.md`.
-2. Build the kernels in `kernels/` for `sm_120a`. The engine loads them by sha256-pinned path. With
-   `FREETOKEN_DISABLE_JIT=1` it serves only manifest-bound prebuilt kernels and never compiles at serve
-   time.
-3. Pick a profile from `config/` and start it through the launcher in `serving/`. The profile runtime
-   refuses unqualified or inconsistent switch combinations.
-4. To check a modified build, run the harness in `harness/`: teacher forcing against your own
-   reference, then the paired matrix. The procedure is in [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
+1. Поставьте Python-стек из таблицы выше в venv и установите `freetoken/` из исходников. Сначала инструкции upstream в `freetoken/README.md`, затем `freetoken/MODIFICATIONS.md`.
+2. Соберите ядра из `kernels/` под `sm_120a`. Движок загружает их по путям, закреплённым через sha256. С `FREETOKEN_DISABLE_JIT=1` он использует только prebuilt-ядра из манифеста и никогда не компилирует во время работы.
+3. Выберите профиль в `config/` и запустите его через скрипт из `serving/`. Валидатор профилей откажет в неквалифицированных или противоречивых сочетаниях переключателей.
+4. Чтобы проверить изменённую сборку, прогоните харнесс из `harness/`: сначала teacher-forcing против своего эталона, затем парную матрицу. Порядок описан в [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
 
-The API is OpenAI-compatible chat completions with streaming and auto tool calling.
+API совместим с OpenAI chat completions, поддерживает стриминг и автоматический вызов инструментов.
 
-## Limitations
+## Ограничения
 
-- **One request at a time** (batch 1, no queue; a busy server returns 429). Concurrency was never measured.
-- **Text only.** Vision and MTP/speculative decoding are not loaded.
-- **No constrained decoding.** `tool_choice` set to required or named, `strict: true`,
-  `parallel_tool_calls=false` with tools, and legacy `functions` are all rejected with 400.
-- **Short-prompt TTFT floor of about 0.57-0.6 s.** Every prefill streams the full 18.25 GB expert bank
-  over PCIe. A 64-token prompt is slightly slower than the baseline (0.79 vs 0.75 s). The fix is the
-  next update ([ROADMAP](docs/ROADMAP.md)).
-- **Known near-tie failures of the checkpoint.** Two fixed functional cases fail under greedy decoding,
-  identically in the reference and the release; a third fails on `baseline64`. On one tool fixture,
-  thinking-off sometimes answers directly instead of calling the tool. Enabling thinking is recommended
-  for tool workflows.
-- **VRAM headroom depends on the desktop.** The soak saw 4 of 825 requests dip below 512 MiB free
-  (lowest 367 MiB), with no stall.
-- **WSL2 specifics.** There is a single copy engine. WDDM time-slices the GPU with the desktop
-  (measurement noise). A WSL interop issue is described in [docs/RESULTS.md](docs/RESULTS.md).
-- **256K was not fully soaked.** It passed a 30-minute stability test only, not a 2-hour soak.
+- **Один запрос за раз** (batch 1, без очереди; занятый сервер отвечает 429). Параллельная нагрузка не замерялась.
+- **Только текст.** Vision и MTP / спекулятивный декодинг не загружаются.
+- **Нет ограниченного декодинга.** `tool_choice` со значением required или с именем функции, `strict: true`, `parallel_tool_calls=false` вместе с инструментами и устаревшие `functions` отклоняются с кодом 400.
+- **Нижняя граница TTFT на коротких промптах ~0.57–0.6 с.** Каждый prefill прокачивает по PCIe весь банк экспертов 18.25 ГБ. Промпт из 64 токенов чуть медленнее базы (0.79 против 0.75 с). Исправление запланировано в следующем обновлении ([ROADMAP](docs/ROADMAP.md)).
+- **Известные почти-ничьи самой модели.** Два фиксированных функциональных кейса проваливаются при жадном декодинге одинаково в эталоне и в выпуске; третий проваливается на `baseline64`. На одном кейсе с инструментом модель без thinking иногда отвечает сама, а не вызывает инструмент. Для работы с инструментами рекомендуется включать thinking.
+- **Запас видеопамяти зависит от рабочего стола.** В soak 4 запроса из 825 опускались ниже 512 МиБ свободной памяти (минимум 367 МиБ), без зависаний.
+- **Особенности WSL2.**
+  - Один copy engine.
+  - WDDM делит время GPU с рабочим столом, отсюда шум в замерах.
+  - Канал хост → GPU упирается в 41–45 ГБ/с; gather уже работает на ~42 ГБ/с.
+  - Проблема с WSL interop описана в [docs/RESULTS.md](docs/RESULTS.md).
+- **256K не прошёл полный soak.** Только 30-минутный тест стабильности, без двухчасового soak.
 
-## Credits and license
+## Благодарности и лицензия
 
-- **FreeToken** (FlashML-org/FreeToken, Apache-2.0) is the engine this work modifies. The upstream
-  copyright and license are kept in `freetoken/LICENSE`, and the changes are listed in
-  `freetoken/MODIFICATIONS.md`.
-- **NVIDIA** published the `nvidia/Qwen3.6-35B-A3B-NVFP4` checkpoint, quantized from Qwen3.6-35B-A3B
-  by the **Qwen team**. The weights are not included here and keep their own license.
-- The work also builds on FlashInfer, Triton, flash-linear-attention, sglang-kernel and PyTorch.
-- The issue drafts in `docs/upstream-notes/` were **never posted**. They are kept as notes.
+- **FreeToken** (FlashML-org/FreeToken, Apache-2.0) — движок, который дорабатывает эта работа. Копирайт и лицензия upstream сохранены в `freetoken/LICENSE`, изменения перечислены в `freetoken/MODIFICATIONS.md`.
+- Чекпойнт `nvidia/Qwen3.6-35B-A3B-NVFP4` опубликован **NVIDIA** и квантован из Qwen3.6-35B-A3B, модели **команды Qwen**. Веса сюда не входят и распространяются под своей лицензией.
+- Работа также опирается на FlashInfer, Triton, flash-linear-attention, sglang-kernel и PyTorch.
+- Черновики issue в `docs/upstream-notes/` **никогда не отправлялись**, они хранятся как заметки.
