@@ -5,17 +5,20 @@ slots. Compare every destination byte and require real D2D on the short path.
 """
 import pytest
 import torch
-from freetoken.moe.offload_cache import OffloadMoeCache
+from freetoken.moe.offload_cache import OffloadMoeCache, _BANK_SCHEMAS
 
+@pytest.mark.parametrize('quant_format', ('bf16', 'nvfp4_marlin', 'nvfp4'))
 @pytest.mark.parametrize('hit_d2d', (False, True))
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires owner CUDA/SM120 stack')
-def test_short_hits_and_borrowed_slot_epochs_byte_exact(hit_d2d):
+def test_short_hits_and_borrowed_slot_epochs_byte_exact(hit_d2d, quant_format):
     E, L, ROW = 4, 2, 262144
     dev = torch.device('cuda')
     cache = OffloadMoeCache(num_layers=L, num_experts=E, cache_size=4*E,
-                           device=dev, prefill_overlap=True, prefill_hit_d2d=hit_d2d, quant_format='bf16')
-    sources = {name:[torch.randint(0,256,(E,ROW),dtype=torch.uint8).pin_memory() for _ in range(L)]
-               for name in ('gate_up','down')}
+                           device=dev, prefill_overlap=True, prefill_hit_d2d=hit_d2d, quant_format=quant_format)
+    sizes = {name:(16 if 'global' in name else 16384 if 'scale' in name else ROW)
+             for name in _BANK_SCHEMAS[quant_format]}
+    sources = {name:[torch.randint(0,256,(E,size),dtype=torch.uint8).pin_memory() for _ in range(L)]
+               for name,size in sizes.items()}
     cache.set_bank_sources(sources)
     if hit_d2d:
         assert cache._hit_d2d_usable(), 'hit-D2D unavailable: this is a failed component gate, not a fallback PASS'
@@ -37,10 +40,12 @@ def test_short_hits_and_borrowed_slot_epochs_byte_exact(hit_d2d):
         cache.begin_prefill();byte_check()
         assert (cache.prefill_d2d_bytes > before) if hit_d2d else (cache.prefill_d2d_bytes == before)
         resident();before=cache.prefill_d2d_bytes
-        cache.begin_layer_major_prefill()
-        assert not cache._prefill_hit_d2d_active
+        # HiddenStore borrows/unmaps on compute before begin_prefill records the
+        # producer fence. Preserve that order so copy-stream invalidation follows it.
         borrowed=cache.borrow_tail_slots(E)
         for view in borrowed:view.fill_(165)
+        cache.begin_layer_major_prefill()
+        assert not cache._prefill_hit_d2d_active
         byte_check()
         assert cache.prefill_d2d_bytes == before
         # Same close ordering as LayerMajorExecutor.close; enqueue waits before reuse.
