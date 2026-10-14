@@ -21,7 +21,7 @@ def fixtures(clean=False):
                    'source_files':{'synthetic.py':'a'*64}, 'service_source_files':{k:'b'*64 for k in ('experiment.py','serve_guarded.py','guard.py','ingress.py','request_metrics.py')},
                    'packages':{k:'synthetic' for k in ('torch','triton','flashinfer-python','sglang-kernel','transformers')},
                    'checkpoint':'synthetic', 'checkpoint_revision':'synthetic', 'native_libraries':{}}
-        out = {'run':receipt, 'fixture_sha256':'f'*64, 'targets':{}, 'rows':[]}
+        out = {'fixture_version':1, 'run':receipt, 'fixture_sha256':'f'*64, 'targets':{}, 'rows':[]}
         if clean:
             cold = dict(receipt, run_id=run+'-cold', started_utc='later')
             out['clean_cache'] = {'mode':'restart_same_profile', 'cases':['long-120000'], 'runs':[cold]}
@@ -74,6 +74,11 @@ class QualityEvidence(unittest.TestCase):
                 with self.subTest(profile=profile, mutation=mutate):
                     f=fixtures();mutate(f[4][(profile,run,'ru-0')])
                     with self.assertRaises(EvidenceError):self.compare(f)
+
+        for arm in (0,1):
+            for value in (None,True,2):
+                f=fixtures();f[arm]['fixture_version']=value
+                with self.assertRaises(EvidenceError):self.compare(f)
 
     def test_rotated_reference_and_duplicate_rules(self):
         with tempfile.TemporaryDirectory() as d:

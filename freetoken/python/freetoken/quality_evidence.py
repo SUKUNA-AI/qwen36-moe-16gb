@@ -147,6 +147,7 @@ def finite_number(x):
     return type(x) in (int, float) and math.isfinite(x) and x >= 0
 
 def bind_teacher(report, records, profile):
+    require(type(report.get('fixture_version')) is int and report['fixture_version'] == 1, 'teacher fixture version missing/invalid')
     receipts = receipt_map(report, profile)
     rows = unique_rows(report.get('rows'), TEACHER_CASES, profile)
     fixture = report.get('fixture_sha256')
