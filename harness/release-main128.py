@@ -12,7 +12,9 @@ make-qualification.py checks every report and run receipt against the staged byt
         --teacher reports/quality-main128.json --fla-component reports/gdn-wu.json \
         --overlap-component reports/overlap-component.json --ab reports/ab-main128-vs-f1.json \
         [--evidence reports/soak.json ...] [--limitation TEXT ...] [--limitations-file F.json] \
-        [--long256 carry|rerun|drop] [--long256-run R --long256-teacher Q] [--baseline64 carry|drop] \
+        [--long256 carry|rerun|drop] [--long256-run R --long256-teacher Q [--long256-bitexact Q]
+         [--long256-evidence E] [--long256-limitation TEXT] [--long256-limitations-file F.json]] \
+        [--baseline64 carry|drop] \
         [--profiles-out STAGE/serving/profiles.json --decision-out STAGE/decision.json]
 
 Without --profiles-out/--decision-out it prints both documents and writes nothing (dry run).
@@ -28,6 +30,15 @@ Profiles other than main128 keep their f1 decision only when their configuration
 A carried CUDA profile (long256) keeps its f1 run receipts, which are bound to the f1 runtime bytes: on a new
 runtime tree make-qualification.py refuses them. Then either ``rerun`` (new run receipts and teacher report
 on this tree) or ``drop`` (qualified=false: that profile is not startable in this release).
+
+rerun: the long256 run receipts (qrun of teacher-long256-release on this tree) bind its CUDA switches;
+their bit-exact reports are --long256-bitexact, default the long256 teacher report. At 262144 context the
+f1 long256 teacher differed from teacher-bf128 on long-120000 only (max_abs 1.23, shared chat-header KV in
+the radix cache; bit-identical on a clean cache) and f1 bound the same libraries to the 0-diff main128 teacher
+report instead. If the new long256 teacher shows that again, pass the main128 candidate teacher report (same
+libraries, same tree) as --long256-bitexact, keep the long256 teacher as evidence and state the deviation as a
+known limitation. The carried f1 limitations stay unless --long256-limitations-file replaces them;
+--long256-limitation appends.
 """
 import argparse
 import importlib.util
@@ -107,6 +118,18 @@ def switch_evidence(maker, validator, profile, runs, teachers, fla, overlap, ab,
     return result
 
 
+def read_limits(validator, limits, path=None):
+    """Known limitations: the given strings plus a JSON list file; every item non-blank."""
+    limits = list(limits)
+    if path:
+        extra = validator.read_json(pathlib.Path(path))
+        _require(type(extra) is list and all(type(item) is str and item.strip() for item in extra),
+                 'a limitations file must hold a JSON list of non-blank strings')
+        limits += extra
+    _require(all(type(item) is str and item.strip() for item in limits), 'known limitations must be non-blank')
+    return limits
+
+
 def compose(validator, maker, profiles, f1, args):
     """Return (staged profiles, decision) for main128 plus the carried/rerun/dropped other profiles."""
     validator.validate_profiles_document(profiles)
@@ -116,13 +139,7 @@ def compose(validator, maker, profiles, f1, args):
     decision = {}
     main = staged['profiles']['main128']
     main['qualified'] = True
-    limits = list(args.limitation)
-    if args.limitations_file:
-        extra = validator.read_json(pathlib.Path(args.limitations_file))
-        _require(type(extra) is list and all(type(item) is str and item.strip() for item in extra),
-                 '--limitations-file must hold a JSON list of non-blank strings')
-        limits += extra
-    _require(all(item.strip() for item in limits), 'known limitations must be non-blank')
+    limits = read_limits(validator, list(args.limitation), args.limitations_file)
     runs = evidence_paths(validator, root, unique(args.run), 'main128 --run')
     teachers = evidence_paths(validator, root, unique(args.teacher), 'main128 --teacher')
     fla = evidence_paths(validator, root, unique(args.fla_component), 'main128 --fla-component')
@@ -136,6 +153,12 @@ def compose(validator, maker, profiles, f1, args):
         entry['run_receipts'] = list(runs)
     entry.update(switch_evidence(maker, validator, main, runs, teachers, fla, overlap, ab, 'main128'))
     decision['main128'] = entry
+    rerun_only = [flag for flag, value in (('--long256-run', args.long256_run), ('--long256-teacher', args.long256_teacher),
+                                           ('--long256-bitexact', args.long256_bitexact),
+                                           ('--long256-evidence', args.long256_evidence),
+                                           ('--long256-limitation', args.long256_limitation),
+                                           ('--long256-limitations-file', args.long256_limitations_file)) if value]
+    _require(args.long256 == 'rerun' or not rerun_only, ', '.join(rerun_only) + ' only with --long256 rerun')
     for name in ('long256', 'baseline64'):
         mode = getattr(args, name)
         profile = staged['profiles'][name]
@@ -148,10 +171,15 @@ def compose(validator, maker, profiles, f1, args):
             new_runs = evidence_paths(validator, root, unique(args.long256_run), name + ' --long256-run')
             new_teachers = evidence_paths(validator, root, unique(args.long256_teacher), name + ' --long256-teacher')
             _require(new_runs and new_teachers, name + ' rerun needs --long256-run and --long256-teacher on this tree')
-            entry['evidence'] = unique(entry['evidence'] + new_runs + new_teachers
+            bitexact = evidence_paths(validator, root, unique(args.long256_bitexact), name + ' --long256-bitexact') or new_teachers
+            entry['evidence'] = unique(entry['evidence'] + new_runs + new_teachers + bitexact
                                        + evidence_paths(validator, root, unique(args.long256_evidence), name))
             entry['run_receipts'] = list(new_runs)
-            entry.update(switch_evidence(maker, validator, profile, new_runs, new_teachers, [], [], [], name))
+            carried = [] if args.long256_limitations_file else entry['known_limitations']
+            entry['known_limitations'] = read_limits(validator, carried + list(args.long256_limitation),
+                                                     args.long256_limitations_file)
+            entry['acceptance_status'] = 'accepted_with_known_limits' if entry['known_limitations'] else 'accepted'
+            entry.update(switch_evidence(maker, validator, profile, new_runs, bitexact, [], [], [], name))
         else:
             record = records[name]
             for switch, key in sorted(maker.CUDA_DECISION_EVIDENCE.items()):
@@ -227,9 +255,11 @@ def main(argv=None):
     p.add_argument('--f1-receipt', required=True, help='installed release/qualification.json (f1)')
     p.add_argument('--evidence-root', required=True, help='release.EVIDENCE_ROOT (ROOT/optimization)')
     for flag in ('--run', '--teacher', '--fla-component', '--overlap-component', '--ab', '--evidence', '--limitation',
-                 '--long256-run', '--long256-teacher', '--long256-evidence'):
+                 '--long256-run', '--long256-teacher', '--long256-bitexact', '--long256-evidence',
+                 '--long256-limitation'):
         p.add_argument(flag, action='append', default=[])
     p.add_argument('--limitations-file')
+    p.add_argument('--long256-limitations-file')
     p.add_argument('--long256', choices=MODES['long256'], default='carry')
     p.add_argument('--baseline64', choices=MODES['baseline64'], default='carry')
     p.add_argument('--profiles-out')

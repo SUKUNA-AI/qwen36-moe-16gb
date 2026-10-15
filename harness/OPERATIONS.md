@@ -121,9 +121,15 @@ Windows rollback явно выполняет штатный stop и оставл
 
 - S5 закончил teacher-лесенку и релизный A/B кандидата против f1 (5 пар). Отчёты лежат в `$QWEN36_NATIVE/reports/`.
 - Чекаут — та ветка, которую S5 синхронизировал в оверлей через `sync-v5.sh`. Run-receipts привязаны к байтам рантайма `python/freetoken` и четырёх служебных файлов (`serve_guarded.py`, `guard.py`, `ingress.py`, `request_metrics.py`). Если они разошлись с оверлеем, скрипт откажет с кодом 65. Код S8 (следующий кандидат) в релизное дерево не вливать.
-- Решение по `long256`. Его f1-доказательства привязаны к рантайму f1, поэтому `--long256 carry` на новом дереве make-qualification отклонит («Run receipt runtime sources differ from staged bytes»). Варианты:
-  - `--long256 rerun --long256-run R --long256-teacher Q` — свежий qrun teacher `long256-release` на этом дереве;
-  - `--long256 drop` — long256 в этом релизе `qualified: false`, `start --profile long256` откажет.
+- `long256` — решение владельца: **перегон** (`--long256 rerun`). Его f1-доказательства привязаны к рантайму f1, поэтому `--long256 carry` на новом дереве make-qualification отклонит («Run receipt runtime sources differ from staged bytes»).
+  - S5 делает свежий qrun teacher `teacher-long256-release` на этом дереве. Его run receipt — `--long256-run`, отчёт compare-quality — `--long256-teacher`.
+  - CUDA-библиотеки long256 (NVFP4, GDN, FP8 GEMV) привязываются к этим run receipts и к bit-exact отчёту. По умолчанию это сам teacher long256.
+  - В f1 teacher long256 отличался от `teacher-bf128` только на long-120000 (`max_abs` 1.23: общий KV заголовка чата в radix-кэше на контексте 262144; на чистом кэше — 0). Строгая проверка такой отчёт как bit-exact не примет. Если отклонение повторится, сделать как в f1:
+    - `--long256-bitexact reports/<teacher-отчёт кандидата main128>.json` — те же библиотеки, то же дерево, 0 отличий;
+    - teacher long256 остаётся в доказательствах;
+    - отклонение записать ограничением: `--long256-limitation "…"`.
+  - Ограничения f1 для long256 переносятся. `--long256-limitations-file F.json` заменяет их списком из файла, `--long256-limitation` добавляет строку.
+  - Запасной вариант — `--long256 drop`: long256 в этом релизе `qualified: false`, `start --profile long256` откажет.
 - `baseline64` переносится из f1 (`--baseline64 carry`): у него нет CUDA-доказательств.
 - `config/local.env`: `QWEN36_ROOT`, `QWEN36_NATIVE` (= `QWEN36_ROOT/optimization`), `QWEN36_MODEL_DIR` (можно задать в окружении), `QWEN36_ARCHIVE`. Экспорт берёт upstream FreeToken `cac247a` из `$QWEN36_ARCHIVE/work/FreeToken-opt` или из `--freetoken-base`.
 
@@ -134,7 +140,10 @@ Windows rollback явно выполняет штатный stop и оставл
 ```bash
 EV=(--run reports/<qrun-teacher-main128>.json --teacher reports/<quality-main128>.json
     --fla-component reports/<gdn-wu-component>.json --overlap-component reports/<overlap-component>.json
-    --ab reports/<ab-main128-vs-f1>.json --evidence reports/<soak-или-контекст>.json --long256 drop)
+    --ab reports/<ab-main128-vs-f1>.json --evidence reports/<soak-или-контекст>.json
+    --long256 rerun --long256-run reports/<qrun-teacher-long256-release>.json
+    --long256-teacher reports/<quality-long256-release>.json)
+# при отклонении long-120000 добавить: --long256-bitexact reports/<quality-main128>.json --long256-limitation "…"
 bash harness/release-main128.sh --dry-run --label main128-r1 "${EV[@]}"
 bash harness/release-main128.sh --check --label main128-r1 "${EV[@]}"
 bash harness/release-main128.sh --apply --label main128-r1 "${EV[@]}"

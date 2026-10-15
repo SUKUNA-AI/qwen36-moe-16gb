@@ -8,7 +8,8 @@
 #
 #   release-main128.sh [--dry-run|--check|--apply] --label L --run R --teacher Q --fla-component F \
 #       --overlap-component C --ab A [--evidence E]... [--limitation TEXT]... [--limitations-file F.json] \
-#       [--long256 carry|rerun|drop] [--long256-run R --long256-teacher Q] [--baseline64 carry|drop] \
+#       [--long256 carry|rerun|drop] [--long256-run R --long256-teacher Q [--long256-bitexact Q]] \
+#       [--long256-evidence E] [--long256-limitation TEXT] [--long256-limitations-file F.json] [--baseline64 carry|drop] \
 #       [--freetoken-base DIR | --no-export] [--env FILE] [--python P]
 #   release-main128.sh --rollback [--dry-run|--check|--apply] --label L [--manifest M] [--env FILE]
 #
@@ -32,6 +33,8 @@
 # $QWEN36_ARCHIVE/work/FreeToken-opt), 5 f1 snapshot + release.py install, 6 installed gate (prepare()).
 # A carried long256 keeps f1 run receipts bound to the f1 runtime bytes: make-qualification refuses them on
 # this tree, so long256 needs --long256 rerun (fresh qrun teacher on this tree) or --long256 drop.
+# rerun binds the new long256 runs; --long256-bitexact names their 0-diff teacher report when the long256
+# teacher itself shows the 262144-context long-120000 deviation of f1 (see release-main128.py).
 set -euo pipefail
 
 here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
@@ -64,9 +67,9 @@ while [ $# -gt 0 ]; do
     --manifest) [ $# -ge 2 ] || die 2 "--manifest needs a path"; manifest=$2; shift;;
     --freetoken-base) [ $# -ge 2 ] || die 2 "--freetoken-base needs a directory"; ft_base=$2; shift;;
     --no-export) export_on=0;;
-    --run|--teacher|--fla-component|--overlap-component|--ab|--evidence|--long256-run|--long256-teacher|--long256-evidence)
+    --run|--teacher|--fla-component|--overlap-component|--ab|--evidence|--long256-run|--long256-teacher|--long256-bitexact|--long256-evidence)
       [ $# -ge 2 ] || die 2 "$1 needs a reports/... path"; DECISION_ARGS+=("$1" "$2"); EVIDENCE+=("$2"); shift;;
-    --limitation|--limitations-file|--long256|--baseline64)
+    --limitation|--limitations-file|--long256|--baseline64|--long256-limitation|--long256-limitations-file)
       [ $# -ge 2 ] || die 2 "$1 needs a value"; DECISION_ARGS+=("$1" "$2"); shift;;
     -h|--help) usage; exit 0;;
     *) die 2 "unknown argument: $1";;

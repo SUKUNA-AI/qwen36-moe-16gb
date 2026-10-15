@@ -102,13 +102,14 @@ def decision_args(evidence_root, **changes):
     values = {'run': ['runs/next.json'], 'teacher': ['reports/next-teacher.json'], 'fla_component': ['reports/next-fla.json'],
               'overlap_component': ['reports/next-overlap.json'], 'ab': ['reports/next-ab.json'], 'evidence': [],
               'limitation': [], 'limitations_file': None, 'long256': 'drop', 'baseline64': 'drop', 'long256_run': [],
-              'long256_teacher': [], 'long256_evidence': [], 'evidence_root': str(evidence_root)}
+              'long256_teacher': [], 'long256_evidence': [], 'long256_bitexact': [], 'long256_limitation': [],
+              'long256_limitations_file': None, 'evidence_root': str(evidence_root)}
     values.update(changes)
     return argparse.Namespace(**values)
 
 
-class Main128NextChain(base.Staging):
-    """A: the exact candidate qualifies only with its evidence, installs, and exports the candidate environment."""
+class NextFixture(base.Staging):
+    """Staging with the six pinned libraries (ABI stubs), the hit-D2D/C1 modules and the candidate evidence."""
 
     run_receipt = base.MakeQualificationTests.run_receipt
 
@@ -175,6 +176,9 @@ class Main128NextChain(base.Staging):
         staged, decision = helper.compose(release.load_validator(), maker, self.profiles, {}, args)
         self.write_profiles(staged)
         return decision
+
+class Main128NextChain(NextFixture):
+    """A: the exact candidate qualifies only with its evidence, installs, and exports the candidate environment."""
 
     def test_candidate_qualifies_installs_and_runs_the_candidate_environment(self):
         decision = self.compose()
@@ -262,6 +266,115 @@ class Main128NextChain(base.Staging):
             self.build(self.compose())
 
 
+L256_RUN_ID = 'e' * 32
+L256_CONFIG = json.loads((HERE / 'teacher-long256-release.json').read_text())
+
+
+def long256_teacher(deviates=True):
+    """A long256 teacher report; with the 262144-context long-120000 deviation f1 saw (not bit-exact)."""
+    report = teacher_report([L256_RUN_ID])
+    report['candidate'] = 'teacher-long256-release'
+    if deviates:
+        report.update(bit_exact_pass=False, logit_comparisons=dict(
+            report['logit_comparisons'], all_byte_equal=False, max_abs=1.232421875, max_relative_l2=0.0953468456864357))
+    return report
+
+
+class Long256Rerun(NextFixture):
+    """long256 rerun: its own run receipts on this tree; the 0-diff main128 teacher can bind its libraries."""
+
+    def setUp(self):
+        super().setUp()
+        profiles = copy.deepcopy(self.profiles)
+        profiles['profiles']['long256'] = dict(PROFILES['profiles']['long256'], qualified=False)
+        self.write_profiles(profiles)
+        long256 = self.profiles['profiles']['long256']
+        self.f1 = {'profiles': {'long256': {
+            'configuration_sha256': constants.canonical_profile_sha256(long256), 'acceptance_status': 'accepted_with_known_limits',
+            'known_limitations': ['f1 long256 limitation'],
+            'evidence': [{'path': 'reports/long256-quality.json', 'sha256': 'a' * 64}],
+            **{switch: {'library': 'x', 'library_sha256': 'a' * 64, 'run_receipts': ['reports/long256-quality.json'],
+                        'bitexact_reports': ['reports/long256-quality.json']}
+               for switch in ('cuda_nvfp4_prefill', 'cuda_gdn', 'cuda_fp8_gemv')}}}}
+
+    def long256_run(self, **changes):
+        run = self.run_receipt(run_id=L256_RUN_ID, profile='teacher-long256-release')
+        run['configuration'] = {key: copy.deepcopy(L256_CONFIG[key])
+                                for key in ('context', 'chunk', 'memory_ratio', 'qualified', 'flags', 'env')}
+        run['native_libraries'] = {key: {'path': value, 'sha256': sha(self.library_source(key).read_bytes())}
+                                   for key, value in L256_CONFIG['env'].items() if key.endswith('_LIBRARY')}
+        run.update(changes)
+        return run
+
+    def rerun_decision(self, run=None, teacher=None, **changes):
+        self.evidence()
+        for relative, value in (('runs/l256.json', self.long256_run() if run is None else run),
+                                ('reports/l256-teacher.json', long256_teacher() if teacher is None else teacher)):
+            self.put(self.evidence_root / relative, json.dumps(value).encode())
+        values = dict(long256='rerun', long256_run=['runs/l256.json'], long256_teacher=['reports/l256-teacher.json'],
+                      long256_bitexact=['reports/next-teacher.json'], evidence=['reports/main128-quality.json'])
+        values.update(changes)
+        staged, decision = helper.compose(release.load_validator(), maker, self.profiles, self.f1,
+                                          decision_args(self.evidence_root, **values))
+        self.write_profiles(staged)
+        return decision
+
+    def test_rerun_qualifies_installs_and_starts_long256(self):
+        decision = self.rerun_decision(long256_limitation=['long-120000 differs at 262144 context as in f1'])
+        entry = decision['profiles']['long256']
+        self.assertEqual(entry['run_receipts'], ['runs/l256.json'])
+        self.assertEqual(entry['cuda_gdn_evidence'], {'run_receipts': ['runs/l256.json'],
+                                                      'bitexact_reports': ['reports/next-teacher.json']})
+        self.assertEqual(entry['known_limitations'], ['f1 long256 limitation', 'long-120000 differs at 262144 context as in f1'])
+        self.assertIn('reports/l256-teacher.json', entry['evidence'])
+        receipt = self.qualify(self.build(decision))
+        self.assertEqual(sorted(receipt['profiles']), ['long256', 'main128'])
+        self.assertEqual(receipt['profiles']['long256']['cuda_nvfp4_prefill']['run_receipts'], ['runs/l256.json'])
+        self.assertEqual(self.install(True)['qualified_profiles'], ['long256', 'main128'])
+        self.install(False)
+        installed = self.installed_runtime()
+        action, name, profile = installed.prepare(['select', 'long256'])
+        self.assertEqual((action, name), ('select', 'long256'))
+        environ = installed.configure_environment(name, profile, {})
+        for key, value in L256_CONFIG['env'].items():
+            if key in ('QWEN36_TEACHER_FIXTURE', 'QWEN36_LOGIT_REFERENCE'):
+                self.assertNotIn(key, environ)
+            elif key.endswith('_LIBRARY'):
+                self.assertTrue(environ[key].startswith(str(self.root / 'release/lib/')), key)
+            else:
+                self.assertEqual(environ[key], value, key)
+        for key in ('QWEN36_DECODE_SHARED_OVERLAP', 'QWEN36_HOST_EMBEDDINGS', 'QWEN36_OPROJ_GEMV', 'QWEN36_PREFILL_SELECTED'):
+            self.assertNotIn(key, environ)
+        self.assertEqual(environ['QWEN36_MEMORY_RATIO'], '0.73')
+
+    def test_deviating_long256_teacher_cannot_bind_the_libraries(self):
+        with self.assertRaisesRegex(ValueError, 'identical logits'):
+            self.build(self.rerun_decision(long256_bitexact=[]))
+        self.build(self.rerun_decision(long256_bitexact=[], teacher=long256_teacher(deviates=False)))
+
+    def test_rerun_runs_must_be_this_tree_and_long256(self):
+        stale = self.long256_run()
+        stale['source_files'] = dict(stale['source_files'], **{'engine/engine.py': '0' * 64})
+        with self.assertRaisesRegex(ValueError, 'runtime sources differ from staged bytes'):
+            self.build(self.rerun_decision(run=stale))
+        wrong = self.long256_run()
+        wrong['configuration']['context'] = 131072
+        with self.assertRaisesRegex(ValueError, 'differs from the profile'):
+            self.build(self.rerun_decision(run=wrong))
+        with self.assertRaisesRegex(ValueError, 'runtime sources differ from staged bytes'):
+            self.build(self.carry_decision(stale))
+
+    def carry_decision(self, f1_run):
+        """carry keeps the f1 run receipts: bound to another runtime, make-qualification refuses them."""
+        self.evidence()
+        self.put(self.evidence_root / 'reports/long256-quality.json', json.dumps(f1_run).encode())
+        staged, decision = helper.compose(release.load_validator(), maker, self.profiles, self.f1,
+                                          decision_args(self.evidence_root, long256='carry',
+                                                        evidence=['reports/main128-quality.json']))
+        self.write_profiles(staged)
+        return decision
+
+
 class DecisionHelper(unittest.TestCase):
     """B: release-main128.py composes the decision from report names and the installed f1 receipt."""
 
@@ -320,6 +433,21 @@ class DecisionHelper(unittest.TestCase):
         self.assertIn('reports/f1-quality.json', rerun['evidence'])
         with self.assertRaisesRegex(ValueError, 'rerun needs'):
             self.compose(long256='rerun')
+        staged, decision = self.compose(long256='rerun', long256_run=['reports/l256-run.json'],
+                                        long256_teacher=['reports/l256-teacher.json'],
+                                        long256_bitexact=['reports/next-teacher.json'])
+        rerun = decision['profiles']['long256']
+        self.assertEqual(rerun['cuda_nvfp4_evidence']['bitexact_reports'], ['reports/next-teacher.json'])
+        self.assertTrue({'reports/l256-teacher.json', 'reports/next-teacher.json'} <= set(rerun['evidence']))
+        (self.root / 'l256-limits.json').write_text(json.dumps(['new tree caveat']))
+        staged, decision = self.compose(long256='rerun', long256_run=['reports/l256-run.json'],
+                                        long256_teacher=['reports/l256-teacher.json'],
+                                        long256_limitations_file=str(self.root / 'l256-limits.json'))
+        self.assertEqual(decision['profiles']['long256']['known_limitations'], ['new tree caveat'])
+        with self.assertRaisesRegex(ValueError, 'only with --long256 rerun'):
+            self.compose(long256='drop', long256_limitation=['x'])
+        with self.assertRaisesRegex(ValueError, 'only with --long256 rerun'):
+            self.compose(long256='carry', long256_run=['reports/l256-run.json'])
 
     def test_refusals(self):
         changed = copy.deepcopy(PROFILES)
@@ -512,6 +640,12 @@ class ReleaseScriptSandbox(unittest.TestCase):
         out = self.ok(self.script(*self.release_args('r1', '--check'), state='active'))  # the service may run
         self.assertIn('"preflight": "PASS"', out)
         self.assertEqual(self.tree(), before)
+
+    def test_long256_flags_reach_the_decision(self):
+        refused = self.script(*self.release_args('r1', '--dry-run', '--long256-limitation', 'x',
+                                                 '--long256-bitexact', 'reports/next-teacher.json'))
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn('--long256-bitexact, --long256-limitation only with --long256 rerun', refused.stderr)
 
     def test_overlay_drift(self):
         readiness = self.native / 'readiness.py'
