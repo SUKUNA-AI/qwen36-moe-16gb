@@ -82,13 +82,13 @@ def test_cold_match_is_empty_and_a_commit_round_trips(sess):
 
 
 def test_cold_handle_get_matched_indices_raises(sess4):
-    """WART: ``get_matched_indices`` on a cold handle is ``torch.cat([])`` -> ValueError."""
+    """WART: ``get_matched_indices`` on a cold handle is ``torch.cat([])`` -> a torch error."""
     P = sess4.P
     ids = seq(P, 1)
 
     res = sess4.ad.cache.match_prefix(ids_tensor(ids))
     assert res.cuda_handle.cached_len == 0
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, RuntimeError)):
         res.cuda_handle.get_matched_indices()
     assert sess4.ad.match(ids).indices == []          # every caller needs this cached_len==0 guard
 

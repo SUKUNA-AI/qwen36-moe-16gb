@@ -1,106 +1,143 @@
-# Remaining review findings
+# T5 review — current findings and coverage
 
-Scope: the changed CPU/harness/config/provenance paths and the proposed decode
-intersection, not a whole-repository T5 audit. Fixed findings are documented in
-`NEXT_UPDATE_HANDOFF.md`; they are not listed as open bugs here.
+Reviewed fresh owner branch `31c10060375d4bd068e14f22bdf3f918cbc18f2b` plus T3
+`f7e3ac2`. This review covers repository subsystems beyond the prior patch. The
+full tracked text inventory is `validation/review/inventory.json`: 1,168 files,
+including 762 Python and 94 shell scripts, with hashes, line counts and indexed
+stream/native-load/process/receipt sites. All Python parsed; all shell text passed
+`bash -n` after CRLF normalization. Inventory scans are not manual line-by-line
+verification, a security audit certification, or evidence that GPU races are absent.
 
-## M1 — Public operational launchers still need owner-local site configuration
+The prior owner review is preserved verbatim in
+`validation/review/OWNER_REVIEW_31c1006.md`; fixed items there are historical, not
+new open findings. User explicitly authorized this integration branch, so its
+multi-task layout is not an outstanding process violation.
 
-**Severity: medium; confirmed.** `harness/run-experiment.sh:3`,
-`harness/experiment.py:4`, and `harness/profile.sh:8` retain sanitized runtime,
-model/toolchain and profiler paths. Read-only reproduction:
+## Confirmed remaining findings
+
+### H1 — Functional evidence can come from a different run and source
+
+**High; reproduced.** `harness/compare-quality.py:29` calls
+`freetoken/python/freetoken/quality_evidence.py:209` (`functional_rows`), which
+checks matrix/case completeness and value types but never validates `run`.
+`harness/quality.py:136` captures the functional receipt only after all requests.
+A synthetic otherwise-valid teacher comparison plus functional reports whose
+run/profile/source are unrelated still returns bit_exact_pass=true. Changing the
+server during the functional pass is also not detected at each request boundary.
+This can falsely attribute passing functional behavior to the candidate. Teacher
+case/run binding itself remains enforced. Before release, bind functional receipts
+and per-case runs to the correct non-teacher arm and verify matching sources,
+checkpoint, packages, library bytes and config excluding only declared teacher knobs.
+
+### M1 — Operational launchers still require owner-local path configuration
+
+**Medium; confirmed.** `harness/run-experiment.sh:3`, `harness/experiment.py:4`,
+`harness/profile.sh:8` contain `/home/USER` or `/path/to/LLM` site paths.
+`rg -n '/home/USER|/path/to/LLM'` on those files reproduces this. Direct use in an
+arbitrary checkout can select a nonexistent or wrong runtime. CPU entry and the
+read-only owner preflight work; production install/sync was not run or migrated.
+
+### M2 — Exporter assumes standalone upstream Git history
+
+**Medium; reproduced.** `harness/export-release-evidence.py:274` requires
+`cac247a860e316e06580d05aeb05f2e647bde214` and HEAD==BASE inside freetoken/.
+`git -C freetoken cat-file -e cac247a860e316e06580d05aeb05f2e647bde214` fails in
+this monorepo. Fetching the object alone does not repair path/HEAD assumptions.
+Use branch commits/diff for delivery; do not manufacture an upstream basis.
+The migration study's separate upstream clone does not change this repository.
+
+### M3 — FTW index version and tensor uniqueness are unchecked
+
+**Medium; reproduced on CPU.**
+`freetoken/python/freetoken/checkpoint/ftw.py:217` checks format with assert but
+ignores version; line 223 builds a dict that overwrites duplicate tensor names.
+A temporary index with version=999 and two same-named tensors is accepted.
+Future/corrupt checkpoint layouts can be interpreted under the wrong format or
+silently load the later tensor. The released pinned model is not demonstrated
+corrupt. Validate version, uniqueness, shard ranges and local paths before opening
+shards; keep malformed-index tests separate from real checkpoint/GPU tests.
+
+### M4 — Memory-budget rejection disappears under python -O
+
+**Medium; reproduced; conditional on optimized Python.**
+`freetoken/python/freetoken/engine/cache_budget.py:65` and :86 use asserts for
+positive sizes and budget fit. `plan_cache_budget(300,100,10,4,4,False,10,4)` under
+`-O` returns `(4,10,False)`: a 500-byte geometry from a 300-byte budget. The normal
+interpreter rejects it. This can defer rejection to allocation/OOM under memory
+pressure. Production launcher does not currently request -O; use explicit runtime
+exceptions before adding that mode. Other internal asserts need a similar policy
+review, not a blanket removal of invariants.
+
+### M5 — Frozen final release driver is incompatible with schema 2
+
+**Medium; confirmed.** `harness/gates/final-gates.sh` still calls qualify without
+mandatory reference/functional-baseline arguments and reuses f1 report names;
+its teacher environment extraction predates the reference-report field. Existing
+final checker is strict, so this fails closed. Do not execute this archival driver
+for a new release. Use the reviewed GPU_VALIDATION commands with fresh names.
+
+### M6 — 256K profiling and long-context bit-exact coverage are incomplete
+
+**Medium; reproduced.** `harness/profile-request.py:34` caps final_requests at
+120,000 document tokens even for context=262144. The teacher case set in
+`quality_evidence.py` also ends at 120K. 250K functional/boundary tests and the
+historical throughput result do not establish 250K bit-exactness or an attention
+breakdown. Extend profiling via a separately named workload and explicitly review
+any new private fixture; do not rename the old fixture or alter f1 evidence.
+
+### M7 — Short-route component does not test stale borrowed bytes after close
+
+**Medium; confirmed test gap.** `freetoken/tests/moe/test_short_route_gpu.py:29`
+repopulates all resident slots before each phase. It tests D2D exclusion inside an
+epoch, but cannot catch incorrect restoration after borrowed bytes were overwritten.
+Add a post-close short phase without resident() before accepting T1. This does not
+establish a current race; model prefix/teacher/cancel gates remain required.
+
+Read-only reproduction of H1/M3/M4/M6:
 
 ```bash
-rg -n '/home/USER|/path/to/LLM' harness/run-experiment.sh harness/experiment.py harness/profile.sh
+/path/to/cpu-python tools/reproduce-review-findings.py
 ```
 
-The public CPU entry point works without those launchers. Executing them directly
-as a GPU runbook in an arbitrary checkout can select nonexistent paths and cannot
-establish that the intended overlay was imported. The new preflight rejects
-unconfigured native launchers. Owner-local experiment launcher configuration and
-reviewed staging remain prerequisites; production/install/sync scripts were not
-migrated in this task. No cloud service operation was attempted.
+The resulting booleans in `validation/review/reproductions.json` mean **defect
+reproduced**, not PASS qualification. No production receipt/reference was created.
 
-## M2 — Source exporter still assumes a standalone upstream-based fork Git tree
+## Hypotheses requiring target-device evidence
 
-**Severity: medium; confirmed.** `harness/export-release-evidence.py:273` resolves
-the correct source directory, but lines 274–277 require the upstream
-`cac247a860e316e06580d05aeb05f2e647bde214` object and `HEAD == BASE`. This public
-repository contains the fork under `freetoken/`, with monorepo history. Read-only
-reproduction in this checkout:
+- **HYP-H2, hybrid only:** `layers/moe.py:_decode_hybrid` clamps inactive route ids
+  to slot 0 with zero weights. `0 * NaN` can contaminate a sum if unused slot bytes
+  decode to NaN. New upstream explicitly zeros inactive rows for mixed pools.
+  This branch uses a single layout; no real-kernel reproduction was obtained.
+  Released GPU-only profiles and T3 eligibility exclude hybrid. Test a cold cache,
+  max_fetch=0 and poisoned unused slots before enabling hybrid, without changing
+  routing arithmetic in this task.
+- **HYP-H3, T3 only:** CPU traces establish enqueue order, not CUDA capture/replay
+  behavior. Driver event reuse, byte readiness and full model arithmetic must pass
+  `test_decode_overlap_gpu.py` and teacher gates on SM120. No missing wait was
+  demonstrated in the existing scheduler; its three waits were retained.
+- **HYP-M8, stack migration:** unchanged Triton source may emit different reductions
+  with Triton 3.8/LLVM/PTXAS. MIGRATION.md names actual source/compiler differences;
+  no CUDA replica is certified against the target stack here.
 
-```bash
-git -C freetoken cat-file -e cac247a860e316e06580d05aeb05f2e647bde214
-```
+## Coverage and disposition by subsystem
 
-Observed exit 1: the object is absent. Even fetching it would not fix the HEAD/path
-mapping assumptions. Feature mapping now covers threshold/FLA and the added CPU
-helpers, and all exporter fixture tests execute, but a **real source export from
-this monorepo remains unavailable**. Use reviewed Git diffs/commits for this
-handoff. A monorepo/upstream export migration needs its own explicit base and path
-mapping; do not weaken the exporter's refusal or manufacture an upstream basis.
+| Area | Review performed / available evidence | Limit |
+|---|---|---|
+| MoE cache / memory pressure | ensure/copy/LRU bridge, pinned-bank lifetime, rebuild drain, borrowed-tail mapping, hybrid inactive slots; T3 ordering tests | device LRU/copy and allocation failure need GPU |
+| Layer-major | plan_store/layout/windows, task order, epoch/close/cancel, grouped attention plan guards; existing T1 CPU + 256K sizing | no CUDA execution; M7 |
+| Scheduler / prefix pools | pre-schedule/restore/commit waits, abort acknowledgements, idle rebuild, free-list/radix invariants | 184 additional cache/daemon tests pass; one deliberately unsupported geometry skips |
+| CUDA graphs | GraphRunner capture/replay/reset/destroy, fixed addresses, default-off fallback; T3 fork/join exception paths | replay cannot be qualified on CPU |
+| HTTP guard / protocol | auth, duplicate keys, depth/size/time bounds, concurrent admission and cleanup; OpenAI handler rejects response_format/logit_bias/function_call | existing guard/tool/worker tests; no live server |
+| Checkpoint / model loading | FTW index/short reads/thread cleanup, host pinning, Qwen weight layout, quant registry interfaces | M3; other model families inventoried, not numerically qualified |
+| Native / Triton / CUDA | loader recipe/binary gates, launch bounds, bulk-copy shared::cta, GDN/FP8/NVFP4 reference paths | no nvcc/cuobjdump; no SASS or race-sanitizer PASS |
+| Harness / acceptance | teacher rotations/run mapping, functional matrix, final consumers, component/library evidence, bootstrap direction | H1, M2, M5, M6; private archive NOT_RUN |
+| Daemon / lifecycle | child identity, stop/reap/locking, import safety; existing CPU tests | no owner service manipulation |
+| Serving / release / edge | receipt inventory/env clearing, library ABI/source hashes, site launchers, Windows artifacts static inventory | M1; WSL/PowerShell/external deployment NOT_RUN |
+| Tests / archives / docs | full source syntax inventory, reviewed mandatory CPU matrix, historical f1 preserved | no claim that every repository test ran |
 
-No additional CUDA race is claimed as confirmed. T1 GPU transport/model behavior
-and T2 fused execution remain unvalidated on SM120. T3 remains DEFERRED with its
-specific ownership/capture requirements in
-`next-update/gather-prefetch/OVERLAP-DESIGN.md`; no unsafe overlap implementation
-or active flag was left behind.
-
-## Owner-side review, 2026-10-15
-
-Review of the delivered bundle (base `7c78a48`, cloud head `7c30166`) before any
-GPU work. The cloud CPU result was reproduced in an isolated Linux venv from
-`harness/requirements-cpu.txt`: 30 suites, 695 passed, 0 failed, 2 archive-only
-skips. After the fixes below: 30 suites, 698 passed, 0 failed, the same 2 skips.
-No GPU, model, private fixture or Windows test was run.
-
-### Verdict per item
-
-| Item | Verdict |
-|---|---|
-| T1 short route | Keep. With `QWEN36_LAYER_MAJOR_MIN_TOKENS` unset the released profiles take exactly main's path (traced: same calls, order and GPU work). Routing matches the archived measured patch (`input_len - cached_len`). Hit-D2D cannot read borrowed slots: epochs force it off and borrowed slots stay unmapped afterwards. |
-| T2 fused FLA switch | Keep. Evidence binding is sound. Raw engine values outside unset/0/1/wu/ho, or FLA without CUDA GDN, now fail instead of being ignored. Released profiles never set them. |
-| T4 run-bound evidence | Keep the model (identity, rotation reading, snapshots, complete functional sets, byte equality, one gate for make-qualification and qcheck, `/health` wait, stream-ordering test). It needed the fixes below to be usable. |
-| P0 CPU runner, P2 strict provenance, code worker | Keep. All 83 manifest modules pass the strict recipe check, so `FREETOKEN_STRICT_PROVENANCE=1` is redundant with the wrapper's inventory check, not a new start risk. Any change to `profile-runtime.py` or the runtime tree needs a new release receipt anyway. |
-| T3 | Deferred: design note only, nothing to run. |
-| T5 | Partial: this file covers the changed paths, not a whole-repository audit. |
-| T6 | Not delivered: there is no `MIGRATION.md`. |
-
-### Fixed on this branch
-
-- `15a8166` T1: hit-D2D mode opened the epoch at a second call site (after the FLA
-  cache, Nsight and timing event), with cleanup that differed from `close()`. It
-  is back to the single, measured call site.
-- `cee127b` profiles: `layer_major_min_tokens` is capped at chunk + 1 (a larger
-  threshold routes multi-chunk prompts chunked, measured slower).
-  `layer_major_attn_batch` now accepts only 1-4, the values `attn_batch()` honours.
-  Before, 5-64 validated and silently ran k=1; the cloud long256 analysis found this.
-- `4e8d704` T4:
-  - A reference can be created again (explicit `QWEN36_TEACHER_CREATE_REFERENCE=1`, exclusive create, never replaced). Without it, T6 and new fixtures were impossible.
-  - Engine state binds before it is assigned.
-  - A conflicting duplicate in `teacher.jsonl` fails only the reports that select it; damaged lines are listed instead of failing every comparison.
-  - `qualify.py` requires schema-2 evidence arguments and checks evidence and report names before starting a unit.
-  - `quality.py` refuses an existing report name before the GPU pass, and its log poll retries partial lines.
-
-### Still open (not blocking the T1/T2 GPU gates)
-
-1. **PPL-only comparison.** `bind_teacher` requires logit comparisons, and
-   `compare-quality.py` exits 1 unless the result is bit-exact. A deliberately
-   non-bit-exact arm therefore gets no usable report: the T6 stack A/B and any profile
-   without `QWEN36_LOGIT_REFERENCE`. A PPL-only mode is needed before T6.
-2. **`gates/final-gates.sh` is not schema-2 ready.** It calls `qualify.py` without
-   evidence arguments, reuses f1 report names, and `extract-run --teacher` does not
-   expect `QWEN36_TEACHER_REFERENCE_REPORT`. It stays the frozen f1 driver; the next
-   release needs a new driver (see also MANIFEST TODO 7).
-3. **Functional reports are not bound to a run.** `functional_rows` checks
-   completeness but not the report's run profile or sources against the candidate.
-4. **T1 GPU test gap.** `test_short_route_gpu.py` repopulates every slot per phase,
-   so it cannot catch stale borrowed bytes after an epoch. A phase that borrows,
-   fills, ends the epoch and then runs hit-D2D without repopulating is still missing.
-5. The archived layer-major CPU suite (24 tests) and the short-route toy suite are
-   archive-only and were not run against this tree.
-6. A NaN in an engine row makes the telemetry writer drop it (`allow_nan=False`), so
-   `quality.py` reports "rows missing" without a cause. It fails closed.
-7. Process: the delivery bundles T1, T2 and T4 in one branch, against rule 5
-   (one task per branch). The commits are separable; `NEXT_UPDATE_HANDOFF.md` gives
-   the order.
+CPU-enablement fixes from this review: radix tests now import the existing pure
+CHUNK_SIZE constant, and the cold-handle error test accepts Torch's RuntimeError
+as well as ValueError. No prefix cache arithmetic changed. The expanded mandatory
+CPU runner includes actual radix/free-list/daemon tests, with isolated test-only
+FastAPI dependencies pinned. Missing dependencies and collection errors are recorded
+in CPU_VALIDATION.md rather than counted as successful tests.

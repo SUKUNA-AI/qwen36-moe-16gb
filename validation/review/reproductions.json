@@ -1,0 +1,7 @@
+{
+  "functional_wrong_run_accepted": true,
+  "ftw_unknown_version_accepted": true,
+  "ftw_duplicate_name_silently_replaced": true,
+  "long256_profiler_max_document_tokens": 120000,
+  "optimized_budget_accepts_500_bytes_in_300": true
+}

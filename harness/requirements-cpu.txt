@@ -38,3 +38,8 @@ triton==3.6.0
 typing-extensions==4.16.0
 typing-inspection==0.4.4
 urllib3==2.8.0
+
+# Extended cache/daemon review suites; isolated CPU environment only.
+fastapi==0.115.12
+starlette==0.46.2
+anyio==4.12.1
