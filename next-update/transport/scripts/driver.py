@@ -112,6 +112,21 @@ def workload(tok, rnd, rep):
     return items + [('fresh-1024', fresh(tok, 1024, seed + 3))]
 
 
+def screen(tok, rnd, rep):
+    """Long prompts (layer-major from 2049 tokens) and C1 threshold points on a cached prefix."""
+    seed = 1000 * rnd + 10 * rep
+    m512 = fresh(tok, 512, seed + 2)
+    items = [('fresh-512', m512)] + [(f'suffix-{n}', suffix(tok, m512, n, seed)) for n in (200, 350, 480)]
+    return items + [('fresh-4096', fresh(tok, 4096, seed + 4)), ('fresh-16384', fresh(tok, 16384, seed + 5))]
+
+
+def threshold(tok, rnd, rep):
+    """C1 crossover: chat turns whose uncached suffix is ~155 / 195 / 235 tokens (~75 tokens of template)."""
+    seed = 1000 * rnd + 10 * rep
+    m512 = fresh(tok, 512, seed + 2)
+    return [('fresh-512', m512)] + [(f'suffix-{n}', suffix(tok, m512, n, seed)) for n in (40, 80, 120, 160)]
+
+
 def start(arm, mode, out_prefix=None):
     if unit_active():
         raise SystemExit('qwen36-experiment already active under our GPU lock; refusing')
@@ -141,7 +156,7 @@ def run_arm(arm, tok, args, out):
         meta['sustained_warmup'] = sustained_warmup(tok, args.warmup)
         with rows_path.open('w') as f:
             for rep in range(args.reps):
-                for case, messages in workload(tok, args.round, rep):
+                for case, messages in {'screen': screen, 'threshold': threshold}.get(args.workload, workload)(tok, args.round, rep):
                     sha = hashlib.sha256(json.dumps(messages, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
                     r = stream(messages, args.out_tokens)
                     row = slim(arm, case, rep, sha, r)
@@ -238,6 +253,7 @@ def main():
     p.add_argument('--nsys', action='store_true')
     p.add_argument('--trace', action='store_true')
     p.add_argument('--out-tokens', type=int, default=32)
+    p.add_argument('--workload', choices=('short', 'screen', 'threshold'), default='short')
     p.add_argument('--trace-tokens', type=int, default=256)
     args = p.parse_args()
     from transformers import AutoTokenizer
