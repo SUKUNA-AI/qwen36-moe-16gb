@@ -85,6 +85,8 @@ TTFT, пары внутри раунда (t1 → C0 → C1+C0):
 
 ## C2 — H2D через TMA gather
 
+**Отклонён** (решение владельца): после C0 copy engine даёт 49 ГБ/с против 35 у TMA. Флаг остаётся выключенным, в кандидат не идёт, GPU-прогонов C2 больше нет.
+
 Медленнее copy engine после C0: ~35 ГБ/с против ~49 ГБ/с на этой машине. Три пары (раунды 0, 3, 4): TTFT C2+C0 к c0pe +3…+36 %. На 4K/16K — на уровне C0. Оставлен выключенным.
 
 ## Скрин длинных промптов (layer-major)
@@ -134,6 +136,19 @@ TTFT, пары внутри раунда (t1 → C0 → C1+C0):
 - `harness/test-transport-cpu.py` (`BatchMemcpyProbe`) проверяет порядок «заполнение → ожидание → копия»; на старом файле тест падает;
 - `freetoken/tests/moe/test_batch_memcpy_probe_gpu.py` — 50 проб при занятом matmul'ами текущем потоке; старая проба падает детерминированно, исправленная проходит;
 - байтовые тесты S4 и T1 (`test_short_route_gpu.py`, `test_prefill_hit_d2d.py`) идут через настоящую пробу без подмены: 38/38.
+
+## Включение в профиль main128
+
+| Рычаг | env | Значение | Зависимость |
+|---|---|---|---|
+| C0 | `QWEN36_PREFILL_COPY_PRIORITY` | `1` | prefill overlap (по умолчанию включён) |
+| C0 | `QWEN36_PREFILL_EPOCH_INVALIDATE` | `1` | то же |
+| C1 | `QWEN36_PREFILL_SELECTED` | `160` | `QWEN36_DECODE_GATHER=tuned` (+ `TVM_FFI_CUDA_ARCH_LIST=12.0`) |
+
+- **Разбор флагов строгий.** Флаги C0 принимают только пусто/`0`/`1`; `QWEN36_PREFILL_SELECTED` принимает только неотрицательное целое. Любое другое значение — `ValueError` при старте.
+- **C1 использует ту же предсобранную инстанциацию**, что TMA-gather декода (`freetoken__decode_gather_tma_8_3_16384`). При `FREETOKEN_DISABLE_JIT=1` модуль должен быть в кэше ядер, поэтому C1 стоит привязать к `decode_gather` (как `SWITCH_REQUIRES` / `RUN_COMPANION_ENV`). Если модуль не загрузится, C1 один раз пишет предупреждение в лог и работает прежним путём (безопасный откат).
+- **C1 сам выключается** при layer-major, при ожидающем refill и в подклассах кэша. Порог 160 должен быть меньше `QWEN36_LAYER_MAJOR_MIN_TOKENS` (2049).
+- **В рабочем env не должно быть:** `QWEN36_PREFILL_TMA_GATHER` (C2, отклонён), `QWEN36_PREFILL_SELECTED_SYNC`, `QWEN36_PREFILL_WARM_DECODE` (D6, следующий кандидат), `QWEN36_ROUTE_TRACE` / `_OUT` (только eager-трасса), `QWEN36_DECODE_OVERLAP_PRIORITY`.
 
 ## Воспроизведение
 
