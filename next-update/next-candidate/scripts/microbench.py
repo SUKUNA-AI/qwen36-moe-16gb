@@ -138,6 +138,9 @@ def bench_d3b(sources, layers, reps, k, mixer_rows, mixer_kernels=1, gather='', 
     serial_extra = out['serial_us_per_layer'] - out['mix_us_per_layer']
     out['hidden_fraction'] = ((out['serial_us_per_layer'] - out['spec_us_per_layer']) / serial_extra
                               if serial_extra > 0 else None)
+    # the decision metric is the whole loop (mixer + misses), not the hidden fraction: a high-priority side
+    # stream can slow the mixer it overlaps (S4: T3 priority=-1 cost 0.5-2 % of the decode step)
+    out['step_delta_pct_vs_serial'] = 100.0 * (out['spec_us_per_layer'] - out['serial_us_per_layer']) / out['serial_us_per_layer']
     out.update(k=k, gather=gather or 'default', priority=priority, mixer_kernels=mixer_kernels)
     del cache
     torch.cuda.empty_cache()
