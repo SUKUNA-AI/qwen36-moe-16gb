@@ -28,6 +28,9 @@ def _probe(fn) -> None:
     src = torch.arange(16, dtype=torch.uint8).pin_memory()
     dst = torch.zeros(16, dtype=torch.uint8, device="cuda")
     stream = torch.cuda.Stream()
+    # the zero-fill above is enqueued on the current stream: order the side-stream copy after it, or a
+    # late zero-fill overwrites the copied bytes and the probe wrongly disables batch memcpy (hit-D2D)
+    stream.wait_stream(torch.cuda.current_stream())
     fn(
         torch.tensor([dst.data_ptr()]),
         torch.tensor([src.data_ptr()]),
