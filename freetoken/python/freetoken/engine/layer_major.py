@@ -153,7 +153,8 @@ class LayerMajorExecutor:
         self.plan = plan
         self.num_layers = self.inner.layer_major_num_layers()
         weight = self.inner.embed_tokens.weight
-        self.device = weight.device
+        # a host-resident table (QWEN36_HOST_EMBEDDINGS) still looks rows up into GPU memory
+        self.device = getattr(self.inner.embed_tokens, "compute_device", weight.device)
         self.cuda = self.device.type == "cuda"
         if self.cache is not None and getattr(self.cache, "refill", None) is not None:
             # A previous request's refill still owns tail slots this store may borrow: drain it

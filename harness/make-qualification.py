@@ -62,7 +62,13 @@ DECISION_PROFILE_KEYS = frozenset({'acceptance_status', 'known_limitations', 'ev
 CUDA_DECISION_EVIDENCE = {'cuda_nvfp4_prefill': 'cuda_nvfp4_evidence', 'cuda_gdn': 'cuda_gdn_evidence',
                           'cuda_fp8_gemv': 'cuda_fp8_gemv_evidence', 'cuda_gdn_fla':'cuda_gdn_fla_evidence',
                           'cuda_oproj_gemv': 'cuda_oproj_gemv_evidence', 'cuda_moe_decode': 'cuda_moe_decode_evidence'}
-DECISION_OPTIONAL_KEYS = frozenset({'run_receipts', *CUDA_DECISION_EVIDENCE.values()})
+# Experimental switch -> decision key of its evidence (the staged validator's EXPERIMENTAL_EVIDENCE lists).
+EXPERIMENTAL_DECISION_EVIDENCE = {'decode_shared_overlap': 'decode_shared_overlap_evidence'}
+# test_decode_overlap_gpu.py cases the T3 component report must show passed (GPU_VALIDATION.md section 5).
+OVERLAP_COMPONENT_SUITE = 'freetoken/tests/moe/test_decode_overlap_gpu.py'
+OVERLAP_COMPONENT_CASES = frozenset('test_shared_overlap_bytes_and_capture_replay[%s]' % case
+                                    for case in ('1-', '1-tuned', '3-', '3-tuned'))
+DECISION_OPTIONAL_KEYS = frozenset({'run_receipts', *CUDA_DECISION_EVIDENCE.values(), *EXPERIMENTAL_DECISION_EVIDENCE.values()})
 CUDA_DECISION_KEYS = frozenset({'run_receipts', 'bitexact_reports'})
 # Same representation as optimization/experiment.py and bench.py source receipts.
 RUN_SOURCE_SUFFIXES = ('.py', '.cu', '.h', '.cuh', '.cpp')
@@ -78,7 +84,7 @@ RUN_FEATURE_ENV = frozenset({'QWEN36_PREFIX_MARGIN', 'QWEN36_FUSED_ATTN_GATE', '
                              'QWEN36_LAYER_MAJOR_REFILL_POLICY', 'QWEN36_SYNC_LEAN', 'QWEN36_LAYER_MAJOR_ATTN_BATCH',
                              'QWEN36_CUDA_GDN_FLA', 'QWEN36_LAYER_MAJOR_MIN_TOKENS', 'QWEN36_DECODE_SHARED_OVERLAP',
                              'QWEN36_OPROJ_GEMV', 'QWEN36_OPROJ_GEMV_LIBRARY', 'QWEN36_MOE_DECODE_CUDA',
-                             'QWEN36_MOE_DECODE_LIBRARY'})
+                             'QWEN36_MOE_DECODE_LIBRARY', 'QWEN36_HOST_EMBEDDINGS'})
 # Profile switch -> (run environment variable, value that switches it on).
 RUN_SWITCH_ENV = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE', '1'),
                   'fp32_gdn_snapshot': ('QWEN36_FP32_GDN_SNAPSHOT', '1'),
@@ -92,7 +98,8 @@ RUN_SWITCH_ENV = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE', '1'),
                   'decode_gather': ('QWEN36_DECODE_GATHER', 'tuned'),
                   'layer_major_refill': ('QWEN36_LAYER_MAJOR_REFILL', '1'),
                   'decode_shared_overlap': ('QWEN36_DECODE_SHARED_OVERLAP', '1'),
-                  'sync_lean': ('QWEN36_SYNC_LEAN', '1')}
+                  'sync_lean': ('QWEN36_SYNC_LEAN', '1'),
+                  'host_embeddings': ('QWEN36_HOST_EMBEDDINGS', '1')}
 # Profile value field -> run environment variable (validator VALUE_FIELDS give the allowed values).
 RUN_VALUE_ENV = {'cuda_gdn_fla': 'QWEN36_CUDA_GDN_FLA', 'layer_major_refill_policy': 'QWEN36_LAYER_MAJOR_REFILL_POLICY',
                  'layer_major_attn_batch': 'QWEN36_LAYER_MAJOR_ATTN_BATCH',
@@ -102,7 +109,7 @@ RUN_VALUE_ENV = {'cuda_gdn_fla': 'QWEN36_CUDA_GDN_FLA', 'layer_major_refill_poli
 RUN_EXACT_ENV = {'QWEN36_DECODE_SHARED_OVERLAP': '1', 'QWEN36_LAYER_MAJOR_PREFILL': '1', 'QWEN36_CUDA_GDN': '1', 'QWEN36_CUDA_GDN_DECODE': 'cluster',
                  'QWEN36_FP8_GEMV': '1', 'QWEN36_DECODE_GATHER': 'tuned', 'TVM_FFI_CUDA_ARCH_LIST': '12.0',
                  'QWEN36_LAYER_MAJOR_REFILL': '1', 'QWEN36_SYNC_LEAN': '1', 'QWEN36_OPROJ_GEMV': '1',
-                 'QWEN36_MOE_DECODE_CUDA': '1'}
+                 'QWEN36_MOE_DECODE_CUDA': '1', 'QWEN36_HOST_EMBEDDINGS': '1'}
 # Variables production exports only together with a switch (variable -> switch variable).
 RUN_COMPANION_ENV = {'QWEN36_CUDA_GDN_DECODE': 'QWEN36_CUDA_GDN', 'TVM_FFI_CUDA_ARCH_LIST': 'QWEN36_DECODE_GATHER',
                      'QWEN36_LAYER_MAJOR_REFILL_POLICY': 'QWEN36_LAYER_MAJOR_REFILL',
@@ -269,6 +276,21 @@ def check_fla_component_report(report, variant, library_sha256):
              'FLA component evidence incomplete, unbound, wrong variant or non-exact')
 
 
+def check_overlap_component_report(report):
+    rows = report.get('results') if type(report) is dict else None
+    _require(type(report) is dict and report.get('kind') == 'gpu-component-report'
+             and report.get('suite') == OVERLAP_COMPONENT_SUITE and report.get('all_pass') is True
+             and report.get('skipped') == 0 and type(rows) is list and report.get('cases') == len(rows)
+             and all(type(r) is dict and r.get('pass') is True for r in rows)
+             and OVERLAP_COMPONENT_CASES <= {r.get('case') for r in rows},
+             'T3 component evidence incomplete, skipped or failing (test_decode_overlap_gpu.py)')
+
+
+def check_ab_report(report):
+    _require(type(report) is dict and report.get('verdict') == 'PASS' and report.get('performance_gate_pass') is True,
+             'A/B evidence must be a compare-ab PASS report')
+
+
 def check_bitexact_report(report):
     """compare-logit-reference.py output must show every compared logit file bit-identical; a compare-quality.py
     teacher report (no ``kind``) is accepted when every logit comparison is exactly zero."""
@@ -418,6 +440,33 @@ def build_receipt(validator, profiles, decision, evidence_root, sources, environ
                 'run_receipts': list(cuda['run_receipts']), 'bitexact_reports': list(cuda['bitexact_reports'])}
             if switch == 'cuda_gdn_fla':
                 records[name][switch].update(variant=profile['cuda_gdn_fla'], component_reports=list(cuda['component_reports']))
+        for switch, decision_key in sorted(EXPERIMENTAL_DECISION_EVIDENCE.items()):
+            given = entry.get(decision_key)
+            keys = getattr(validator, 'EXPERIMENTAL_EVIDENCE', {}).get(switch)
+            if keys is None or profile.get(switch) is not True:
+                _require(given is None, decision_key + ' given for a profile without ' + switch + ': ' + name)
+                continue
+            _require(type(given) is dict and set(given) == set(keys),
+                     switch + ' requires ' + decision_key + ' (' + ', '.join(keys) + '): ' + name)
+            for key in keys:
+                items = given[key]
+                _require(type(items) is list and items and len(set(map(str, items))) == len(items)
+                         and all(item in paths for item in items),
+                         switch + ' evidence must be non-empty and listed in evidence: ' + key)
+            for relative in given['component_reports']:
+                check_overlap_component_report(read_evidence(validator, paths, relative))
+            for relative in given['run_receipts']:
+                check_run_receipt(read_evidence(validator, paths, relative), profile, source_hashes, validator,
+                                  environment, kernel)
+            runs = {read_evidence(validator, paths, rel)['run_id'] for rel in given['run_receipts']}
+            for relative in given['bitexact_reports']:
+                quality = read_evidence(validator, paths, relative)
+                check_bitexact_report(quality)
+                _require(quality.get('schema') == 2 and set(quality.get('case_runs', {}).get('candidate', {}).values()) == runs,
+                         switch + ' teacher report is not bound to the listed candidate runs')
+            for relative in given['ab_reports']:
+                check_ab_report(read_evidence(validator, paths, relative))
+            records[name][switch] = {key: list(given[key]) for key in keys}
     receipt = {'schema': 1, 'checkpoint': dict(validator.CHECKPOINT), 'profiles': records,
                'source_files': source_hashes, 'environment': environment,
                'kernel_provenance': kernel, 'native_libraries': native}

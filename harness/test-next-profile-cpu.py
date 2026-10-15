@@ -10,7 +10,10 @@ def load(name,path):
 r=load('next_profile',SERVING/'profile-runtime.py');q=load('next_qualification',HARNESS/'make-qualification.py')
 class NextProfile(unittest.TestCase):
     def profile(self):
-        p=json.loads((SERVING/'profiles.json').read_text())['profiles']['main128'];p['qualified']=False;return p
+        p=json.loads((SERVING/'profiles.json').read_text())['profiles']['main128'];p['qualified']=False
+        # the released f1 fields: the main128 release draft also carries the T1/T2/T3 settings under test here
+        for key in ('layer_major_min_tokens','cuda_gdn_fla','decode_shared_overlap','host_embeddings'):p.pop(key,None)
+        p['flags']=[];return p
     def test_threshold_schema_combinations_and_hash(self):
         p=self.profile();before=r.canonical_profile_sha256(p)
         for value in (True,False,-1,'2049',2.5,None,2147483648):

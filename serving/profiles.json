@@ -19,7 +19,9 @@
       "chunk": 2048,
       "memory_ratio": 0.75,
       "kv_dtype": "bf16",
-      "flags": [],
+      "flags": [
+        "--moe-prefill-hit-d2d"
+      ],
       "prefix_margin": 8,
       "fused_attention_gate": true,
       "fp32_gdn_snapshot": true,
@@ -30,7 +32,10 @@
       "cuda_fp8_gemv": true,
       "decode_gather": true,
       "layer_major_attn_batch": 2,
-      "qualified": true
+      "layer_major_min_tokens": 2049,
+      "cuda_gdn_fla": "wu",
+      "decode_shared_overlap": true,
+      "qualified": false
     },
     "long256": {
       "context": 262144,

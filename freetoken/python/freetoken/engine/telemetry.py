@@ -122,6 +122,7 @@ def complete(req,engine,cache_manager=None):
     if engine.linear_state_pool is not None:
         pool=engine.linear_state_pool
         row['gdn_bytes'] = sum(t.numel()*t.element_size() for t in (pool.conv_states,pool.recurrent_states))
+    row['host_embedding_bytes'] = int(getattr(engine,'_host_embed_bytes',0))
     cache=engine.moe_offload_cache
     if cache is not None:
         row['gpu_expert_bytes'] = sum(t.numel()*t.element_size() for t in cache.bank_caches.values())
@@ -175,3 +176,5 @@ def complete(req,engine,cache_manager=None):
     row['allocator_bytes_outside_named_components']=row['torch_allocated_bytes']-accounted
     row['request_allocator_peak_above_end_bytes']=max(0,row['request_torch_peak_allocated_bytes']-row['torch_allocated_bytes'])
     get_writer().write('engine.jsonl',row)
+    from freetoken.engine import memory_history
+    memory_history.dump({k:row.get(k) for k in ('run_id','uid','prompt_tokens','output_tokens')})

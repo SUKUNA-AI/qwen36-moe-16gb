@@ -13,6 +13,7 @@ def main():
     import pytest
     import torch
     suites=['kvcache/test_linear_state_pool_alloc.py','kvcache/radix','daemon']
+    suites += ['engine/test_cache_budget.py', 'engine/test_host_embeddings.py']
     with tempfile.TemporaryDirectory(prefix='qwen36-core-cpu-') as temp:
         xml=Path(temp)/'result.xml'
         suites.append('checkpoint/test_ftw_index.py')

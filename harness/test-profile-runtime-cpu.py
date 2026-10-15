@@ -83,7 +83,7 @@ GATHER_SO = b'\x7fELF decode gather'
 GATHER_MODULES = dict(CACHE_MODULES, **{GATHER: ('jit/decode_gather.cuh',)})
 BUNDLE = ('cuda_nvfp4_prefill', 'layer_major_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'decode_gather')
 # Optional / placeholder switches: these tests follow profile-runtime.py when one is dropped there.
-OPTIONAL_SWITCHES = ('layer_major_refill', 'sync_lean')
+OPTIONAL_SWITCHES = ('layer_major_refill', 'host_embeddings', 'sync_lean')
 REFILL = 'layer_major_refill' in runtime.SWITCH_ENV
 REFILL_ON = {'layer_major_refill': True} if REFILL else {}
 NEW_SWITCHES = ('layer_major_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'cuda_oproj_gemv', 'cuda_moe_decode',
@@ -96,6 +96,7 @@ EXPECTED_SWITCH_ENV = {'layer_major_prefill': {'QWEN36_LAYER_MAJOR_PREFILL': '1'
                        'cuda_moe_decode': {'QWEN36_MOE_DECODE_CUDA': '1'},
                        'decode_gather': {'QWEN36_DECODE_GATHER': 'tuned', 'TVM_FFI_CUDA_ARCH_LIST': '12.0'},
                        'layer_major_refill': {'QWEN36_LAYER_MAJOR_REFILL': '1'},
+                       'host_embeddings': {'QWEN36_HOST_EMBEDDINGS': '1'},
                        'sync_lean': {'QWEN36_SYNC_LEAN': '1'}}
 EXPECTED_VALUE_FIELDS = {
     'layer_major_min_tokens': ('QWEN36_LAYER_MAJOR_MIN_TOKENS', range(0, 2147483648), 'layer_major_prefill'),

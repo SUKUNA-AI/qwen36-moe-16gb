@@ -36,16 +36,57 @@ class VocabParallelEmbedding(BaseOP):
         self._embed_scale = embed_scale
         self._embed_scale_t: torch.Tensor | None = None
         self._comm = DistributedCommunicator()
+        # Set by move_to_host: the GPU that still runs the lookup, and the table's device address.
+        self._host_device: torch.device | None = None
+        self._host_table_ptr = 0
+
+    @property
+    def compute_device(self) -> torch.device:
+        """Where lookups run and their rows land (the GPU even when the table sits in host memory)."""
+        return self._host_device if self._host_device is not None else self.weight.device
+
+    def move_to_host(self) -> int:
+        """Move the table into exact-size pinned, device-mapped host memory; returns its bytes.
+
+        Lookups then copy the requested rows byte for byte over PCIe straight from that table, so
+        every row is bit-identical to the GPU-resident path, with no host sync and a fixed table
+        address that CUDA graphs can capture. The caller frees the GPU copy (empty_cache).
+        """
+        from freetoken.kernel.pinned import alloc_pinned_tensor, device_ptr
+
+        if self._host_device is not None:
+            return self.weight.nbytes
+        if self.tp_size != 1:
+            raise ValueError("host-resident embeddings need tensor parallel size 1")
+        if not self.weight.is_cuda:
+            raise ValueError(f"host-resident embeddings move a CUDA table, got {self.weight.device}")
+        device = self.weight.device
+        host = alloc_pinned_tensor(*self.weight.shape, dtype=self.weight.dtype)
+        host.copy_(self.weight)
+        if not torch.equal(host.view(torch.uint8), self.weight.cpu().view(torch.uint8)):
+            raise RuntimeError("host embedding table differs from the GPU table after the copy")
+        self._host_table_ptr = device_ptr(host)
+        self._host_device = device
+        self.weight = host
+        return host.nbytes
 
     @nvtx_annotate("Embedding")
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         from freetoken.kernel import indexing
 
-        y = indexing(
-            weights=self.weight,
-            indices=x,
-            vocab_range=self.vocab_range if self.tp_size > 1 else None,
-        )
+        if self._host_device is not None:
+            from freetoken.kernel.triton.host_rows import host_gather_rows
+
+            y = torch.empty((x.numel(), self.weight.shape[1]), dtype=self.weight.dtype, device=self._host_device)
+            y = host_gather_rows(
+                self._host_table_ptr, self.weight.shape[0], self.weight.shape[1] * self.weight.element_size(), x, y
+            )
+        else:
+            y = indexing(
+                weights=self.weight,
+                indices=x,
+                vocab_range=self.vocab_range if self.tp_size > 1 else None,
+            )
 
         if self.tp_size > 1:
             y = self._comm.all_reduce(y)

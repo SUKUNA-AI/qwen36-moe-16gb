@@ -14,6 +14,17 @@ if TYPE_CHECKING:
     import torch
 
 
+class CacheBudgetError(ValueError):
+    """The MoE/KV plan does not fit its budget, or its inputs are invalid.
+
+    Raised instead of ``assert`` so the checks survive ``python -O``."""
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise CacheBudgetError(message)
+
+
 def expert_bytes_per_slot(sources: dict[str, "list[torch.Tensor]"]) -> int:
     """Bytes one expert slot occupies on GPU: summed row bytes over all banks.
 
@@ -63,15 +74,15 @@ def plan_cache_budget(
     to ``[floor, min(total_experts, max_slots)]`` (floor is ``2*num_experts`` when prefill
     overlap is feasible else ``num_experts``); KV pages take whatever remains.
     """
-    assert per_expert_bytes > 0, "per_expert_bytes must be positive"
-    assert cache_per_page > 0, "cache_per_page must be positive (owned-KV models unsupported here)"
+    _require(per_expert_bytes > 0, "per_expert_bytes must be positive")
+    _require(cache_per_page > 0, "cache_per_page must be positive (owned-KV models unsupported here)")
 
     hi = min(total_experts, max_slots)
     # Prefill overlap borrows two full expert-layer buffers, so it needs >= 2*num_experts
     # slots; disable it (and lower the floor) if the cap cannot fit that.
     overlap = prefill_overlap and hi >= 2 * num_experts
     lo = 2 * num_experts if overlap else num_experts
-    assert hi >= lo, f"slot cap {hi} below the minimum {lo} slots"
+    _require(hi >= lo, f"slot cap {hi} below the minimum {lo} slots")
 
     kv_reserve_bytes = kv_reserve_pages * cache_per_page
     # MoE-priority: reserve KV first, then experts greedily take the remaining budget.
@@ -86,12 +97,13 @@ def plan_cache_budget(
     # the reserve (or negative), yielding a plan that exceeds budget_bytes. Reject here so
     # --moe-cache-auto fails in arithmetic instead of OOMing in a later CUDA allocation.
     total = moe_cache_size * per_expert_bytes + num_pages * cache_per_page
-    assert total <= budget_bytes, (
+    _require(
+        total <= budget_bytes,
         f"cache budget too small: minimum plan (moe={moe_cache_size} slots, "
         f"kv={num_pages} pages) needs {total} B > budget {budget_bytes} B "
-        "(raise memory_ratio, lower kv_reserve_tokens, or free GPU memory)"
+        "(raise memory_ratio, lower kv_reserve_tokens, or free GPU memory)",
     )
-    assert num_pages > 1, "not enough memory for KV cache after MoE allocation"
+    _require(num_pages > 1, "not enough memory for KV cache after MoE allocation")
     return moe_cache_size, num_pages, overlap
 
 
