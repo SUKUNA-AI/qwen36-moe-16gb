@@ -1,4 +1,4 @@
-# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T20:09:45Z
+# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T20:57:21Z
 # rendered with site values digest=895052024cbcd577 (py/sh/config/profile bytes as written to native)
 # options: skip_runtime=0 extra_config=- (pass the same options to --dry-run/--apply)
 095e182f33349d2b2e7ea32694b3de3ca403ceed972342f3cab7d2dd0419e1ee  freetoken/python/freetoken/__init__.py
@@ -495,11 +495,11 @@ acdeaea3b1997a09e54adab0c5963d7b1b0b2f5b365e064394b323a44287afda  serving/metric
 98e781505cf77033b8816e614361ed39abaeb3ecb5b3320f5ca892566762452f  harness/experiment.py
 fd9615310e24a755a6012985f345577ad58fc15b1fa389eef3edcba96b8aee41  harness/bench.py
 cf855b7cee68057003e2fb1505fbfbc6338bfa09fa5341ec393d1279db4d732d  harness/matrix.py
-296e1560e353dc9f7156fdff44259225c075b578d99be1e852e4d57ac256858c  harness/compare-ab.py
+8eefd7a8d9a6463c340ed400338d31eaba33e912b692244474ed88514a9da733  harness/compare-ab.py
 b36127d03a3d2c94b718d6809c585f025ff88a3443ec5f632b84269983f6c5cb  harness/tool-task-bench.py
 17799241e0b2a8c448eb33089bc79d386a9f5bd0dd0edcce98feac67cd3ed0a5  harness/tool_fixture_v5.py
 49736cea4ea8fcdfb64600c17969fbae3651815ec34f6f2d061f512e3b0f0a7d  harness/tool-pilot.py
-704db2428536268e2be2121ca2578ede214d2b6d7b380adbdc51f1c43e09fca3  harness/test-paired-contract-cpu.py
+0d503c4e175c6af023c0313480d08917482d5f38c7b6d646546ab7be90aaeaf2  harness/test-paired-contract-cpu.py
 e5b352a92bb68e3132944366e7b83a3888ddb4354515b84e41d7b535009c4239  harness/screen-chunk.py
 09e03aa0645eeb1b6a49c964ba4383a1e868971866c88e7fe10528031df9c047  harness/compare-logit-reference.py
 957b1ce1bf87961da0ae9f31c5ef1d170aee2993de5637266b274551a331a479  harness/test-tool-choice-guard-cpu.py
@@ -647,7 +647,10 @@ edd7787c5860f5d64cc4113eb972a800a3cf09277bf0f0e7c7bd46ef667ed1ef  harness/long25
 b9ed5bc93a63163d85f75220771df4efc6d6ab3841a9f3e3c0be64d0c310268c  harness/long256-release.json
 4bdbc732b853ce615080b94eeab64fa9248ddaad8152699dbcfc92a247687368  harness/profile-final-bf128.json
 97efd1a8ff727db21613591b9824c812db3b1fbbe799b11ba142e991f2e25925  harness/profile-final-cuda-bitexact128.json
+eac9fd1c095251c47e1b6c066502783f55dbf7ee77bba502a7c09b6379506e44  harness/profile-final-main-release-next-all.json
 2f6d780c1b2b81c10989d26c2a9412ef86a5c4d5bd34e69fb5cb1ad700738f12  harness/profile-final-main-release-next-candidate.json
+9943ed7e8a699b5f9d24906e5b83386dd7154a2647eb4bc7c5395851ce960b10  harness/profile-final-main-release-next-d5-d3b.json
+4e224f875f007506827b6be6429e5605a28261b3c86e8a8e483b950f1ec384da  harness/profile-final-main-release-next-d5.json
 f585cf9b7332a8c274f7a7ae3f5c415f6917a39d18fb741126b2435509dba981  harness/profile-final-main-release-next-he-r085.json
 dfc86117b2cdb85710e94fd007b8cdc5542d4c14007e2a99ab596cc2612838a5  harness/profile-final-main-release-next-he.json
 c5112b7d549a57e764864762429762e0064bec77252a7ce806a7aade510cc39e  harness/profile-final-main-release-next-k.json
