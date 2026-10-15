@@ -16,12 +16,21 @@ def med(values):
     return statistics.median(values) if values else None
 
 
+def percentile(sorted_values, q):
+    """Linear interpolation between order statistics (numpy default); with few values p95/p99 approach the max."""
+    k = (len(sorted_values) - 1) * q
+    lo = int(k)
+    hi = min(lo + 1, len(sorted_values) - 1)
+    return sorted_values[lo] + (sorted_values[hi] - sorted_values[lo]) * (k - lo)
+
+
 def stats(values):
     """median, mean, n, min, max of the numeric values (the pair list itself is kept next to it)."""
     v = [x for x in values if isinstance(x, (int, float))]
     if not v:
-        return {'median': None, 'mean': None, 'n': 0, 'min': None, 'max': None}
-    return {'median': statistics.median(v), 'mean': statistics.fmean(v), 'n': len(v), 'min': min(v), 'max': max(v)}
+        return {'median': None, 'mean': None, 'n': 0, 'min': None, 'max': None, 'p95': None, 'p99': None}
+    return {'median': statistics.median(v), 'mean': statistics.fmean(v), 'n': len(v), 'min': min(v), 'max': max(v),
+            'p95': percentile(sorted(v), .95), 'p99': percentile(sorted(v), .99)}
 
 
 def case_key(row):

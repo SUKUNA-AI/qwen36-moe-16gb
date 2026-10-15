@@ -38,11 +38,20 @@ def med(values):
     return statistics.median(values) if values else None
 
 
+def percentile(sorted_values, q):
+    """Linear interpolation between order statistics (numpy default); with few values p95/p99 approach the max."""
+    k = (len(sorted_values) - 1) * q
+    lo = int(k)
+    hi = min(lo + 1, len(sorted_values) - 1)
+    return sorted_values[lo] + (sorted_values[hi] - sorted_values[lo]) * (k - lo)
+
+
 def stats(values):
     v = [x for x in values or [] if isinstance(x, (int, float))]
     if not v:
         return None
-    return {'median': statistics.median(v), 'mean': statistics.fmean(v), 'n': len(v), 'min': min(v), 'max': max(v)}
+    return {'median': statistics.median(v), 'mean': statistics.fmean(v), 'n': len(v), 'min': min(v), 'max': max(v),
+            'p95': percentile(sorted(v), .95), 'p99': percentile(sorted(v), .99)}
 
 
 def buckets(raw):
@@ -163,7 +172,7 @@ def pct(x):
 def write_readme(d, s, ab):
     lines = ['# Лесенка main128: вклад каждого рычага', '',
              f"Сгенерировано {s['generated_utc']} скриптами `scripts/ladder_*.py` из отчётов GPU-прогона. Бит-точность: teacher 125/125, max_abs 0.",
-             'A/B без профайлера: ротирующаяся матрица, 3 пары, прогрев 60 с, вывод 128 токенов. В ячейках: медиана (среднее; min–max; n) по парам. Шаги кумулятивные: ступень = предыдущая + один рычаг.', '',
+             'A/B без профайлера: ротирующаяся матрица, 3 пары, прогрев 60 с, вывод 128 токенов. В ячейках: медиана (среднее; min–max; p95, p99; n) по парам; при n=3–5 перцентили — грубая оценка, она стремится к максимуму. Шаги кумулятивные: ступень = предыдущая + один рычаг.', '',
              '## Teacher и память', '', '| Ступень | Рычаг | teacher | max_abs | ratio | слоты | пик VRAM процесса, МиБ | промахов/ток (16K) |', '|---|---|---|---|---|---|---|---|']
     for r in s['steps']:
         t, m = r['teacher'], r.get('memory') or {}
@@ -175,7 +184,7 @@ def write_readme(d, s, ab):
             ab_ = r.get('ab') or {}
             st_ = [stats((ab_.get(key) or {}).get(l, [])) for l in LENGTHS]
             nd_ = 1 if key == 'decode_tps' else 3
-            meds = [None if x is None else f"{x['median']:.{nd_}f} (ср. {x['mean']:.{nd_}f}; {x['min']:.{nd_}f}–{x['max']:.{nd_}f}; n={x['n']})" for x in st_]
+            meds = [None if x is None else f"{x['median']:.{nd_}f} (ср. {x['mean']:.{nd_}f}; {x['min']:.{nd_}f}–{x['max']:.{nd_}f}; p95 {x['p95']:.{nd_}f}, p99 {x['p99']:.{nd_}f}; n={x['n']})" for x in st_]
             dp = ab['deltas_vs_prev'].get(r['id'].lower() if r['id'] != 'T3only' else 't3', {}).get('fresh_16384', {}).get(key + '_pct', {}).get('median')
             d0 = ab['deltas_vs_l0'].get(r['id'].lower() if r['id'] != 'T3only' else 't3', {}).get('fresh_16384', {}).get(key + '_pct', {}).get('median')
             lines.append(f"| {r['id']} | " + ' | '.join('—' if v is None else v for v in meds) + f' | {pct(dp)} | {pct(d0)} |')
