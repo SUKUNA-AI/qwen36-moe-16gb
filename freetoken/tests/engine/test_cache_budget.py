@@ -6,9 +6,25 @@ import pytest
 import torch
 
 import os
+import subprocess
+import sys
+from pathlib import Path
 
-from freetoken.engine.cache_budget import expert_bytes_per_slot, plan_cache_budget, resolve_moe_cache_auto
-from freetoken.engine.engine import _pin_budget_bytes
+from freetoken.engine.cache_budget import (
+    CacheBudgetError,
+    expert_bytes_per_slot,
+    plan_cache_budget,
+    resolve_moe_cache_auto,
+)
+
+try:
+    from freetoken.engine.engine import _pin_budget_bytes
+except ImportError as exc:  # the CPU suite venv has no GPU-only deps (flashlib)
+    _pin_budget_bytes = None
+    _ENGINE_IMPORT_ERROR = f"freetoken.engine.engine is not importable here: {exc}"
+else:
+    _ENGINE_IMPORT_ERROR = ""
+requires_engine = pytest.mark.skipif(_pin_budget_bytes is None, reason=_ENGINE_IMPORT_ERROR)
 
 
 def test_moe_priority_fills_experts_up_to_total():
@@ -61,7 +77,7 @@ def test_small_cache_disables_prefill_overlap():
 
 
 def test_insufficient_kv_memory_raises():
-    with pytest.raises(AssertionError, match="not enough memory"):
+    with pytest.raises(CacheBudgetError, match="not enough memory"):
         plan_cache_budget(
             budget_bytes=410, per_expert_bytes=100, cache_per_page=10,
             num_experts=4, total_experts=4, prefill_overlap=False,
@@ -72,12 +88,72 @@ def test_insufficient_kv_memory_raises():
 def test_budget_too_small_for_min_moe_plus_reserve_raises():
     # Budget cannot fund even the minimum MoE slots + the KV reserve, so the floored plan
     # would exceed budget_bytes. Reject in arithmetic rather than OOM in a later CUDA alloc.
-    with pytest.raises(AssertionError, match="budget too small"):
+    with pytest.raises(CacheBudgetError, match="budget too small"):
         plan_cache_budget(
             budget_bytes=300, per_expert_bytes=100, cache_per_page=10,
             num_experts=4, total_experts=4, prefill_overlap=False,
             kv_reserve_pages=10, max_slots=4,
         )  # min moe = 4 slots (400 B) + reserve (10 pages = 100 B) = 500 B > 300 B budget
+
+
+@pytest.mark.parametrize(
+    "kwargs, match",
+    [
+        (dict(per_expert_bytes=0), "per_expert_bytes must be positive"),
+        (dict(cache_per_page=0), "cache_per_page must be positive"),
+        (dict(max_slots=3), "slot cap 3 below the minimum 4"),
+    ],
+)
+def test_invalid_inputs_raise_cache_budget_error(kwargs, match):
+    args = dict(
+        budget_bytes=10_000, per_expert_bytes=100, cache_per_page=10,
+        num_experts=4, total_experts=8, prefill_overlap=False,
+        kv_reserve_pages=0, max_slots=8,
+    )
+    args.update(kwargs)
+    with pytest.raises(CacheBudgetError, match=match):
+        plan_cache_budget(**args)
+
+
+def test_cache_budget_error_is_a_value_error():
+    # callers that already treat bad configuration as ValueError keep working
+    assert issubclass(CacheBudgetError, ValueError)
+    assert not issubclass(CacheBudgetError, AssertionError)
+
+
+_UNDER_O = """
+import os, sys, types
+assert False, "asserts are still on"
+import freetoken
+# the budget module alone: skip freetoken.engine's eager Engine import
+engine = types.ModuleType("freetoken.engine")
+engine.__path__ = [os.path.join(os.path.dirname(freetoken.__file__), "engine")]
+sys.modules["freetoken.engine"] = engine
+from freetoken.engine.cache_budget import CacheBudgetError, plan_cache_budget
+base = dict(budget_bytes=10_000, per_expert_bytes=100, cache_per_page=10, num_experts=4,
+            total_experts=8, prefill_overlap=False, kv_reserve_pages=0, max_slots=8)
+cases = [dict(per_expert_bytes=0), dict(cache_per_page=0), dict(max_slots=3),
+         dict(budget_bytes=300, total_experts=4, max_slots=4, kv_reserve_pages=10),
+         dict(budget_bytes=410, total_experts=4, max_slots=4)]
+for case in cases:
+    try:
+        plan_cache_budget(**{**base, **case})
+    except CacheBudgetError:
+        continue
+    sys.exit("accepted %r" % (case,))
+print("ok", len(cases))
+"""
+
+
+def test_budget_checks_survive_python_O():
+    # `python -O` strips asserts; every rejection must still fire there.
+    package_root = str(Path(__import__("freetoken").__file__).resolve().parent.parent)
+    env = {**os.environ, "PYTHONPATH": os.pathsep.join(filter(None, [package_root, os.environ.get("PYTHONPATH")]))}
+    result = subprocess.run(
+        [sys.executable, "-O", "-c", _UNDER_O], capture_output=True, text=True, env=env, timeout=120,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.split() == ["ok", "5"]
 
 
 def test_prefill_overlap_false_is_honored():
@@ -158,6 +234,7 @@ def _dsv4_adjust_cfg(**over):
     return cfg
 
 
+@requires_engine
 def test_adjust_config_allows_auto_for_dsv4():
     # DSV4 now supports --moe-cache-auto via the affine KV cost bridge (dsv4_auto_cost_model);
     # _adjust_config must NOT reject it.
@@ -170,6 +247,7 @@ def test_adjust_config_allows_auto_for_dsv4():
     assert cfg.page_size == 128  # DSV4's KV page is the P-token window page
 
 
+@requires_engine
 def test_adjust_config_resolves_num_tokens_for_dsv4():
     # --num-tokens resolves AFTER every page_size override, so DSV4's P=128 page divides it.
     from freetoken.engine.engine import _adjust_config
@@ -180,6 +258,7 @@ def test_adjust_config_resolves_num_tokens_for_dsv4():
     assert cfg.num_page_override == 1024
 
 
+@requires_engine
 def test_adjust_config_rejects_num_tokens_not_multiple_of_page():
     from freetoken.engine.engine import _adjust_config
 
@@ -188,6 +267,7 @@ def test_adjust_config_rejects_num_tokens_not_multiple_of_page():
         _adjust_config(cfg)
 
 
+@requires_engine
 def test_adjust_config_rejects_num_tokens_with_num_pages():
     from freetoken.engine.engine import _adjust_config
 
@@ -196,6 +276,7 @@ def test_adjust_config_rejects_num_tokens_with_num_pages():
         _adjust_config(cfg)
 
 
+@requires_engine
 def test_adjust_config_resolves_num_tokens_generic():
     # Generic model keeps its page_size (1 here): tokens map 1:1 onto pages.
     from types import SimpleNamespace
@@ -230,6 +311,7 @@ def test_adjust_config_resolves_num_tokens_generic():
     assert cfg.num_page_override == 5000
 
 
+@requires_engine
 def test_mha_kv_cost_simple_full_attention():
     import torch
 
@@ -266,6 +348,7 @@ def test_mha_kv_cost_simple_full_attention():
     assert fixed == 0
 
 
+@requires_engine
 def test_engine_resolve_auto_moe_cache_size_maps_kwargs():
     import torch
 
@@ -374,12 +457,14 @@ def _offload_engine_config(**overrides):
     return config
 
 
+@requires_engine
 def test_guard_passes_when_size_covers_one_expert_per_layer():
     from freetoken.engine.engine import _require_offload_cache_size
 
     _require_offload_cache_size(cache_size=128, num_experts=128)  # no raise
 
 
+@requires_engine
 def test_guard_raises_actionable_error_when_too_small():
     from freetoken.engine.engine import _require_offload_cache_size
 
@@ -389,6 +474,7 @@ def test_guard_raises_actionable_error_when_too_small():
     assert "128" in msg and "moe-cache" in msg
 
 
+@requires_engine
 def test_adjust_config_defaults_moe_cache_auto_for_auto_resolved_offload_backend():
     """Bare `ft serve <FTW MoE checkpoint>`: no --moe-backend, no --moe-cache-* flags at all.
 
@@ -414,6 +500,7 @@ def test_adjust_config_defaults_moe_cache_auto_for_auto_resolved_offload_backend
     assert config.moe_cache_size == 0  # still unresolved -- the scheduler sizes it from VRAM
 
 
+@requires_engine
 def test_page_table_width_covers_whole_trailing_pages():
     # _write_page_table writes WHOLE trailing pages, so the width must reach the last
     # page's end, not just the next multiple of 32 (DSV4's P=128 exposed the gap).
@@ -463,6 +550,7 @@ def _generic_rotary_cfg(max_position, override):
     return cfg
 
 
+@requires_engine
 def test_adjust_config_rejects_override_past_rope_table():
     from freetoken.engine.engine import _adjust_config
 
@@ -470,12 +558,14 @@ def test_adjust_config_rejects_override_past_rope_table():
         _adjust_config(_generic_rotary_cfg(max_position=1024, override=2048))
 
 
+@requires_engine
 def test_adjust_config_allows_override_at_rope_table_boundary():
     from freetoken.engine.engine import _adjust_config
 
     _adjust_config(_generic_rotary_cfg(max_position=1024, override=1024))  # must not raise
 
 
+@requires_engine
 def test_adjust_config_rope_gate_exempts_dsv4():
     # DSV4 sizes its own rope table from the resolved max_seq_len (_adjust_dsv4_config),
     # so the generic gate must not fire even when the override dwarfs max_position.
@@ -491,6 +581,7 @@ def test_adjust_config_rope_gate_exempts_dsv4():
 # ---- _pin_budget_bytes: host bytes already pinned outside the expert banks ----
 
 
+@requires_engine
 def test_reserved_subtracts_from_the_cap(monkeypatch):
     monkeypatch.setenv("FREETOKEN_PIN_BUDGET_GB", "2")
     assert _pin_budget_bytes() == 2 * 2**30
@@ -498,6 +589,7 @@ def test_reserved_subtracts_from_the_cap(monkeypatch):
     assert _pin_budget_bytes(reserved=4 * 2**30) == 0
 
 
+@requires_engine
 def test_uncapped_platform_stays_uncapped(monkeypatch):
     monkeypatch.delenv("FREETOKEN_PIN_BUDGET_GB", raising=False)
     if hasattr(os, "uname") and "microsoft" in os.uname().release.lower():
