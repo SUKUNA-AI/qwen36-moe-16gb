@@ -110,6 +110,9 @@ VALUE_FIELDS = {field: spec for field, spec in {
     # C1 (moe/offload_cache.py): a non-layer-major chunk shorter than this many tokens fetches only the experts its
     # router selected (device-side lists); measured together with C0, break-even ~170 tokens, release value 160.
     'prefill_selected': ('QWEN36_PREFILL_SELECTED', range(1, 512), 'prefill_copy_priority'),
+    # D6 (moe/offload_cache.py): after each layer's GEMM of a non-layer-major chunk, D2D this many of the chunk's
+    # most-routed experts from the double buffer into LRU decode slots; same bytes, other residency (teacher gate).
+    'prefill_warm_decode': ('QWEN36_PREFILL_WARM_DECODE', range(1, 65), 'prefill_copy_priority'),
 }.items() if spec[2] in SWITCH_ENV}
 # Layer-major + hit-D2D requires a positive min-tokens threshold to separate short chunked
 # requests from epochs that borrow decode slots. Layer-major + CUDA NVFP4 remains allowed.

@@ -105,7 +105,8 @@ EXPECTED_VALUE_FIELDS = {
     'cuda_gdn_fla': ('QWEN36_CUDA_GDN_FLA', ('wu', 'ho'), 'cuda_gdn'),
     'layer_major_refill_policy': ('QWEN36_LAYER_MAJOR_REFILL_POLICY', ('last_chunk', 'restore'), 'layer_major_refill'),
     'layer_major_attn_batch': ('QWEN36_LAYER_MAJOR_ATTN_BATCH', tuple(range(1, 5)), 'layer_major_prefill'),
-    'prefill_selected': ('QWEN36_PREFILL_SELECTED', range(1, 512), 'prefill_copy_priority')}
+    'prefill_selected': ('QWEN36_PREFILL_SELECTED', range(1, 512), 'prefill_copy_priority'),
+    'prefill_warm_decode': ('QWEN36_PREFILL_WARM_DECODE', range(1, 65), 'prefill_copy_priority')}
 
 
 def sha(data):
@@ -1593,6 +1594,7 @@ class BundleSchemaTests(unittest.TestCase):
                 (0, 5, 65, -1, '4', True, 4.0, None)
             if field == 'layer_major_min_tokens':bad_values = (-1, 2147483648, '4', True, 4.0, None)
             if field == 'prefill_selected':bad_values = (0, 512, -1, '4', True, 4.0, None)
+            if field == 'prefill_warm_decode':bad_values = (0, 65, -1, '4', True, 4.0, None)
             for value in bad_values:
                 with self.subTest(field=field, value=value):
                     self.refused(self.doc(**on, **{field: value}), 'Invalid ' + field)
