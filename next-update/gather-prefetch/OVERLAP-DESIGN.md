@@ -1,48 +1,55 @@
-# Decode gather/shared expert overlap: DEFERRED
+# Decode gather/shared expert overlap: IMPLEMENTED, GPU NOT_RUN
 
-No new active path or flag is shipped. The inspected implementation still computes
-router and shared expert before `experts.forward` in
-`freetoken/python/freetoken/models/qwen3_5_moe/moe.py`. The routed offload path
-performs ensure/copy/compute in `layers/moe.py`. The archived ceiling verdict
-proposes overlap but does not implement a CUDA graph protocol. The documented
-negative control without a join had 14,248 checksum mismatches; these are historical
-results, not results of this branch.
+`QWEN36_DECODE_SHARED_OVERLAP=1` opts into the single-token Qwen GPU offload
+path. Unset/0 preserves serial execution. Other raw values fail at cache setup.
+The profile switch is `decode_shared_overlap`; qualified=true is explicitly
+rejected until a separately reviewed qualification extension has component,
+teacher and model A/B evidence. Candidate configs are `main-release-overlap`
+and `main-release-shortroute-fla-wu-overlap`. No released profile changed.
 
-Required happens-before protocol for a future implementation:
+## Ownership and happens-before
 
-1. Router/top-k and `ensure_experts` finish producing miss metadata on compute.
-   Source host banks remain pinned/owned and immutable until gather completes.
-   A producer event must include async commits from the prior step, not only router
-   completion. Destination slots must be reserved against LRU, prefill borrowing,
-   refill and graph replay reuse before the side stream can write them.
-2. A side stream waits on that producer event, then gathers the same routed bytes
-   into fixed destination addresses. It records gather-done after every bank copy.
-3. Compute runs the same shared MLP/gate on the original hidden input before the
-   routed kernel can modify that input. Compute waits on gather-done before any
-   routed kernel reads slots. Final combination stays `(routed + shared)` with the
-   original dtype and arithmetic order. Shared output must remain alive until that
-   consumer; no allocator reuse across streams without ownership tracking.
-4. Reusing buffers or events needs a consumer-done dependency. Re-recording an event
-   while an earlier replay still references it, or publishing LRU residency before
-   byte readiness, is forbidden. Cancellation/drain must finish outstanding copies
-   before releasing slots; the scheduler's existing commit waits remain mandatory.
+1. The scheduler's existing engine<-scheduler wait orders previous async commits
+   and restores before forward. Router and unchanged fused_topk run on compute.
+   ensure_experts reserves LRU slots and rewrites ids, then records ready on that
+   same compute stream. The side stream waits on ready before reading miss count,
+   src_indices/evict_slots or writing slots. Immutable pinned source banks and
+   device pointer tables are cache-owned across all calls and graph lifetimes.
+2. copy_missing runs unchanged on the side stream (default or tuned gather).
+   The original shared MLP and sigmoid gate run on compute. Shared needs the
+   original hidden input: routed GEMM may overwrite it, so it must come later.
+3. done is recorded after the entire copy, and compute waits on done before routed
+   GEMM. Final arithmetic stays `(routed + shared)` with the same dtype/order.
+4. The next layer's ensure runs after routed consumption on compute; its ready
+   edge orders reuse of shared miss buffers and destination slots. Every call
+   rejoins; no background work survives a normal return or Python callback error.
+   Prefill borrowing, cancellation and cache rebuild inherit this compute order.
+   Rebuild already drains and destroys graphs before replacing cache addresses.
+   Concurrent forwards on distinct compute streams are unsupported, as before.
 
-Capture/replay must create streams/events before capture, fork and join inside
-capture, keep router/miss metadata and bank/destination addresses stable and prove
-that the side stream rejoins capture before capture ends. No uncaptured background
-copy, dynamic allocation/event creation or host-dependent routing may escape the
-captured graph. An unsupported shape or capture mode must use the old path.
+Streams and CUDA event handles are created/materialized at cache construction,
+before graph capture. Each ready wait forks capture and the done wait rejoins it
+inside the same captured forward. Graph replay uses fixed bank, metadata and
+slot addresses; it executes device miss counts, never a host snapshot. There is
+no global synchronize in the new execution path. CUDA faults invalidate capture
+and propagate; a Python finally cannot recover a failed CUDA context.
 
-Before enabling a future implementation, add a CPU trace of its actual control
-flow with separate metadata-ready, source-ready, destination-owned, gather-done,
-shared-done and reuse events; removing each wait must kill the test. On SM120 run
-byte checks with 0..8 misses, adversarial slot reuse, repeated capture/replay,
-alternating patterns, cancellation and prefill/decode transitions. The existing
-`test_decode_gather.py::test_tuned_gather_graph_replay` checks serial transport only;
-it is not evidence for the proposed overlap. Add a dedicated overlap test before
-claiming completion. No global synchronize may be used as performance evidence.
+The path falls back to serial for prefill, batch != 1, TP != 1, CPU/hybrid or
+unpinned layers, a non-fused copy layout, active layer-major epochs and refill. Configured refill disables the overlap
+object before capture, even while no refill job is active.
+The profile wrapper clears inherited flags. No new kernel or numerical method
+was introduced. Source-byte identity remains a claim to test on SM120.
 
-Only after those gates: T3 alone -> run-bound teacher -> unprofiled rotating A/B;
-then combinations with T1 and T2. CPU traces and compilation do not qualify CUDA
-execution. This work is deferred because ownership/capture changes need a separate
-implementation and target-device validation, after completed P0-P2.
+## Validation
+
+`harness/test-decode-overlap-cpu.py` executes actual model/layer/helper control
+flow with fake streams, exercises disabled/unsupported modes and callback errors,
+and detects removal of either producer or consumer wait. It is not CUDA proof.
+`freetoken/tests/moe/test_decode_overlap_gpu.py` uses actual ensure/LRU/copy and
+byte consumers, real pinned six-bank NVFP4 sizes, default/tuned gather, 1/3 layers,
+eager and twice-captured 180-replay sequences with changing routes plus cancel.
+The model teacher gate tests actual expert arithmetic and prefix/cancel transitions.
+
+The archived no-join negative control had 14,248 mismatches. The +3-4% decode
+estimate is historical, not measured for this implementation. Owner must run
+components -> teacher -> unprofiled rotating A/B, T3 alone then T1+T2+T3.

@@ -74,6 +74,7 @@ SWITCH_ENV = {
     # (both follow SWITCH_ENV); profiles without the key stay valid.
     # Background refill of the slots layer-major prefill borrowed (moe/slot_refill.py).
     'layer_major_refill': {'QWEN36_LAYER_MAJOR_REFILL': '1'},
+    'decode_shared_overlap': {'QWEN36_DECODE_SHARED_OVERLAP': '1'},
     # PLACEHOLDER (possible future switch, not in the runtime tree yet).
     'sync_lean': {'QWEN36_SYNC_LEAN': '1'},
 }
@@ -280,6 +281,10 @@ def validate_profile_schema(name, profile):
     # A threshold above chunk + 1 would send multi-chunk prompts down chunked prefill (measured slower).
     _require(profile.get('layer_major_min_tokens', 0) <= profile['chunk'] + 1,
              'layer_major_min_tokens must not exceed chunk + 1')
+    _require(not (profile.get('decode_shared_overlap') is True and profile.get('layer_major_refill') is True),
+             'decode_shared_overlap does not support layer_major_refill')
+    _require(not (profile.get('decode_shared_overlap') is True and profile['qualified']),
+             'decode_shared_overlap is experimental and cannot be qualified')
     if 'prefix_margin' in profile:
         _require(type(profile['prefix_margin']) is int and 1 <= profile['prefix_margin'] <= 64,
                  'Invalid prefix margin')

@@ -267,6 +267,16 @@ class OffloadMoeCache:
         from freetoken.kernel.decode_gather import decode_gather_config
 
         self._decode_gather = decode_gather_config()
+        from freetoken.decode_overlap import DecodeSharedOverlap, enabled
+
+        from freetoken.moe.slot_refill import refill_enabled
+
+        overlap = enabled() and not refill_enabled()
+        self.decode_shared_overlap = (
+            DecodeSharedOverlap(torch.cuda, self.device)
+            if overlap and self.device.type == "cuda" and self.decode_target == "gpu"
+            else None
+        )
         # The layer whose misses ensure_experts/materialize_layer staged last; consumed
         # by copy_missing to pick the per-layer source (part of the same pending-copy
         # state as evict_slots/src_indices/num_indices).

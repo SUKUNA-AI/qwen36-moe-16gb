@@ -76,10 +76,19 @@ class Qwen3_5MoE(BaseOP):
         # kernel may write into ``hidden_states`` in place, which would corrupt the
         # shared expert's input (HF also evaluates the shared expert first).
         router_logits = self.gate.forward(hidden_states)
-        shared = self.shared_expert.forward(hidden_states)
-        shared = shared * torch.sigmoid(self.shared_expert_gate.forward(hidden_states))
-        routed = self.experts.forward(hidden_states=hidden_states, router_logits=router_logits)
+        can_overlap = getattr(self.experts, "can_overlap_shared", None)
+        if can_overlap is not None and can_overlap(hidden_states):
+            routed, shared = self.experts.forward_with_shared(
+                hidden_states, router_logits, self._shared_forward,
+            )
+        else:
+            shared = self._shared_forward(hidden_states)
+            routed = self.experts.forward(hidden_states=hidden_states, router_logits=router_logits)
         return (routed + shared).view(num_tokens, hidden_dim)
+
+    def _shared_forward(self, hidden_states):
+        shared = self.shared_expert.forward(hidden_states)
+        return shared * torch.sigmoid(self.shared_expert_gate.forward(hidden_states))
 
 
 __all__ = ["Qwen3_5MoE", "Qwen3_5DenseMLP"]

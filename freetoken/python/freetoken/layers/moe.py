@@ -258,6 +258,35 @@ class OffloadMoELayer(MoELayer):
     # which kernel runs is decided afterwards, in ``_expert_gemm``.
     # ------------------------------------------------------------------
 
+    def can_overlap_shared(self, hidden_states: torch.Tensor) -> bool:
+        cache = self.offload_cache
+        return (
+            cache is not None and cache.decode_shared_overlap is not None
+            and not get_global_ctx().batch.is_prefill
+            and hidden_states.shape[0] == 1 and self.tp_size == 1
+            and cache.decode_target == "gpu" and not cache.is_cpu_layer(self.layer_id)
+            and not cache.is_unpinned_layer(self.layer_id) and cache._copy_fused_ok
+            and not cache.layer_major_active and cache.refill is None
+        )
+
+    def forward_with_shared(self, hidden_states, router_logits, shared_forward):
+        """Same kernels and merge order; only transport moves to the side stream."""
+        cache = self.offload_cache
+        topk_weights, topk_ids = fused_topk(
+            hidden_states=hidden_states, gating_output=router_logits,
+            topk=self.top_k, renormalize=self.renormalize,
+        )
+        cache.ensure_experts(self.layer_id, topk_ids)
+        shared = cache.decode_shared_overlap.run(
+            cache.copy_missing, lambda: shared_forward(hidden_states),
+        )
+        routed = self._expert_gemm(
+            cache, hidden_states, topk_weights, topk_ids,
+            views=cache.bank_views(), n=None,
+            alphas=cache.alphas_for_slots(self.layer_id), is_prefill=False,
+        )
+        return routed, shared
+
     def _decode_routed(
         self,
         hidden_states: torch.Tensor,

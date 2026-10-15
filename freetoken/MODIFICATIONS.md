@@ -141,3 +141,12 @@ tests/scheduler/test_speculative_state.py
 
 Two default library paths were additionally rewritten from an absolute user path to `~/qwen36-api/...`
 (`moe/cuda_nvfp4.py`, `moe/cuda_transport.py`) for publication; behaviour is unchanged when the runtime root is `~/qwen36-api`.
+
+## Cloud T3 candidate (2026-10-15; GPU NOT_RUN)
+
+`QWEN36_DECODE_SHARED_OVERLAP=1` adds a same-layer gather/shared fork-join to
+Qwen decode, single token / TP1 / GPU offload only. New `decode_overlap.py`,
+modified `layers/moe.py`, `models/qwen3_5_moe/moe.py` and `moe/offload_cache.py`.
+The same copy and numerical kernels run; events order producer metadata, byte
+readiness and slot reuse. Unset/0 preserves serial execution. Refill is unsupported.
+See `next-update/gather-prefetch/OVERLAP-DESIGN.md` and the owner GPU gate.

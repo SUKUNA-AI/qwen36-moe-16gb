@@ -2,7 +2,7 @@
 
 CPU results do not establish GPU correctness, bit-exactness, release qualification
 or speed. No GPU/model/private-fixture/WSL test and no CUDA compile was run here.
-T3 overlap is DEFERRED; there is no overlap switch to enable.
+T3 overlap is implemented default-off; its SM120 execution is NOT_RUN.
 
 ## 1. Local prerequisites and first commands
 
@@ -162,7 +162,7 @@ IDs in the teacher comparison must equal the listed receipt run IDs.
 
 Check default-off `main-release`, T1, T2-wu separately, then the combined candidate.
 `ho` needs its own config/evidence if intended for qualification; no ho release
-candidate is asserted by this branch. There is no T3 model arm.
+candidate is asserted by this branch. T3 arm is `main-release-overlap`; the combined arm is `main-release-shortroute-fla-wu-overlap`.
 
 For each `candidate` below, use a fresh `NAME` and both units verified inactive:
 
@@ -249,12 +249,32 @@ exit 0/1/2 means PASS/FAIL/INCONCLUSIVE, not a release decision. The screen's 20
 Set owner session timeouts around pilot/matrix appropriate to their full schedules;
 never take over another experiment unit.
 
-## 5. T3 future prerequisite
+## 5. T3 component gate (run before the model gates)
 
-See `next-update/gather-prefetch/OVERLAP-DESIGN.md`. Before a future T3 arm, add a
-component that captures the producer fork/gather/shared/join in one graph and
-stress-replays alternating miss metadata, 0..8 misses, slot reuse, repeated requests
-and cancel/drain. All bytes, untouched slots and outputs must match the serial
-reference; negative controls deleting producer waits or the join must fail.
-The existing gather replay test proves only serial gather transport. There is no
-completed overlap test/CLI to run or an overlap config to qualify in this branch.
+`QWEN36_DECODE_SHARED_OVERLAP=1` is experimental. No released profile enables it;
+profile validation refuses qualified=true. Stage the two new unqualified configs
+with the other candidate configs. The raw flag accepts unset/0/1, rejects typos.
+Refill is unsupported (configured refill keeps serial execution even during graph
+capture); do not combine these experiments. Batch>1 and CPU/hybrid remain serial.
+
+```bash
+flock -w 3600 -E 75 "$LOCK" timeout 1800 "$P" -m pytest -v \
+  "$C/freetoken/tests/moe/test_decode_overlap_gpu.py"
+```
+
+Require all four cases executed, no skips: original/tuned gather x 1/3 layers,
+real NVFP4 bank sizes in pinned RAM, eager and two captures with 180 replays each,
+changing routing, slot/LRU identity, all destination/untouched bytes, shared output,
+and a callback cancellation followed by slot reuse. This is a transport component;
+actual model expert outputs still need the run-bound teacher gate. The CPU suite
+removes each mandatory wait as a negative control; it does not prove CUDA races
+absent. The archived unsafe GPU no-join result is historical evidence only.
+
+Repeat sections 3 and 4 first for main-release vs main-release-overlap, then for
+the combined candidate. Exercise 64/2048/2049/16K/120K, prefix hits/edits, repeated
+requests and cancellation. For long256 use an unqualified derivative and test
+250K/boundary too; no 250K bit-exact claim follows from the 120K teacher fixture.
+Run an owner Nsight diagnostic separately to verify gather and shared actually
+overlap inside the captured graph; then remove the profiler for five rotating A/B
+pairs. Save TTFT and decode separately. A byte-exact PASS without a speed gain is
+not a performance win. No +3-4% claim is established by this cloud implementation.

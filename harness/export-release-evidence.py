@@ -91,7 +91,7 @@ GROUPS = {
         'python/freetoken/moe/fused_nvfp4.py','python/freetoken/moe/complement*',
         'python/freetoken/moe/cuda_transport.py','python/freetoken/kernel/csrc/qwen36_complement.cu',
         'python/freetoken/kernel/csrc/qwen36_transport.cu','python/freetoken/*/layer_major.py',
-        'python/freetoken/layers/moe.py','python/freetoken/kernel/decode_gather.py',
+        'python/freetoken/layers/moe.py','python/freetoken/decode_overlap.py','python/freetoken/kernel/decode_gather.py',
         'python/freetoken/kernel/csrc/jit/decode_gather.cuh','python/freetoken/kernel/aot.py',
         'tests/moe/test_decode_gather.py','python/freetoken/moe/slot_refill.py'],
         'switches':['QWEN36_RESIDENCY','QWEN36_CACHE_POLICY','QWEN36_CACHE_HALFLIFE',
