@@ -209,8 +209,10 @@ class Qwen3_5GatedDeltaNet(BaseOP):
             _, qa = lib.gated_norm(core_out, z, self.norm.weight, self.norm.eps, in_scale=in_scale,
                                    heads=self.num_v_heads)
         # identical to the uniform-scale branch of fp8_pertensor_linear's _scaled_mm
-        return torch._scaled_mm(qa, weight.t(), scale_a=in_scale.reshape(()),
-                                scale_b=weight_scale[0].reshape(()), out_dtype=torch.bfloat16)
+        from freetoken.kernel.triton.fp8_pertensor_linear import uniform_scaled_mm
+
+        return uniform_scaled_mm(qa, weight, in_scale, weight_scale,
+                                 oproj=getattr(self.out_proj, "_oproj_gemv", False))
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
         from .gdn_kernels import gdn_decode_fla, gdn_prefill_chunk_fla
