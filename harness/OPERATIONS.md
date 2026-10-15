@@ -113,6 +113,81 @@ powershell.exe -NoProfile -File outputs/qwen36-api/optimization/release-manageme
 
 Windows rollback явно выполняет штатный stop и оставляет сервис выключенным; Linux rollback требует уже остановленные units. Оба заранее проверяют все destination и backup хэши. Более поздняя правка или повреждённая копия запрещает rollback до первой замены; не удалять чужие правки, чтобы «прошла проверка». Повторная проверка перед заменами не защищает от произвольного параллельного редактора: на всё окно выпуска требуется эксклюзивность. Откат старого supervisor возвращает также прежние ограничения его ownership.
 
+## main128 next: релиз и откат
+
+Кандидат `main128` (`serving/profiles.json`, `qualified: false`) ставится вместо f1 одной процедурой — [release-main128.sh](release-main128.sh). Скрипт никогда не останавливает и не запускает units: это делает владелец. Ключ `--apply` передаёт только координатор и только с разрешения владельца.
+
+### Перед релизом
+
+- S5 закончил teacher-лесенку и релизный A/B кандидата против f1 (5 пар). Отчёты лежат в `$QWEN36_NATIVE/reports/`.
+- Чекаут — та ветка, которую S5 синхронизировал в оверлей через `sync-v5.sh`. Run-receipts привязаны к байтам рантайма `python/freetoken` и четырёх служебных файлов (`serve_guarded.py`, `guard.py`, `ingress.py`, `request_metrics.py`). Если они разошлись с оверлеем, скрипт откажет с кодом 65. Код S8 (следующий кандидат) в релизное дерево не вливать.
+- `long256` — решение владельца: **перегон** (`--long256 rerun`). Его f1-доказательства привязаны к рантайму f1, поэтому `--long256 carry` на новом дереве make-qualification отклонит («Run receipt runtime sources differ from staged bytes»).
+  - S5 делает свежий qrun teacher `teacher-long256-release` на этом дереве. Его run receipt — `--long256-run`, отчёт compare-quality — `--long256-teacher`.
+  - CUDA-библиотеки long256 (NVFP4, GDN, FP8 GEMV) привязываются к этим run receipts и к bit-exact отчёту. По умолчанию это сам teacher long256.
+  - В f1 teacher long256 отличался от `teacher-bf128` только на long-120000 (`max_abs` 1.23: общий KV заголовка чата в radix-кэше на контексте 262144; на чистом кэше — 0). Строгая проверка такой отчёт как bit-exact не примет. Если отклонение повторится, сделать как в f1:
+    - `--long256-bitexact reports/<teacher-отчёт кандидата main128>.json` — те же библиотеки, то же дерево, 0 отличий;
+    - teacher long256 остаётся в доказательствах;
+    - отклонение записать ограничением: `--long256-limitation "…"`.
+  - Ограничения f1 для long256 переносятся. `--long256-limitations-file F.json` заменяет их списком из файла, `--long256-limitation` добавляет строку.
+  - Запасной вариант — `--long256 drop`: long256 в этом релизе `qualified: false`, `start --profile long256` откажет.
+- `baseline64` переносится из f1 (`--baseline64 carry`): у него нет CUDA-доказательств.
+- `config/local.env`: `QWEN36_ROOT`, `QWEN36_NATIVE` (= `QWEN36_ROOT/optimization`), `QWEN36_MODEL_DIR` (можно задать в окружении), `QWEN36_ARCHIVE`. Экспорт берёт upstream FreeToken `cac247a` из `$QWEN36_ARCHIVE/work/FreeToken-opt` или из `--freetoken-base`.
+
+### Шаги (WSL, корень чекаута)
+
+Имена отчётов — фактические, от S5:
+
+```bash
+EV=(--run reports/<qrun-teacher-main128>.json --teacher reports/<quality-main128>.json
+    --fla-component reports/<gdn-wu-component>.json --overlap-component reports/<overlap-component>.json
+    --ab reports/<ab-main128-vs-f1>.json --evidence reports/<soak-или-контекст>.json
+    --long256 rerun --long256-run reports/<qrun-teacher-long256-release>.json
+    --long256-teacher reports/<quality-long256-release>.json)
+# при отклонении long-120000 добавить: --long256-bitexact reports/<quality-main128>.json --long256-limitation "…"
+bash harness/release-main128.sh --dry-run --label main128-r1 "${EV[@]}"
+bash harness/release-main128.sh --check --label main128-r1 "${EV[@]}"
+bash harness/release-main128.sh --apply --label main128-r1 "${EV[@]}"
+```
+
+- `--dry-run` печатает пути, состояние units, собранное решение и план. Ничего не пишет.
+- `--check` проходит всю цепочку во временном каталоге и удаляет его. Цепочка: рендер staging как в sync-v5 → решение → receipt (`make-qualification.py`) → экспорт доказательств → `release.preflight()`. Сервис может работать.
+- `--apply` требует, чтобы обе units были остановлены (Windows: `qwen36 stop`). Шаги:
+  1. Staging в `$QWEN36_NATIVE/release-staging/<label>`; метка не переиспользуется.
+  2. Receipt и экспорт `harness/evidence-exports/<label>` внутри staging.
+  3. Полный снимок f1: `$QWEN36_ROOT/backups/f1-before-<label>.tar`.
+  4. `release.py install --check`, затем `release.py install`. Release.py сам сохраняет заменяемые файлы и пишет rollback manifest в `$QWEN36_ROOT/backups/release-*/manifest.json`.
+  5. Проверка установленным `profile-runtime.py` (`prepare()` без старта).
+  6. Пути записываются в `release-staging/<label>/install.json`.
+- После установки: `qwen36 start`, `qwen36 status`, лог (ниже).
+
+### Откат на f1
+
+```bash
+bash harness/release-main128.sh --rollback --check --label main128-r1
+bash harness/release-main128.sh --rollback --apply --label main128-r1
+```
+
+- Rollback manifest берётся из `install.json`. Если установка оборвалась раньше записи `install.json`, передайте `--manifest` с путём, который напечатал `release.py`.
+- `--apply` требует остановленные units. Восстановленный f1 проверяется установленным `profile-runtime.py`.
+- Если в установленном дереве есть более поздние правки, `release.py rollback` откажет до первой замены. Тогда последнее средство — снимок `f1-before-<label>.tar` (sha256 в `install.json`), который владелец распаковывает в `$QWEN36_ROOT` вручную.
+
+### Что смотреть в логе после старта
+
+- **Самопроверки ядер S3** (побитовая проверка при загрузке, M 1..8). Норма:
+  - `QWEN36_OPROJ_GEMV enabled: libqwen_oproj_gemv sha256 fa9302e31cb88a02.. ABI 1, bit-exact self-test passed for M [1, …, 8]`;
+  - `QWEN36_MOE_DECODE_CUDA enabled: libqwen_moe_decode sha256 83e90c43cb63ce11.. ABI 1, bit-exact self-test passed for M [...]`.
+
+  Тревога: `... disabled ...`, `... self-test mismatches keep these ...`, `... real-weight check mismatched ...`. Точность сохраняется: эти M остаются на `torch._scaled_mm` / Triton. Но выигрыш релиза пропадает — сохранить лог и решить, откатываться ли.
+- **`MoE prefill C1/C2 transport unavailable (<причина>); using the default copies`** — C1 не работает, prefill коротких чанков идёт старыми копиями. Точность не страдает. Релизный валидатор уже требует prebuilt-модули `decode_gather_tma_8_3_16384` и `fast_index_copy_multi_1024_64`, поэтому причина — в окружении: кэш ядер, план копий.
+- **`MoE prefill hit-D2D requested but unavailable (...)`** или **`MoE prefill hit-D2D disabled (...)`** — hit-D2D выключился, это минус к TTFT коротких промптов.
+- **`expert_slots`** в метриках запроса (`qwen36 metrics`; включены по умолчанию, `QWEN36_ENGINE_METRICS`):
+  - ожидается 4611 при `memory_ratio` 0.85 (у f1 при 0.75 — 3164);
+  - `valid_gpu_expert_slots` растёт до этого числа;
+  - `host_embedding_bytes` = 1017118720 (эмбеддинги на хосте).
+
+  Меньшее `expert_slots` значит, что профиль не тот или бюджет памяти урезан.
+- **VRAM.** Правило владельца: ровно 1 ГиБ остаётся Windows, всё остальное — модели. Поэтому на 0.85 нормален остаток около 1.1 ГиБ свободной VRAM (S2 soak: минимум 1128 МиБ). Сигнал проблемы — не порог свободной памяти, а рост shared GPU memory Windows (paging) или замедление TTFT/decode относительно f1. Тогда откат.
+
 ## Живая приёмка владельцем
 
 Следующие тесты действительно останавливают/перезапускают **свой** сервис; запускать только после release и выделения окна. Полный lifecycle начинает со stopped production+experiment и заканчивает stopped. Пять файлов controller/launcher должны соответствовать staged версии; четыре PowerShell controller файла сравниваются harness по хэшам.

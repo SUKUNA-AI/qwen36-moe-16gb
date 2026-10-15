@@ -120,6 +120,11 @@ class OverlapTests(unittest.TestCase):
         self.assertNotEqual(r.canonical_profile_sha256(candidate),r.canonical_profile_sha256(dict(candidate,decode_shared_overlap=False)))
         for value in ('1',1,None):
             with self.assertRaises(ValueError):r.validate_profile_schema('main128',dict(candidate,decode_shared_overlap=value))
+        # T3 is qualifiable only with receipt evidence (QUALIFIABLE_EXPERIMENTAL + EXPERIMENTAL_EVIDENCE); a closed guard refuses it.
+        r.validate_profile_schema('main128',dict(candidate,qualified=True))
+        record={'evidence':[{'path':'e.json','sha256':'0'*64}]}
+        with self.assertRaisesRegex(ValueError,'needs component, teacher and A/B'):r._experimental_evidence_valid('main128',dict(candidate,qualified=True),record)
+        r.QUALIFIABLE_EXPERIMENTAL=frozenset()
         with self.assertRaisesRegex(ValueError,'experimental'):r.validate_profile_schema('main128',dict(candidate,qualified=True))
         with self.assertRaisesRegex(ValueError,'refill'):r.validate_profile_schema('main128',dict(candidate,layer_major_refill=True))
         env={ENV:'1'};r.configure_environment('main128',p,env);self.assertNotIn(ENV,env)

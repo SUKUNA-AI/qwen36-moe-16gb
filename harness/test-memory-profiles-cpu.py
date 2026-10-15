@@ -115,13 +115,22 @@ class OverlapQualificationGate(unittest.TestCase):
     PATHS = ('component.json', 'run.json', 'teacher.json', 'ab.json')
 
     def test_gate_is_closed_until_the_switch_is_listed(self):
-        self.assertEqual(runtime.QUALIFIABLE_EXPERIMENTAL, frozenset())
-        with self.assertRaisesRegex(ValueError, 'experimental'):
-            runtime.validate_profile_schema('main128', _overlap_profile(True))
-        with self.assertRaisesRegex(ValueError, 'experimental'):
-            runtime._experimental_evidence_valid('main128', _overlap_profile(True),
-                                                 _record(self.PATHS, dict(self.EVIDENCE)))
-        runtime.validate_profile_schema('main128', _overlap_profile(False))
+        with patch.object(runtime, 'QUALIFIABLE_EXPERIMENTAL', frozenset()):
+            with self.assertRaisesRegex(ValueError, 'experimental'):
+                runtime.validate_profile_schema('main128', _overlap_profile(True))
+            with self.assertRaisesRegex(ValueError, 'experimental'):
+                runtime._experimental_evidence_valid('main128', _overlap_profile(True),
+                                                     _record(self.PATHS, dict(self.EVIDENCE)))
+            runtime.validate_profile_schema('main128', _overlap_profile(False))
+
+    def test_t3_is_qualifiable_only_with_receipt_evidence(self):
+        # main128 next: T3 is listed, so the schema admits it; the receipt record must still carry all four lists.
+        self.assertEqual(runtime.QUALIFIABLE_EXPERIMENTAL, frozenset({'decode_shared_overlap'}))
+        profile = _overlap_profile(True)
+        runtime.validate_profile_schema('main128', profile)
+        with self.assertRaisesRegex(ValueError, 'needs component, teacher and A/B'):
+            runtime._experimental_evidence_valid('main128', profile, _record(self.PATHS))
+        runtime._experimental_evidence_valid('main128', profile, _record(self.PATHS, dict(self.EVIDENCE)))
 
     def test_open_gate_requires_bound_evidence(self):
         with patch.object(runtime, 'QUALIFIABLE_EXPERIMENTAL', frozenset({'decode_shared_overlap'})):

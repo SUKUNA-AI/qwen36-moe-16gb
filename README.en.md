@@ -105,6 +105,40 @@ The soak ran for 7212 s: 741/741 checks passed with 0 errors and 0 stalls. Host 
 | Engine | FreeToken 0.1.3 (`cac247a860e316e06580d05aeb05f2e647bde214`) + the changes in `freetoken/` |
 | Checkpoint | `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0f2c3c5`: NVFP4 experts, FP8 dense, selected BF16 |
 
+## main128 next (release candidate)
+
+> **Status: candidate, not a release.** In `serving/profiles.json` the `main128` profile is still `qualified: false`, and f1 stays installed. The ladder numbers arrive after the teacher ladder and the release A/B against f1 (5 pairs). The owner decides. Until then the number cells below are empty ("—").
+
+The candidate is f1 plus the levers below. Each lever has its own switch and is off by default. Each is bit-exact: teacher 125/125, `max_abs` 0. Run configuration: [`harness/main-release-next-candidate.json`](harness/main-release-next-candidate.json). Profile: `main128` in [`serving/profiles.json`](serving/profiles.json).
+
+| Lever | Profile → environment | What it does |
+|---|---|---|
+| hit-D2D | flag `--moe-prefill-hit-d2d`, `layer_major_min_tokens: 2049` → `QWEN36_LAYER_MAJOR_MIN_TOKENS=2049` | short prefill copies experts already in VRAM on the GPU; layer-major starts at 2049 uncached tokens |
+| FLA on CUDA | `cuda_gdn_fla: "wu"` → `QWEN36_CUDA_GDN_FLA=wu` | fused bit-exact CUDA kernels for the GDN FLA chunk |
+| T3 | `decode_shared_overlap` → `QWEN36_DECODE_SHARED_OVERLAP=1` | the decode miss gather overlaps the same layer's shared expert |
+| host embeddings | `host_embeddings` → `QWEN36_HOST_EMBEDDINGS=1` | the embedding table (~0.95 GiB) moves to pinned host memory; the VRAM goes to expert slots |
+| memory step | `memory_ratio: 0.85` | more expert slots: 4611 instead of 3164 |
+| decode o-proj | `cuda_oproj_gemv` → `QWEN36_OPROJ_GEMV=1` + `libqwen_oproj_gemv.so` | bitwise copy of the cuBLASLt split-K for the 40 o-projections, M 1..8 |
+| decode MoE | `cuda_moe_decode` → `QWEN36_MOE_DECODE_CUDA=1` + `libqwen_moe_decode.so` | CUDA GEMV instead of Triton for decode gate_up/down |
+| C0 | `prefill_copy_priority` → `QWEN36_PREFILL_COPY_PRIORITY=1`, `QWEN36_PREFILL_EPOCH_INVALIDATE=1` | top-priority prefill copy stream, one buffer invalidation per epoch |
+| C1 | `prefill_selected: 160` → `QWEN36_PREFILL_SELECTED=160` (needs `decode_gather`) | a chunk under 160 tokens moves only the experts its router selected |
+
+Modules and switches: [`freetoken/MODIFICATIONS.md`](freetoken/MODIFICATIONS.md).
+
+**Memory.** Owner rule: exactly 1 GiB of VRAM stays with Windows and the model gets the rest. The validator caps `memory_ratio < 0.95`. The 0.85 step won the soaks; at 0.90, decode and TTFT were worse from memory pressure.
+
+**Ladder** (filled from the runs; charts by `tools/ladder-charts.py`):
+
+| Step | TTFT 64 | TTFT 16K | decode 64 | decode 16K | teacher |
+|---|---:|---:|---:|---:|---|
+| f1 | — | — | — | — | 125/125 |
+| + one lever at a time | — | — | — | — | — |
+| main128 next candidate | — | — | — | — | — |
+
+Charts: [`results/ladder/charts/ttft-steps.svg`](results/ladder/charts/ttft-steps.svg), [`decode-steps.svg`](results/ladder/charts/decode-steps.svg), [`memory-steps.svg`](results/ladder/charts/memory-steps.svg), [`teacher-steps.svg`](results/ladder/charts/teacher-steps.svg). Table: [`results/ladder/charts/ladder-table.en.md`](results/ladder/charts/ladder-table.en.md). Write-up: [`docs/RELEASE-MAIN128.en.md`](docs/RELEASE-MAIN128.en.md).
+
+**Release and rollback.** One procedure, [`harness/release-main128.sh`](harness/release-main128.sh): `--dry-run`, then `--check`, then `--apply` (owner approval only). `--rollback` goes back to f1. The steps and the log lines to watch are in [`harness/OPERATIONS.md`](harness/OPERATIONS.md#main128-next-релиз-и-откат) (Russian).
+
 ## Profiles
 
 | Profile | Context | Expert slots on GPU | Use |
