@@ -40,6 +40,10 @@ PREFILL_SELECTED_SYNC_ENV = "QWEN36_PREFILL_SELECTED_SYNC"
 # C2: non-layer-major prefill H2D (full layer, or the hit-D2D misses) through the decode TMA gather
 # kernel on the copy stream instead of the copy engine; device-side lists, no hit-D2D snapshot sync.
 PREFILL_TMA_GATHER_ENV = "QWEN36_PREFILL_TMA_GATHER"
+# D6: after each layer's GEMM of a non-layer-major chunk, D2D the N experts this chunk routed to most
+# from the double buffer into decode slots before the buffer is released (0/unset = off), so the
+# first decode steps start with them resident. Same bytes as the host banks; only residency moves.
+PREFILL_WARM_DECODE_ENV = "QWEN36_PREFILL_WARM_DECODE"
 
 
 def strict_flag(name: str) -> bool:
@@ -367,6 +371,9 @@ class OffloadMoeCache:
         self.prefill_selected_active = False  # chosen per chunk by select_prefill_route
         self._prefill_tma_active = False      # chosen per epoch by begin_prefill
         self.prefill_selected_chunks = 0
+        self.prefill_warm_decode = int_flag(PREFILL_WARM_DECODE_ENV)
+        self.prefill_warm_active = False   # chosen per chunk by select_prefill_route
+        self.prefill_warm_rows = None      # device counter of experts installed by D6
         self._xfer_lists = None
         self._xfer_rows = None
         self._xfer_rows_dirty = False
@@ -382,6 +389,7 @@ class OffloadMoeCache:
             raise RuntimeError("layer-major epoch already active")
         self.layer_major_active = True
         self.prefill_selected_active = False
+        self.prefill_warm_active = False
         try:
             self.begin_prefill()
         except BaseException:
@@ -833,6 +841,12 @@ class OffloadMoeCache:
             self._xfer_expert_ids = torch.arange(E, dtype=torch.int32, device=dev)
             self._xfer_host_ids = torch.empty(E, dtype=torch.int32, pin_memory=True)
             self._xfer_host_num = torch.empty(2, dtype=torch.int64, pin_memory=True)
+            n = max(1, min(self.prefill_warm_decode, E))
+            self._warm_counts = torch.zeros(E, dtype=torch.int64, device=dev)
+            self._warm_key_bias = (E - 1 - torch.arange(E, device=dev)).to(torch.int64)
+            self._warm_lists = (torch.zeros(n, dtype=torch.int32, device=dev), torch.zeros(n, dtype=torch.int32, device=dev),
+                                torch.zeros(1, dtype=torch.int64, device=dev))
+            self.prefill_warm_rows = torch.zeros((), dtype=torch.int64, device=dev)
 
     def _invalidate_prefill_buffer(self, buffer_id: int) -> None:
         slot_start = buffer_id * self.num_experts
@@ -879,6 +893,9 @@ class OffloadMoeCache:
         router selects. Never inside layer-major (its chunks share full-layer buffers), never while
         a refill owns slots, never for a subclass with its own prefetch."""
         self.prefill_selected_active = False
+        self.prefill_warm_active = (self.prefill_warm_decode > 0 and type(self) is OffloadMoeCache
+                                    and not self.layer_major_active and self.refill is None
+                                    and self._xfer_lists is not None and self._copy_fused_ok)
         if not 0 < tokens < self.prefill_selected_max or type(self) is not OffloadMoeCache:
             return
         if self.layer_major_active or self.refill is not None:
@@ -1199,6 +1216,27 @@ class OffloadMoeCache:
             self.prefill_ready_events[buffer_id].record(self.prefill_copy_stream)
         self._prefill_h2d_bytes += int(sum(nbytes))
         self._prefill_d2d_bytes += n_hit * sum(f for f in self._copy_feat_bytes_host if f >= _SMALL_BANK_FEAT_BYTES)
+
+    def warm_decode_layer(self, layer_id: int, topk_ids: torch.Tensor) -> None:
+        """D6, on the compute stream after this layer's GEMM and before its release: install the
+        chunk's most-routed experts of this layer (ties -> lower id) into decode slots, copied D2D
+        from the double buffer that still holds them."""
+        from freetoken.kernel.fast_index_copy import fast_index_copy_multi_jit
+        from freetoken.moe.offload_kernels import warm_decode_install
+
+        E = self.num_experts
+        n = self._warm_lists[0].numel()
+        counts = self._warm_counts
+        counts.zero_()
+        ids = topk_ids.reshape(-1).long()
+        counts.index_add_(0, ids, torch.ones_like(ids))
+        top = (counts * E + self._warm_key_bias).topk(n).indices
+        candidates = torch.where(counts[top] > 0, top, -1).to(torch.int32)
+        dst, src, num = self._warm_lists
+        warm_decode_install(self, layer_id, candidates, layer_id % 2, self._warm_lists)
+        fast_index_copy_multi_jit(self._copy_dst_ptrs, self._copy_dst_ptrs, self._copy_feat_bytes, dst, src, num,
+                                  blocks_per_bank=64)
+        self.prefill_warm_rows += num[0]
 
     def wait_prefill_layer(self, layer_id: int) -> tuple[torch.Tensor, ...]:
         """Full-layer ``[num_experts, ...]`` bank views for ``layer_id``, one per

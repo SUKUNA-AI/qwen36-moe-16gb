@@ -81,7 +81,7 @@ class Flags(unittest.TestCase):
     def test_defaults_are_off_in_source(self):
         text = CACHE.read_text(encoding='utf-8')
         for env in ('QWEN36_PREFILL_COPY_PRIORITY', 'QWEN36_PREFILL_EPOCH_INVALIDATE', 'QWEN36_PREFILL_SELECTED',
-                    'QWEN36_PREFILL_SELECTED_SYNC', 'QWEN36_PREFILL_TMA_GATHER'):
+                    'QWEN36_PREFILL_SELECTED_SYNC', 'QWEN36_PREFILL_TMA_GATHER', 'QWEN36_PREFILL_WARM_DECODE'):
             self.assertIn(f'"{env}"', text)
 
 
@@ -186,7 +186,26 @@ class SelectedRoute(unittest.TestCase):
         c.refill = None
         c.prefill_selected_chunks = 0
         c._xfer_usable = lambda sync: True
+        c.prefill_warm_decode = 0
+        c._xfer_lists = [()]
+        c._copy_fused_ok = True
         return c, cls
+
+    def test_warm_decode_guards(self):
+        c, cls = self.make()
+        c.prefill_selected_max = 0
+        c.select_prefill_route(100)
+        self.assertFalse(c.prefill_warm_active)
+        c.prefill_warm_decode = 8
+        c.select_prefill_route(4000)
+        self.assertTrue(c.prefill_warm_active, 'D6 is independent of the C1 threshold')
+        for attr, value in (('layer_major_active', True), ('refill', object()), ('_xfer_lists', None),
+                            ('_copy_fused_ok', False)):
+            old = getattr(c, attr)
+            setattr(c, attr, value)
+            c.select_prefill_route(100)
+            self.assertFalse(c.prefill_warm_active, attr)
+            setattr(c, attr, old)
 
     def test_guards(self):
         c, cls = self.make()

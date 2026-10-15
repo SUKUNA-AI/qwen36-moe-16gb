@@ -24,6 +24,8 @@ ARMS = {
     "c2": {"QWEN36_PREFILL_TMA_GATHER": "1"},
     "c2pe": {"QWEN36_PREFILL_TMA_GATHER": "1", "QWEN36_PREFILL_COPY_PRIORITY": "1",
              "QWEN36_PREFILL_EPOCH_INVALIDATE": "1"},
+    "d6pe": {"QWEN36_PREFILL_WARM_DECODE": "8", "QWEN36_PREFILL_COPY_PRIORITY": "1",
+             "QWEN36_PREFILL_EPOCH_INVALIDATE": "1"},
     "d3a": {"QWEN36_ROUTE_TRACE": "1", "QWEN36_ROUTE_TRACE_OUT": "~/.cache/qwen36-cloud-review/s4-results/route-trace",
             "_flags": ["--cuda-graph-max-bs", "0"]},
 }

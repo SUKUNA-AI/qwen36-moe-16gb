@@ -129,7 +129,8 @@ def stop():
 def run_arm(arm, tok, args, out):
     from bench import sustained_warmup
     meta = {'arm': arm, 'round': args.round, 'start': time.time()}
-    rows_path = out / f'{arm}.r{args.round}.jsonl'
+    stem = f'{arm}.r{args.round}.{int(meta["start"])}'
+    rows_path = out / f'{stem}.jsonl'
     try:
         start(arm, 'plain')
         meta['ready'] = time.time()
@@ -156,9 +157,9 @@ def run_arm(arm, tok, args, out):
         print('ARM ERROR', arm, repr(exc), flush=True)
     finally:
         meta['end'] = time.time()
-        journal(meta, out / f'{arm}.r{args.round}.journal.txt')
+        journal(meta, out / f'{stem}.journal.txt')
         stop()
-        (out / f'{arm}.r{args.round}.meta.json').write_text(json.dumps(meta, indent=1))
+        (out / f'{stem}.meta.json').write_text(json.dumps(meta, indent=1))
 
 
 def journal(meta, path):

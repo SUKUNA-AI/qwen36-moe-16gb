@@ -113,6 +113,22 @@ def prefill_split_compact(cache, layer_id: int, buffer_id: int, lists, selected=
     )
 
 
+def warm_decode_install(cache, layer_id: int, candidates: torch.Tensor, buffer_id: int, lists) -> None:
+    """D6: map this layer's ``candidates`` (expert ids, -1 = none) into decode slots (>= 2E), taking
+    victims by ascending (usage, slot) among slots that are empty or belong to layers <= ``layer_id``
+    (later layers of the running chunk keep their residency, so a hit-D2D snapshot stays exact).
+    Resident candidates are bumped instead. Writes the D2D plan (victim slot <- buffer row) into
+    ``lists`` = (dst, src, num); one launch, no host sync."""
+    E = cache.num_experts
+    dst, src, num = lists
+    _warm_install_kernel[(1,)](
+        candidates, cache.slot_for_id.view(-1), cache.id_of_slot, cache.usage, cache.step,
+        dst, src, num, layer_id * E, layer_id, buffer_id * E, 2 * E, cache.cache_size, E,
+        N=candidates.numel(), BLOCK_C=triton.next_power_of_2(cache.cache_size),
+        USAGE_MAX=torch.iinfo(cache.usage.dtype).max,
+    )
+
+
 def materialize_layer(cache, layer_id: int) -> None:
     _materialize_layer_gpu(cache, layer_id)
 
@@ -505,3 +521,49 @@ def _prefill_split_compact_kernel(
     if COUNT:
         tl.store(rows_ptr, tl.load(rows_ptr) + misses)
         tl.store(rows_ptr + 1, tl.load(rows_ptr + 1) + hits)
+
+
+@triton.jit(do_not_specialize=["base", "layer_id", "buffer_base"])
+def _warm_install_kernel(
+    cand_ptr, slot_of_id_ptr, id_of_slot_ptr, usage_ptr, step_ptr,
+    dst_ptr, src_ptr, num_ptr,
+    base,          # layer_id * num_experts (flat id of expert 0)
+    layer_id,
+    buffer_base,   # buffer_id * num_experts (buffer row of expert 0)
+    lo,            # 2 * num_experts: first decode slot
+    num_cached,
+    num_experts,
+    N: tl.constexpr, BLOCK_C: tl.constexpr, USAGE_MAX: tl.constexpr,
+):
+    step = tl.load(step_ptr)
+    c = tl.arange(0, BLOCK_C)
+    cm = (c >= lo) & (c < num_cached)
+    owner = tl.load(id_of_slot_ptr + c, mask=cm, other=-1)
+    u = tl.load(usage_ptr + c, mask=cm, other=USAGE_MAX)
+    # empty slots and slots of layers this chunk has already consumed are the only victims
+    u = tl.where(cm & ((owner < 0) | (owner // num_experts <= layer_id)), u, USAGE_MAX)
+    for i in range(N):
+        e = tl.load(cand_ptr + i)
+        s = tl.load(slot_of_id_ptr + base + tl.maximum(e, 0))
+        resident = (e >= 0) & (s >= lo)
+        tl.store(usage_ptr + s, step, mask=resident)
+        u = tl.where((c == s) & resident, USAGE_MAX, u)
+    tl.debug_barrier()
+    count = tl.full((), 0, tl.int32)
+    for i in range(N):
+        e = tl.load(cand_ptr + i)
+        s = tl.load(slot_of_id_ptr + base + tl.maximum(e, 0))
+        victim = tl.argmin(u, axis=0).to(tl.int32)
+        need = (e >= 0) & (s < lo) & (tl.min(u, axis=0) < USAGE_MAX)
+        old = tl.load(id_of_slot_ptr + victim)
+        tl.store(slot_of_id_ptr + old, -1, mask=need & (old >= 0))
+        tl.store(id_of_slot_ptr + s, -1, mask=need & (s >= 0))
+        tl.store(id_of_slot_ptr + victim, base + e, mask=need)
+        tl.store(slot_of_id_ptr + base + e, victim, mask=need)
+        tl.store(usage_ptr + victim, step, mask=need)
+        tl.store(dst_ptr + count, victim, mask=need)
+        tl.store(src_ptr + count, (buffer_base + e).to(tl.int32), mask=need)
+        count += need.to(tl.int32)
+        u = tl.where((c == victim) & need, USAGE_MAX, u)
+        tl.debug_barrier()
+    tl.store(num_ptr, count.to(tl.int64))

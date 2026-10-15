@@ -411,6 +411,9 @@ class OffloadMoELayer(MoELayer):
                 alphas=cache.alphas_for_layer(self.layer_id),
                 is_prefill=True,
             )
+            if cache.prefill_warm_active:
+                # D6: the buffer still holds this layer's experts until the release below
+                cache.warm_decode_layer(self.layer_id, topk_ids)
             cache.release_prefill_layer(self.layer_id)
             return out
         cache.materialize_layer(self.layer_id)
