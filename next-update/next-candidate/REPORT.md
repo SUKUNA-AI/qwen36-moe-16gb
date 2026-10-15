@@ -128,6 +128,21 @@ PYTHONPATH=$C/freetoken/python flock -w 60 -E 75 ~/qwen36-api/run/gpu-exclusive.
 
 Руки для teacher-гейта и A/B координатора — `scripts/make_configs.py` поверх `harness/main-release-next-candidate.json`: `base`, `d3b` (1/2), `d3b22`, `d5`, `d6`, `all`. Teacher-имена для них в `engine/qualification.py` не добавлены: это шаг координатора.
 
+## GPU-окно 1 (15.10, 17:16:36–17:16:54 UTC, RTX 5070 Ti, стек серверного venv)
+
+Прогон из клона S8 под `gpu-exclusive.lock`: лок держался 18 с, оверлей не трогался.
+
+| Тест | Итог |
+|---|---|
+| `test_shared_epilogue_gpu.py::test_self_test_passes_on_this_stack`: sigmoid совпал с `torch.sigmoid` на всех 65 536 bf16, полный эпилог совпал на случайных и граничных данных | **PASS** |
+| `test_shared_epilogue_gpu.py::test_epilogue_bytes[M=1..8]` | **PASS** 8/8 |
+| `test_shared_epilogue_gpu.py::test_graph_capture_replay` (200 воспроизведений), `test_undecided_capture_keeps_torch` | **PASS** 2/2 |
+| `test_decode_pregate_gpu.py::test_kernels_match_torch_reference` | **PASS** |
+| `test_shared_epilogue_gpu.py::test_qwen35_moe_block_flag_on_equals_off` | FAIL: дефект теста — не была задана TP-информация, как в conftest qwen4_exp. Исправлено на CPU |
+| `test_decode_pregate_gpu.py::test_pregate_bytes_residency_and_capture_replay` (8 вариантов), `test_decode_overlap_gpu.py` (4, регресс T3), `microbench.py` | FAIL / не начат: окружение. В клоне не было собранного `freetoken.kernel._pinned_tensor`, и `OffloadMoeCache.set_bank_sources` падает на `device_ptr`. Исправлено: синхронизация клона копирует `_*.so` из серверного venv (только чтение) |
+
+До кэша и графов эти тесты не дошли, поэтому вердикт по D3b и T3 и цифры микробенча ждут окна 2. По правилу окна на GPU ничего не чинилось.
+
 ## Осталось проверить на GPU
 1. Оба новых компонентных теста и регресс `test_decode_overlap_gpu.py` (T3 с новым `copy_planned`).
 2. Микробенч: доля спрятанной копии D3b при окне 25/45/85 мкс; экономия D5 на шаг.

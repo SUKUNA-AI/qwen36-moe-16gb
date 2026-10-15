@@ -75,10 +75,13 @@ def test_qwen35_moe_block_flag_on_equals_off():
     except Exception as exc:  # helper layout changed: the kernel tests above still gate D5
         pytest.skip(f'qwen4_exp test helpers unavailable: {exc}')
     from types import SimpleNamespace
+    from freetoken.distributed import set_tp_info, try_get_tp_info
     from freetoken.models.qwen3_5_moe.moe import Qwen3_5MoE
     from freetoken.models.qwen4_exp.moe import Qwen4ExpMoE
     from freetoken.utils.torch_utils import torch_dtype
 
+    if try_get_tp_info() is None:
+        set_tp_info(rank=0, size=1)
     config = _config()
     with torch.device('cuda'), torch_dtype(torch.bfloat16):
         moe = Qwen4ExpMoE(config, 0)
