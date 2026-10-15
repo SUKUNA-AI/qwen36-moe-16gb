@@ -1,7 +1,7 @@
 """CPU-only: the main128 next candidate through the whole release chain, on synthetic data in temp directories.
 
 A: make-qualification -> release.py install -> installed profile-runtime.py for the exact candidate profile
-   (serving/profiles.json main128 + harness/main-release-next-candidate.json run env): six CUDA libraries with
+   (serving/profiles.json main128 + harness/main-release-next-d5.json run env): six CUDA libraries with
    ABI stubs, FLA, T3 evidence, C0/C1 and hit-D2D kernel modules. Reuses the synthetic staging fixture of
    test-release-qualification-cpu.py (real validator, mocked systemctl).
 B: release-main128.py (decision from named reports, f1 carry/rerun/drop, export-tree).
@@ -38,7 +38,7 @@ def load(name, path):
 base = load('release_qualification_fixture_for_main128', HERE / 'test-release-qualification-cpu.py')
 helper = load('release_main128_helper_under_test', HERE / 'release-main128.py')
 release, maker, constants, sha = base.release, base.maker, base.constants, base.sha
-CANDIDATE = json.loads((HERE / 'main-release-next-candidate.json').read_text())
+CANDIDATE = json.loads((HERE / 'main-release-next-d5.json').read_text())
 PROFILES = json.loads((SERVING / 'profiles.json').read_text())
 MAIN128 = dict(PROFILES['profiles']['main128'], qualified=True)
 GATHER, MULTI, BATCH = base.GATHER, 'freetoken__fast_index_copy_multi_1024_64', 'freetoken__batch_memcpy'
@@ -73,7 +73,7 @@ def teacher_report(run_ids):
     cases = maker.quality_evidence_module().TEACHER_CASES
     runs = list(run_ids)
     return {'schema': 2, 'evidence_valid': True, 'bit_exact_pass': True, 'baseline': 'teacher-bf128',
-            'candidate': 'teacher-main-release-next-candidate', 'forced_targets_complete': True,
+            'candidate': 'teacher-main-release-next-d5', 'forced_targets_complete': True,
             'logit_comparisons': {'expected': 125, 'observed': 125, 'finite_and_complete': True, 'all_byte_equal': True,
                                   'max_abs': 0.0, 'max_relative_l2': 0.0},
             'new_functional_failures': [], 'ppl_gate_pass': True, 'quality_gate_pass': True,
@@ -153,7 +153,7 @@ class NextFixture(base.Staging):
                 'QWEN36_OPROJ_GEMV_LIBRARY': self.oproj_source, 'QWEN36_MOE_DECODE_LIBRARY': self.moe_source}[key]
 
     def next_run(self, run_id=RUN_ID, **env):
-        run = self.run_receipt(run_id=run_id, profile='main-release-next-candidate')
+        run = self.run_receipt(run_id=run_id, profile='main-release-next-d5')
         configuration = {key: copy.deepcopy(CANDIDATE[key]) for key in ('context', 'chunk', 'memory_ratio', 'qualified', 'flags')}
         configuration['env'] = dict(CANDIDATE['env'], QWEN36_TEACHER_FIXTURE='/x', QWEN36_LOGIT_REFERENCE='/y', **env)
         run['configuration'] = configuration
@@ -580,7 +580,7 @@ class ReleaseScriptSandbox(unittest.TestCase):
             libraries[key] = {'path': str(self.native / relative), 'sha256': sha(self.put(self.native / relative, data).read_bytes())}
         # S5 evidence: candidate run receipt bound to the runtime and the rendered service files
         staged = {relative: sha(data) for relative, data in runtime.items() if relative.endswith(maker.RUN_SOURCE_SUFFIXES)}
-        run = {'profile': 'main-release-next-candidate', 'run_id': RUN_ID, 'checkpoint': constants.CHECKPOINT['id'],
+        run = {'profile': 'main-release-next-d5', 'run_id': RUN_ID, 'checkpoint': constants.CHECKPOINT['id'],
                'checkpoint_revision': constants.CHECKPOINT['revision'],
                'configuration': dict({k: CANDIDATE[k] for k in ('context', 'chunk', 'memory_ratio', 'qualified', 'flags')},
                                      env=dict(CANDIDATE['env'], QWEN36_TEACHER_FIXTURE='/x')),
