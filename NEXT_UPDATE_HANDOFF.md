@@ -72,9 +72,32 @@ again: they already exist in the owner's branch.
 
 ## Owner's first commands
 
+Cloud push to the existing `agent/cloud-next-update` branch was attempted after
+the integrated validation and rejected with **HTTP 403** (`Permission ... denied
+to SUKUNA-AI`). The remote was not updated. All changes remain in local commits;
+the delivery ZIP includes the complete branch bundle, incremental patches from
+31c1006 and exact committed sources. Restore the bundle in a new directory first:
+
+```bash
+git clone -b agent/cloud-next-update /absolute/path/qwen36-t3-t5-t6.bundle qwen36-review
+cd qwen36-review
+git remote set-url origin https://github.com/SUKUNA-AI/qwen36-moe-16gb.git
+git log -6 --oneline
+```
+
+With the owner's working write credentials, publish using
+`git push -u origin agent/cloud-next-update` (never force). If the remote advances,
+fetch and inspect it before integrating; do not overwrite those changes.
+After delivery has been published, an existing clone can instead use:
+
 ```bash
 git switch agent/cloud-next-update
 git pull --ff-only origin agent/cloud-next-update
+```
+
+In either restored checkout, run:
+
+```bash
 QWEN36_CPU_PYTHON=/absolute/path/to/cpu-python \
   bash harness/CPU-checks.sh --output /absolute/path/to/new-cpu-logs
 ```
