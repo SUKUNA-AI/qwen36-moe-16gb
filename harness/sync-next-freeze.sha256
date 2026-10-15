@@ -1,4 +1,4 @@
-# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T15:33:34Z
+# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T16:11:49Z
 # rendered with site values digest=895052024cbcd577 (py/sh/config/profile bytes as written to native)
 # options: skip_runtime=0 extra_config=- (pass the same options to --dry-run/--apply)
 095e182f33349d2b2e7ea32694b3de3ca403ceed972342f3cab7d2dd0419e1ee  freetoken/python/freetoken/__init__.py
@@ -487,7 +487,7 @@ efe562a5bbae4957d05c7fd9d7aae93abc51dfb59cba99154e558548c3915e6f  serving/serve_
 ddabe772053122c2c83bfa807f2227240c564f14eafeaabebc5dc149a8ab3d27  serving/readiness.py
 71ef7fe72af52185009dc226b34d346b695e7e2658af4daaf5630b0425586862  serving/keepalive.py
 acdeaea3b1997a09e54adab0c5963d7b1b0b2f5b365e064394b323a44287afda  serving/metrics_summary.py
-302cc7e778e84dc0af086bbbfbc6d72e142b45ab23811990a0349882e8babdb0  serving/profile-runtime.py
+c80132a7fdbd2fce76b070615d71cfd88246cec7edb875553de21fa2a0a04741  serving/profile-runtime.py
 6208511ebf0400182f4b8294c05dc2abb7376b148ddac8a5c0916294353db728  serving/test-guard.py
 343a6133c07c5de64af3d49dddc192694649365bd8aebcb5625043da9f9e49f3  serving/test-metrics.py
 98e781505cf77033b8816e614361ed39abaeb3ecb5b3320f5ca892566762452f  harness/experiment.py
@@ -526,7 +526,7 @@ b4911728cb36e71d4a7634cbcd30df00c897fbe67b75422e0c69cb24091344f3  harness/soak.p
 7db9fdadab7dc9b17f69439bc42937a933a3abc6fd67c50b8687ab3d34729262  harness/soak-analysis.py
 cc235adb8528afb36cd3830198b5227d3dde1d1e81c3740c262b84239cc595f3  harness/test-soak-cpu.py
 bf48f9d411abbf4e8c9aaec094b084e0d5f61954840f54c15d1c23d2c75acdbb  harness/release.py
-b13dcdd3fdd119c9fd28381c1cd4ced1d34e1f8fb86682f5a756d1b33fd0fe55  harness/export-release-evidence.py
+48870b090c698b8995a53f893a152ed8abd6c836857eb7f479d1b60d7bcf794e  harness/export-release-evidence.py
 f14e56b200b04cf78b9075349438a350b938e52976818fe682d783d1595e17b1  harness/make-qualification.py
 28cc2200796b5c2d5f5cb718f876734e22032f455044022751ed064a262ae8f0  harness/inspect-keepalive.py
 b5c53941599e9a70f5819e6e63f93f4a17cb39b7359cbbce0d33c86893b07c3b  harness/network-acceptance.py
