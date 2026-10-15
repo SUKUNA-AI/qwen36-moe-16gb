@@ -1,0 +1,247 @@
+{
+  "scope": "CPU source planning + historical evidence arithmetic; NOT a GPU benchmark",
+  "head": "7c30166cc234fb9ddf078a364cf549f5106db30a",
+  "source_sha256": {
+    "freetoken/python/freetoken/moe/layer_major.py": "9e08bd5ebcdd2c913ca01a233b909e8a56e79c0c5fffe49a0c1c3c5debe1f367",
+    "serving/profile-runtime.py": "c468afe04c340b9a2678e445d6f8fcb44eb727523ed4f23227651d343911fd4e",
+    "freetoken/python/freetoken/engine/layer_major.py": "279102539c04028ed0724dd868489ccf1e18da41eec9065ac8f977c980666775",
+    "serving/profiles.json": "23bc2bb6858bab8ef4a2f0f68ffdbd034218d80360b51a8a8d93e6f365a6729f",
+    "results/long256-30min/metrics.json": "790c5b002894903ffda9962768e476a3fc348e4043a4f78e203da1158feba125",
+    "results/metrics/metrics.json": "9b0e684b54a7e1c7f0ea1e5eaf7dafdea3fae620d1470d90ece370503bd0be12",
+    "results/nsight/dashboard.json": "55e6a98a2071346a0161f9ec85a7e5a15477efd3e6a3b4fcd2518d34a07490a1",
+    "results/experiments/fla-results.json": "1463fedd79bcb8bba1b59c8a4b8220f505f242fdc4a0be37654f492a7e358f5f",
+    "next-update/gather-prefetch/src/ceiling_bench.cu": "9d127b2c10d87e8937b8022c2b1c476ec31da2406177f06ff3c892536dd15db6"
+  },
+  "planner_assumptions": {
+    "experts_per_layer": 256,
+    "chunk": 2048,
+    "hidden": 2048,
+    "dtype_bytes": 2,
+    "query_heads": 16,
+    "head_dim": 256,
+    "row_bytes": [
+      1048576,
+      131072,
+      4096,
+      524288,
+      65536,
+      8192
+    ],
+    "baseline_total_slots": 1481,
+    "prefix_hit": 0,
+    "refill": false
+  },
+  "plans": [
+    {
+      "tokens": 120000,
+      "attention_batch": 2,
+      "current": {
+        "num_chunks": 59,
+        "window_chunks": 59,
+        "num_windows": 1,
+        "borrow_slots": 624,
+        "piece_bytes": 8388608,
+        "scratch_bytes": 100663296,
+        "grouped": false
+      },
+      "minimum_total_slots_for_one_window": 1481,
+      "extra_slot_MiB": 0.0,
+      "unborrowed_nonbuffer_slots_current": 345,
+      "unborrowed_nonbuffer_slots_at_minimum": 345
+    },
+    {
+      "tokens": 120000,
+      "attention_batch": 4,
+      "current": {
+        "num_chunks": 59,
+        "window_chunks": 59,
+        "num_windows": 1,
+        "borrow_slots": 680,
+        "piece_bytes": 8388608,
+        "scratch_bytes": 201326592,
+        "grouped": false
+      },
+      "minimum_total_slots_for_one_window": 1481,
+      "extra_slot_MiB": 0.0,
+      "unborrowed_nonbuffer_slots_current": 289,
+      "unborrowed_nonbuffer_slots_at_minimum": 289
+    },
+    {
+      "tokens": 250000,
+      "attention_batch": 2,
+      "current": {
+        "num_chunks": 123,
+        "window_chunks": 62,
+        "num_windows": 2,
+        "borrow_slots": 648,
+        "piece_bytes": 8388608,
+        "scratch_bytes": 100663296,
+        "grouped": false
+      },
+      "minimum_total_slots_for_one_window": 1736,
+      "extra_slot_MiB": 433.30078125,
+      "unborrowed_nonbuffer_slots_current": 321,
+      "unborrowed_nonbuffer_slots_at_minimum": 0
+    },
+    {
+      "tokens": 250000,
+      "attention_batch": 4,
+      "current": {
+        "num_chunks": 123,
+        "window_chunks": 62,
+        "num_windows": 2,
+        "borrow_slots": 704,
+        "piece_bytes": 8388608,
+        "scratch_bytes": 201326592,
+        "grouped": false
+      },
+      "minimum_total_slots_for_one_window": 1792,
+      "extra_slot_MiB": 528.45703125,
+      "unborrowed_nonbuffer_slots_current": 265,
+      "unborrowed_nonbuffer_slots_at_minimum": 0
+    },
+    {
+      "tokens": 261468,
+      "attention_batch": 2,
+      "current": {
+        "num_chunks": 128,
+        "window_chunks": 64,
+        "num_windows": 2,
+        "borrow_slots": 672,
+        "piece_bytes": 8388608,
+        "scratch_bytes": 100663296,
+        "grouped": false
+      },
+      "minimum_total_slots_for_one_window": 1792,
+      "extra_slot_MiB": 528.45703125,
+      "unborrowed_nonbuffer_slots_current": 297,
+      "unborrowed_nonbuffer_slots_at_minimum": 0
+    },
+    {
+      "tokens": 261468,
+      "attention_batch": 4,
+      "current": {
+        "num_chunks": 128,
+        "window_chunks": 64,
+        "num_windows": 2,
+        "borrow_slots": 728,
+        "piece_bytes": 8388608,
+        "scratch_bytes": 201326592,
+        "grouped": false
+      },
+      "minimum_total_slots_for_one_window": 1840,
+      "extra_slot_MiB": 610.01953125,
+      "unborrowed_nonbuffer_slots_current": 241,
+      "unborrowed_nonbuffer_slots_at_minimum": 0
+    },
+    {
+      "tokens": 262144,
+      "attention_batch": 2,
+      "current": {
+        "num_chunks": 128,
+        "window_chunks": 64,
+        "num_windows": 2,
+        "borrow_slots": 672,
+        "piece_bytes": 8388608,
+        "scratch_bytes": 100663296,
+        "grouped": false
+      },
+      "minimum_total_slots_for_one_window": 1792,
+      "extra_slot_MiB": 528.45703125,
+      "unborrowed_nonbuffer_slots_current": 297,
+      "unborrowed_nonbuffer_slots_at_minimum": 0
+    },
+    {
+      "tokens": 262144,
+      "attention_batch": 4,
+      "current": {
+        "num_chunks": 128,
+        "window_chunks": 64,
+        "num_windows": 2,
+        "borrow_slots": 728,
+        "piece_bytes": 8388608,
+        "scratch_bytes": 201326592,
+        "grouped": false
+      },
+      "minimum_total_slots_for_one_window": 1840,
+      "extra_slot_MiB": 610.01953125,
+      "unborrowed_nonbuffer_slots_current": 241,
+      "unborrowed_nonbuffer_slots_at_minimum": 0
+    }
+  ],
+  "reproduced_config_mismatch": {
+    "schema_accepts_attention_batch": 8,
+    "engine_uses": 1
+  },
+  "historical_250k_stability": {
+    "n": 11,
+    "ttft_p50_s": 77.37899380000454,
+    "ttft_p90_s": 77.4823662619965,
+    "ttft_max_s": 77.87894527400204,
+    "decode_tps_p50": 60.82871248811489,
+    "decode_tps_p90": 62.211822790922554,
+    "decode_tps_min": 58.919278866868744
+  },
+  "historical_long_contexts": {
+    "value": {
+      "main128": {
+        "prefill_h2d_GB": 18.25,
+        "decode_expert_miss_rate": 0.2167,
+        "decode_step_gpu_ms": 10.774,
+        "layer_major_windows": 1
+      },
+      "long256": {
+        "prefill_h2d_GB": 36.49,
+        "decode_expert_miss_rate": 0.3844,
+        "decode_step_gpu_ms": 19.073,
+        "layer_major_windows": 2
+      },
+      "baseline64": {
+        "prefill_h2d_GB": 547.36,
+        "decode_expert_miss_rate": 0.1774,
+        "decode_step_gpu_ms": 10.119,
+        "layer_major_windows": null
+      }
+    },
+    "unit": "GB, fraction, ms",
+    "source": "$N/reports/final-f1-{c128,l256,b64}-a1-functional.json",
+    "definition": "long fresh case per profile (single run): main128 120K 1 window, long256 250K 2 windows (2 x 18.245 GB), baseline64 is the unchanged chunk-major fallback (bank re-streamed per chunk); long256 has 1481 slots so decode misses ~0.38"
+  },
+  "derived_e2e_not_measured": [
+    {
+      "output_tokens": 128,
+      "cold_s": 79.46682362255444,
+      "cached_s": 3.1444373845507667,
+      "cold_decode_time_fraction": 0.026272974398303887
+    },
+    {
+      "output_tokens": 512,
+      "cold_s": 85.77963190491005,
+      "cached_s": 9.45724566690638,
+      "cold_decode_time_fraction": 0.09793278332341109
+    },
+    {
+      "output_tokens": 2048,
+      "cold_s": 111.0308650343325,
+      "cached_s": 34.70847879632883,
+      "cold_decode_time_fraction": 0.3030857340787382
+    },
+    {
+      "output_tokens": 4096,
+      "cold_s": 144.69917587356244,
+      "cached_s": 68.37678963555877,
+      "cold_decode_time_fraction": 0.46524233235704127
+    }
+  ],
+  "illustrative_extrapolation_not_measured": {
+    "model": "attention N squared; other work N, extrapolated from main128 120K trace",
+    "attention250_s": 62.184478611111125,
+    "other250_s": 15.86287332916666,
+    "attention_fraction": 0.7967532153902542,
+    "seconds_saved_if_attention_throughput_grows_10pct": 5.653134419191922,
+    "fla_seconds_saved_if_per_call_cost_is_unchanged": 0.407376,
+    "gather_payload_seconds_at_42GBps": 0.005218350811428572,
+    "single_KV_read_seconds_at_841GBps": 0.006087990487514863
+  },
+  "cuda_initialized": false
+}
