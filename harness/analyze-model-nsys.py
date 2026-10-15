@@ -169,8 +169,27 @@ def category(name):
     # and StringIds can contain user data, paths, prompt content or API secrets.
     if "attention_gate_fp8" in name or "gate_quant_kernel" in name:
         return "attention_gate_fp8_fused"
-    if "prefill_nvfp4" in name or "nvfp4_prefill" in name:
+    if "prefill_nvfp4" in name or "nvfp4_prefill" in name or "fast_gemm" in name:
         return "moe_prefill_nvfp4"
+    # Project CUDA libraries (kernels/): bit-exact NVFP4 prefill above, FP8 GEMV, S3 decode kernels, CUDA GDN/FLA.
+    if "moe_gemv_kernel" in name:
+        return "moe_decode_nvfp4"
+    if "oproj_kernel" in name:
+        return "dense_fp8_oproj_gemv"
+    if "gemv_rowwise_kernel" in name:
+        return "dense_fp8_gemv"
+    if "decode_gather_tma_kernel" in name:
+        return "expert_mapped_host_gather"
+    if "gdn_gated_norm_kernel" in name:
+        return "gdn_output_gated_norm"
+    if any(token in name for token in ("gdn_conv_qkv_kernel", "gdn_decode_cluster_kernel", "gdn_decode_fused_kernel",
+                                       "gdn_gate_cumsum_kernel", "chunk_ho_fused_kernel", "chunk_wu_ho_fused_kernel")):
+        return "gdn_recurrence_conv_chunk"
+    if any(token in name for token in ("_prefill_hit_compact_kernel", "_mark_selected_kernel",
+                                       "_prefill_split_compact_kernel", "_warm_install_kernel")):
+        return "expert_lru_metadata"
+    if "_host_rows_kernel" in name:
+        return "embedding_host_rows"
     if "fast_index_copy_multi" in name or "mapped_gather" in name:
         return "expert_mapped_host_gather"
     if any(token in name for token in ("_decode_nvfp4_marlin_kernel", "_nvfp4_gemv_splitk_kernel")):
@@ -753,6 +772,25 @@ def public_rows(rows):
     return [{key: value for key, value in row.items() if not key.startswith("_")} for row in rows]
 
 
+def transport_summary(by_instance, prefill, decode):
+    """Per phase of one request: copy bytes, copy busy time (union) and how much of it ran under kernels.
+    Exposed (critical-path) copy time is in phases.<phase>.by_category (memcpy_*)."""
+    result = {}
+    for phase, group in (("prefill", prefill), ("decode", decode)):
+        ops = [op for member in group for op in by_instance[member["id"]]]
+        kernels = spans([op for op in ops if op["kind"] == "kernel"])
+        entry = {"kernel_union_ms": duration(kernels) / 1e6}
+        for direction in ("h2d", "d2d"):
+            copies = [op for op in ops if op["category"] == "memcpy_" + direction]
+            union = duration(spans(copies))
+            under = intersection(spans(copies), kernels)
+            entry[direction] = {"count": len(copies), "bytes": sum(op.get("bytes") or 0 for op in copies),
+                                "union_ms": union / 1e6, "overlapped_with_kernels_ms": under / 1e6,
+                                "overlap_percent": 100 * under / union if union else None}
+        result[phase] = entry
+    return result
+
+
 def critical_path_section(ops, instances, regions, request_labels, run_receipt):
     """Critical chain per forward instance; aggregation per request and over all measured requests."""
     by_instance = collections.defaultdict(list)
@@ -864,17 +902,17 @@ def critical_path_section(ops, instances, regions, request_labels, run_receipt):
             if group:
                 aggregate[phase].windows += 1
                 tables[phase].windows += 1
-        per_request.append((index, tables))
+        per_request.append((index, tables, transport_summary(by_instance, prefill, decode)))
     phases = {phase: table.summary(regions) for phase, table in aggregate.items()}
     # Per-scenario view: warm short decode, fresh 16K and fresh 120K are never
     # mixed here; the all-measured phases above weight them by forward counts.
     by_request = []
     request_candidates = []
-    for index, tables in per_request:
+    for index, tables, transport in per_request:
         name = request_names[index]
         request_total = sum(table.total() for table in tables.values())
         entry = {"index": index, "label": name, "request_critical_total_ms": request_total / 1e6,
-                 "phases": {}}
+                 "phases": {}, "transport": transport}
         rows_in_request = []
         for phase, table in tables.items():
             summary = table.summary(regions)
@@ -891,7 +929,7 @@ def critical_path_section(ops, instances, regions, request_labels, run_receipt):
     candidates.sort(key=candidate_order)
     for row in candidates:
         per = []
-        for index, tables in per_request:
+        for index, tables, _ in per_request:
             ns = tables[row["phase"]].targets.get((row["shape_class"], row["_key"]), 0)
             if ns:
                 per.append((ns, -index, request_names[index]))
@@ -1019,6 +1057,7 @@ def analyze(path, labels=None, request_labels=None, run_receipt=None, private_ta
                         "correlationId": row.get("correlationId"), "phase": row["phase"],
                         "instance": instance, "category": op_category, "layer": layer,
                         "region": region, "graph": graph, "kernel_key": launch_key,
+                        "bytes": row.get("bytes") if kind == "memcpy" else None,
                         "_name": row.get("_name")})
     gpu = data["kernel"] + data["memcpy"] + data["memset"]
     devices = collections.defaultdict(list)

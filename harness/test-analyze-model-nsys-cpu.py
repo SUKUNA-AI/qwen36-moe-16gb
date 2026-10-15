@@ -574,5 +574,32 @@ class SchemaThreeTests(unittest.TestCase):
         self.assertEqual((scoped['instance_request_label'], scoped['launch_skip_same_name_in_window']), ('warm_decode', 2))
 
 
+class LadderAdditionsTests(unittest.TestCase):
+    def test_project_kernels_get_fixed_categories(self):
+        cases = {'void fast_gemm<64, 2, 4, 3, 1, true>(QwenNvfp4Args, int)': 'moe_prefill_nvfp4',
+                 'void moe_gemv_kernel<16, 2, 256, 2>(Params)': 'moe_decode_nvfp4',
+                 'void oproj_kernel<2, 4, 1>(Params)': 'dense_fp8_oproj_gemv',
+                 'gemv_rowwise_kernel': 'dense_fp8_gemv', 'decode_gather_tma_kernel': 'expert_mapped_host_gather',
+                 'gdn_decode_cluster_kernel': 'gdn_recurrence_conv_chunk', 'chunk_wu_ho_fused_kernel': 'gdn_recurrence_conv_chunk',
+                 'gdn_gated_norm_kernel': 'gdn_output_gated_norm', '_mark_selected_kernel': 'expert_lru_metadata',
+                 '_host_rows_kernel': 'embedding_host_rows'}
+        for name, label in cases.items():
+            self.assertEqual(analysis.category(name), label, name)
+
+    def test_transport_summary_counts_bytes_union_and_overlap(self):
+        kernel = lambda s, e: {'kind': 'kernel', 'category': 'moe_prefill_nvfp4', 'start': s, 'end': e}
+        copy = lambda s, e, b, d='h2d': {'kind': 'memcpy', 'category': 'memcpy_' + d, 'start': s, 'end': e, 'bytes': b}
+        by_instance = {1: [kernel(0, 100), copy(50, 150, 1000), copy(140, 160, 24)], 2: [kernel(200, 210), copy(200, 205, 8, 'd2d')]}
+        out = analysis.transport_summary(by_instance, [{'id': 1}], [{'id': 2}])
+        self.assertEqual(out['prefill']['h2d']['bytes'], 1024)
+        self.assertAlmostEqual(out['prefill']['h2d']['union_ms'], 110e-6)
+        self.assertAlmostEqual(out['prefill']['h2d']['overlapped_with_kernels_ms'], 50e-6)
+        self.assertAlmostEqual(out['prefill']['h2d']['overlap_percent'], 100 * 50 / 110)
+        self.assertEqual(out['prefill']['d2d']['count'], 0)
+        self.assertIsNone(out['prefill']['d2d']['overlap_percent'])
+        self.assertEqual(out['decode']['d2d']['bytes'], 8)
+        self.assertAlmostEqual(out['decode']['d2d']['overlap_percent'], 100.0)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
