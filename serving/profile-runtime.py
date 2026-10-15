@@ -86,12 +86,19 @@ SWITCH_ENV = {
     # C0 (moe/offload_cache.py): prefill copy stream at top priority plus one compute-stream invalidation of both
     # double buffers per prefill epoch, so each layer's DMA no longer waits behind the previous expert GEMM.
     'prefill_copy_priority': {'QWEN36_PREFILL_COPY_PRIORITY': '1', 'QWEN36_PREFILL_EPOCH_INVALIDATE': '1'},
+    # D3b (moe/pregate.py): layer L+1's router on layer L's output prefetches up to 1 (GDN) / 2 (attention)
+    # predicted misses on the T3 side stream during the mixer; ensure_experts still follows the real routing.
+    'decode_pregate': {'QWEN36_DECODE_PREGATE': '1', 'QWEN36_DECODE_PREGATE_ATTN': '2'},
+    # D5 (moe/shared_epilogue.py): sigmoid gate, shared product and routed sum of the MoE block in one kernel,
+    # with torch's roundings (no fp contraction) and a start-up self-check against torch.
+    'decode_shared_epilogue': {'QWEN36_DECODE_SHARED_EPILOGUE': '1'},
     # PLACEHOLDER (possible future switch, not in the runtime tree yet).
     'sync_lean': {'QWEN36_SYNC_LEAN': '1'},
 }
 FEATURE_SWITCHES = tuple(SWITCH_ENV)
 # switch -> switch it needs in the same profile (rules of dropped switches vanish with them).
-SWITCH_REQUIRES = {switch: needed for switch, needed in {'layer_major_refill': 'layer_major_prefill'}.items()
+SWITCH_REQUIRES = {switch: needed for switch, needed in {'layer_major_refill': 'layer_major_prefill',
+                                                         'decode_pregate': 'decode_shared_overlap'}.items()
                    if switch in SWITCH_ENV}
 # Optional value fields: field -> (variable, allowed values, switch the field needs). Exported only with its
 # switch; absent = FreeToken's default. Fields of a dropped switch vanish with it.

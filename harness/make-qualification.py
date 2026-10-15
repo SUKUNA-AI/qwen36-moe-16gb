@@ -85,7 +85,8 @@ RUN_FEATURE_ENV = frozenset({'QWEN36_PREFIX_MARGIN', 'QWEN36_FUSED_ATTN_GATE', '
                              'QWEN36_CUDA_GDN_FLA', 'QWEN36_LAYER_MAJOR_MIN_TOKENS', 'QWEN36_DECODE_SHARED_OVERLAP',
                              'QWEN36_OPROJ_GEMV', 'QWEN36_OPROJ_GEMV_LIBRARY', 'QWEN36_MOE_DECODE_CUDA',
                              'QWEN36_MOE_DECODE_LIBRARY', 'QWEN36_HOST_EMBEDDINGS', 'QWEN36_PREFILL_COPY_PRIORITY',
-                             'QWEN36_PREFILL_EPOCH_INVALIDATE', 'QWEN36_PREFILL_SELECTED', 'QWEN36_PREFILL_WARM_DECODE'})
+                             'QWEN36_PREFILL_EPOCH_INVALIDATE', 'QWEN36_PREFILL_SELECTED', 'QWEN36_PREFILL_WARM_DECODE',
+                             'QWEN36_DECODE_PREGATE', 'QWEN36_DECODE_PREGATE_ATTN', 'QWEN36_DECODE_SHARED_EPILOGUE'})
 # Profile switch -> (run environment variable, value that switches it on).
 RUN_SWITCH_ENV = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE', '1'),
                   'fp32_gdn_snapshot': ('QWEN36_FP32_GDN_SNAPSHOT', '1'),
@@ -99,6 +100,8 @@ RUN_SWITCH_ENV = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE', '1'),
                   'decode_gather': ('QWEN36_DECODE_GATHER', 'tuned'),
                   'layer_major_refill': ('QWEN36_LAYER_MAJOR_REFILL', '1'),
                   'decode_shared_overlap': ('QWEN36_DECODE_SHARED_OVERLAP', '1'),
+                  'decode_pregate': ('QWEN36_DECODE_PREGATE', '1'),
+                  'decode_shared_epilogue': ('QWEN36_DECODE_SHARED_EPILOGUE', '1'),
                   'sync_lean': ('QWEN36_SYNC_LEAN', '1'),
                   'host_embeddings': ('QWEN36_HOST_EMBEDDINGS', '1'),
                   'prefill_copy_priority': ('QWEN36_PREFILL_COPY_PRIORITY', '1')}
@@ -113,7 +116,8 @@ RUN_EXACT_ENV = {'QWEN36_DECODE_SHARED_OVERLAP': '1', 'QWEN36_LAYER_MAJOR_PREFIL
                  'QWEN36_FP8_GEMV': '1', 'QWEN36_DECODE_GATHER': 'tuned', 'TVM_FFI_CUDA_ARCH_LIST': '12.0',
                  'QWEN36_LAYER_MAJOR_REFILL': '1', 'QWEN36_SYNC_LEAN': '1', 'QWEN36_OPROJ_GEMV': '1',
                  'QWEN36_MOE_DECODE_CUDA': '1', 'QWEN36_HOST_EMBEDDINGS': '1', 'QWEN36_PREFILL_COPY_PRIORITY': '1',
-                 'QWEN36_PREFILL_EPOCH_INVALIDATE': '1'}
+                 'QWEN36_PREFILL_EPOCH_INVALIDATE': '1', 'QWEN36_DECODE_PREGATE': '1', 'QWEN36_DECODE_PREGATE_ATTN': '2',
+                 'QWEN36_DECODE_SHARED_EPILOGUE': '1'}
 # Variables production exports only together with a switch (variable -> switch variable).
 RUN_COMPANION_ENV = {'QWEN36_CUDA_GDN_DECODE': 'QWEN36_CUDA_GDN', 'TVM_FFI_CUDA_ARCH_LIST': 'QWEN36_DECODE_GATHER',
                      'QWEN36_LAYER_MAJOR_REFILL_POLICY': 'QWEN36_LAYER_MAJOR_REFILL',
@@ -121,7 +125,8 @@ RUN_COMPANION_ENV = {'QWEN36_CUDA_GDN_DECODE': 'QWEN36_CUDA_GDN', 'TVM_FFI_CUDA_
                      'QWEN36_LAYER_MAJOR_ATTN_BATCH': 'QWEN36_LAYER_MAJOR_PREFILL', 'QWEN36_CUDA_GDN_FLA': 'QWEN36_CUDA_GDN',
                      'QWEN36_PREFILL_EPOCH_INVALIDATE': 'QWEN36_PREFILL_COPY_PRIORITY',
                      'QWEN36_PREFILL_SELECTED': 'QWEN36_PREFILL_COPY_PRIORITY',
-                     'QWEN36_PREFILL_WARM_DECODE': 'QWEN36_PREFILL_COPY_PRIORITY'}
+                     'QWEN36_PREFILL_WARM_DECODE': 'QWEN36_PREFILL_COPY_PRIORITY',
+                     'QWEN36_DECODE_PREGATE_ATTN': 'QWEN36_DECODE_PREGATE'}
 # Library switches whose run must name its library explicitly (switch variable -> library variable).
 RUN_LIBRARY_ENV = {'QWEN36_CUDA_GDN': 'QWEN36_CUDA_GDN_LIBRARY', 'QWEN36_FP8_GEMV': 'QWEN36_FP8_GEMV_LIBRARY',
                    'QWEN36_OPROJ_GEMV': 'QWEN36_OPROJ_GEMV_LIBRARY', 'QWEN36_MOE_DECODE_CUDA': 'QWEN36_MOE_DECODE_LIBRARY'}

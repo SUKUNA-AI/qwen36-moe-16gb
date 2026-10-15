@@ -102,6 +102,8 @@ GROUPS = {
         'python/freetoken/kernel/csrc/jit/decode_gather.cuh','python/freetoken/kernel/aot.py',
         'tests/moe/test_decode_gather.py','tests/moe/test_decode_overlap_gpu.py','python/freetoken/moe/slot_refill.py',
         'python/freetoken/engine/host_embeddings.py','python/freetoken/kernel/triton/host_rows.py',
+        # D3b pre-gate prefetch and D5 fused decode epilogue (next-candidate levers, default off).
+        'python/freetoken/moe/pregate.py','python/freetoken/moe/shared_epilogue.py',
         # T1/T3, C0/C1/D6 transport (offload_kernels, route_trace, batch_memcpy probe), host banks, memory budget.
         'python/freetoken/models/qwen3_5_moe/moe.py','python/freetoken/moe/offload_kernels.py','python/freetoken/moe/route_trace.py',
         'python/freetoken/moe/host_banks.py','python/freetoken/moe/benchbw.py','python/freetoken/moe/cpu_executor.py',
@@ -113,7 +115,8 @@ GROUPS = {
                     'QWEN36_LAYER_MAJOR_PREFILL','QWEN36_LAYER_MAJOR_MIN_TOKENS','QWEN36_LAYER_MAJOR_REFILL','QWEN36_DECODE_GATHER',
                     'QWEN36_LAYER_MAJOR_REFILL_POLICY','QWEN36_LAYER_MAJOR_ATTN_BATCH','TVM_FFI_CUDA_ARCH_LIST','QWEN36_DECODE_SHARED_OVERLAP',
                     'QWEN36_HOST_EMBEDDINGS','QWEN36_PREFILL_COPY_PRIORITY','QWEN36_PREFILL_EPOCH_INVALIDATE',
-                    'QWEN36_PREFILL_SELECTED','QWEN36_PREFILL_SELECTED_SYNC','QWEN36_PREFILL_WARM_DECODE','QWEN36_MEMORY_HISTORY'],
+                    'QWEN36_PREFILL_SELECTED','QWEN36_PREFILL_SELECTED_SYNC','QWEN36_PREFILL_WARM_DECODE','QWEN36_MEMORY_HISTORY',
+                    'QWEN36_DECODE_PREGATE','QWEN36_DECODE_PREGATE_ATTN','QWEN36_DECODE_SHARED_EPILOGUE'],
         'disable_note':'Unset RESIDENCY to retain full host banks. Complement/fixed remain experiment choices; exporter does not accept their RAM or speed gates. Unset LAYER_MAJOR_PREFILL (and LAYER_MAJOR_REFILL, its POLICY, ATTN_BATCH) for chunk-major prefill and DECODE_GATHER for the default fast_index_copy gather (TVM_FFI_CUDA_ARCH_LIST is only its pinned build arch); aot.py still lists the decode-gather module, so a rebuilt kernel cache ships its .so either way. Unset DECODE_SHARED_OVERLAP for serial T3 decode, HOST_EMBEDDINGS to keep the embedding table in VRAM, PREFILL_COPY_PRIORITY (with EPOCH_INVALIDATE) for the default C0 copy stream and PREFILL_SELECTED for full-layer C1 prefill copies (SELECTED needs COPY_PRIORITY and the decode-gather prebuilt).'},
     'D': {'name':'kv_gdn_and_prefix_state','patterns':[
         'python/freetoken/engine/engine.py','python/freetoken/core.py',
