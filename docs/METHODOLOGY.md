@@ -120,7 +120,8 @@ changed.
   the result is FAIL.
 - **Gain:** at least one family member with a gain of >= 5%, Bonferroni-corrected with
   F = 9 x (profiles - 1).
-- **Invalid arm:** min free VRAM below 0.5 GiB.
+- **Invalid arm:** min free VRAM below the floor: 0.8 GiB since 2026-10-15 (`bench.VRAM_FLOOR_BYTES`); release f1
+  was judged against 0.5 GiB.
 - Exit codes are 0 PASS / 1 FAIL / 2 INCONCLUSIVE.
 - With 5 pairs the test is conservative on noisy short cases. Earlier candidates were recorded as
   INCONCLUSIVE and were not relabelled after the fact.
@@ -167,10 +168,18 @@ Each evaluation (`results/context-gates/*-evaluation.json`) checks:
   capacity covering the context, fused gate on all 10 attention layers, snapshot flags matching env;
 - the TTFT watchdog margin;
 - VRAM class: **FLOOR 0.5 GiB** hard (below is BELOW_FLOOR, fail) and **TARGET 1.0 GiB**. FLOOR-band
-  results are allowed only as PASS_WITH_KNOWN_LIMITATION.
+  results are allowed only as PASS_WITH_KNOWN_LIMITATION. These are the f1 context-gate thresholds.
 
 The VRAM thresholds come from an owner decision. Free VRAM is NVML free, which includes Windows desktop
 usage. Foreign usage is not refused at start, because WDDM shrinks it under pressure.
+
+**Owner decision 2026-10-15: the hard floor is 0.8 GiB free.** In the VRAM test the desktop started
+paging below ~0.8 GiB of free physical VRAM and decode slowed by ~20 %. From the next release on,
+`bench.VRAM_FLOOR_BYTES` (matrix, compare-ab, screen-chunk) is 0.8 GiB, and `soak-analysis.py` fails a
+soak whose minimum free VRAM in any state sample is below 0.8 GiB. Its summary (`summary.vram`) reports
+min / p1 / p5 / median free VRAM and the minutes below the floor, so a desktop that grows into the
+model's headroom is visible. Release f1 evidence stays judged against the 0.5 GiB floor it was run
+under (its soak minimum was 367-436 MiB); it is not relabelled.
 
 ## 5. Freeze, sync and provenance
 

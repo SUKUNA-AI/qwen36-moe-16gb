@@ -9,7 +9,7 @@ V6 additions: launcher identity (sha256 of start-experiment.sh, run-experiment.s
 check-experiment.py + the filtered start environment of the serving process, read from
 /proc/<MainPID>/environ; secret-like names are redacted) in manifests (`launcher_files`)
 and in every bench report (`launcher`); the service-sampled minimum GPU free memory per
-arm against the owner's hard floor (0.5 GiB).
+arm against the owner's hard floor (0.8 GiB since 2026-10-15; 0.5 GiB for release f1).
 """
 import argparse, hashlib, json, math, os, pathlib, random, statistics, time, re
 import requests
@@ -40,9 +40,10 @@ LAUNCHER_ENV_PREFIXES=('QWEN36_','FREETOKEN_','SGLANG_','FLA_','TORCH','TRITON_'
                        'OMP_','MKL_','LD_','LIBRARY_PATH','PYTHON')
 LAUNCHER_ENV_SECRET=re.compile('KEY|TOKEN|SECRET|PASSW|CREDENTIAL|AUTH|COOKIE',re.I)
 # Owner decision 2026-10-13: VRAM hard floor for every profile; foreign usage is recorded, not refused.
+# Raised 2026-10-15 from 0.5 to 0.8 GiB (VRAM test: below ~0.8 GiB free the desktop pages and decode drops ~20 %).
 GIB=1<<30
 MIB=1<<20
-VRAM_FLOOR_BYTES=GIB//2
+VRAM_FLOOR_BYTES=GIB*4//5
 NVIDIA_SMI='/usr/lib/wsl/lib/nvidia-smi'
 
 

@@ -17,7 +17,7 @@ Owner decisions (2026-10-13), V6:
       gain excluded    upper one-sided 97.5% bound < 1.05 for EVERY gating case -> FAIL
                        (intersection-union; V5 rule kept).
   * Per arm: launcher identity (files + start environment) bound to the manifest and equal
-    for both arms; service-sampled minimum GPU free >= 0.5 GiB (below: INVALID).
+    for both arms; service-sampled minimum GPU free >= bench.VRAM_FLOOR_BYTES, 0.8 GiB (below: INVALID).
 Verdicts:
   PASS          complete valid data, non-inferior on every gating case and gain established
   FAIL          complete valid data, a >3% regression or a 5% gain is excluded

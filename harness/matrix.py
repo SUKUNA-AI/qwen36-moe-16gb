@@ -14,7 +14,7 @@ hashes + filtered start environment from /proc/<MainPID>/environ) must match the
 manifest, the static run-experiment.sh contract and the first arm's environment
 (NAME-launcher.json, written once with O_EXCL). Every arm row records the foreign VRAM
 use before start (nvidia-smi, no CUDA context) and the service-sampled minimum GPU
-free; below the owner's 0.5 GiB floor the arm is INVALID (code
+free; below the owner's 0.8 GiB floor (bench.VRAM_FLOOR_BYTES) the arm is INVALID (code
 gpu_min_free_below_floor) and the matrix exits 3 after the remaining arms.
 Exit codes: 0 all arms complete and valid; 1 an arm failed (stops the matrix);
 2 refused before any arm; 3 complete but some arm INVALID (VRAM floor); 75 lock busy.
@@ -159,7 +159,7 @@ def check_launcher(root,name,profile,spec,launcher):
 
 
 def arm_vram(root,name,plan,pre_start):
-    """Owner floor: service-sampled min GPU free >= 0.5 GiB over every request of the arm."""
+    """Owner floor: service-sampled min GPU free >= bench.VRAM_FLOOR_BYTES (0.8 GiB) over every request of the arm."""
     bench_path,task_path=arm_files(root,name,plan);rows=[]
     for path,key in ((bench_path,'rows'),(task_path,'row')):
         try:doc=json.loads(path.read_text())

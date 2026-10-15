@@ -9,7 +9,9 @@ every request/engine row; mandatory request<->engine joins; server-recorded
 sampling of every request equals the workload plan; numeric cgroup/anon/shmem/
 filecache/GPU resources; every scheduled case executed and passed, with coverage
 floors met; complete state telemetry (no gaps, drops, writer failures, rotation
-loss); memory comparisons at equal prompt length and over idle samples.
+loss); memory comparisons at equal prompt length and over idle samples; NVML free
+VRAM at or above the owner's 0.8 GiB floor in every state sample (the minutes below
+the floor are counted in summary.vram for operations).
 
 Missing evidence is FAIL. A valid run with too few points is INCONCLUSIVE.
 There is no automatic "no leak" verdict: growth above a threshold is FAIL, and
@@ -57,6 +59,9 @@ ENGINE_MEMORY_FLAGS = {'torch_allocated_bytes': 64 * MIB, 'torch_reserved_bytes'
 MEMORY_REPORT_ONLY = ('service_cgroup_memory_bytes', 'service_memory_file_cache_estimate_bytes',
                       'gpu_total_used_bytes')
 IDLE_MEMORY_FLAGS = dict(REQUEST_MEMORY_FLAGS)
+# Owner decision 2026-10-15 (VRAM test): below ~0.8 GiB free the Windows desktop starts paging and the model
+# slows by ~20 %. Same value as bench.VRAM_FLOOR_BYTES; a CPU test pins the equality.
+VRAM_FLOOR_BYTES = 4 * 1024 * MIB // 5
 IDLE_WARMUP_S = 600.0
 IDLE_WINDOW_S = 1200.0
 IDLE_MIN_SAMPLES = 10
@@ -539,7 +544,32 @@ def _check_state(telemetry, soak, findings, summary, started, finished, profile,
                         'counter_maxima': maxima, 'min_gpu_free_bytes': min(free, default=None),
                         'max_metrics_queue_depth': max(depth, default=None), 'stall_events': len(events)
                         if isinstance(events, list) else None}
+    summary['vram'] = _check_vram_floor(state, soak, findings)
     return state
+
+
+def _check_vram_floor(state, soak, findings):
+    """Free VRAM must stay >= VRAM_FLOOR_BYTES at every state sample. Time below the floor is the sum of the
+    intervals that start at a below-floor sample (each capped at the state gap limit)."""
+    samples = sorted((moment, row['gpu_free_bytes']) for row in state
+                     if isinstance(row, dict) and is_number(row.get('gpu_free_bytes'))
+                     for moment in [_parse_time(soak, row.get('ts'))] if moment is not None)
+    out = {'floor_bytes': VRAM_FLOOR_BYTES, 'samples': len(samples)}
+    if not samples:
+        findings.fail('vram_floor_unverified')
+        return out
+    free = sorted(value for _, value in samples)
+    below = [value < VRAM_FLOOR_BYTES for _, value in samples]
+    seconds = sum(min((later - earlier).total_seconds(), STATE_GAP_LIMIT_S)
+                  for (earlier, _), (later, _), low in zip(samples, samples[1:], below) if low)
+    rank = lambda q: free[min(len(free) - 1, int(q * (len(free) - 1)))]
+    out.update(min_gpu_free_bytes=free[0], p1_gpu_free_bytes=rank(.01), p5_gpu_free_bytes=rank(.05),
+               median_gpu_free_bytes=statistics.median(free), samples_below_floor=sum(below),
+               minutes_below_floor=round(seconds / 60, 2))
+    if free[0] < VRAM_FLOOR_BYTES:
+        findings.fail('vram_floor_breached', min_gpu_free_bytes=free[0], floor_bytes=VRAM_FLOOR_BYTES,
+                      minutes_below_floor=out['minutes_below_floor'])
+    return out
 
 
 def _check_readers(telemetry, findings, summary):
@@ -723,6 +753,7 @@ def evaluate(receipt, *, soak, validate_run, soak_sha256, expected_name, expecte
                            'identity_gap_s': IDENTITY_GAP_LIMIT_S, 'clock_skew_s': CLOCK_SKEW_LIMIT_S,
                            'request_memory_flags_bytes': REQUEST_MEMORY_FLAGS,
                            'engine_memory_flags_bytes': ENGINE_MEMORY_FLAGS, 'idle_memory_flags_bytes': IDLE_MEMORY_FLAGS,
+                           'vram_floor_bytes': VRAM_FLOOR_BYTES,
                            'required_seconds': soak.REQUIRED_SECONDS,
                            'pinned_workload_sha256': PINNED_WORKLOAD_SHA256},
             'interpretation': 'PASS means the two-hour execution evidence is complete, the run was the named '

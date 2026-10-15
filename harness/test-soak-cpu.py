@@ -537,10 +537,14 @@ class PlanAndContractTests(unittest.TestCase):
         fake_bench = types.SimpleNamespace(headers=lambda: {'Authorization': 'Bearer synthetic'})
         tree = ast.parse((HERE / 'quality.py').read_text(encoding='utf-8'))
         function = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'request')
-        namespace = {'requests': fake_requests, 'headers': fake_bench.headers}
+        joined = []
+        # quality.request also joins the request log for its serving run id (H1); the payload is what is compared.
+        namespace = {'requests': fake_requests, 'headers': fake_bench.headers,
+                     'attach_metrics': lambda result: joined.append(result['request_id'])}
         exec(compile(ast.Module(body=[function], type_ignores=[]), 'quality.py', 'exec'), namespace)
         messages = [{'role': 'user', 'content': 'x'}]
         namespace['request'](messages, max_tokens=32, tools=soak.TOOLS)
+        self.assertEqual(joined, ['f' * 32])
         with mock.patch.dict(sys.modules, {'requests': fake_requests, 'bench': fake_bench}):
             body, meta = soak.request_meta(messages, max_tokens=32, tools=soak.TOOLS)
         self.assertEqual(captured[0], captured[1])
@@ -1440,6 +1444,32 @@ class ReceiptMutationTests(unittest.TestCase):
                 report = evaluate(receipt)
                 self.assertFalse(report['two_hour_execution_gate_pass'], (path, value))
                 self.assertTrue(report['gate_reasons'], (path, value))
+
+    def test_vram_floor_is_gated_and_minutes_below_are_counted(self):
+        self.assertEqual(analysis.VRAM_FLOOR_BYTES, BENCH.VRAM_FLOOR_BYTES)
+        self.assertEqual(analysis.VRAM_FLOOR_BYTES, int(0.8 * (1 << 30)))
+        vram = evaluate(pass_receipt())['summary']['vram']
+        self.assertEqual((vram['samples_below_floor'], vram['minutes_below_floor']), (0, 0))
+        self.assertGreaterEqual(vram['p1_gpu_free_bytes'], vram['min_gpu_free_bytes'])
+        receipt = pass_receipt()
+        rows = sorted(receipt['telemetry']['state'], key=lambda row: row['ts'])
+        # Six consecutive samples just below the floor (f1 passed the old 0.5 GiB floor at these values).
+        for row in rows[3:9]:
+            row['gpu_free_bytes'] = analysis.VRAM_FLOOR_BYTES - 1
+        report = self.assertFails(receipt, 'vram_floor_breached')
+        self.assertEqual(report['failure_reasons'], ['vram_floor_breached'])
+        seconds = sum(min((analysis._parse_time(soak, b['ts']) - analysis._parse_time(soak, a['ts'])).total_seconds(),
+                          analysis.STATE_GAP_LIMIT_S) for a, b in zip(rows[3:9], rows[4:10]))
+        self.assertEqual(report['summary']['vram']['samples_below_floor'], 6)
+        self.assertEqual(report['summary']['vram']['minutes_below_floor'], round(seconds / 60, 2))
+        self.assertGreater(seconds, 0)
+        receipt = pass_receipt()
+        for row in receipt['telemetry']['state']:
+            row['gpu_free_bytes'] = analysis.VRAM_FLOOR_BYTES
+        self.assertEqual(evaluate(receipt)['verdict'], 'PASS')
+        for row in receipt['telemetry']['state']:
+            row.pop('gpu_free_bytes')
+        self.assertFails(receipt, 'vram_floor_unverified', 'state_resources_missing')
 
     def test_memory_needs_idle_samples(self):
         receipt = pass_receipt()
