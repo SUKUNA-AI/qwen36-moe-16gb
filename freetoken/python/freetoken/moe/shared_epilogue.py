@@ -8,8 +8,11 @@ Replaces three bf16 TensorIterator kernels per decode layer -- ``torch.sigmoid(g
     prod = bf16_rn(f32(shared) * f32(sig))           # one rounded fp32 multiply
     out  = bf16_rn(f32(routed) + f32(prod))          # one rounded fp32 add
 
-The multiply and the add are single IEEE operations, separated by the bf16 rounding (no FMA can
-form across it), so they match torch by construction. The sigmoid is the only transcendental: its
+The multiply and the add are single IEEE operations separated by the bf16 rounding, so they match
+torch by construction (the backend may emit them as native ``mul/add.rn.bf16``: fp32 carries more
+than 2*8+2 bits, so rounding twice equals rounding once) -- provided they are not contracted: with
+Triton's default fp fusion they become one ``fma.rn.bf16`` (one rounding instead of two), hence
+``enable_fp_fusion=False``. The sigmoid is the only transcendental: its
 input is one bf16 value, so the process self-test compares all 65536 bf16 inputs bitwise against
 ``torch.sigmoid`` (plus a random full-epilogue comparison) before the first fused call. Any
 mismatch keeps the torch path for the life of the process; a call that arrives under graph
@@ -65,7 +68,7 @@ def _launch(routed, shared, gate, out):
     BLOCK = min(1024, triton.next_power_of_2(H))
     _epilogue_kernel[(M, triton.cdiv(H, BLOCK))](
         routed, shared, gate, out, H, routed.stride(0), shared.stride(0), gate.stride(0), out.stride(0),
-        BLOCK=BLOCK, num_warps=4,
+        BLOCK=BLOCK, num_warps=4, enable_fp_fusion=False,
     )
 
 
@@ -82,7 +85,8 @@ def self_test(device) -> str | None:
     codes = torch.arange(-32768, 32768, dtype=torch.int32, device=device).to(torch.int16).view(torch.bfloat16)
     finite = torch.isfinite(codes)
     table = torch.empty_like(codes)
-    _sigmoid_table_kernel[(triton.cdiv(codes.numel(), 1024),)](codes, table, codes.numel(), BLOCK=1024)
+    _sigmoid_table_kernel[(triton.cdiv(codes.numel(), 1024),)](codes, table, codes.numel(), BLOCK=1024,
+                                                               enable_fp_fusion=False)
     want = torch.sigmoid(codes)
     if not torch.equal(_bits(table[finite]), _bits(want[finite])) or \
             not torch.equal(torch.isnan(table), torch.isnan(want)):
