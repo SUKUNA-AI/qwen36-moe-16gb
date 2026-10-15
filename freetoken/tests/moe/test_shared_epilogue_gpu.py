@@ -82,10 +82,9 @@ def test_qwen35_moe_block_flag_on_equals_off(monkeypatch):
 
     if try_get_tp_info() is None:
         set_tp_info(rank=0, size=1)
-    # both arms run the same shared-expert activation; the Triton one needs no nvcc (flashinfer JITs)
-    from freetoken.kernel.triton.activation import silu_and_mul
-    from freetoken.models.qwen3_5_moe import moe as qmoe
-    monkeypatch.setattr(qmoe, 'silu_and_mul', silu_and_mul)
+    # every activation in both arms takes the Triton kernel: flashinfer's silu_and_mul JIT-builds and needs nvcc
+    import freetoken.kernel.backend as backend
+    monkeypatch.setattr(backend, 'is_flashinfer_installed', lambda: False)
     config = _config()
     with torch.device('cuda'), torch_dtype(torch.bfloat16):
         moe = Qwen4ExpMoE(config, 0)
