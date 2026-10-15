@@ -1,0 +1,858 @@
+{
+ "schema": "ladder-teacher-1",
+ "reference_report": "s5-ref-20261015t1545",
+ "functional_baseline": "s5-fb-20261015t1545",
+ "rule": "125/125 checkpoints, max_abs 0, relative_l2 0, all_byte_equal, PPL gate, no new functional failure vs the bf128 base; T1 steps also need d2d on a short case, layer-major on long cases, no hit-D2D fallback",
+ "steps": [
+  {
+   "id": "l0",
+   "config": "main-release",
+   "quality_report": "quality-s5-q-l0-20261015t1555.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 0,
+    "short_d2d_bytes": 0,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     3164
+    ],
+    "host_embedding_bytes": [
+     0
+    ],
+    "decode_missing_per_forward": 44.880776340110906,
+    "peak_torch_reserved_bytes": 12220104704
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "l1",
+   "config": "main-release-shortroute",
+   "quality_report": "quality-s5-q-l1-20261015t1555.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 70412402688,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     3164
+    ],
+    "host_embedding_bytes": [
+     0
+    ],
+    "decode_missing_per_forward": 44.880776340110906,
+    "peak_torch_reserved_bytes": 12220104704
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "l2",
+   "config": "main-release-shortroute-fla-wu",
+   "quality_report": "quality-s5-q-l2-20261015t1555.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 70412402688,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     3164
+    ],
+    "host_embedding_bytes": [
+     0
+    ],
+    "decode_missing_per_forward": 44.880776340110906,
+    "peak_torch_reserved_bytes": 12199133184
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "l3",
+   "config": "main-release-shortroute-fla-wu-overlap",
+   "quality_report": "quality-s5-q-l3-20261015t1555.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 70412402688,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     3164
+    ],
+    "host_embedding_bytes": [
+     0
+    ],
+    "decode_missing_per_forward": 44.880776340110906,
+    "peak_torch_reserved_bytes": 12199133184
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "l4",
+   "config": "main-release-next-he",
+   "quality_report": "quality-s5-q-l4-20261015t1555.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 84019249152,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     3729
+    ],
+    "host_embedding_bytes": [
+     1017118720
+    ],
+    "decode_missing_per_forward": 38.56746765249538,
+    "peak_torch_reserved_bytes": 12199133184
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "l5",
+   "config": "main-release-next-he-r085",
+   "quality_report": "quality-s5-q-l5-20261015t1555.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 103761838080,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     4611
+    ],
+    "host_embedding_bytes": [
+     1017118720
+    ],
+    "decode_missing_per_forward": 32.92421441774491,
+    "peak_torch_reserved_bytes": 13792968704
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "l6",
+   "config": "main-release-next-k",
+   "quality_report": "quality-s5-q-l6-20261015t1555.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 103598260224,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     4603
+    ],
+    "host_embedding_bytes": [
+     1017118720
+    ],
+    "decode_missing_per_forward": 32.9815157116451,
+    "peak_torch_reserved_bytes": 13751025664
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "l7",
+   "config": "main-release-next-kc0",
+   "quality_report": "quality-s5-q-l7-20261015t1555.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 103598260224,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     4603
+    ],
+    "host_embedding_bytes": [
+     1017118720
+    ],
+    "decode_missing_per_forward": 32.9815157116451,
+    "peak_torch_reserved_bytes": 13748928512
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "l8",
+   "config": "main-release-next-candidate",
+   "quality_report": "quality-s5-q-l8-20261015t1555.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 41576595456,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     4603
+    ],
+    "host_embedding_bytes": [
+     1017118720
+    ],
+    "decode_missing_per_forward": 32.9815157116451,
+    "peak_torch_reserved_bytes": 13748928512
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "t3",
+   "config": "main-release-overlap",
+   "quality_report": "quality-s5-q-t3-20261015t1555.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 0,
+    "short_d2d_bytes": 0,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     3164
+    ],
+    "host_embedding_bytes": [
+     0
+    ],
+    "decode_missing_per_forward": 44.880776340110906,
+    "peak_torch_reserved_bytes": 12220104704
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "status": "PASS"
+  }
+ ]
+}

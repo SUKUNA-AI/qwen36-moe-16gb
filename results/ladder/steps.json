@@ -1,0 +1,16 @@
+{
+ "schema": "ladder-steps-1",
+ "note": "Cumulative ladder: every step adds exactly one lever to the previous one (checked by config diff). t3 is f1 + T3 only.",
+ "steps": [
+  {"id": "l0", "config": "main-release", "prev": null, "lever": "f1 release (base)", "lever_short": "f1", "diff": {}, "t1": false},
+  {"id": "l1", "config": "main-release-shortroute", "prev": "l0", "lever": "T1 short route: hit-D2D slot route for uncached prompts <= 2048 tokens", "lever_short": "+T1", "diff": {"flags": ["--moe-prefill-hit-d2d"], "QWEN36_LAYER_MAJOR_MIN_TOKENS": "2049"}, "t1": true},
+  {"id": "l2", "config": "main-release-shortroute-fla-wu", "prev": "l1", "lever": "T2 fused FLA GDN prefill, variant wu", "lever_short": "+T2", "diff": {"QWEN36_CUDA_GDN_FLA": "wu"}, "t1": true},
+  {"id": "l3", "config": "main-release-shortroute-fla-wu-overlap", "prev": "l2", "lever": "T3 decode gather / shared-expert overlap", "lever_short": "+T3", "diff": {"QWEN36_DECODE_SHARED_OVERLAP": "1"}, "t1": true},
+  {"id": "l4", "config": "main-release-next-he", "prev": "l3", "lever": "embedding table in pinned host memory (more expert slots at the same ratio)", "lever_short": "+host emb", "diff": {"QWEN36_HOST_EMBEDDINGS": "1"}, "t1": true},
+  {"id": "l5", "config": "main-release-next-he-r085", "prev": "l4", "lever": "memory_ratio 0.75 -> 0.85", "lever_short": "+r0.85", "diff": {"memory_ratio": [0.75, 0.85]}, "t1": true},
+  {"id": "l6", "config": "main-release-next-k", "prev": "l5", "lever": "S3 decode kernels: CUDA o-proj GEMV + CUDA MoE decode GEMV", "lever_short": "+S3 kernels", "diff": {"QWEN36_OPROJ_GEMV": "1", "QWEN36_OPROJ_GEMV_LIBRARY": "libqwen_oproj_gemv-fa9302e31cb88a02.so", "QWEN36_MOE_DECODE_CUDA": "1", "QWEN36_MOE_DECODE_LIBRARY": "libqwen_moe_decode-83e90c43cb63ce11.so"}, "t1": true},
+  {"id": "l7", "config": "main-release-next-kc0", "prev": "l6", "lever": "C0 prefill copy-stream priority + epoch invalidate", "lever_short": "+C0", "diff": {"QWEN36_PREFILL_COPY_PRIORITY": "1", "QWEN36_PREFILL_EPOCH_INVALIDATE": "1"}, "t1": true},
+  {"id": "l8", "config": "main-release-next-candidate", "prev": "l7", "lever": "C1 selected-expert prefill, threshold 160 (full main128 candidate)", "lever_short": "+C1", "diff": {"QWEN36_PREFILL_SELECTED": "160"}, "t1": true},
+  {"id": "t3", "config": "main-release-overlap", "prev": "l0", "lever": "T3 alone on f1", "lever_short": "f1+T3", "diff": {"QWEN36_DECODE_SHARED_OVERLAP": "1"}, "t1": false}
+ ]
+}
