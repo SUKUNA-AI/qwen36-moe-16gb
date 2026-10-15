@@ -68,8 +68,11 @@ Old f1 reports remain historical and cannot silently qualify schema 2. If no new
 run-bound baseline report exists, the owner may **explicitly** rerun teacher-bf128
 against a copy of the existing pinned `.npy` reference, with a new report name.
 The engine now requires every baseline file to exist and the newly computed
-float32 bytes to match it exactly. It never saves or replaces baseline arrays.
+float32 bytes to match it exactly. It never replaces baseline arrays.
 Do not invent missing hashes/fixtures or use this to generate a missing reference.
+A deliberate new basis (new fixture, the T6 stack) is a separate owner decision:
+`QWEN36_TEACHER_CREATE_REFERENCE=1` in a teacher-bf128 config whose
+`QWEN36_LOGIT_REFERENCE` is a new directory creates the missing files exclusively.
 
 Preserve all existing reports. Configure `teacher-bf128` to use the existing
 fixture and immutable reference copy. With both units verified inactive:
@@ -128,7 +131,11 @@ flock -w 3600 -E 75 "$LOCK" timeout 1800 "$P" -m pytest -v \
 
 Require byte identity of all banks, positive D2D traffic in enabled short epochs,
 zero D2D traffic while tail slots are borrowed, and no skipped mandatory GPU case.
-This test does not evaluate model logits or qualify overlap.
+This test does not evaluate model logits or qualify overlap. It also repopulates
+every slot before each phase, so it cannot catch hit-D2D reading stale borrowed
+bytes after an epoch. Before the model gates, run the archived layer-major CPU suite
+(24 tests incl. epoch reopening and the abort sweep, not in this repository) against
+this tree, and treat T1 telemetry plus the teacher gate as the end-to-end check.
 
 T2: unchanged GDN off path, `wu`, `ho`, then full fused byte/state stress:
 
@@ -166,8 +173,13 @@ flock -w 3600 -E 75 "$LOCK" timeout 3600 "$P" "$N/qualify.py" \
   --candidate "$candidate" --name "$NAME" --reference-report "$REF" --functional-baseline "$FB"
 ```
 
-The final `final-helpers.py qcheck REPORT` delegates to the same strict checker;
-new final-driver runs no longer use the historical R1b equivalence override.
+`qualify.py` requires both evidence arguments and checks them, and every output
+report name, before it starts a unit. The final `final-helpers.py qcheck REPORT`
+delegates to the same strict checker; new final-driver runs no longer use the
+historical R1b equivalence override. `gates/final-gates.sh` itself is the frozen f1
+driver and is not schema-2 ready (it calls `qualify.py` without the evidence
+arguments, and `extract-run --teacher` does not expect
+`QWEN36_TEACHER_REFERENCE_REPORT`): the next release needs a new driver.
 Require `evidence_valid`, `quality_gate_pass`, `bit_exact_pass`, expected==observed,
 all checkpoint max_abs/relative_l2==0 and all_byte_equal, complete forced targets, and no new functional
 failure. Functional reports specify their context matrix and successful HTTP
