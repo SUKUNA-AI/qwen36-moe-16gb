@@ -420,12 +420,31 @@ def evaluate(receipt, **kwargs):
     params = dict(soak=soak, soak_sha256=SOAK_SHA256, expected_name='soak-test', expected_profile=profile,
                   expected_identity_sha256=CANDIDATE['identity_sha256'],
                   run_copy=copy.deepcopy(receipt.get('run')) if isinstance(receipt, dict) else None,
-                  validate_run=lambda run: BENCH.validate_receipt(run, profile))
+                  validate_run=lambda run: BENCH.validate_receipt(run, profile), reference=self_reference(receipt))
     params.update(kwargs)
     return analysis.evaluate(receipt, **params)
 
 
 _PASS = {}
+
+
+def self_reference(receipt):
+    """Reference = the run itself (no regression possible), or the passing run when the receipt under test is
+    too damaged to profile; reference tests pass their own."""
+    profile = analysis.run_profile(receipt, soak)
+    if profile['vram'].get('p1_gpu_free_bytes') is None or not profile['fresh']:
+        profile = analysis.run_profile(pass_receipt(), soak)
+    return profile
+
+
+def write_reference(directory, receipt, name='soak-ref', verdict='PASS'):
+    """A reference analysis + its receipt as soak-analysis writes them (the analysis carries no p1/decode)."""
+    data = json.dumps(receipt).encode()
+    (directory / f'{name}.json').write_bytes(data)
+    path = directory / f'{name}-analysis.json'
+    path.write_text(json.dumps({'schema': analysis.ANALYSIS_SCHEMA, 'verdict': verdict, 'source': f'{name}.json',
+                                'source_sha256': hashlib.sha256(data).hexdigest()}))
+    return path
 
 
 def pass_receipt():
@@ -1445,31 +1464,94 @@ class ReceiptMutationTests(unittest.TestCase):
                 self.assertFalse(report['two_hour_execution_gate_pass'], (path, value))
                 self.assertTrue(report['gate_reasons'], (path, value))
 
-    def test_vram_floor_is_gated_and_minutes_below_are_counted(self):
+    def test_vram_floor_is_reported_not_gated(self):
         self.assertEqual(analysis.VRAM_FLOOR_BYTES, BENCH.VRAM_FLOOR_BYTES)
         self.assertEqual(analysis.VRAM_FLOOR_BYTES, int(0.8 * (1 << 30)))
-        vram = evaluate(pass_receipt())['summary']['vram']
-        self.assertEqual((vram['samples_below_floor'], vram['minutes_below_floor']), (0, 0))
-        self.assertGreaterEqual(vram['p1_gpu_free_bytes'], vram['min_gpu_free_bytes'])
         receipt = pass_receipt()
+        reference = analysis.run_profile(receipt, soak)
         rows = sorted(receipt['telemetry']['state'], key=lambda row: row['ts'])
-        # Six consecutive samples just below the floor (f1 passed the old 0.5 GiB floor at these values).
+        # f1 sat below 0.8 GiB in 15.6 % of its samples: below-floor samples alone are not a failure.
         for row in rows[3:9]:
             row['gpu_free_bytes'] = analysis.VRAM_FLOOR_BYTES - 1
-        report = self.assertFails(receipt, 'vram_floor_breached')
-        self.assertEqual(report['failure_reasons'], ['vram_floor_breached'])
+        report = evaluate(receipt, reference=reference)
+        self.assertEqual(report['verdict'], 'PASS', report['gate_reasons'])
         seconds = sum(min((analysis._parse_time(soak, b['ts']) - analysis._parse_time(soak, a['ts'])).total_seconds(),
                           analysis.STATE_GAP_LIMIT_S) for a, b in zip(rows[3:9], rows[4:10]))
-        self.assertEqual(report['summary']['vram']['samples_below_floor'], 6)
-        self.assertEqual(report['summary']['vram']['minutes_below_floor'], round(seconds / 60, 2))
+        vram = report['summary']['vram']
+        self.assertEqual((vram['samples_below_floor'], vram['minutes_below_floor']), (6, round(seconds / 60, 2)))
+        self.assertEqual(vram['min_gpu_free_bytes'], analysis.VRAM_FLOOR_BYTES - 1)
         self.assertGreater(seconds, 0)
+
+    def test_vram_p1_below_the_reference_fails(self):
         receipt = pass_receipt()
+        reference = analysis.run_profile(receipt, soak)
+        # Compared in whole MiB: one MiB less in every sample is one MiB less at p1.
         for row in receipt['telemetry']['state']:
-            row['gpu_free_bytes'] = analysis.VRAM_FLOOR_BYTES
-        self.assertEqual(evaluate(receipt)['verdict'], 'PASS')
+            row['gpu_free_bytes'] -= MIB
+        report = evaluate(receipt, reference=reference)
+        self.assertEqual((report['verdict'], report['failure_reasons']), ('FAIL', ['vram_p1_below_reference']))
+        p1 = report['reference_comparison']['p1_gpu_free_mib']
+        self.assertLess(p1['candidate'], p1['reference'])
+        better = pass_receipt()
+        for row in better['telemetry']['state']:
+            row['gpu_free_bytes'] += 64 * MIB
+        self.assertEqual(evaluate(better, reference=reference)['verdict'], 'PASS')
+
+    def test_ttft_and_decode_medians_against_the_reference(self):
+        reference = analysis.run_profile(pass_receipt(), soak)
+        def scaled(key, factor):
+            receipt = pass_receipt()
+            for row in receipt['rows']:
+                if row.get('case') == 'fresh' and analysis.is_number(row['requests'][0].get(key)):
+                    row['requests'][0][key] *= factor
+            return evaluate(receipt, reference=reference)
+        self.assertEqual(scaled('ttft_content_s', 1.02)['verdict'], 'PASS')
+        self.assertEqual(scaled('decode_client_tps', 0.98)['verdict'], 'PASS')
+        report = scaled('ttft_content_s', 1.05)
+        self.assertEqual(report['failure_reasons'], ['ttft_regression'])
+        self.assertTrue(all(row.get('ttft_regression') for row in report['reference_comparison']['per_length'].values()))
+        self.assertEqual(scaled('decode_client_tps', 0.95)['failure_reasons'], ['decode_regression'])
+        self.assertEqual(scaled('decode_client_tps', 1.5)['verdict'], 'PASS')
+
+    def test_shared_gpu_memory_growth_only_when_sampled(self):
+        reference_receipt, receipt = pass_receipt(), pass_receipt()
+        report = evaluate(receipt, reference=analysis.run_profile(reference_receipt, soak))
+        self.assertEqual(report['reference_comparison']['shared_gpu'], 'not_sampled')
         for row in receipt['telemetry']['state']:
-            row.pop('gpu_free_bytes')
-        self.assertFails(receipt, 'vram_floor_unverified', 'state_resources_missing')
+            row[analysis.SHARED_GPU_KEY] = 2 * 1024 * MIB
+        report = evaluate(receipt, reference=analysis.run_profile(reference_receipt, soak))
+        self.assertEqual((report['verdict'], report['reference_comparison']['shared_gpu']), ('PASS', 'reference_not_sampled'))
+        for row in reference_receipt['telemetry']['state']:
+            row[analysis.SHARED_GPU_KEY] = 2 * 1024 * MIB - analysis.SHARED_GPU_GROWTH_BYTES
+        self.assertEqual(evaluate(receipt, reference=analysis.run_profile(reference_receipt, soak))['verdict'], 'PASS')
+        for row in reference_receipt['telemetry']['state']:
+            row[analysis.SHARED_GPU_KEY] -= MIB
+        report = evaluate(receipt, reference=analysis.run_profile(reference_receipt, soak))
+        self.assertEqual(report['failure_reasons'], ['shared_gpu_memory_growth'])
+
+    def test_reference_is_mandatory_and_must_be_usable(self):
+        receipt = pass_receipt()
+        self.assertEqual(evaluate(receipt, reference=None)['failure_reasons'], ['reference_soak_missing'])
+        empty = analysis.run_profile({}, soak)
+        self.assertEqual(evaluate(receipt, reference=empty)['failure_reasons'], ['reference_soak_invalid'])
+        report = evaluate(receipt, reference=None)
+        self.assertNotIn('reference_soak_missing', report['pilot_view']['failures_excluding_duration_and_reference'])
+        self.assertIn('reference_soak_missing', report['pilot_view']['failures_excluding_duration'])
+
+    def test_load_reference_reprofiles_the_analysed_receipt(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = pathlib.Path(temp)
+            path = write_reference(directory, pass_receipt())
+            profile = analysis.load_reference(path, soak)
+            self.assertEqual(profile['vram'], analysis.run_profile(pass_receipt(), soak)['vram'])
+            self.assertEqual(profile['fresh'], analysis.run_profile(pass_receipt(), soak)['fresh'])
+            self.assertEqual(profile['source'], 'soak-ref.json')
+            (directory / 'soak-ref.json').write_text(json.dumps(dict(pass_receipt(), iterations=0)))
+            with self.assertRaisesRegex(ValueError, 'does not match'):
+                analysis.load_reference(path, soak)
+            failed = write_reference(directory, pass_receipt(), name='soak-bad', verdict='FAIL')
+            with self.assertRaisesRegex(ValueError, 'not a PASS'):
+                analysis.load_reference(failed, soak)
 
     def test_memory_needs_idle_samples(self):
         receipt = pass_receipt()
@@ -1692,7 +1774,8 @@ class AnalysisCliTests(unittest.TestCase):
             reports = pathlib.Path(temp)
             (reports / 'soak-test.json').write_text(json.dumps(receipt))
             (reports / 'soak-test-run.json').write_text(json.dumps(_PASS['run_copy']))
-            bind = ['--profile', 'main-retain', '--expected-identity', sha, '--reports-dir', temp]
+            bind = ['--profile', 'main-retain', '--expected-identity', sha, '--reports-dir', temp,
+                    '--reference-soak', str(write_reference(reports, receipt))]
             out = io.StringIO()
             with mock.patch.dict(sys.modules, {'bench': self._bench(reports)}), contextlib.redirect_stdout(out):
                 self.assertEqual(analysis.main(['--name', 'soak-test', *bind]), 0)
@@ -1726,7 +1809,7 @@ class AnalysisCliTests(unittest.TestCase):
             manifest = reports / 'frozen-manifest.json'
             manifest.write_text(json.dumps({'arms': {'main-retain': identity, 'bf128': identity}}))
             other = candidate_for(source_marker='e')['identity_sha256']
-            base = ['--name', 'soak-test', '--reports-dir', temp]
+            base = ['--name', 'soak-test', '--reports-dir', temp, '--reference-soak', str(write_reference(reports, pass_receipt()))]
             stderr = io.StringIO()
             with mock.patch.dict(sys.modules, {'bench': self._bench(reports)}), \
                     contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(stderr):

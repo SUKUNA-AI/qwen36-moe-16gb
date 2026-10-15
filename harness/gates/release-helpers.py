@@ -12,9 +12,11 @@ Subcommands (exit 0 ok, 3 check failed, 2 usage):
                                 arm's serving run, no functional case fails that passed in F
   screen --reports DIR --matrix M --baseline B --candidate C --out OUT
                                 median elapsed/TTFT/decode per length from a matrix (any pair count); not a gate
-  soak-check --analysis A [--release]
-                                soak-analysis verdict: --release needs the two-hour PASS; otherwise every case type
-                                passed and nothing but the duration failed (the VRAM floor included)
+  reference-soak --analysis A  A is a PASS soak analysis whose receipt sits next to it (soak-analysis load_reference)
+  soak-check --analysis A [--release | --pilot]
+                                soak-analysis verdict: --release needs the two-hour PASS; default (screen soak): every
+                                case type passed and nothing but the duration failed (the reference comparison
+                                included); --pilot (30 s): as default but without the reference comparison
   summary --steps FILE --run RUN --out OUT [--release]
 """
 import argparse
@@ -198,16 +200,28 @@ def cmd_screen(a):
     need(bool(rows), 'matrix has no complete arms to screen')
 
 
+def cmd_reference_soak(a):
+    analysis = load_module('release_soak_analysis', HERE.parent / 'soak-analysis.py')
+    try:
+        profile = analysis.load_reference(a.analysis, analysis.load_soak())
+    except (OSError, ValueError) as error:
+        raise Fail(f'reference soak unusable: {error}') from None
+    need(profile['vram'].get('p1_gpu_free_bytes') is not None and profile['fresh'], 'reference soak has no VRAM/TTFT data')
+    print(json.dumps({'source': profile['source'], 'p1_gpu_free_mib': profile['vram']['p1_gpu_free_bytes'] // (1 << 20),
+                      'lengths': sorted(profile['fresh'], key=int)}))
+
+
 def cmd_soak_check(a):
     d = json.loads(pathlib.Path(a.analysis).read_text(encoding='utf-8'))
     pilot = d.get('pilot_view') or {}
     vram = (d.get('summary') or {}).get('vram') or {}
+    key = 'failures_excluding_duration_and_reference' if a.pilot else 'failures_excluding_duration'
     if a.release:
         ok = d.get('verdict') == 'PASS' and d.get('two_hour_execution_gate_pass') is True
     else:
-        ok = pilot.get('all_case_types_passed') is True and pilot.get('failures_excluding_duration') == []
-    print(json.dumps({'release': a.release, 'verdict': d.get('verdict'), 'pass': ok,
-                      'failures_excluding_duration': pilot.get('failures_excluding_duration'), 'vram': vram}))
+        ok = pilot.get('all_case_types_passed') is True and pilot.get(key) == []
+    print(json.dumps({'mode': 'release' if a.release else 'pilot' if a.pilot else 'screen', 'verdict': d.get('verdict'),
+                      'pass': ok, key: pilot.get(key), 'vram_report_only': vram}))
     need(ok, 'soak gate failed')
 
 
@@ -253,12 +267,15 @@ def main(argv=None):
     s = sub.add_parser('screen')
     for key in ('--reports', '--matrix', '--baseline', '--candidate', '--out'):
         s.add_argument(key, required=True)
-    s = sub.add_parser('soak-check'); s.add_argument('--analysis', required=True); s.add_argument('--release', action='store_true')
+    s = sub.add_parser('reference-soak'); s.add_argument('--analysis', required=True)
+    s = sub.add_parser('soak-check'); s.add_argument('--analysis', required=True)
+    g = s.add_mutually_exclusive_group(); g.add_argument('--release', action='store_true'); g.add_argument('--pilot', action='store_true')
     s = sub.add_parser('summary'); s.add_argument('--steps', required=True); s.add_argument('--run', required=True)
     s.add_argument('--out', required=True); s.add_argument('--release', action='store_true')
     a = p.parse_args(argv)
     fn = {'env': cmd_env, 'evidence': cmd_evidence, 'extract-run': cmd_extract_run, 'qcheck': cmd_qcheck,
           'context-check': cmd_context_check, 'screen': cmd_screen, 'soak-check': cmd_soak_check,
+          'reference-soak': cmd_reference_soak,
           'summary': cmd_summary}[a.cmd]
     try:
         fn(a)

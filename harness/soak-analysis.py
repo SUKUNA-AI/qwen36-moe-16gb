@@ -9,9 +9,13 @@ every request/engine row; mandatory request<->engine joins; server-recorded
 sampling of every request equals the workload plan; numeric cgroup/anon/shmem/
 filecache/GPU resources; every scheduled case executed and passed, with coverage
 floors met; complete state telemetry (no gaps, drops, writer failures, rotation
-loss); memory comparisons at equal prompt length and over idle samples; NVML free
-VRAM at or above the owner's 0.8 GiB floor in every state sample (the minutes below
-the floor are counted in summary.vram for operations).
+loss); memory comparisons at equal prompt length and over idle samples; and no
+regression against a reference soak (--reference-soak, release f1): p1 of NVML free
+VRAM not below the reference p1 (MiB), Windows shared GPU memory not grown (when it is
+sampled), fresh-request TTFT and decode medians within the noise margin. The owner's
+0.8 GiB floor is reported only (summary.vram: min/p1/p5/median, minutes below it):
+the Windows desktop shrinks under pressure, and f1 itself sat below it in 15.6 % of
+its samples.
 
 Missing evidence is FAIL. A valid run with too few points is INCONCLUSIVE.
 There is no automatic "no leak" verdict: growth above a threshold is FAIL, and
@@ -59,9 +63,16 @@ ENGINE_MEMORY_FLAGS = {'torch_allocated_bytes': 64 * MIB, 'torch_reserved_bytes'
 MEMORY_REPORT_ONLY = ('service_cgroup_memory_bytes', 'service_memory_file_cache_estimate_bytes',
                       'gpu_total_used_bytes')
 IDLE_MEMORY_FLAGS = dict(REQUEST_MEMORY_FLAGS)
-# Owner decision 2026-10-15 (VRAM test): below ~0.8 GiB free the Windows desktop starts paging and the model
-# slows by ~20 %. Same value as bench.VRAM_FLOOR_BYTES; a CPU test pins the equality.
+# Owner VRAM test 2026-10-15: below ~0.8 GiB free the desktop pages. Reported for soaks, not gated (a soak's
+# desktop is busy and WDDM shrinks it); the gate is the reference comparison. Same value as bench.VRAM_FLOOR_BYTES.
 VRAM_FLOOR_BYTES = 4 * 1024 * MIB // 5
+# Reference comparison: medians may be worse by at most this fraction (compare-ab's 3 % non-inferiority margin).
+REFERENCE_NOISE = 0.03
+# Windows shared GPU memory, once the state sampler records it; growth above this vs the reference fails.
+SHARED_GPU_KEY = 'gpu_shared_used_bytes'
+SHARED_GPU_GROWTH_BYTES = 256 * MIB
+REFERENCE_CODES = {'reference_soak_missing', 'reference_soak_invalid', 'vram_p1_below_reference',
+                   'shared_gpu_memory_growth', 'ttft_regression', 'decode_regression'}
 IDLE_WARMUP_S = 600.0
 IDLE_WINDOW_S = 1200.0
 IDLE_MIN_SAMPLES = 10
@@ -544,19 +555,17 @@ def _check_state(telemetry, soak, findings, summary, started, finished, profile,
                         'counter_maxima': maxima, 'min_gpu_free_bytes': min(free, default=None),
                         'max_metrics_queue_depth': max(depth, default=None), 'stall_events': len(events)
                         if isinstance(events, list) else None}
-    summary['vram'] = _check_vram_floor(state, soak, findings)
     return state
 
 
-def _check_vram_floor(state, soak, findings):
-    """Free VRAM must stay >= VRAM_FLOOR_BYTES at every state sample. Time below the floor is the sum of the
-    intervals that start at a below-floor sample (each capped at the state gap limit)."""
+def vram_stats(state, soak):
+    """Report only: NVML free VRAM distribution and the time below the 0.8 GiB floor (sum of the intervals
+    that start at a below-floor sample, each capped at the state gap limit)."""
     samples = sorted((moment, row['gpu_free_bytes']) for row in state
                      if isinstance(row, dict) and is_number(row.get('gpu_free_bytes'))
                      for moment in [_parse_time(soak, row.get('ts'))] if moment is not None)
     out = {'floor_bytes': VRAM_FLOOR_BYTES, 'samples': len(samples)}
     if not samples:
-        findings.fail('vram_floor_unverified')
         return out
     free = sorted(value for _, value in samples)
     below = [value < VRAM_FLOOR_BYTES for _, value in samples]
@@ -565,11 +574,84 @@ def _check_vram_floor(state, soak, findings):
     rank = lambda q: free[min(len(free) - 1, int(q * (len(free) - 1)))]
     out.update(min_gpu_free_bytes=free[0], p1_gpu_free_bytes=rank(.01), p5_gpu_free_bytes=rank(.05),
                median_gpu_free_bytes=statistics.median(free), samples_below_floor=sum(below),
-               minutes_below_floor=round(seconds / 60, 2))
-    if free[0] < VRAM_FLOOR_BYTES:
-        findings.fail('vram_floor_breached', min_gpu_free_bytes=free[0], floor_bytes=VRAM_FLOOR_BYTES,
-                      minutes_below_floor=out['minutes_below_floor'])
+               share_below_floor=round(sum(below) / len(below), 4), minutes_below_floor=round(seconds / 60, 2))
     return out
+
+
+def run_profile(receipt, soak):
+    """What a soak is compared on: VRAM stats, Windows shared GPU memory (if sampled) and the medians of
+    fresh-request TTFT / client decode rate per prompt length over passed rows."""
+    receipt = receipt if isinstance(receipt, dict) else {}
+    telemetry = receipt.get('telemetry') if isinstance(receipt.get('telemetry'), dict) else {}
+    state = telemetry.get('state') if isinstance(telemetry.get('state'), list) else []
+    shared = [row[SHARED_GPU_KEY] for row in state if isinstance(row, dict) and is_number(row.get(SHARED_GPU_KEY))]
+    fresh = {}
+    for row in receipt.get('rows') if isinstance(receipt.get('rows'), list) else []:
+        if not (isinstance(row, dict) and row.get('case') == 'fresh' and row.get('pass') is True
+                and isinstance(row.get('requests'), list) and row['requests'] and isinstance(row['requests'][0], dict)):
+            continue
+        first = row['requests'][0]
+        for key, metric in (('ttft', 'ttft_content_s'), ('decode', 'decode_client_tps')):
+            if is_number(first.get(metric)):
+                fresh.setdefault(str(row.get('length')), {}).setdefault(key, []).append(first[metric])
+    return {'vram': vram_stats(state, soak),
+            'shared_gpu_median_bytes': statistics.median(shared) if shared else None,
+            'fresh': {length: {f'{key}_median': statistics.median(v) for key, v in m.items()} | {
+                'n': max(len(v) for v in m.values())} for length, m in fresh.items()}}
+
+
+def _check_reference(candidate, reference, findings):
+    """Gate against the reference soak (release f1): no lower p1 free VRAM (MiB), no Windows shared GPU
+    memory growth, no TTFT/decode median worse than REFERENCE_NOISE. Lengths the candidate lacks are already
+    coverage failures and are not compared twice."""
+    if reference is None:
+        findings.fail('reference_soak_missing')
+        return None
+    ref_p1 = (reference.get('vram') or {}).get('p1_gpu_free_bytes')
+    if not is_number(ref_p1) or not reference.get('fresh'):
+        findings.fail('reference_soak_invalid')
+        return {'reference': reference}
+    out = {'reference': reference, 'noise': REFERENCE_NOISE, 'per_length': {}}
+    p1 = candidate['vram'].get('p1_gpu_free_bytes')
+    out['p1_gpu_free_mib'] = {'candidate': None if p1 is None else int(p1 // MIB), 'reference': int(ref_p1 // MIB)}
+    if p1 is not None and int(p1 // MIB) < int(ref_p1 // MIB):
+        findings.fail('vram_p1_below_reference', **out['p1_gpu_free_mib'])
+    shared, ref_shared = candidate['shared_gpu_median_bytes'], reference.get('shared_gpu_median_bytes')
+    out['shared_gpu'] = ('not_sampled' if shared is None else 'reference_not_sampled' if ref_shared is None
+                         else {'candidate_median': shared, 'reference_median': ref_shared})
+    if shared is not None and ref_shared is not None and shared - ref_shared > SHARED_GPU_GROWTH_BYTES:
+        findings.fail('shared_gpu_memory_growth', candidate_median=shared, reference_median=ref_shared)
+    for length, ref in reference['fresh'].items():
+        cur = candidate['fresh'].get(length)
+        if not cur:
+            continue
+        row = out['per_length'][length] = {'candidate': cur, 'reference': ref}
+        if is_number(ref.get('ttft_median')) and is_number(cur.get('ttft_median')) \
+                and cur['ttft_median'] > ref['ttft_median'] * (1 + REFERENCE_NOISE):
+            row['ttft_regression'] = True
+            findings.fail('ttft_regression', length=length, candidate=cur['ttft_median'], reference=ref['ttft_median'])
+        if is_number(ref.get('decode_median')) and is_number(cur.get('decode_median')) \
+                and cur['decode_median'] < ref['decode_median'] * (1 - REFERENCE_NOISE):
+            row['decode_regression'] = True
+            findings.fail('decode_regression', length=length, candidate=cur['decode_median'],
+                          reference=ref['decode_median'])
+    return out
+
+
+def load_reference(path, soak):
+    """A PASS soak-analysis and the receipt it analysed (same directory, sha256-bound); both are re-read so a
+    reference analysed by an older soak-analysis (no p1, no decode medians) still yields the same numbers."""
+    path = pathlib.Path(path)
+    analysis = soak.strict_loads(path.read_bytes())
+    if not (isinstance(analysis, dict) and analysis.get('schema') == ANALYSIS_SCHEMA and analysis.get('verdict') == 'PASS'
+            and isinstance(analysis.get('source'), str) and '/' not in analysis['source']):
+        raise ValueError('reference is not a PASS soak analysis')
+    data = (path.parent / analysis['source']).read_bytes()
+    if hashlib.sha256(data).hexdigest() != analysis.get('source_sha256'):
+        raise ValueError('reference receipt does not match the analysed bytes')
+    profile = run_profile(soak.strict_loads(data), soak)
+    profile.update(analysis=path.name, source=analysis['source'], source_sha256=analysis['source_sha256'])
+    return profile
 
 
 def _check_readers(telemetry, findings, summary):
@@ -710,11 +792,12 @@ def _case_summary(passed, telemetry):
 
 
 def evaluate(receipt, *, soak, validate_run, soak_sha256, expected_name, expected_profile, expected_identity_sha256,
-             run_copy):
+             run_copy, reference):
     """All bindings are mandatory: the soak.py hash, the receipt name, the frozen candidate
-    (profile + canonical identity sha256) and the NAME-run.json copy of the active-run receipt."""
+    (profile + canonical identity sha256), the NAME-run.json copy of the active-run receipt and the
+    reference soak profile (load_reference; None fails as reference_soak_missing)."""
     findings, summary = Findings(), {}
-    memory = None
+    memory = comparison = None
     if not isinstance(receipt, dict) or receipt.get('schema') != soak.SCHEMA \
             or receipt.get('schema_version') != soak.SCHEMA_VERSION:
         findings.fail('receipt_schema_invalid')
@@ -733,6 +816,9 @@ def evaluate(receipt, *, soak, validate_run, soak_sha256, expected_name, expecte
         _check_readers(telemetry, findings, summary)
         memory = _check_memory(passed, telemetry, state, soak, findings, started, elapsed)
         summary['cases'] = _case_summary(passed, telemetry)
+        current = run_profile(receipt, soak)
+        summary['vram'] = current['vram']
+        comparison = _check_reference(current, reference, findings)
     fail, inconclusive = findings.buckets['fail'], findings.buckets['inconclusive']
     verdict = 'FAIL' if fail else 'INCONCLUSIVE' if inconclusive else 'PASS'
     # A short pilot (soak.py --seconds 30, new name) cannot pass the gate; this view
@@ -742,18 +828,20 @@ def evaluate(receipt, *, soak, validate_run, soak_sha256, expected_name, expecte
         if isinstance(row, dict) and row.get('pass') is True and row.get('case') in soak.CASES:
             executed[row['case']] = executed.get(row['case'], 0) + 1
     pilot_view = {'passed_cases': executed, 'all_case_types_passed': set(executed) == set(soak.CASES),
-                  'failures_excluding_duration': sorted(set(fail) - PILOT_DURATION_CODES)}
+                  'failures_excluding_duration': sorted(set(fail) - PILOT_DURATION_CODES),
+                  'failures_excluding_duration_and_reference': sorted(set(fail) - PILOT_DURATION_CODES - REFERENCE_CODES)}
     return {'schema': ANALYSIS_SCHEMA, 'schema_version': ANALYSIS_SCHEMA_VERSION, 'verdict': verdict,
             'two_hour_execution_gate_pass': verdict == 'PASS',
             'candidate': {'profile': expected_profile, 'identity_sha256': expected_identity_sha256},
             'gate_reasons': sorted(set(fail) | set(inconclusive)), 'failure_reasons': sorted(fail),
             'inconclusive_reasons': sorted(inconclusive), 'reason_details': {**fail, **inconclusive},
-            'summary': summary, 'memory': memory, 'pilot_view': pilot_view,
+            'summary': summary, 'memory': memory, 'reference_comparison': comparison, 'pilot_view': pilot_view,
             'thresholds': {'state_gap_s': STATE_GAP_LIMIT_S, 'state_edge_s': STATE_EDGE_LIMIT_S,
                            'identity_gap_s': IDENTITY_GAP_LIMIT_S, 'clock_skew_s': CLOCK_SKEW_LIMIT_S,
                            'request_memory_flags_bytes': REQUEST_MEMORY_FLAGS,
                            'engine_memory_flags_bytes': ENGINE_MEMORY_FLAGS, 'idle_memory_flags_bytes': IDLE_MEMORY_FLAGS,
-                           'vram_floor_bytes': VRAM_FLOOR_BYTES,
+                           'vram_floor_bytes_report_only': VRAM_FLOOR_BYTES, 'reference_noise': REFERENCE_NOISE,
+                           'shared_gpu_growth_bytes': SHARED_GPU_GROWTH_BYTES,
                            'required_seconds': soak.REQUIRED_SECONDS,
                            'pinned_workload_sha256': PINNED_WORKLOAD_SHA256},
             'interpretation': 'PASS means the two-hour execution evidence is complete, the run was the named '
@@ -788,6 +876,8 @@ def main(argv=None):
                         help='sha256 of the candidate canonical identity, or a frozen manifest with arms[profile]')
     parser.add_argument('--reports-dir', default=None, help='defaults to bench.ROOT/reports')
     parser.add_argument('--tag', default=None, help='write NAME-analysis-TAG.json instead of NAME-analysis.json')
+    parser.add_argument('--reference-soak', required=True,
+                        help='PASS NAME-analysis.json of the reference soak (release f1); its receipt must sit next to it')
     args = parser.parse_args(argv)
     soak = load_soak()
     try:
@@ -800,6 +890,10 @@ def main(argv=None):
         candidate = soak.resolve_candidate(args.profile, args.expected_identity)
     except (OSError, ValueError) as error:
         parser.error(f'invalid --profile/--expected-identity: {error}')
+    try:
+        reference = load_reference(args.reference_soak, soak)
+    except (OSError, ValueError) as error:
+        parser.error(f'invalid --reference-soak: {error}')
     import bench
     reports = pathlib.Path(args.reports_dir) if args.reports_dir else bench.ROOT / 'reports'
     source = reports / f'{args.name}.json'
@@ -820,7 +914,8 @@ def main(argv=None):
     soak_sha256 = soak.file_sha256(HERE / 'soak.py')
     report = evaluate(receipt, soak=soak, soak_sha256=soak_sha256, expected_name=args.name,
                       expected_profile=candidate['profile'], expected_identity_sha256=candidate['identity_sha256'],
-                      run_copy=run_copy, validate_run=lambda run: bench.validate_receipt(run, candidate['profile']))
+                      run_copy=run_copy, validate_run=lambda run: bench.validate_receipt(run, candidate['profile']),
+                      reference=reference)
     report.update(source=source.name, source_sha256=hashlib.sha256(data).hexdigest(),
                   run_copy=run_copy_file.name,
                   run_copy_sha256=hashlib.sha256(run_copy_data).hexdigest() if run_copy_data is not None else None,

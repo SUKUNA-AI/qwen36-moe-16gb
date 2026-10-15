@@ -62,6 +62,8 @@ class Site:
         write(reports / 'fb.json', f[2])
         other = copy.deepcopy(f[2]); other['run']['packages']['torch'] = 'other'
         write(reports / 'fb-other.json', other)
+        soak_tests = load('soak_tests_ref', HERE / 'test-soak-cpu.py')
+        soak_tests.write_reference(reports, soak_tests.pass_receipt(), name='soak-f1')
         self.bin = self.root / 'bin'
         for tool, body in (('systemctl', 'exit 3'), ('flock', 'echo "flock $*" >> "$STUB_LOG"; exit 0')):
             write(self.bin / tool, f'#!/bin/sh\n{body}\n')
@@ -78,7 +80,8 @@ class Site:
         return sorted(str(p.relative_to(self.N)) for p in self.N.rglob('*') if 'python' not in p.parts)
 
 
-BASE = ('--candidate', CANDIDATE, '--reference-report', 'ref', '--functional-baseline', 'fb', '--run-id', 'r1', '--dry-run')
+BASE = ('--candidate', CANDIDATE, '--reference-report', 'ref', '--functional-baseline', 'fb', '--reference-soak',
+        'soak-f1-analysis.json', '--run-id', 'r1', '--dry-run')
 
 
 class DryRun(unittest.TestCase):
@@ -99,6 +102,8 @@ class DryRun(unittest.TestCase):
             self.assertIn('soak-rg-r1-pilot 30', out)
             self.assertIn('soak-rg-r1 1800', out)
             self.assertIn(f'--expected-identity {site.N}/reports/rg-r1-m-manifest.json', out)
+            self.assertIn(f'--reference-soak {site.N}/reports/soak-f1-analysis.json; soak-check', out)
+            self.assertIn('ok: reference soak soak-f1-analysis.json is a PASS analysis bound to its receipt', out)
             self.assertIn(f'flock -w 3600 -E 75 {site.S}/run/gpu-exclusive.lock', out)
             self.assertIn('ok: overlay harness + FreeToken sources == this checkout', out)
             self.assertIn('ok: REF ref / FB fb are run-bound schema-2 evidence', out)
@@ -122,6 +127,7 @@ class DryRun(unittest.TestCase):
             'overlay file missing': lambda s: (s.N / 'tool-pilot.py').unlink(),
             'overlay differs from checkout': lambda s: write(s.N / 'quality.py', '# stale\n'),
             'candidate qualified': lambda s: write(s.N / f'config/{CANDIDATE}.json', {'qualified': True}),
+            'reference soak receipt changed': lambda s: write(s.N / 'reports/soak-f1.json', '{}'),
         }
         for label, mutate in cases.items():
             with self.subTest(label), tempfile.TemporaryDirectory() as d:
@@ -133,20 +139,21 @@ class DryRun(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             site = Site(d)
             r = site.run('--candidate', CANDIDATE, '--reference-report', 'ref', '--functional-baseline', 'fb-other',
-                         '--run-id', 'r1', '--dry-run')
+                         '--reference-soak', 'soak-f1-analysis.json', '--run-id', 'r1', '--dry-run')
             self.assertEqual(r.returncode, 1)
             self.assertIn('DRY-RUN FAIL: REF ref / FB fb-other', r.stdout)
         with tempfile.TemporaryDirectory() as d:
             site = Site(d)
             r = site.run('--candidate', 'main-release-unlisted', '--reference-report', 'ref', '--functional-baseline', 'fb',
-                         '--run-id', 'r1', '--dry-run')
+                         '--reference-soak', 'soak-f1-analysis.json', '--run-id', 'r1', '--dry-run')
             self.assertEqual(r.returncode, 1)
             self.assertIn('DRY-RUN FAIL: teacher allowlist', r.stdout)
 
     def test_usage_errors_exit_2_before_any_check(self):
         with tempfile.TemporaryDirectory() as d:
             site = Site(d)
-            for args in (BASE[2:], ('--candidate', CANDIDATE, '--reference-report', 'ref', '--dry-run'),
+            no_soak = tuple(a for a in BASE if a not in ('--reference-soak', 'soak-f1-analysis.json'))
+            for args in (BASE[2:], ('--candidate', CANDIDATE, '--reference-report', 'ref', '--dry-run'), no_soak,
                          (*BASE[:-3], '--run-id', 'Bad_Run', '--dry-run'), (*BASE, '--baseline', CANDIDATE), (*BASE, '--bogus')):
                 with self.subTest(args=args):
                     self.assertEqual(site.run(*args).returncode, 2)
@@ -214,11 +221,15 @@ class Helpers(unittest.TestCase):
             def check(doc, *flags):
                 write(path, doc); return self.run_helper('soak-check', '--analysis', str(path), *flags)
             short = {'verdict': 'FAIL', 'two_hour_execution_gate_pass': False,
-                     'pilot_view': {'all_case_types_passed': True, 'failures_excluding_duration': []}}
+                     'pilot_view': {'all_case_types_passed': True, 'failures_excluding_duration': [],
+                                    'failures_excluding_duration_and_reference': []}}
             self.assertEqual(check(short), 0)
             self.assertEqual(check(short, '--release'), 3)
-            vram = copy.deepcopy(short); vram['pilot_view']['failures_excluding_duration'] = ['vram_floor_breached']
-            self.assertEqual(check(vram), 3)
+            slower = copy.deepcopy(short)
+            slower['pilot_view'].update(failures_excluding_duration=['ttft_regression'],
+                                        failures_excluding_duration_and_reference=[])
+            self.assertEqual(check(slower), 3)
+            self.assertEqual(check(slower, '--pilot'), 0)
             self.assertEqual(check({'verdict': 'PASS', 'two_hour_execution_gate_pass': True, 'pilot_view': {}}, '--release'), 0)
 
     def test_context_check_binds_the_context_run_to_the_qualified_teacher_run(self):

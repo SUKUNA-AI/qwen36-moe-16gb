@@ -5,11 +5,14 @@
 #   B  GPU  qualify.py --name --reference-report --functional-baseline: teacher 0-diff + bound functional  [hard]
 #   D  GPU  tool pilot -> matrix BASELINE,CANDIDATE -> compare-ab (--release) or median screen (default)
 #   C  GPU  run-context-gates.sh CANDIDATE 131072 120000 NAME -> context-check (bound to B's teacher run)
-#   E  GPU  soak pilot 30 s -> soak (1800 s default, 7200 s --release) -> soak-analysis (VRAM floor 0.8 GiB)
+#   E  GPU  soak pilot 30 s -> soak (1800 s default, 7200 s --release) -> soak-analysis against the reference soak
+#           (f1): p1 free VRAM, Windows shared GPU memory, TTFT/decode medians; the 0.8 GiB floor is reported only
 #   Z  CPU  summary reports/release-gates-RUN-summary.json
 # Site paths come from config/local.env (QWEN36_ROOT, QWEN36_NATIVE). Every report name carries the run id.
-# Usage: release-gates.sh --candidate C --reference-report REF --functional-baseline FB [--baseline main-release]
+# Usage: release-gates.sh --candidate C --reference-report REF --functional-baseline FB --reference-soak A
+#        [--baseline main-release]
 #        [--pilot-profile bf128] [--run-id ID] [--release] [--dry-run] [--env FILE] [--cpu-python P] [--soak-anyway]
+#   --reference-soak  PASS soak-analysis JSON of the reference soak (path, or a name in reports/), receipt next to it
 #   default    screen: 3 A/B pairs, 30 min soak; never releasable
 #   --release  5 pairs + compare-ab, 2 h soak
 #   --dry-run  CPU only, read-only: the A checks that need no writes, then the exact GPU commands
@@ -20,7 +23,7 @@ HERE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 C=$(cd -- "$HERE/../.." && pwd)
 HELP=$HERE/release-helpers.py
 ENV_FILE=$C/config/local.env
-CANDIDATE= BASELINE=main-release PILOT_PROFILE=bf128 REF= FB= RUN= MODE=run RELEASE=0 SOAK_ANYWAY=0
+CANDIDATE= BASELINE=main-release PILOT_PROFILE=bf128 REF= FB= REF_SOAK= RUN= MODE=run RELEASE=0 SOAK_ANYWAY=0
 CPU_PY=${QWEN36_CPU_PYTHON:-}
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -29,6 +32,7 @@ while [ $# -gt 0 ]; do
     --pilot-profile) PILOT_PROFILE=${2:-}; shift 2;;
     --reference-report) REF=${2:-}; shift 2;;
     --functional-baseline) FB=${2:-}; shift 2;;
+    --reference-soak) REF_SOAK=${2:-}; shift 2;;
     --run-id) RUN=${2:-}; shift 2;;
     --env) ENV_FILE=${2:-}; shift 2;;
     --cpu-python) CPU_PY=${2:-}; shift 2;;
@@ -43,11 +47,13 @@ for v in "$CANDIDATE" "$BASELINE" "$PILOT_PROFILE" "$REF" "$FB"; do
   [[ "$v" =~ $NAME_RE ]] || { echo 'need --candidate, --reference-report, --functional-baseline ([a-z0-9.-] names)' >&2; exit 2; }
 done
 [ "$CANDIDATE" != "$BASELINE" ] || { echo 'candidate and baseline must differ' >&2; exit 2; }
+[ -n "$REF_SOAK" ] || { echo 'need --reference-soak (the soak gate is relative to the reference soak)' >&2; exit 2; }
 RUN=${RUN:-$(date -u +%Y%m%dt%H%M%S)}
 [[ "$RUN" =~ ^[a-z0-9]{1,16}$ ]] || { echo 'bad --run-id (want [a-z0-9]{1,16})' >&2; exit 2; }
 SITE=$(python3 -I "$HELP" env "$ENV_FILE") || { echo "site paths from $ENV_FILE are missing or placeholders" >&2; exit 2; }
 eval "$SITE"
 S=$QWEN36_ROOT N=$QWEN36_NATIVE
+[[ "$REF_SOAK" == */* ]] || REF_SOAK=$N/reports/$REF_SOAK
 PY=${QWEN36_GPU_PYTHON:-$S/.venv/bin/python}
 LOCK=${QWEN36_GPU_LOCK:-$S/run/gpu-exclusive.lock}
 export QWEN36_DATA_ROOT=$N QWEN36_HARNESS_SOURCE=$N/config QWEN36_GPU_PYTHON=$PY QWEN36_GPU_LOCK=$LOCK
@@ -63,7 +69,7 @@ SCREEN=$N/reports/$T-screen.json
 STEPS=$N/reports/release-gates-$RUN.steps LOG=$N/reports/release-gates-$RUN.log
 SUMMARY=$N/reports/release-gates-$RUN-summary.json
 CACHE=$(compgen -G "$S/.venv/lib/python3*/site-packages/freetoken_kernel_cache/jit_cache" | head -1)
-CONFIG="candidate=$CANDIDATE baseline=$BASELINE pilot=$PILOT_PROFILE ref=$REF fb=$FB release=$RELEASE"
+CONFIG="candidate=$CANDIDATE baseline=$BASELINE pilot=$PILOT_PROFILE ref=$REF fb=$FB refsoak=$(basename "$REF_SOAK") release=$RELEASE"
 # Every report this run may create; none may exist before its first step.
 OUTPUTS=("$Q-teacher" "$Q-functional" "quality-$Q" "$T-qrun-teacher" "$T-qrun-functional" "$PILOT-tool-pilot"
          "$M-matrix" "$M-manifest" "$T-screen" "$CTX-functional" "$CTX-boundary" "$CTX-backend" "$CTX-cancel"
@@ -147,6 +153,7 @@ if [ "$MODE" = run ] && passed A; then note "A already PASS (skip)"; else
   check "candidate config is qualified:false" config_unqualified "$N/config/$CANDIDATE.json"
   check "teacher allowlist has teacher-$CANDIDATE" grep -q "'teacher-$CANDIDATE'" "$N/python/freetoken/engine/qualification.py"
   check "REF $REF / FB $FB are run-bound schema-2 evidence" logged helper evidence --reports "$N/reports" --reference "$REF" --functional-baseline "$FB"
+  check "reference soak $(basename "$REF_SOAK") is a PASS analysis bound to its receipt" logged helper reference-soak --analysis "$REF_SOAK"
   if [ "$MODE" = dry-run ] || [ ! -s "$STEPS" ] || [ "$(wc -l < "$STEPS")" -le 1 ]; then
     check "report names of run $RUN are unused" fresh_names
   fi
@@ -179,7 +186,7 @@ plan (run $RUN, $([ "$RELEASE" = 1 ] && echo release || echo screen) mode; GPU s
      context-check --name $CTX --teacher-report $Q-teacher --functional-report $Q-functional
   E  $P1
      $P2
-     soak-analysis --name $SOAK --profile $CANDIDATE --expected-identity $MAN; soak-check$([ "$RELEASE" = 1 ] && echo ' --release')
+     soak-analysis --name $SOAK --profile $CANDIDATE --expected-identity $MAN --reference-soak $REF_SOAK; soak-check$([ "$RELEASE" = 1 ] && echo ' --release')
   Z  release-helpers.py summary -> $SUMMARY
 dry-run precondition failures: $FAILS
 EOF
@@ -238,11 +245,11 @@ else
     local step=$1 name=$2 secs=$3; shift 3
     if passed "$step"; then note "$step already PASS"; return 0; fi
     soak_cmd "$name" "$secs"; retry "soak $name" lockrun "${SOAK_CMD[@]}" >> "$LOG" 2>&1; local rc=$?
-    "$PY" "$N/soak-analysis.py" --name "$name" --profile "$CANDIDATE" --expected-identity "$MAN" >> "$LOG" 2>&1
+    "$PY" "$N/soak-analysis.py" --name "$name" --profile "$CANDIDATE" --expected-identity "$MAN" --reference-soak "$REF_SOAK" >> "$LOG" 2>&1
     if logged helper soak-check --analysis "$N/reports/$name-analysis.json" "$@"; then record "$step" PASS "name=$name rc=$rc"
     else record "$step" FAIL "name=$name rc=$rc"; fi
   }
-  soak_gate E.pilot "$SOAKP" 30
+  soak_gate E.pilot "$SOAKP" 30 --pilot
   if passed E.pilot; then
     if [ "$RELEASE" = 1 ]; then soak_gate E.soak "$SOAK" "$SOAK_S" --release; else soak_gate E.soak "$SOAK" "$SOAK_S"; fi
   else record E.soak NOT_RUN "pilot_not_passed"; fi

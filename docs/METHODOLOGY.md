@@ -173,13 +173,24 @@ Each evaluation (`results/context-gates/*-evaluation.json`) checks:
 The VRAM thresholds come from an owner decision. Free VRAM is NVML free, which includes Windows desktop
 usage. Foreign usage is not refused at start, because WDDM shrinks it under pressure.
 
-**Owner decision 2026-10-15: the hard floor is 0.8 GiB free.** In the VRAM test the desktop started
-paging below ~0.8 GiB of free physical VRAM and decode slowed by ~20 %. From the next release on,
-`bench.VRAM_FLOOR_BYTES` (matrix, compare-ab, screen-chunk) is 0.8 GiB, and `soak-analysis.py` fails a
-soak whose minimum free VRAM in any state sample is below 0.8 GiB. Its summary (`summary.vram`) reports
-min / p1 / p5 / median free VRAM and the minutes below the floor, so a desktop that grows into the
-model's headroom is visible. Release f1 evidence stays judged against the 0.5 GiB floor it was run
-under (its soak minimum was 367-436 MiB); it is not relabelled.
+**Owner decision 2026-10-15: the hard floor is 0.8 GiB free where the desktop is quiet.** In the VRAM test
+the desktop started paging below ~0.8 GiB of free physical VRAM and decode slowed by ~20 %. From the next
+release on, `bench.VRAM_FLOOR_BYTES` (matrix, compare-ab, screen-chunk; context gates run on a quiet
+desktop too) is 0.8 GiB.
+
+**Soak: relative to the f1 soak, the floor is reported only.** f1 itself was below 0.8 GiB in 15.6 % of
+its soak samples (p1 617 MiB, minimum 436 MiB), and Windows shrinks its own share under pressure. So
+`soak-analysis.py --reference-soak <f1 analysis.json>` fails a soak when:
+- p1 of NVML free VRAM is below the reference p1 (compared in whole MiB);
+- Windows shared GPU memory grew by more than 256 MiB over the reference median (only once the state
+  sampler records `gpu_shared_used_bytes`; until then the report says `not_sampled`);
+- a fresh-request TTFT median is more than 3 % worse, or a client decode median more than 3 % lower,
+  than the reference at the same prompt length (the compare-ab non-inferiority margin).
+
+The reference numbers are recomputed from the reference receipt (bound by its `source_sha256`), so the
+f1 analysis, written before p1 and decode medians existed, still works. Minimum, p1, p5, median free VRAM,
+the share of samples and the minutes below 0.8 GiB are in `summary.vram`, for review and operations, not
+as a failure. The 30 s pilot of `release-gates.sh` is not judged against the reference.
 
 ## 5. Freeze, sync and provenance
 

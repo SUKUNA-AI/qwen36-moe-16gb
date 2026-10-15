@@ -1,4 +1,4 @@
-# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T11:24:21Z
+# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T11:50:47Z
 # rendered with site values digest=895052024cbcd577 (py/sh/config/profile bytes as written to native)
 # options: skip_runtime=0 extra_config=- (pass the same options to --dry-run/--apply)
 095e182f33349d2b2e7ea32694b3de3ca403ceed972342f3cab7d2dd0419e1ee  freetoken/python/freetoken/__init__.py
@@ -516,8 +516,8 @@ f3d67f46132557616c59221d7ad8b3d220b1341e23dd2c3d28ce958cbb522f43  harness/profil
 ebda1ad441657eaf208d38db12bf9d9a8f153472eab42926fac68f72116cfeae  harness/analyze-model-nsys.py
 fc305bfc9c9f1fbdb429aac21df082278a6e224c20000768fd10ef3b5cb48c41  harness/test-analyze-model-nsys-cpu.py
 b4911728cb36e71d4a7634cbcd30df00c897fbe67b75422e0c69cb24091344f3  harness/soak.py
-f30ab06f6cd1ebb6143c686cb039435c2f3aa4212dd53386a7a4764df95ec7df  harness/soak-analysis.py
-2516ce838c1c626d926f64e234a628df8bdfa0d1178ef6c4e66f0d5da4ab497a  harness/test-soak-cpu.py
+1465f8b5331d479a00241d4b6ad33b269cc07c69b43a8b69d81dcda87af06494  harness/soak-analysis.py
+3f5d2454153da7b1cb350b4784246325245e36a69047fc35b870a388814edec0  harness/test-soak-cpu.py
 0eae2fd97606b9150cd924d5c5f5464ec5f61b2166f5b7681ce8e79c80f42fd8  harness/release.py
 b7b5bd022df35ef64ed5cb2c74ec04081673c6ffd2d2e0e4fe8d4f6ee65ccf30  harness/export-release-evidence.py
 b411fcf81b7e6dc3c30c88a06aaf05058d551855849df2a7f31e01d407a5d454  harness/make-qualification.py
