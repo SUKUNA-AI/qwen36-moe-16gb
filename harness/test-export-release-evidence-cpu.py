@@ -4,6 +4,7 @@ import collections
 import importlib.util
 import json
 import pathlib
+import re
 import subprocess
 import tempfile
 import unittest
@@ -177,6 +178,33 @@ class BundleMappingTests(unittest.TestCase):
             with self.subTest(name):
                 self.assertTrue(m.allowed_source(name))
                 self.assertIn(group,m.feature_groups(name))
+
+    def test_main128_next_sources_have_feature_groups(self):
+        # T3, host embeddings, C0/C1 transport and the S3 decode kernels (main128 next candidate).
+        expected={'python/freetoken/decode_overlap.py':'C','python/freetoken/models/qwen3_5_moe/moe.py':'C',
+                  'python/freetoken/engine/host_embeddings.py':'C','python/freetoken/kernel/triton/host_rows.py':'C',
+                  'tests/layers/test_host_embedding_gpu.py':'C','python/freetoken/moe/offload_kernels.py':'C',
+                  'python/freetoken/moe/route_trace.py':'C','python/freetoken/kernel/batch_memcpy.py':'C',
+                  'tests/moe/test_prefill_c0_gpu.py':'C','tests/moe/test_prefill_c12_gpu.py':'C',
+                  'python/freetoken/kernel/cuda_oproj_gemv.py':'B','python/freetoken/kernel/cuda_moe_decode.py':'B',
+                  'tests/kernels/test_cuda_decode_kernels.py':'B'}
+        for name,group in expected.items():
+            with self.subTest(name):
+                self.assertIn(group,m.feature_groups(name))
+
+    def test_every_documented_change_has_a_feature_group(self):
+        # freetoken/MODIFICATIONS.md lists every file that differs from the pinned base (compared with upstream
+        # cac247a); the exporter refuses a changed source without a group, so each must map to one.
+        fork=__import__('repo_paths').FREETOKEN
+        text=(fork/'MODIFICATIONS.md').read_text(encoding='utf-8')
+        listed=[line for block in re.findall(r'^## Files (?:modified|added)[^\n]*\n\n```\n(.*?)```',text,re.S|re.M)
+                for line in block.split('\n') if line]
+        self.assertGreater(len(listed),100)
+        for name in listed:
+            with self.subTest(name):
+                self.assertTrue((fork/name).is_file(),'listed file missing')
+                if m.allowed_source(name):
+                    self.assertTrue(m.feature_groups(name),'changed source without an exporter feature group')
 
 
 if __name__=='__main__':unittest.main(verbosity=2)
