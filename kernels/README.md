@@ -256,6 +256,17 @@ separate library: `freetoken/python/freetoken/kernel/csrc/jit/decode_gather.cuh`
 permanently costs about 1373 MiB of VRAM on first launch. Served sm_120 kernels must not use
 `.shared::cluster` bulk copies.
 
+## Next-update candidates (in this tree, not in the released build)
+
+Two bit-exact decode kernels (plan item D4). Each sits behind its own switch, off by default. Each
+library is pinned by sha256 and ABI, and is self-tested against the path it replaces before use. Each
+directory has its own README with the identification method, build, tests and results.
+
+| Library | Directory | Replaces | Switch |
+|---|---|---|---|
+| `libqwen_oproj_gemv.so` (ABI 1) | [`decode-oproj/`](decode-oproj/) | decode out/o-projection `torch._scaled_mm` (cuBLASLt memset + xmma split-K 3) | `QWEN36_OPROJ_GEMV` |
+| `libqwen_moe_decode.so` (ABI 1) | [`decode-moe/`](decode-moe/) | Triton NVFP4 MoE decode GEMV (gate_up and down) | `QWEN36_MOE_DECODE_CUDA` |
+
 ## Experimental, not shipped
 
 These are kept in the private work archive only; none of them is loaded by the released build.
