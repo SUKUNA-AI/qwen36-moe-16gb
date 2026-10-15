@@ -567,7 +567,7 @@ class ScreenPairs(unittest.TestCase):
             finally:os.close(held)
 
     def test_screen_flag_only_off_five_pairs(self):
-        with patch.object(matrix,'current_run_spec',return_value={'arms':{},'harness_source_files':{}}),\
+        with patch.object(matrix,'current_run_spec',side_effect=lambda *args:{'arms':{},'harness_source_files':{}}),\
              patch.object(matrix,'validate_tool_pilot',return_value={}):
             three=matrix.build_spec(None,PROFILES,bench.DEFAULT_LENGTHS,128,3,'p')
             five=matrix.build_spec(None,PROFILES,bench.DEFAULT_LENGTHS,128,5,'p')
@@ -577,7 +577,8 @@ class ScreenPairs(unittest.TestCase):
     def test_screen_summary_lists_every_pair_and_the_median(self):
         with tempfile.TemporaryDirectory() as folder:
             root=pathlib.Path(folder);fixture(root)
-            rows=[row for row in json.loads((root/'reports/fixture-matrix.json').read_text()) if row['repeat']<3]
+            rows=[dict(row,report=f"fixture-{row['repeat']}-{row['profile']}.json")
+                  for row in json.loads((root/'reports/fixture-matrix.json').read_text()) if row['repeat']<3]
             summary=matrix.screen_summary(root,'fixture',rows)
         self.assertTrue(summary['screen']);self.assertFalse(summary['gate'])
         self.assertEqual(sorted(summary['profiles']),sorted(PROFILES))
