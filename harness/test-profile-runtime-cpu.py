@@ -1496,8 +1496,9 @@ class BundleSchemaTests(unittest.TestCase):
             self.assertIn(text, str(raised.exception))
 
     def test_switch_tables(self):
-        self.assertEqual(runtime.FEATURE_SWITCHES, ('fused_attention_gate', 'fp32_gdn_snapshot', 'retain_chunk_snapshot',
+        self.assertEqual(tuple(s for s in runtime.FEATURE_SWITCHES if s != 'decode_shared_overlap'), ('fused_attention_gate', 'fp32_gdn_snapshot', 'retain_chunk_snapshot',
                                                     'cuda_nvfp4_prefill') + NEW_SWITCHES)
+        self.assertEqual(runtime.SWITCH_ENV['decode_shared_overlap'], {'QWEN36_DECODE_SHARED_OVERLAP': '1'})
         self.assertEqual(runtime.FEATURE_SWITCHES, tuple(runtime.SWITCH_ENV))
         self.assertTrue(set(runtime.FEATURE_SWITCHES) <= runtime.OPTIONAL_FIELDS)
         self.assertEqual({key: runtime.SWITCH_ENV[key] for key in NEW_SWITCHES},

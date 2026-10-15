@@ -125,5 +125,10 @@ class OverlapTests(unittest.TestCase):
         r.configure_environment('main128',candidate,env);self.assertEqual(env[ENV],'1')
         for name in ('main-release-overlap','main-release-shortroute-fla-wu-overlap'):
             cfg=json.loads((HARNESS/(name+'.json')).read_text());self.assertIs(cfg['qualified'],False);self.assertEqual(cfg['env'][ENV],'1')
+            spec=importlib.util.spec_from_file_location('overlap_receipt',HARNESS/'make-qualification.py');q=importlib.util.module_from_spec(spec);spec.loader.exec_module(q)
+            mapped=q.run_equivalent_profile(cfg,r.FEATURE_SWITCHES,r.KERNEL_LOADER_ENV,r.VALUE_FIELDS)
+            self.assertIs(mapped['decode_shared_overlap'],True)
+            cfg['env'][ENV]='unknown'
+            with self.assertRaises(ValueError):q.run_equivalent_profile(cfg,r.FEATURE_SWITCHES,r.KERNEL_LOADER_ENV,r.VALUE_FIELDS)
 
 if __name__=='__main__':unittest.main(verbosity=2)

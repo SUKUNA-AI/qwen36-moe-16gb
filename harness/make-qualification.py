@@ -75,7 +75,7 @@ RUN_FEATURE_ENV = frozenset({'QWEN36_PREFIX_MARGIN', 'QWEN36_FUSED_ATTN_GATE', '
                              'QWEN36_CUDA_GDN_DECODE', 'QWEN36_FP8_GEMV', 'QWEN36_FP8_GEMV_LIBRARY',
                              'QWEN36_DECODE_GATHER', 'TVM_FFI_CUDA_ARCH_LIST', 'QWEN36_LAYER_MAJOR_REFILL',
                              'QWEN36_LAYER_MAJOR_REFILL_POLICY', 'QWEN36_SYNC_LEAN', 'QWEN36_LAYER_MAJOR_ATTN_BATCH',
-                             'QWEN36_CUDA_GDN_FLA', 'QWEN36_LAYER_MAJOR_MIN_TOKENS'})
+                             'QWEN36_CUDA_GDN_FLA', 'QWEN36_LAYER_MAJOR_MIN_TOKENS', 'QWEN36_DECODE_SHARED_OVERLAP'})
 # Profile switch -> (run environment variable, value that switches it on).
 RUN_SWITCH_ENV = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE', '1'),
                   'fp32_gdn_snapshot': ('QWEN36_FP32_GDN_SNAPSHOT', '1'),
@@ -86,6 +86,7 @@ RUN_SWITCH_ENV = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE', '1'),
                   'cuda_fp8_gemv': ('QWEN36_FP8_GEMV', '1'),
                   'decode_gather': ('QWEN36_DECODE_GATHER', 'tuned'),
                   'layer_major_refill': ('QWEN36_LAYER_MAJOR_REFILL', '1'),
+                  'decode_shared_overlap': ('QWEN36_DECODE_SHARED_OVERLAP', '1'),
                   'sync_lean': ('QWEN36_SYNC_LEAN', '1')}
 # Profile value field -> run environment variable (validator VALUE_FIELDS give the allowed values).
 RUN_VALUE_ENV = {'cuda_gdn_fla': 'QWEN36_CUDA_GDN_FLA', 'layer_major_refill_policy': 'QWEN36_LAYER_MAJOR_REFILL_POLICY',
@@ -93,7 +94,7 @@ RUN_VALUE_ENV = {'cuda_gdn_fla': 'QWEN36_CUDA_GDN_FLA', 'layer_major_refill_poli
                  'layer_major_min_tokens': 'QWEN36_LAYER_MAJOR_MIN_TOKENS'}
 # Production bundle switches: the run must carry exactly what configure_environment exports, or nothing.
 # Another spelling FreeToken might also accept ('true', 'on', 'cta', ...) is not the qualified configuration.
-RUN_EXACT_ENV = {'QWEN36_LAYER_MAJOR_PREFILL': '1', 'QWEN36_CUDA_GDN': '1', 'QWEN36_CUDA_GDN_DECODE': 'cluster',
+RUN_EXACT_ENV = {'QWEN36_DECODE_SHARED_OVERLAP': '1', 'QWEN36_LAYER_MAJOR_PREFILL': '1', 'QWEN36_CUDA_GDN': '1', 'QWEN36_CUDA_GDN_DECODE': 'cluster',
                  'QWEN36_FP8_GEMV': '1', 'QWEN36_DECODE_GATHER': 'tuned', 'TVM_FFI_CUDA_ARCH_LIST': '12.0',
                  'QWEN36_LAYER_MAJOR_REFILL': '1', 'QWEN36_SYNC_LEAN': '1'}
 # Variables production exports only together with a switch (variable -> switch variable).
