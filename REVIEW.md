@@ -17,6 +17,11 @@ multi-task layout is not an outstanding process violation.
 
 ### H1 — Functional evidence can come from a different run and source
 
+**Status 2026-10-15 (S1): fixed.** `functional_rows(report, profile, teacher_run)` validates the functional
+receipt, binds every row's `run_id`/`serving_run_id` to it and requires the serving identity of the teacher run
+except the three `RUN_DIAGNOSTIC_ENV` knobs; `quality.py` re-reads the receipt after every request.
+
+
 **High; reproduced.** `harness/compare-quality.py:29` calls
 `freetoken/python/freetoken/quality_evidence.py:209` (`functional_rows`), which
 checks matrix/case completeness and value types but never validates `run`.
@@ -48,6 +53,10 @@ The migration study's separate upstream clone does not change this repository.
 
 ### M3 — FTW index version and tensor uniqueness are unchecked
 
+**Status 2026-10-15 (S1): fixed.** One `_load_index()` validates format, version, alignment, shard names and
+contiguity, duplicate tensors, nbytes and bounds before any shard IO (`tests/checkpoint/test_ftw_index.py`).
+
+
 **Medium; reproduced on CPU.**
 `freetoken/python/freetoken/checkpoint/ftw.py:217` checks format with assert but
 ignores version; line 223 builds a dict that overwrites duplicate tensor names.
@@ -70,6 +79,9 @@ review, not a blanket removal of invariants.
 
 ### M5 — Frozen final release driver is incompatible with schema 2
 
+**Status 2026-10-15 (S1): replaced** by `harness/gates/release-gates.sh`; `final-gates.sh` stays the f1 archive.
+
+
 **Medium; confirmed.** `harness/gates/final-gates.sh` still calls qualify without
 mandatory reference/functional-baseline arguments and reuses f1 report names;
 its teacher environment extraction predates the reference-report field. Existing
@@ -86,6 +98,9 @@ breakdown. Extend profiling via a separately named workload and explicitly revie
 any new private fixture; do not rename the old fixture or alter f1 evidence.
 
 ### M7 — Short-route component does not test stale borrowed bytes after close
+
+**Status 2026-10-15 (S1): test added** (post-close phase without `resident()`); GPU result in the S1 report.
+
 
 **Medium; confirmed test gap.** `freetoken/tests/moe/test_short_route_gpu.py:29`
 repopulates all resident slots before each phase. It tests D2D exclusion inside an

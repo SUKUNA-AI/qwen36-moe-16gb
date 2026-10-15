@@ -10,7 +10,8 @@ Use the owner's pinned SM120 stack, model and **reviewed experiment overlay**.
 Do not change production `release/python`, start production, run a blanket sync,
 install dependencies into the serving venv, or generate an acceptance receipt.
 The public deployment launchers still contain site placeholders; use reviewed,
-site-configured experiment launchers. `sync-v5.sh` is not migrated by this change.
+site-configured experiment launchers. `harness/sync-v5.sh` now reads `config/local.env` and renders the
+placeholders into the overlay (`--print-freeze`, `--dry-run`, `--apply --label --freeze`); see MANIFEST TODO 1-2.
 
 Set these absolute paths; `N` is the existing experiment overlay (normally
 `S/optimization`), `C` is this checkout, and `P` is the existing GPU Python:
@@ -131,9 +132,10 @@ flock -w 3600 -E 75 "$LOCK" timeout 1800 "$P" -m pytest -v \
 
 Require byte identity of all banks, positive D2D traffic in enabled short epochs,
 zero D2D traffic while tail slots are borrowed, and no skipped mandatory GPU case.
-This test does not evaluate model logits or qualify overlap. It also repopulates
-every slot before each phase, so it cannot catch hit-D2D reading stale borrowed
-bytes after an epoch. Before the model gates, run the archived layer-major CPU suite
+This test does not evaluate model logits or qualify overlap. After each layer-major
+close it also runs a short phase without repopulating slots (M7): no layer-1 expert may
+stay mapped to a borrowed tail slot, every byte must match, and hit-D2D traffic must
+come from layer 0 only (the layer whose slots were not lent). Before the model gates, run the archived layer-major CPU suite
 (24 tests incl. epoch reopening and the abort sweep, not in this repository) against
 this tree, and treat T1 telemetry plus the teacher gate as the end-to-end check.
 
@@ -179,7 +181,9 @@ delegates to the same strict checker; new final-driver runs no longer use the
 historical R1b equivalence override. `gates/final-gates.sh` itself is the frozen f1
 driver and is not schema-2 ready (it calls `qualify.py` without the evidence
 arguments, and `extract-run --teacher` does not expect
-`QWEN36_TEACHER_REFERENCE_REPORT`): the next release needs a new driver.
+`QWEN36_TEACHER_REFERENCE_REPORT`). The next release uses `harness/gates/release-gates.sh`
+(stages A/B/D/C/E/Z, unique run-scoped names, site paths from `config/local.env`; default screen mode
+3 pairs + 30 min soak, `--release` 5 pairs + compare-ab + 2 h soak; `--dry-run` prints the exact commands).
 Require `evidence_valid`, `quality_gate_pass`, `bit_exact_pass`, expected==observed,
 all checkpoint max_abs/relative_l2==0 and all_byte_equal, complete forced targets, and no new functional
 failure. Functional reports specify their context matrix and successful HTTP

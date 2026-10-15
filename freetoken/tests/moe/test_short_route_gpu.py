@@ -1,11 +1,13 @@
 """Owner-only transport gate for short-route; never run by CPU-checks.sh.
 
 Large aligned rows exercise hit-D2D, then a layer-major epoch overwrites borrowed
-slots. Compare every destination byte and require real D2D on the short path.
+slots. Compare every destination byte and require real D2D on the short path. After
+the epoch closes, a short phase without repopulating slots must not read the stale
+borrowed bytes: D2D only for the layer whose slots were not lent.
 """
 import pytest
 import torch
-from freetoken.moe.offload_cache import OffloadMoeCache, _BANK_SCHEMAS
+from freetoken.moe.offload_cache import OffloadMoeCache, _BANK_SCHEMAS, _SMALL_BANK_FEAT_BYTES
 
 @pytest.mark.parametrize('quant_format', ('bf16', 'nvfp4_marlin', 'nvfp4'))
 @pytest.mark.parametrize('hit_d2d', (False, True))
@@ -52,4 +54,16 @@ def test_short_hits_and_borrowed_slot_epochs_byte_exact(hit_d2d, quant_format):
         for event in cache.prefill_ready_events:torch.cuda.current_stream(dev).wait_event(event)
         cache.end_layer_major_prefill()
         assert not cache.layer_major_active and cache.prefill_hit_d2d == hit_d2d
+        # Post-close short phase WITHOUT resident(): layer 1 lived in the borrowed tail
+        # (slots >= 3E, now 165s) and must stay unmapped; layer 0 (slots 2E..3E-1) is intact.
+        assert not bool((cache.slot_for_id[1] >= 3*E).any()), 'borrowed slot still mapped after close'
+        assert bool(((cache.slot_for_id[0] >= 2*E) & (cache.slot_for_id[0] < 3*E)).all())
+        before, hits = cache.prefill_d2d_bytes, cache.prefill_hit_rows
+        cache.begin_prefill();byte_check()
+        if hit_d2d:
+            layer_bytes = E*sum(f for f in cache._copy_feat_bytes_host if f >= _SMALL_BANK_FEAT_BYTES)
+            assert (cache.prefill_hit_rows-hits, cache.prefill_d2d_bytes-before) == (E, layer_bytes), \
+                'post-close D2D must come from layer 0 only'
+        else:
+            assert cache.prefill_d2d_bytes == before
     torch.cuda.synchronize()
