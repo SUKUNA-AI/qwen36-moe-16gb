@@ -1,9 +1,10 @@
 """Informational comparison of two teacher-bf128 logit references (CPU only; NOT a gate).
 
-Use: after the R1 sync (NVFP4 global scale in FP32), `qualify.py --baseline-teacher`
-overwrites reports/logit-reference/{seed}-{offset}.npy in place (engine/qualification.py
-saves when QWEN36_PROFILE == teacher-bf128). Copy the old directory first (e.g.
-reports/logit-reference-pre-r1), then run this to quantify how much the numeric basis moved:
+Use: when the numeric basis moves on purpose (R1 FP32 globals, a new fixture or stack), a
+teacher-bf128 run with QWEN36_TEACHER_CREATE_REFERENCE=1 writes the new reference into a NEW
+directory (QWEN36_LOGIT_REFERENCE; engine/qualification.py creates only missing
+{seed}-{offset}.npy files and never replaces one). Then run this with --old-dir/--new-dir
+to quantify how much the numeric basis moved:
   logits  every {seed}-{offset}.npy present in both: max_abs, relative_l2 (max/mean),
           top-1 agreement, files only in one side
   NLL     teacher.jsonl rows of profile teacher-bf128 for two run_ids (default: the last two

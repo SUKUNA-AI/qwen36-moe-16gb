@@ -8,12 +8,28 @@ def start(profile):
     run(['bash',str(ROOT/'start-experiment.sh'),profile],60)
     run([PY,str(ROOT/'check-experiment.py'),'300'],310)
 
+def preflight(a, outputs):
+    """CPU-only, before any unit starts: a run that cannot produce a valid comparison costs no GPU pass."""
+    from freetoken.quality_evidence import bind_teacher, evidence_records, functional_rows, strict_json
+    reports=ROOT/'reports'
+    taken=[name for name in outputs if (reports/f'{name}.json').exists()]
+    if taken:raise SystemExit('report names already exist (pass a new --name): '+', '.join(taken))
+    try:
+        if not a.baseline_teacher:
+            report=strict_json((reports/f'{a.reference_report}.json').read_text())
+            bind_teacher(report,evidence_records(reports/'teacher.jsonl',[report]),'teacher-bf128')
+        functional_rows(strict_json((reports/f'{a.functional_baseline}.json').read_text()))
+    except (OSError,ValueError,TypeError,KeyError) as error:
+        raise SystemExit(f'reference or functional baseline is not run-bound schema-2 evidence: {error}')
+
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--candidate',required=True);p.add_argument('--baseline-teacher',action='store_true');p.add_argument('--reference-report',default='teacher-bf128-logits');p.add_argument('--functional-baseline',default='functional-bf128');p.add_argument('--name',help='unique report prefix; profile names stay unchanged')
+    # Historical f1 reports (teacher-bf128-logits, functional-bf128) are not schema-2 evidence: no defaults.
+    p=argparse.ArgumentParser();p.add_argument('--candidate',required=True);p.add_argument('--baseline-teacher',action='store_true');p.add_argument('--reference-report',required=True);p.add_argument('--functional-baseline',required=True);p.add_argument('--name',help='unique report prefix; profile names stay unchanged')
     a=p.parse_args()
     teacher_report=(a.name+'-teacher') if a.name else 'teacher-'+a.candidate
     functional_report=(a.name+'-functional') if a.name else 'functional-'+a.candidate
     comparison_report='quality-'+(a.name or a.candidate)
+    preflight(a,[teacher_report,functional_report,comparison_report]+([a.reference_report] if a.baseline_teacher else []))
     candidate=json.loads((ROOT/'config'/f'{a.candidate}.json').read_text())
     teacher='teacher-'+a.candidate
     candidate.setdefault('env',{}).update(QWEN36_TEACHER_FIXTURE=str(ROOT/'config/teacher-fixture.json'),

@@ -1,7 +1,10 @@
 """CPU-only, fail-closed teacher evidence shared by engine and harness.
 
 Identity is (profile, run_id, case). Rotation order never selects a run. Only an
-identical serialized record may repeat; conflicting records and damaged JSON fail.
+identical serialized record may repeat. A conflicting duplicate poisons its own
+identity, and selecting it fails. Damaged lines and rows without a complete identity
+can never be selected; they are listed, not fatal. History that no report selects
+therefore cannot block unrelated runs.
 """
 import hashlib
 import json
@@ -37,13 +40,21 @@ def strict_json(text):
         raise EvidenceError(f'nonfinite JSON: {value}')
     return json.loads(text, object_pairs_hook=pairs, parse_constant=constant)
 
+class TeacherRecords(dict):
+    """(profile, run_id, case) -> row, plus .conflicts (identities seen with different
+    records, excluded) and .unreadable ('file:line: reason' of unselectable lines)."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.conflicts = set()
+        self.unreadable = []
+
 def teacher_records(path):
     path = Path(path)
     rotated = sorted((p for p in path.parent.glob(path.name + '.*') if p.name[len(path.name)+1:].isdigit()),
                      key=lambda p: int(p.name[len(path.name)+1:]), reverse=True)
     files = rotated + ([path] if path.exists() else [])
     require(bool(files), f'no teacher evidence: {path}')
-    records, serialized = {}, {}
+    records, serialized = TeacherRecords(), {}
     for file in files:
         for number, line in enumerate(file.read_text().splitlines(), 1):
             try:
@@ -51,19 +62,21 @@ def teacher_records(path):
                 require(type(row) is dict, 'teacher record must be an object')
                 key = tuple(row.get(k) for k in ('profile', 'run_id', 'case'))
                 require(all(type(x) is str and x for x in key), 'teacher identity missing')
-                if key in records:
-                    require(serialized[key] == line, f'conflicting duplicate: {key}')
-                else:
-                    records[key], serialized[key] = row, line
             except (ValueError, TypeError) as e:
-                raise EvidenceError(f'{file.name}:{number}: {e}') from e
+                records.unreadable.append(f'{file.name}:{number}: {e}')
+                continue
+            if key not in serialized:
+                records[key], serialized[key] = row, line
+            elif serialized[key] != line:
+                records.conflicts.add(key)
+                records.pop(key, None)
     return records
 
 def evidence_records(path, reports):
     path = Path(path)
     files = [path] if path.exists() else []
     files += [p for p in path.parent.glob(path.name+'.*') if p.name[len(path.name)+1:].isdigit()]
-    records = teacher_records(path) if files else {}
+    records = teacher_records(path) if files else TeacherRecords()
     for report in reports:
         snapshot = report.get('teacher_evidence')
         if snapshot is None:
@@ -75,6 +88,7 @@ def evidence_records(path, reports):
             key = tuple(row.get(k) for k in ('profile','run_id','case'))
             require(all(type(k) is str and k for k in key) and key not in seen, 'snapshot duplicate/missing identity')
             seen.add(key)
+            require(key not in records.conflicts, f'conflicting duplicate teacher rows: {key}')
             require(key not in records or records[key] == row, f'snapshot conflicts with teacher log: {key}')
             records[key] = row
     require(bool(records), 'no teacher evidence or run-scoped snapshots')
@@ -162,6 +176,8 @@ def bind_teacher(report, records, profile):
         require(type(r.get('clean_cache')) is bool and r['clean_cache'] == clean, f'{case}: invalid clean-cache binding')
         require((run != report['run']['run_id']) == clean, f'{case}: incorrect case->run binding')
         key = (profile, run, case)
+        conflicts = getattr(records, 'conflicts', ())
+        require(key not in conflicts, f'conflicting duplicate teacher rows: {key}')
         require(key in records, f'missing teacher row: {key}')
         row = records[key]
         spec = targets[case]
@@ -186,7 +202,7 @@ def bind_teacher(report, records, profile):
         selected[case] = row
     require(set(r['run_id'] for r in rows.values()) == set(receipts), 'unused/ambiguous receipt')
     for run in set(receipts) - {report['run']['run_id']}:
-        own = {k[2] for k in records if k[:2] == (profile, run)}
+        own = {k[2] for k in [*records, *getattr(records, 'conflicts', ())] if k[:2] == (profile, run)}
         require(own == {'long-120000'}, 'clean-cache run served other cases')
     return selected
 

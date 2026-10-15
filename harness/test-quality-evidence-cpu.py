@@ -83,13 +83,38 @@ class QualityEvidence(unittest.TestCase):
     def test_rotated_reference_and_duplicate_rules(self):
         with tempfile.TemporaryDirectory() as d:
             p=pathlib.Path(d)/'teacher.jsonl'; row=next(iter(fixtures()[4].values())); line=json.dumps(row)
+            key=(row['profile'],row['run_id'],row['case']); other=dict(row,run_id='unrelated')
             p.with_suffix('.jsonl.1').write_text(line+'\n');p.write_text(line+'\n')
             self.assertEqual(len(teacher_records(p)),1)
-            p.write_text(json.dumps(dict(row,nll=[2.]*9))+'\n')
-            with self.assertRaisesRegex(EvidenceError,'conflicting'):teacher_records(p)
-            for damaged in ('{', '{}', line+'\n{', line.replace('1.0','NaN',1)):
-                p.write_text(damaged)
-                with self.assertRaises(EvidenceError):teacher_records(p)
+            # A conflicting duplicate poisons its own identity only; unrelated runs stay usable.
+            p.write_text(json.dumps(dict(row,nll=[2.]*9))+'\n'+json.dumps(other)+'\n')
+            records=teacher_records(p)
+            self.assertNotIn(key,records);self.assertEqual(records.conflicts,{key})
+            self.assertIn((row['profile'],'unrelated',row['case']),records)
+            # Damaged or identity-less lines can never be selected: listed, not fatal.
+            for damaged in ('{', '{}', '{"profile":"p","run_id":null,"case":"c"}', line.replace('1.0','NaN',1)):
+                p.write_text(damaged+'\n'+json.dumps(other)+'\n')
+                records=teacher_records(p)
+                self.assertEqual(len(records.unreadable),1);self.assertEqual(records.conflicts,set())
+                self.assertIn(key,records);self.assertIn((row['profile'],'unrelated',row['case']),records)
+            p.unlink();p.with_suffix('.jsonl.1').unlink()
+            with self.assertRaisesRegex(EvidenceError,'no teacher evidence'):teacher_records(p)
+
+    def test_conflicting_duplicate_fails_only_the_selected_identity(self):
+        f=fixtures();key=('teacher-candidate','new','ru-0')
+        records=TeacherRecords(f[4]);records.pop(key);records.conflicts.add(key);f[4]=records
+        with self.assertRaisesRegex(EvidenceError,'conflicting'):self.compare(f)
+        f=fixtures();records=TeacherRecords(f[4]);records.conflicts.add(('teacher-candidate','other-run','ru-0'))
+        f[4]=records;self.assertTrue(self.compare(f)['bit_exact_pass'])
+        f=fixtures(True);records=TeacherRecords(f[4]);records.conflicts.add(('teacher-candidate','new-cold','ru-0'))
+        f[4]=records
+        with self.assertRaisesRegex(EvidenceError,'clean-cache run served other cases'):self.compare(f)
+        with tempfile.TemporaryDirectory() as d:
+            path=pathlib.Path(d)/'teacher.jsonl';f=fixtures();snapshot=f[1]
+            snapshot['teacher_evidence']=[row for k,row in f[4].items() if k[0]=='teacher-candidate']
+            row=snapshot['teacher_evidence'][0]
+            path.write_text(json.dumps(row)+'\n'+json.dumps(dict(row,nll=[2.]*9))+'\n')
+            with self.assertRaisesRegex(EvidenceError,'conflicting'):evidence_records(path,[snapshot])
 
     def test_empty_incomplete_duplicate_extra_and_types_functional(self):
         for arm in (2,3):
@@ -157,6 +182,62 @@ class QualityEvidence(unittest.TestCase):
                 np.save(refs/'900000-0.npy',np.ones(4,dtype=np.float32));req.uid=2
                 with self.assertRaisesRegex(EvidenceError,'missing/replaced'):engine.force(torch.zeros(1,4),batch)
             self.assertEqual(set(refs.iterdir()),{refs/'900000-0.npy',refs/'900000-8.npy'})
+
+    def test_baseline_reference_created_only_on_opt_in_and_never_replaced(self):
+        import os, types, sys
+        import numpy as np
+        import torch
+        from unittest.mock import patch
+        from repo_paths import FREETOKEN
+        with tempfile.TemporaryDirectory() as d:
+            root=pathlib.Path(d);refs=root/'reports/logits';refs.parent.mkdir()
+            fixture=root/'fixture.json'
+            fixture.write_text(json.dumps({'targets':{'900000':{'case':'ru-0','ids':[0]*9}}}))
+            active=dict(fixtures()[0]['run'])
+            (root/'active-run.json').write_text(json.dumps(active))
+            prefill=types.ModuleType('freetoken.scheduler.prefill');prefill.ChunkedReq=type('ChunkedReq',(),{})
+            env={'QWEN36_TEACHER_FIXTURE':str(fixture),'QWEN36_LOGIT_REFERENCE':str(refs),'QWEN36_PROFILE':'teacher-bf128',
+                 'QWEN36_RUN_ID':active['run_id'],'QWEN36_DATA_ROOT':str(root)}
+            def engine():
+                spec=importlib.util.spec_from_file_location('engine_teacher_create_test',FREETOKEN/'python/freetoken/engine/qualification.py')
+                m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
+            def force(m,uid):
+                req=types.SimpleNamespace(uid=uid,sampling_params=types.SimpleNamespace(seed=900000))
+                return m.force(torch.arange(4,dtype=torch.float32).reshape(1,4),types.SimpleNamespace(size=1,reqs=[req]))
+            file=refs/'900000-0.npy'
+            with patch.dict(os.environ,env),patch.dict(sys.modules,{'freetoken.scheduler.prefill':prefill}):
+                os.environ.pop('QWEN36_TEACHER_CREATE_REFERENCE',None)
+                with self.assertRaisesRegex(EvidenceError,'preexisting'):force(engine(),1)
+                self.assertFalse(file.exists())
+                os.environ['QWEN36_TEACHER_CREATE_REFERENCE']='1'
+                m=engine();force(m,1)
+                self.assertTrue(np.array_equal(np.load(file),np.arange(4,dtype=np.float32)))
+                self.assertEqual(m._results[1]['reference']['files'],{'0':file_digest(file)})
+                self.assertTrue(m._results[1]['logit_comparisons'][0]['byte_equal'])
+                np.save(file,np.ones(4,dtype=np.float32));before=file.read_bytes()
+                with self.assertRaisesRegex(EvidenceError,'differs from pinned'):force(engine(),2)
+                self.assertEqual(file.read_bytes(),before)
+
+    def test_qualify_and_quality_refuse_before_any_gpu_work(self):
+        import sys, types
+        from unittest.mock import patch
+        qualify=load('qualify');quality=load('quality')
+        f=fixtures()
+        with tempfile.TemporaryDirectory() as d:
+            root=pathlib.Path(d);reports=root/'reports';reports.mkdir()
+            (reports/'teacher.jsonl').write_text(''.join(json.dumps(v)+'\n' for k,v in f[4].items() if k[0]=='teacher-bf128'))
+            (reports/'ref.json').write_text(json.dumps(f[0]));(reports/'fb.json').write_text(json.dumps(f[2]))
+            (reports/'legacy.json').write_text(json.dumps({'rows':[]}))
+            args=lambda **kw:types.SimpleNamespace(**{'baseline_teacher':False,'reference_report':'ref','functional_baseline':'fb',**kw})
+            with patch.object(qualify,'ROOT',root):
+                qualify.preflight(args(),['new-teacher','new-functional','quality-new'])
+                (reports/'quality-new.json').write_text('{}')
+                with self.assertRaisesRegex(SystemExit,'already exist'):qualify.preflight(args(),['new-teacher','quality-new'])
+                for bad in (dict(reference_report='legacy'),dict(reference_report='absent'),dict(functional_baseline='legacy')):
+                    with self.subTest(bad=bad),self.assertRaisesRegex(SystemExit,'not run-bound'):qualify.preflight(args(**bad),['other'])
+                with self.assertRaisesRegex(SystemExit,'already exist'):qualify.preflight(args(baseline_teacher=True),['x','ref'])
+            with patch.object(quality,'ROOT',root),patch.object(sys,'argv',['quality.py','--name','ref']):
+                with self.assertRaisesRegex(SystemExit,'already exists'):quality.main()
 
     def test_zero_numeric_error_without_byte_equality_is_not_bit_exact(self):
         f=fixtures();f[4][('teacher-candidate','new','ru-0')]['logit_comparisons'][0]['byte_equal']=False

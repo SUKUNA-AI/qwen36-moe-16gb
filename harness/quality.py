@@ -3,7 +3,7 @@ import argparse, os, hashlib, json, re, time
 import requests
 from bench import ROOT, generate, headers, document, run_receipt
 from fixtures import prepare
-from freetoken.quality_evidence import teacher_records, file_digest, digest
+from freetoken.quality_evidence import EvidenceError, teacher_records, file_digest, digest
 
 # Harness v7 teacher clean-cache step. At prefill commit the hybrid radix cache dedups a prompt's shared
 # chat header and re-points its page_table rows to KV written by EARLIER requests (rounding-different GEMM
@@ -49,9 +49,15 @@ def teacher(tokenizer,cases):
         rows.append(row);print(json.dumps(row),flush=True)
     deadline=time.monotonic()+30
     while True:
-        logged=teacher_rows(first['profile'])
-        identities={(row['case'],row['run_id']) for row in logged}
-        missing=[case for case,run in served.items() if (case,run) not in identities]
+        try:records=teacher_records(ROOT/'reports/teacher.jsonl');missing=None
+        except EvidenceError as error:missing=[str(error)]  # no log yet: retry until the deadline
+        if missing is None:
+            conflicted=[case for case,run in served.items() if (first['profile'],run,case) in records.conflicts]
+            if conflicted:raise RuntimeError(f'conflicting duplicate teacher rows for this run: {conflicted}')
+            logged=[row for key,row in records.items() if key[0]==first['profile']]
+            identities={(row['case'],row['run_id']) for row in logged}
+            # A line still being written is unreadable until complete: retry until the deadline.
+            missing=[case for case,run in served.items() if (case,run) not in identities]
         if not missing:break
         if time.monotonic()>=deadline:raise RuntimeError(f'teacher rows missing for this run: {missing}')
         time.sleep(.5)
@@ -111,7 +117,11 @@ def functional(tokenizer,long_length):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--teacher',action='store_true');p.add_argument('--prepare',action='store_true');p.add_argument('--long',type=int,default=120000)
     from transformers import AutoTokenizer
-    args=p.parse_args();tokenizer=AutoTokenizer.from_pretrained(os.environ.get('QWEN36_MODEL_DIR','/path/to/LLM/qwen36-api/model'),local_files_only=True)
+    args=p.parse_args()
+    report=ROOT/'reports'/f'{args.name}.json'
+    # Reports are never overwritten: refuse before any model request, not after the GPU pass.
+    if not args.prepare and report.exists():raise SystemExit(f'report already exists, use a new --name: {report}')
+    tokenizer=AutoTokenizer.from_pretrained(os.environ.get('QWEN36_MODEL_DIR','/path/to/LLM/qwen36-api/model'),local_files_only=True)
     cases=prepare(tokenizer,create=args.prepare) if args.teacher or args.prepare else None
     if args.prepare:print('Prepared 20 fixed holdout cases');return
     extra={}
@@ -125,7 +135,6 @@ def main():
     else:
         rows=functional(tokenizer,args.long);run=run_receipt()
         extra['functional_matrix']={'version':1,'long':args.long}
-    report=ROOT/'reports'/f'{args.name}.json'
     with report.open('x') as out:out.write(json.dumps({'fixture_version':1,'run':run,'rows':rows,**extra},indent=2,allow_nan=False))
     print(json.dumps({'report':str(report),'rows':rows}),flush=True)
 

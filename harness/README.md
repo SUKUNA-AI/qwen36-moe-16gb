@@ -72,3 +72,12 @@ reports remain unchanged and cannot silently become schema-2 acceptance evidence
 Missing reference evidence fails; comparison never creates a new reference.
 `quality_gate_pass` means non-inferiority, `bit_exact_pass` separately requires zero
 logit errors. `make-qualification.py` requires both and complete source bindings.
+
+A teacher-bf128 run verifies the pinned `.npy` reference byte for byte. To move the
+basis on purpose (new fixture, new stack), set `QWEN36_TEACHER_CREATE_REFERENCE=1` in
+that teacher-bf128 config and point `QWEN36_LOGIT_REFERENCE` at a new directory: the
+engine creates missing files exclusively and never replaces an existing one.
+`qualify.py` needs an explicit `--reference-report` and `--functional-baseline`
+(schema 2; the historical f1 reports do not qualify). Before starting any unit it
+refuses existing report names and evidence that does not bind. A conflicting
+duplicate row in `teacher.jsonl` fails only the reports that select its identity.
