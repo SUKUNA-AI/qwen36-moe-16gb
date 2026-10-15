@@ -231,6 +231,16 @@ class V4Adapted(unittest.TestCase):
             self.assertTrue(all(1<=positions.count(position)<=2 for position in (0,1,2)))
         self.assertEqual([row['profile'] for row in matrix.make_schedule(['a','b'],3)],['a','b','b','a','a','b'])
 
+    def test_sustained_warmup_rows_are_not_cases(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=pathlib.Path(folder);fixture(root)
+            for repeat in range(5):
+                for arm in ('bf128','main-retain'):
+                    edit(root,f'fixture-{repeat}-{arm}',lambda doc:doc['rows'].extend(
+                        {'case':'warmup_sustained','iteration':i,'status':200,'elapsed_s':7.0} for i in range(3)))
+            result=compare(root)
+        self.assertTrue(result['contract_pass']);self.assertEqual(result['failures'],[])
+
     def test_v4_06_uncertain_regression_does_not_pass_on_mean(self):
         with tempfile.TemporaryDirectory() as folder:
             root=pathlib.Path(folder);fixture(root)
