@@ -1579,7 +1579,7 @@ class BundleSchemaTests(unittest.TestCase):
         if not runtime.VALUE_FIELDS:
             self.skipTest('no optional value field left in profile-runtime.py')
         for field, (_, allowed, switch) in runtime.VALUE_FIELDS.items():
-            on = {switch: True, 'layer_major_prefill': True}
+            on = {switch: True, 'layer_major_prefill': True, **({'decode_gather': True} if field == 'prefill_selected' else {})}
             values = (0, 1, 2048, 2049) if field == 'layer_major_min_tokens' else allowed
             for value in values:
                 runtime._profiles_schema(self.doc(**on, **{field: value}))
@@ -1598,6 +1598,9 @@ class BundleSchemaTests(unittest.TestCase):
                     self.refused(self.doc(**on, **{field: value}), 'Invalid ' + field)
             self.refused(self.doc(**{field: allowed[0]}, layer_major_prefill=switch != 'layer_major_prefill'),
                          field + ' requires ' + switch)
+            if field == 'prefill_selected':
+                self.refused(self.doc(**{switch: True, field: allowed[0]}, decode_gather=False),
+                             'prefill_selected requires decode_gather')
 
 
 class BundleEnvironmentTests(TempRootCase):

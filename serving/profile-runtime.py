@@ -318,6 +318,10 @@ def validate_profile_schema(name, profile):
     # A threshold above chunk + 1 would send multi-chunk prompts down chunked prefill (measured slower).
     _require(profile.get('layer_major_min_tokens', 0) <= profile['chunk'] + 1,
              'layer_major_min_tokens must not exceed chunk + 1')
+    # C1 fetches the routed experts through the prebuilt TMA decode-gather module (the same instantiation as
+    # decode_gather; FREETOKEN_DISABLE_JIT=1): without it C1 logs one warning and silently keeps the old path.
+    _require('prefill_selected' not in profile or profile.get('decode_gather') is True,
+             'prefill_selected requires decode_gather')
     _require(not (profile.get('decode_shared_overlap') is True and profile.get('layer_major_refill') is True),
              'decode_shared_overlap does not support layer_major_refill')
     for switch in EXPERIMENTAL_EVIDENCE:
