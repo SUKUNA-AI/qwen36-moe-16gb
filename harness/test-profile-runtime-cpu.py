@@ -1592,6 +1592,7 @@ class BundleSchemaTests(unittest.TestCase):
             bad_values = ('hot', 'Restore', '', 1, True, None, 0.5) if type(allowed[0]) is str else \
                 (0, 5, 65, -1, '4', True, 4.0, None)
             if field == 'layer_major_min_tokens':bad_values = (-1, 2147483648, '4', True, 4.0, None)
+            if field == 'prefill_selected':bad_values = (0, 512, -1, '4', True, 4.0, None)
             for value in bad_values:
                 with self.subTest(field=field, value=value):
                     self.refused(self.doc(**on, **{field: value}), 'Invalid ' + field)
@@ -1641,6 +1642,7 @@ class BundleEnvironmentTests(TempRootCase):
         expected = {}
         profile = dict(base)
         for field, (env, allowed, switch) in runtime.VALUE_FIELDS.items():
+            profile[switch] = True
             profile[field] = allowed[-1]
             expected[env] = str(allowed[-1])
         environ = runtime.configure_environment('main128', profile, {})
