@@ -40,6 +40,7 @@
       "cuda_moe_decode": true,
       "prefill_copy_priority": true,
       "prefill_selected": 160,
+      "decode_shared_epilogue": true,
       "qualified": false
     },
     "long256": {
