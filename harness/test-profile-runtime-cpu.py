@@ -1525,7 +1525,9 @@ class BundleSchemaTests(unittest.TestCase):
         self.assertEqual(runtime.NATIVE_LIBRARIES['cuda_gdn'], ('QWEN36_CUDA_GDN_LIBRARY', 'release/lib/libqwen36_gdn.so'))
         self.assertEqual(runtime.NATIVE_LIBRARIES['cuda_fp8_gemv'],
                          ('QWEN36_FP8_GEMV_LIBRARY', 'release/lib/libqwen_fp8_gemv.so'))
-        self.assertEqual(runtime.SWITCH_REQUIRES, {'layer_major_refill': 'layer_major_prefill'} if REFILL else {})
+        self.assertEqual(runtime.SWITCH_REQUIRES,
+                         dict({'layer_major_refill': 'layer_major_prefill'} if REFILL else {},
+                              **({'decode_pregate': 'decode_shared_overlap'} if 'decode_pregate' in runtime.SWITCH_ENV else {})))
         self.assertEqual(runtime.KERNEL_MODULE_SWITCHES, {'decode_gather': (GATHER,)})
         self.assertEqual(runtime.CUDA_EVIDENCE_SWITCHES, ('cuda_nvfp4_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'cuda_gdn_fla',
                                                           'cuda_oproj_gemv', 'cuda_moe_decode'))
