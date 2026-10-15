@@ -75,6 +75,8 @@ SWITCH_ENV = {
     # Background refill of the slots layer-major prefill borrowed (moe/slot_refill.py).
     'layer_major_refill': {'QWEN36_LAYER_MAJOR_REFILL': '1'},
     'decode_shared_overlap': {'QWEN36_DECODE_SHARED_OVERLAP': '1'},
+    # Token-embedding table in pinned host memory (engine/host_embeddings.py): its VRAM goes to expert slots.
+    'host_embeddings': {'QWEN36_HOST_EMBEDDINGS': '1'},
     # PLACEHOLDER (possible future switch, not in the runtime tree yet).
     'sync_lean': {'QWEN36_SYNC_LEAN': '1'},
 }
@@ -160,6 +162,14 @@ CUDA_EVIDENCE_LIBRARIES = {**{k:v[1] for k,v in NATIVE_LIBRARIES.items()}, 'cuda
 
 def cuda_evidence_enabled(profile, switch):
     return profile.get(switch) in ('wu', 'ho') if switch == 'cuda_gdn_fla' else profile.get(switch) is True
+
+# Experimental switches a qualified profile may enable only once listed in QUALIFIABLE_EXPERIMENTAL, and then
+# only with these receipt evidence lists (each a non-empty set of listed evidence files): the GPU component
+# report, the run receipts and schema-2 teacher reports of its byte-exact gate, and the paired A/B report.
+EXPERIMENTAL_EVIDENCE = {'decode_shared_overlap': ('component_reports', 'run_receipts', 'bitexact_reports', 'ab_reports')}
+# T3 joins after test_decode_overlap_gpu.py, the teacher gate and the A/B of the combined candidate pass
+# (GPU_VALIDATION.md section 5); until then a qualified profile cannot enable it.
+QUALIFIABLE_EXPERIMENTAL = frozenset()
 
 CUDA_EVIDENCE_KEY = 'cuda_nvfp4_prefill'
 CUDA_EVIDENCE_KEYS = frozenset({'library', 'library_sha256', 'run_receipts', 'bitexact_reports'})
@@ -283,8 +293,9 @@ def validate_profile_schema(name, profile):
              'layer_major_min_tokens must not exceed chunk + 1')
     _require(not (profile.get('decode_shared_overlap') is True and profile.get('layer_major_refill') is True),
              'decode_shared_overlap does not support layer_major_refill')
-    _require(not (profile.get('decode_shared_overlap') is True and profile['qualified']),
-             'decode_shared_overlap is experimental and cannot be qualified')
+    for switch in EXPERIMENTAL_EVIDENCE:
+        _require(not (profile.get(switch) is True and profile['qualified']) or switch in QUALIFIABLE_EXPERIMENTAL,
+                 switch + ' is experimental and cannot be qualified')
     if 'prefix_margin' in profile:
         _require(type(profile['prefix_margin']) is int and 1 <= profile['prefix_margin'] <= 64,
                  'Invalid prefix margin')
@@ -387,7 +398,8 @@ def _validate_qualification(profiles, qualification, resolve_source, expected_so
              'Qualification must cover exactly the enabled profiles')
     for name in sorted(accepted):
         record = records[name]
-        _require(type(record) is dict and RECORD_KEYS <= set(record) <= RECORD_KEYS | set(CUDA_EVIDENCE_SWITCHES),
+        _require(type(record) is dict
+                 and RECORD_KEYS <= set(record) <= RECORD_KEYS | set(CUDA_EVIDENCE_SWITCHES) | set(EXPERIMENTAL_EVIDENCE),
                  'Invalid qualification record')
         _require(record['configuration_sha256'] == canonical_profile_sha256(profiles['profiles'][name]),
                  'Profile differs from qualification receipt')
@@ -406,6 +418,7 @@ def _validate_qualification(profiles, qualification, resolve_source, expected_so
     _require(type(manifest) is dict, 'Missing source manifest')
     for name in sorted(accepted):
         _cuda_evidence_valid(name, profiles['profiles'][name], records[name], manifest)
+        _experimental_evidence_valid(name, profiles['profiles'][name], records[name])
     _require(type(manifest) is dict and bool(manifest), 'Missing source manifest')
     _require(all(_relative_valid(path) and _hash_valid(digest) for path, digest in manifest.items()),
              'Invalid source manifest')
@@ -614,6 +627,25 @@ def _cuda_evidence_valid(name, profile, record, manifest):
             _require(type(items) is list and bool(items) and len(set(map(str, items))) == len(items)
                      and all(type(item) is str and item in listed for item in items),
                      switch + ' bit-exact evidence must reference listed evidence files: ' + key)
+
+
+def _experimental_evidence_valid(name, profile, record):
+    """A qualified experimental switch (EXPERIMENTAL_EVIDENCE) needs its evidence lists in the record, each
+    referencing listed evidence files; evidence for a switch the profile does not enable is refused."""
+    listed = {row['path'] for row in record['evidence']}
+    for switch, keys in EXPERIMENTAL_EVIDENCE.items():
+        if profile.get(switch) is not True:
+            _require(switch not in record, 'Evidence for a switch the profile does not enable: ' + switch)
+            continue
+        _require(switch in QUALIFIABLE_EXPERIMENTAL, switch + ' is experimental and cannot be qualified')
+        evidence = record.get(switch)
+        _require(type(evidence) is dict and set(evidence) == set(keys),
+                 switch + ' needs component, teacher and A/B evidence in the receipt: ' + name)
+        for key in keys:
+            items = evidence[key]
+            _require(type(items) is list and bool(items) and len(set(map(str, items))) == len(items)
+                     and all(type(item) is str and item in listed for item in items),
+                     switch + ' evidence must reference listed evidence files: ' + key)
 
 
 def _native_libraries_valid(value, profiles, manifest):

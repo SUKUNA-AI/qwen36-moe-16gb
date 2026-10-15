@@ -114,7 +114,8 @@ class OverlapTests(unittest.TestCase):
             self.assertEqual(trace,['shared','routed'])
     def test_profile_is_optional_hash_bound_and_unqualified(self):
         spec=importlib.util.spec_from_file_location('overlap_profile',SERVING/'profile-runtime.py');r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
-        p=json.loads((SERVING/'profiles.json').read_text())['profiles']['main128'];r.validate_profile_schema('main128',p)
+        # the main128 release draft enables overlap; the baseline here is the same profile without it
+        p=dict(json.loads((SERVING/'profiles.json').read_text())['profiles']['main128'],decode_shared_overlap=False);r.validate_profile_schema('main128',p)
         candidate=dict(p,qualified=False,decode_shared_overlap=True);r.validate_profile_schema('main128',candidate)
         self.assertNotEqual(r.canonical_profile_sha256(candidate),r.canonical_profile_sha256(dict(candidate,decode_shared_overlap=False)))
         for value in ('1',1,None):
