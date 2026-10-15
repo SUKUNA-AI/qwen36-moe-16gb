@@ -1,4 +1,4 @@
-# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T11:50:47Z
+# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T12:07:07Z
 # rendered with site values digest=895052024cbcd577 (py/sh/config/profile bytes as written to native)
 # options: skip_runtime=0 extra_config=- (pass the same options to --dry-run/--apply)
 095e182f33349d2b2e7ea32694b3de3ca403ceed972342f3cab7d2dd0419e1ee  freetoken/python/freetoken/__init__.py
@@ -484,14 +484,14 @@ acdeaea3b1997a09e54adab0c5963d7b1b0b2f5b365e064394b323a44287afda  serving/metric
 6208511ebf0400182f4b8294c05dc2abb7376b148ddac8a5c0916294353db728  serving/test-guard.py
 343a6133c07c5de64af3d49dddc192694649365bd8aebcb5625043da9f9e49f3  serving/test-metrics.py
 98e781505cf77033b8816e614361ed39abaeb3ecb5b3320f5ca892566762452f  harness/experiment.py
-20dbe648736b2f65554191b7eebfbb6b8b6fbe39a403cac6a889375fef6dc94b  harness/bench.py
-685c952bd506cf1e0815e863d27c24da57b267be9498ba73f41bf1225e3603a5  harness/matrix.py
-f1848670727316524f90fe2f4c1509c07a1e001ad24efcf6aa07dbea11ce7061  harness/compare-ab.py
+fd9615310e24a755a6012985f345577ad58fc15b1fa389eef3edcba96b8aee41  harness/bench.py
+fe0726873154b6feb65625d12cffa239583f7cd35d82fc4eea0f918d16c122ee  harness/matrix.py
+296e1560e353dc9f7156fdff44259225c075b578d99be1e852e4d57ac256858c  harness/compare-ab.py
 b36127d03a3d2c94b718d6809c585f025ff88a3443ec5f632b84269983f6c5cb  harness/tool-task-bench.py
 17799241e0b2a8c448eb33089bc79d386a9f5bd0dd0edcce98feac67cd3ed0a5  harness/tool_fixture_v5.py
 49736cea4ea8fcdfb64600c17969fbae3651815ec34f6f2d061f512e3b0f0a7d  harness/tool-pilot.py
-c8966c0a7788afdcf2845b52adfbb97958dc82df14d8be7c770b03cdda8ff6dd  harness/test-paired-contract-cpu.py
-798a2728f941377bd09f21ba8bb8b619965d7259d2dc11108425d1dc37ce8649  harness/screen-chunk.py
+46a40baa9b7933a70bbbed694a268bf493fbea776c2452b6e83496fdbf58d395  harness/test-paired-contract-cpu.py
+e5b352a92bb68e3132944366e7b83a3888ddb4354515b84e41d7b535009c4239  harness/screen-chunk.py
 09e03aa0645eeb1b6a49c964ba4383a1e868971866c88e7fe10528031df9c047  harness/compare-logit-reference.py
 957b1ce1bf87961da0ae9f31c5ef1d170aee2993de5637266b274551a331a479  harness/test-tool-choice-guard-cpu.py
 b101075baeb5e9f831afbcf6c15c9d91ad61473c78981f7f053bdd61bcb3076c  harness/test-tool-semantics-guard-cpu.py
@@ -516,8 +516,8 @@ f3d67f46132557616c59221d7ad8b3d220b1341e23dd2c3d28ce958cbb522f43  harness/profil
 ebda1ad441657eaf208d38db12bf9d9a8f153472eab42926fac68f72116cfeae  harness/analyze-model-nsys.py
 fc305bfc9c9f1fbdb429aac21df082278a6e224c20000768fd10ef3b5cb48c41  harness/test-analyze-model-nsys-cpu.py
 b4911728cb36e71d4a7634cbcd30df00c897fbe67b75422e0c69cb24091344f3  harness/soak.py
-1465f8b5331d479a00241d4b6ad33b269cc07c69b43a8b69d81dcda87af06494  harness/soak-analysis.py
-3f5d2454153da7b1cb350b4784246325245e36a69047fc35b870a388814edec0  harness/test-soak-cpu.py
+7db9fdadab7dc9b17f69439bc42937a933a3abc6fd67c50b8687ab3d34729262  harness/soak-analysis.py
+cc235adb8528afb36cd3830198b5227d3dde1d1e81c3740c262b84239cc595f3  harness/test-soak-cpu.py
 0eae2fd97606b9150cd924d5c5f5464ec5f61b2166f5b7681ce8e79c80f42fd8  harness/release.py
 b7b5bd022df35ef64ed5cb2c74ec04081673c6ffd2d2e0e4fe8d4f6ee65ccf30  harness/export-release-evidence.py
 b411fcf81b7e6dc3c30c88a06aaf05058d551855849df2a7f31e01d407a5d454  harness/make-qualification.py

@@ -42,7 +42,7 @@ def make_manifest():
             'packages':{k:'1.0' for k in bench.PACKAGES}}
     manifest={'schema_version':1,'harness_version':bench.HARNESS_VERSION,'bench_fixture_version':5,'profiles':PROFILES,'pairs':5,
               'lengths':list(bench.DEFAULT_LENGTHS),'output':128,'harness_source_files':dict(FAKE_HARNESS),'arms':{},
-              'launcher_files':dict(FAKE_LAUNCHER),'vram_floor_bytes':bench.VRAM_FLOOR_BYTES,
+              'launcher_files':dict(FAKE_LAUNCHER),'windows_reserve_bytes':bench.WINDOWS_RESERVE_BYTES,
               'schedule':matrix.make_schedule(PROFILES,5),'tool_fixture':fx.describe(),
               'tool_pilot':{'name':'fixture-pilot','report_sha256':'8'*64,'profile':'bf128','repeats':3,'run_id':'9'*32}}
     for arm in PROFILES:
@@ -69,7 +69,7 @@ def tool_steps(run_id,elapsed):
     steps=[]
     for index in range(2):
         steps.append({'status':200,'engine_metrics_status':'joined','serving_run_id':run_id,'engine':{'run_id':run_id},
-            'peaks':{'gpu_used_bytes':100,'min_gpu_free_bytes':GIB},'cached_prompt_tokens':0,'cache_hit_observed':False,
+            'peaks':{'gpu_total_used_bytes':12*GIB,'min_gpu_free_bytes':GIB},'cached_prompt_tokens':0,'cache_hit_observed':False,
             'usage':{'prompt_tokens':300+index*40,'completion_tokens':30-index*20,'total_tokens':330+index*20},
             'sampling':{**fx.SAMPLING,'max_tokens':fx.STEP_LIMITS[index],'thinking':False,'ignore_eos':False},
             'reasoning_chars':0,'finish_reason':'tool_calls' if index==0 else 'stop','elapsed_s':elapsed})
@@ -88,7 +88,7 @@ def fixture(root,name='fixture'):
             rows.append({'case':case,'length':length,'repeat':repeat,'status':200,'cache_requirement':bench.cache_requirement(case),
                 'engine_metrics_status':'joined','serving_run_id':run_id,
                 'engine':{'run_id':run_id,'prefill_gpu_ms':3.,'decode_gpu_ms':4.,'engine_span_s':1.},
-                'peaks':{'gpu_used_bytes':100,'min_gpu_free_bytes':GIB},'messages_sha256':sha(f'{repeat}-{case}-{length}'),
+                'peaks':{'gpu_total_used_bytes':12*GIB,'min_gpu_free_bytes':GIB},'messages_sha256':sha(f'{repeat}-{case}-{length}'),
                 'request_fixture_sha256':sha(f'r{repeat}-{case}-{length}'),'content_sha256':sha(f'c{repeat}-{case}-{length}'),
                 'usage':{'prompt_tokens':length+80,'completion_tokens':128,'total_tokens':length+208},
                 'sampling':{'seed':100+repeat,'temperature':.6,'top_p':.95,'max_tokens':128,'ignore_eos':True,'thinking':False},
@@ -115,7 +115,8 @@ def fixture(root,name='fixture'):
         launcher=launcher_doc()
         matrix_rows.append(dict(plan,status='complete',run_id=run_id,harness_version=bench.HARNESS_VERSION,arm_verdict='VALID',
             launcher={key:launcher[key] for key in ('files','environment_sha256','problems','main_pid','invocation_id')},
-            vram={'floor_bytes':bench.VRAM_FLOOR_BYTES,'min_gpu_free_bytes':GIB,'gate':'PASS','code':None,
+            vram={'windows_reserve_bytes':bench.WINDOWS_RESERVE_BYTES,'process_peak_bytes':9*GIB,'budget_bytes':15*GIB,
+                  'peak_gpu_used_bytes':12*GIB,'min_gpu_free_bytes':GIB,'gate':'PASS','code':None,
                   'pre_start_gpu':{'used_bytes':3*GIB,'free_bytes':13*GIB,'total_bytes':16*GIB},
                   'foreign_gpu_used_bytes_pre_start':3*GIB}))
     (root/'reports'/f'{name}-manifest.json').write_text(json.dumps(manifest))
@@ -746,7 +747,7 @@ class V5Compare(unittest.TestCase):
                    'engine_timeout':metric('fixture-1-main-retain',lambda d:d['rows'][2].update(engine_metrics_status='engine_row_timeout',engine={})),
                    'no_peaks':metric('fixture-1-bf128',lambda d:d['rows'][3].pop('peaks')),
                    'no_timing':metric('fixture-0-bf128',lambda d:d['rows'][1].update(elapsed_s=None)),
-                   'no_gpu_free':metric('fixture-2-main-retain',lambda d:[r.get('peaks',{}).pop('min_gpu_free_bytes',None) for r in d['rows']]),
+                   'no_gpu_used':metric('fixture-2-main-retain',lambda d:[r.get('peaks',{}).pop('gpu_total_used_bytes',None) for r in d['rows']]),
                    'tool_metrics':metric('fixture-3-main-retain-tool-task',lambda d:d['row']['steps'][1].update(engine_metrics_status='request_row_timeout',engine={}))}
         for label,damage in scenarios.items():
             with self.subTest(label=label),tempfile.TemporaryDirectory() as folder:
@@ -842,8 +843,9 @@ def edit_matrix_row(root,repeat,arm,change):
     path.write_text(json.dumps(rows))
 
 
-def low_free(doc):
-    doc['rows'][3]['peaks']['min_gpu_free_bytes']=int(.4*GIB)
+def over_budget(doc):
+    # Synthetic: 3 GiB foreign before start, so the footprint passes total - 1 GiB only above 18 GiB used.
+    doc['rows'][3]['peaks']['gpu_total_used_bytes']=18*GIB+1
 
 
 # name -> (setup(root), expected verdict, expected reasons or None, expected failure code or None)
@@ -862,10 +864,12 @@ SCENARIOS={
                              'INCONCLUSIVE',['gain_not_established'],None),
     'decode_only_gain':(lambda r:apply_scenario(r,default=1.0,tool=[1.0]*5),'FAIL',['five_pct_gain_excluded'],None),
     'decode_regression_not_gating':(lambda r:apply_scenario(r,decode=.8),'PASS',None,None),
-    'vram_below_floor':(lambda r:edit(r,'fixture-2-main-retain',low_free),'INVALID',None,'gpu_min_free_below_floor_2_main-retain'),
-    'vram_tool_step_below_floor':(lambda r:edit(r,'fixture-1-bf128-tool-task',
-                                  lambda d:d['row']['steps'][1]['peaks'].update(min_gpu_free_bytes=int(.4*GIB))),
-                                  'INVALID',None,'gpu_min_free_below_floor_1_bf128'),
+    'vram_over_budget':(lambda r:edit(r,'fixture-2-main-retain',over_budget),'INVALID',None,'process_vram_over_budget_2_main-retain'),
+    'vram_tool_step_over_budget':(lambda r:edit(r,'fixture-1-bf128-tool-task',
+                                  lambda d:d['row']['steps'][1]['peaks'].update(gpu_total_used_bytes=18*GIB+1)),
+                                  'INVALID',None,'process_vram_over_budget_1_bf128'),
+    'low_free_vram_within_budget':(lambda r:edit(r,'fixture-2-main-retain',
+                                   lambda d:d['rows'][3]['peaks'].update(min_gpu_free_bytes=int(.1*GIB))),'PASS',None,None),
     'launcher_env_differs':(lambda r:(set_launcher_env(r,'fixture-3-main-retain',dict(LAUNCHER_ENV,OMP_NUM_THREADS='8')),
                                       edit_matrix_row(r,3,'main-retain',lambda row:row['launcher'].update(
                                           environment_sha256=bench.canonical_hash(dict(LAUNCHER_ENV,OMP_NUM_THREADS='8'))))),
@@ -923,7 +927,7 @@ def battery(mod,roots,work):
     def fresh(name):
         target=pathlib.Path(tempfile.mkdtemp(dir=work));shutil.copytree(roots[name],target/'r');return target/'r'
     try:
-        for name,want in (('pass',0),('tool_regression',1),('noninferiority_borderline',2),('vram_below_floor',3)):
+        for name,want in (('pass',0),('tool_regression',1),('noninferiority_borderline',2),('vram_over_budget',3)):
             root=fresh(name);code=run_main(mod,root);path=root/'reports/fixture-main-retain-vs-bf128-comparison.json'
             check(f'main_exit_{name}',code==want and path.exists() and json.loads(path.read_text())['verdict']==SCENARIOS[name][1])
         root=fresh('pass')
@@ -974,7 +978,7 @@ MUTANTS=(
     ('V6-04 report without O_EXCL','os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600','os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600'),
     ('V6-05 internal error exits 1 (FAIL)','EXIT_INTERNAL=4','EXIT_INTERNAL=1'),
     ('V6-06 argparse usage error exits 2 (INCONCLUSIVE)','    def error(self,message):raise UsageError(message)','    pass'),
-    ('V6-07 VRAM floor ignored','require(free>=VRAM_FLOOR_BYTES','require(free>=0'),
+    ('V6-07 VRAM budget ignored',"require(budget['gate']!='INVALID'","require(True or budget['gate']!='INVALID'"),
     ('V6-08 launcher env equality ignored','require(len(launcher_envs)<=1','require(True'),
     ('V6-09 launcher problems ignored',"\n               and launcher.get('problems')==[]",''),
     ('V6-10 matrix arm verdict ignored',"require(entry.get('arm_verdict')=='VALID'","require(True or entry.get('arm_verdict')=='VALID'"),
@@ -1053,8 +1057,8 @@ class V6Statistics(unittest.TestCase):
             with patch.object(comparison,'current_run_spec',return_value=current):
                 self.assertEqual(comparison.compare(root,'fixture','main-retain','bf128')['verdict'],'PASS')
 
-    def test_manifest_without_launcher_or_vram_floor_is_invalid(self):
-        for key in ('launcher_files','vram_floor_bytes'):
+    def test_manifest_without_launcher_or_windows_reserve_is_invalid(self):
+        for key in ('launcher_files','windows_reserve_bytes'):
             with self.subTest(key=key),tempfile.TemporaryDirectory() as folder:
                 root=pathlib.Path(folder);fixture(root)
                 edit(root,'fixture-manifest',lambda d:d.pop(key))
@@ -1135,7 +1139,7 @@ class V6Launcher(unittest.TestCase):
 
 # =============================================================================================
 class V6MatrixArms(unittest.TestCase):
-    def harness(self,root,spec,low_free_at=None,launcher_bad_at=None,start_fail_at=None,drift_at=None):
+    def harness(self,root,spec,over_budget_at=None,launcher_bad_at=None,start_fail_at=None,drift_at=None):
         state={'inv':'','count':0};stops=[];calls=[];specs={'n':0}
         def fake_run(args,timeout=1200):
             calls.append(args)
@@ -1145,9 +1149,10 @@ class V6MatrixArms(unittest.TestCase):
                 if state['count']==start_fail_at:raise RuntimeError('bash: exit 1')
             elif args[:3]==['systemctl','--user','stop']:stops.append(state['inv']);state['inv']=''
             elif str(args[1]).endswith('bench.py'):
-                free=int(.4*GIB) if state['count']==low_free_at else GIB
+                used=18*GIB+1 if state['count']==over_budget_at else 12*GIB  # synthetic: 3 GiB foreign before start
                 (root/'reports'/f'{args[3]}.json').write_text(json.dumps({'rows':[{'case':'warmup','peaks':{'min_gpu_free_bytes':GIB}},
-                    {'case':'fresh','peaks':{'min_gpu_free_bytes':free},'primer':{'peaks':{'min_gpu_free_bytes':GIB}}}]}))
+                    {'case':'fresh','peaks':{'min_gpu_free_bytes':GIB//4,'gpu_total_used_bytes':used},
+                     'primer':{'peaks':{'min_gpu_free_bytes':GIB,'gpu_total_used_bytes':11*GIB}}}]}))
             elif str(args[1]).endswith('tool-task-bench.py'):
                 (root/'reports'/f'{args[3]}-tool-task.json').write_text(json.dumps({'row':{'steps':[{'peaks':{'min_gpu_free_bytes':GIB}}]}}))
             return ''
@@ -1178,17 +1183,19 @@ class V6MatrixArms(unittest.TestCase):
             for item in reversed(patches):item.stop()
         return rc,json.loads((root/'reports'/f'{name}-matrix.json').read_text()),stops,root,spec
 
-    def test_vram_floor_marks_arm_invalid_and_matrix_exits_3(self):
-        rc,rows,stops,root,spec=self.run_case('vram',low_free_at=2)
+    def test_vram_budget_marks_arm_invalid_and_matrix_exits_3(self):
+        rc,rows,stops,root,spec=self.run_case('vram',over_budget_at=2)
         self.assertEqual((rc,len(rows)),(3,15));self.assertEqual(len(stops),15)
         bad=[r for r in rows if r['arm_verdict']=='INVALID']
         self.assertEqual(len(bad),1);self.assertEqual(bad[0]['schedule_position'],1)
         self.assertEqual((bad[0]['vram']['gate'],bad[0]['vram']['code'],bad[0]['invalid_codes']),
-                         ('INVALID','gpu_min_free_below_floor',['gpu_min_free_below_floor']))
-        self.assertEqual(bad[0]['vram']['min_gpu_free_bytes'],int(.4*GIB))
+                         ('INVALID','process_vram_over_budget',['process_vram_over_budget']))
+        self.assertEqual((bad[0]['vram']['process_peak_bytes'],bad[0]['vram']['budget_bytes']),(15*GIB+1,15*GIB))
+        # A quarter GiB free on every arm is not a failure: only the footprint is budgeted.
+        self.assertTrue(all(r['vram']['min_gpu_free_bytes']==GIB//4 for r in rows))
         self.assertEqual(rows[0]['vram']['foreign_gpu_used_bytes_pre_start'],3*GIB)
         self.assertTrue(all(r['vram']['gate']=='PASS' and r['status']=='complete' for r in rows if r is not bad[0]))
-        self.assertEqual(json.loads((root/'reports/vram-manifest.json').read_text())['vram_floor_bytes'],bench.VRAM_FLOOR_BYTES)
+        self.assertEqual(json.loads((root/'reports/vram-manifest.json').read_text())['windows_reserve_bytes'],bench.WINDOWS_RESERVE_BYTES)
         rc,rows,_,_,_=self.run_case('allgood')
         self.assertEqual(rc,0);self.assertTrue(all(r['arm_verdict']=='VALID' for r in rows))
 
@@ -1321,7 +1328,7 @@ class V6ChunkScreen(unittest.TestCase):
             def fake_generate(messages,maximum=128,seed=17,temperature=.6,ignore_eos=False,**kw):
                 return {'status':200,'usage':{'prompt_tokens':3000,'completion_tokens':maximum,'total_tokens':3000+maximum},
                         'ttft_content_s':2.0,'elapsed_s':3.0,'decode_client_tps':50.,'finish_reason':'length',
-                        'peaks':{'min_gpu_free_bytes':GIB},'engine_metrics_status':'joined',
+                        'peaks':{'min_gpu_free_bytes':GIB,'gpu_total_used_bytes':12*GIB},'engine_metrics_status':'joined',
                         'engine':{'prefill_gpu_ms':1500.,'expert_slots':3175,'expert_counter_deltas':{'prefill_h2d_bytes':123,'decode_missing':7},
                                   'uid':1}},''
             spec=lambda root_,profiles,*a:{'arms':{p:manifest['arms'][p] for p in profiles},'launcher_files':dict(FAKE_LAUNCHER),

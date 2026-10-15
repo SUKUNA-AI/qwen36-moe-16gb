@@ -206,8 +206,9 @@ def cmd_reference_soak(a):
         profile = analysis.load_reference(a.analysis, analysis.load_soak())
     except (OSError, ValueError) as error:
         raise Fail(f'reference soak unusable: {error}') from None
-    need(profile['vram'].get('p1_gpu_free_bytes') is not None and profile['fresh'], 'reference soak has no VRAM/TTFT data')
-    print(json.dumps({'source': profile['source'], 'p1_gpu_free_mib': profile['vram']['p1_gpu_free_bytes'] // (1 << 20),
+    need(bool(profile['fresh']), 'reference soak has no fresh TTFT/decode data')
+    p1 = profile['vram'].get('p1_gpu_free_bytes')
+    print(json.dumps({'source': profile['source'], 'p1_gpu_free_mib_report_only': None if p1 is None else p1 // (1 << 20),
                       'lengths': sorted(profile['fresh'], key=int)}))
 
 

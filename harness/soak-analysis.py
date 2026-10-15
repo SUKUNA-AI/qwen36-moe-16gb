@@ -10,12 +10,11 @@ sampling of every request equals the workload plan; numeric cgroup/anon/shmem/
 filecache/GPU resources; every scheduled case executed and passed, with coverage
 floors met; complete state telemetry (no gaps, drops, writer failures, rotation
 loss); memory comparisons at equal prompt length and over idle samples; and no
-regression against a reference soak (--reference-soak, release f1): p1 of NVML free
-VRAM not below the reference p1 (MiB), Windows shared GPU memory not grown (when it is
-sampled), fresh-request TTFT and decode medians within the noise margin. The owner's
-0.8 GiB floor is reported only (summary.vram: min/p1/p5/median, minutes below it):
-the Windows desktop shrinks under pressure, and f1 itself sat below it in 15.6 % of
-its samples.
+regression against a reference soak (--reference-soak, release f1): Windows shared GPU
+memory not grown (paging; when it is sampled), fresh-request TTFT and decode medians
+within the noise margin. Owner rule: 1 GiB for Windows itself, everything else for the
+model, so free VRAM is reported only (summary.vram: min/p1/p5/median, minutes below
+0.8 GiB; reference_comparison: p1 against the reference).
 
 Missing evidence is FAIL. A valid run with too few points is INCONCLUSIVE.
 There is no automatic "no leak" verdict: growth above a threshold is FAIL, and
@@ -63,16 +62,16 @@ ENGINE_MEMORY_FLAGS = {'torch_allocated_bytes': 64 * MIB, 'torch_reserved_bytes'
 MEMORY_REPORT_ONLY = ('service_cgroup_memory_bytes', 'service_memory_file_cache_estimate_bytes',
                       'gpu_total_used_bytes')
 IDLE_MEMORY_FLAGS = dict(REQUEST_MEMORY_FLAGS)
-# Owner VRAM test 2026-10-15: below ~0.8 GiB free the desktop pages. Reported for soaks, not gated (a soak's
-# desktop is busy and WDDM shrinks it); the gate is the reference comparison. Same value as bench.VRAM_FLOOR_BYTES.
-VRAM_FLOOR_BYTES = 4 * 1024 * MIB // 5
+# Report threshold from the owner VRAM test (desktop paging started below ~0.8 GiB free). Not a gate: the owner
+# gives the model everything but 1 GiB for Windows, and WDDM shrinks the desktop under pressure.
+FREE_VRAM_REPORT_BYTES = 4 * 1024 * MIB // 5
 # Reference comparison: medians may be worse by at most this fraction (compare-ab's 3 % non-inferiority margin).
 REFERENCE_NOISE = 0.03
 # Windows shared GPU memory, once the state sampler records it; growth above this vs the reference fails.
 SHARED_GPU_KEY = 'gpu_shared_used_bytes'
 SHARED_GPU_GROWTH_BYTES = 256 * MIB
-REFERENCE_CODES = {'reference_soak_missing', 'reference_soak_invalid', 'vram_p1_below_reference',
-                   'shared_gpu_memory_growth', 'ttft_regression', 'decode_regression'}
+REFERENCE_CODES = {'reference_soak_missing', 'reference_soak_invalid', 'shared_gpu_memory_growth', 'ttft_regression',
+                   'decode_regression'}
 IDLE_WARMUP_S = 600.0
 IDLE_WINDOW_S = 1200.0
 IDLE_MIN_SAMPLES = 10
@@ -559,22 +558,22 @@ def _check_state(telemetry, soak, findings, summary, started, finished, profile,
 
 
 def vram_stats(state, soak):
-    """Report only: NVML free VRAM distribution and the time below the 0.8 GiB floor (sum of the intervals
-    that start at a below-floor sample, each capped at the state gap limit)."""
+    """Report only: NVML free VRAM distribution and the time below FREE_VRAM_REPORT_BYTES (sum of the
+    intervals that start at a below-threshold sample, each capped at the state gap limit)."""
     samples = sorted((moment, row['gpu_free_bytes']) for row in state
                      if isinstance(row, dict) and is_number(row.get('gpu_free_bytes'))
                      for moment in [_parse_time(soak, row.get('ts'))] if moment is not None)
-    out = {'floor_bytes': VRAM_FLOOR_BYTES, 'samples': len(samples)}
+    out = {'report_threshold_bytes': FREE_VRAM_REPORT_BYTES, 'samples': len(samples)}
     if not samples:
         return out
     free = sorted(value for _, value in samples)
-    below = [value < VRAM_FLOOR_BYTES for _, value in samples]
+    below = [value < FREE_VRAM_REPORT_BYTES for _, value in samples]
     seconds = sum(min((later - earlier).total_seconds(), STATE_GAP_LIMIT_S)
                   for (earlier, _), (later, _), low in zip(samples, samples[1:], below) if low)
     rank = lambda q: free[min(len(free) - 1, int(q * (len(free) - 1)))]
     out.update(min_gpu_free_bytes=free[0], p1_gpu_free_bytes=rank(.01), p5_gpu_free_bytes=rank(.05),
-               median_gpu_free_bytes=statistics.median(free), samples_below_floor=sum(below),
-               share_below_floor=round(sum(below) / len(below), 4), minutes_below_floor=round(seconds / 60, 2))
+               median_gpu_free_bytes=statistics.median(free), samples_below_threshold=sum(below),
+               share_below_threshold=round(sum(below) / len(below), 4), minutes_below_threshold=round(seconds / 60, 2))
     return out
 
 
@@ -601,21 +600,20 @@ def run_profile(receipt, soak):
 
 
 def _check_reference(candidate, reference, findings):
-    """Gate against the reference soak (release f1): no lower p1 free VRAM (MiB), no Windows shared GPU
-    memory growth, no TTFT/decode median worse than REFERENCE_NOISE. Lengths the candidate lacks are already
-    coverage failures and are not compared twice."""
+    """Gate against the reference soak (release f1): no Windows shared GPU memory growth and no TTFT/decode
+    median worse than REFERENCE_NOISE. p1 free VRAM against the reference is reported (MiB), not gated. Lengths
+    the candidate lacks are already coverage failures and are not compared twice."""
     if reference is None:
         findings.fail('reference_soak_missing')
         return None
     ref_p1 = (reference.get('vram') or {}).get('p1_gpu_free_bytes')
-    if not is_number(ref_p1) or not reference.get('fresh'):
+    if not reference.get('fresh'):
         findings.fail('reference_soak_invalid')
         return {'reference': reference}
     out = {'reference': reference, 'noise': REFERENCE_NOISE, 'per_length': {}}
     p1 = candidate['vram'].get('p1_gpu_free_bytes')
-    out['p1_gpu_free_mib'] = {'candidate': None if p1 is None else int(p1 // MIB), 'reference': int(ref_p1 // MIB)}
-    if p1 is not None and int(p1 // MIB) < int(ref_p1 // MIB):
-        findings.fail('vram_p1_below_reference', **out['p1_gpu_free_mib'])
+    out['p1_gpu_free_mib_report_only'] = {'candidate': None if p1 is None else int(p1 // MIB),
+                                          'reference': int(ref_p1 // MIB) if is_number(ref_p1) else None}
     shared, ref_shared = candidate['shared_gpu_median_bytes'], reference.get('shared_gpu_median_bytes')
     out['shared_gpu'] = ('not_sampled' if shared is None else 'reference_not_sampled' if ref_shared is None
                          else {'candidate_median': shared, 'reference_median': ref_shared})
@@ -840,7 +838,7 @@ def evaluate(receipt, *, soak, validate_run, soak_sha256, expected_name, expecte
                            'identity_gap_s': IDENTITY_GAP_LIMIT_S, 'clock_skew_s': CLOCK_SKEW_LIMIT_S,
                            'request_memory_flags_bytes': REQUEST_MEMORY_FLAGS,
                            'engine_memory_flags_bytes': ENGINE_MEMORY_FLAGS, 'idle_memory_flags_bytes': IDLE_MEMORY_FLAGS,
-                           'vram_floor_bytes_report_only': VRAM_FLOOR_BYTES, 'reference_noise': REFERENCE_NOISE,
+                           'free_vram_report_bytes': FREE_VRAM_REPORT_BYTES, 'reference_noise': REFERENCE_NOISE,
                            'shared_gpu_growth_bytes': SHARED_GPU_GROWTH_BYTES,
                            'required_seconds': soak.REQUIRED_SECONDS,
                            'pinned_workload_sha256': PINNED_WORKLOAD_SHA256},

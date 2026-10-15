@@ -103,8 +103,9 @@ def screen_profile(root,name,profile,lengths,output,tokenizer):
         current=json.loads((root/'active-run.json').read_text())
         if current.get('run_id')!=receipt['run_id']:raise RuntimeError('Serving generation changed during screening')
         row['min_gpu_free_bytes']=bench.min_gpu_free([{'peaks':{'min_gpu_free_bytes':x.get('min_gpu_free_bytes')}} for x in row['rows']])
-        row['vram_gate']=('UNAVAILABLE' if row['min_gpu_free_bytes'] is None else
-                          'PASS' if row['min_gpu_free_bytes']>=bench.VRAM_FLOOR_BYTES else 'BELOW_FLOOR')
+        budget=bench.vram_budget([{'peaks':{'gpu_total_used_bytes':x.get('gpu_total_used_peak_bytes')}} for x in row['rows']],
+                                 row.get('pre_start_gpu'))
+        row['process_peak_bytes'],row['vram_gate']=budget['process_peak_bytes'],budget['gate']
         row['status']='measured'
     except (RuntimeError,subprocess.TimeoutExpired,ValueError,OSError,KeyError,TypeError) as error:
         row.update(status='failed',failed_step=step,error_type=type(error).__name__,message=str(error)[:200])
@@ -149,7 +150,7 @@ def main(argv=None,root=None,lock_path=None,tokenizer=None):
             tokenizer=AutoTokenizer.from_pretrained('/path/to/LLM/qwen36-api/model',local_files_only=True)
         results=[screen_profile(root,a.name,profile,lengths,a.output,tokenizer) for profile in profiles]
         summary={'kind':'chunk-screen-summary','acceptance':False,'name':a.name,'profiles':profiles,'lengths':list(lengths),
-                 'output':a.output,'vram_floor_bytes':bench.VRAM_FLOOR_BYTES,
+                 'output':a.output,'windows_reserve_bytes':bench.WINDOWS_RESERVE_BYTES,
                  'results':[{'profile':r['profile'],'status':r['status'],'chunk':(r.get('configuration') or {}).get('chunk'),
                              'memory_ratio':(r.get('configuration') or {}).get('memory_ratio'),'load_ready_s':r.get('load_ready_s'),
                              'min_gpu_free_bytes':r.get('min_gpu_free_bytes'),'vram_gate':r.get('vram_gate'),

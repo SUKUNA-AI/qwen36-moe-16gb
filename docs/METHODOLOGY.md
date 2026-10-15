@@ -120,8 +120,8 @@ changed.
   the result is FAIL.
 - **Gain:** at least one family member with a gain of >= 5%, Bonferroni-corrected with
   F = 9 x (profiles - 1).
-- **Invalid arm:** min free VRAM below the floor: 0.8 GiB since 2026-10-15 (`bench.VRAM_FLOOR_BYTES`); release f1
-  was judged against 0.5 GiB.
+- **Invalid arm:** the serving process's VRAM footprint above total - 1 GiB (`bench.vram_budget`, the owner's
+  Windows reserve, since 2026-10-15). Free VRAM is reported. Release f1 was judged against a 0.5 GiB free-VRAM floor.
 - Exit codes are 0 PASS / 1 FAIL / 2 INCONCLUSIVE.
 - With 5 pairs the test is conservative on noisy short cases. Earlier candidates were recorded as
   INCONCLUSIVE and were not relabelled after the fact.
@@ -173,24 +173,26 @@ Each evaluation (`results/context-gates/*-evaluation.json`) checks:
 The VRAM thresholds come from an owner decision. Free VRAM is NVML free, which includes Windows desktop
 usage. Foreign usage is not refused at start, because WDDM shrinks it under pressure.
 
-**Owner decision 2026-10-15: the hard floor is 0.8 GiB free where the desktop is quiet.** In the VRAM test
-the desktop started paging below ~0.8 GiB of free physical VRAM and decode slowed by ~20 %. From the next
-release on, `bench.VRAM_FLOOR_BYTES` (matrix, compare-ab, screen-chunk; context gates run on a quiet
-desktop too) is 0.8 GiB.
+**Owner rule 2026-10-15, verbatim: «1гб именно на саму винду - все остальное куда угодно».** 1 GiB of VRAM
+is reserved for Windows itself; everything else may go to the model. The gates therefore budget the model,
+not free VRAM:
+- **matrix / compare-ab / screen-chunk:** an arm is INVALID when the serving process's peak footprint exceeds
+  total - `WINDOWS_RESERVE_BYTES` (1 GiB). NVML under WSL/WDDM reports no per-process memory (`used_memory` is
+  N/A), so the footprint is the service-sampled peak of total used VRAM minus the VRAM in use before the unit
+  started (nvidia-smi, no model unit). Minimum free VRAM is reported, not gated.
+- **soak** (`soak-analysis.py --reference-soak <f1 analysis.json>`): FAIL only on paging or a slowdown against
+  the reference soak: Windows shared GPU memory grown by more than 256 MiB over the reference median (once
+  the state sampler records `gpu_shared_used_bytes`; until then the report says `not_sampled`), or a
+  fresh-request TTFT median more than 3 % worse / client decode median more than 3 % lower at the same
+  prompt length (the compare-ab non-inferiority margin). The reference numbers are recomputed from the
+  reference receipt (bound by its `source_sha256`), so the f1 analysis, written before decode medians
+  existed, still works.
+- **Reported only:** minimum, p1, p5 and median free VRAM, the share of samples and the minutes below 0.8 GiB
+  (the paging point seen in the owner's VRAM test) in `summary.vram`, and p1 against the reference in
+  `reference_comparison`. f1 itself was below 0.8 GiB free in 15.6 % of its soak samples (p1 617 MiB,
+  minimum 436 MiB): Windows shrinks its own share under pressure.
 
-**Soak: relative to the f1 soak, the floor is reported only.** f1 itself was below 0.8 GiB in 15.6 % of
-its soak samples (p1 617 MiB, minimum 436 MiB), and Windows shrinks its own share under pressure. So
-`soak-analysis.py --reference-soak <f1 analysis.json>` fails a soak when:
-- p1 of NVML free VRAM is below the reference p1 (compared in whole MiB);
-- Windows shared GPU memory grew by more than 256 MiB over the reference median (only once the state
-  sampler records `gpu_shared_used_bytes`; until then the report says `not_sampled`);
-- a fresh-request TTFT median is more than 3 % worse, or a client decode median more than 3 % lower,
-  than the reference at the same prompt length (the compare-ab non-inferiority margin).
-
-The reference numbers are recomputed from the reference receipt (bound by its `source_sha256`), so the
-f1 analysis, written before p1 and decode medians existed, still works. Minimum, p1, p5, median free VRAM,
-the share of samples and the minutes below 0.8 GiB are in `summary.vram`, for review and operations, not
-as a failure. The 30 s pilot of `release-gates.sh` is not judged against the reference.
+The 30 s pilot of `release-gates.sh` is not judged against the reference.
 
 ## 5. Freeze, sync and provenance
 

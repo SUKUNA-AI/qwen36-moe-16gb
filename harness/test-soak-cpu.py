@@ -432,7 +432,7 @@ def self_reference(receipt):
     """Reference = the run itself (no regression possible), or the passing run when the receipt under test is
     too damaged to profile; reference tests pass their own."""
     profile = analysis.run_profile(receipt, soak)
-    if profile['vram'].get('p1_gpu_free_bytes') is None or not profile['fresh']:
+    if not profile['fresh']:
         profile = analysis.run_profile(pass_receipt(), soak)
     return profile
 
@@ -1464,33 +1464,32 @@ class ReceiptMutationTests(unittest.TestCase):
                 self.assertFalse(report['two_hour_execution_gate_pass'], (path, value))
                 self.assertTrue(report['gate_reasons'], (path, value))
 
-    def test_vram_floor_is_reported_not_gated(self):
-        self.assertEqual(analysis.VRAM_FLOOR_BYTES, BENCH.VRAM_FLOOR_BYTES)
-        self.assertEqual(analysis.VRAM_FLOOR_BYTES, int(0.8 * (1 << 30)))
+    def test_free_vram_is_reported_not_gated(self):
+        self.assertEqual(analysis.FREE_VRAM_REPORT_BYTES, int(0.8 * (1 << 30)))
         receipt = pass_receipt()
         reference = analysis.run_profile(receipt, soak)
         rows = sorted(receipt['telemetry']['state'], key=lambda row: row['ts'])
-        # f1 sat below 0.8 GiB in 15.6 % of its samples: below-floor samples alone are not a failure.
+        # Owner rule: 1 GiB for Windows, everything else for the model; low free VRAM alone is not a failure.
         for row in rows[3:9]:
-            row['gpu_free_bytes'] = analysis.VRAM_FLOOR_BYTES - 1
+            row['gpu_free_bytes'] = analysis.FREE_VRAM_REPORT_BYTES - 1
         report = evaluate(receipt, reference=reference)
         self.assertEqual(report['verdict'], 'PASS', report['gate_reasons'])
         seconds = sum(min((analysis._parse_time(soak, b['ts']) - analysis._parse_time(soak, a['ts'])).total_seconds(),
                           analysis.STATE_GAP_LIMIT_S) for a, b in zip(rows[3:9], rows[4:10]))
         vram = report['summary']['vram']
-        self.assertEqual((vram['samples_below_floor'], vram['minutes_below_floor']), (6, round(seconds / 60, 2)))
-        self.assertEqual(vram['min_gpu_free_bytes'], analysis.VRAM_FLOOR_BYTES - 1)
+        self.assertEqual((vram['samples_below_threshold'], vram['minutes_below_threshold']), (6, round(seconds / 60, 2)))
+        self.assertEqual(vram['min_gpu_free_bytes'], analysis.FREE_VRAM_REPORT_BYTES - 1)
         self.assertGreater(seconds, 0)
 
-    def test_vram_p1_below_the_reference_fails(self):
+    def test_vram_p1_against_the_reference_is_reported_only(self):
         receipt = pass_receipt()
         reference = analysis.run_profile(receipt, soak)
         # Compared in whole MiB: one MiB less in every sample is one MiB less at p1.
         for row in receipt['telemetry']['state']:
             row['gpu_free_bytes'] -= MIB
         report = evaluate(receipt, reference=reference)
-        self.assertEqual((report['verdict'], report['failure_reasons']), ('FAIL', ['vram_p1_below_reference']))
-        p1 = report['reference_comparison']['p1_gpu_free_mib']
+        self.assertEqual(report['verdict'], 'PASS', report['gate_reasons'])
+        p1 = report['reference_comparison']['p1_gpu_free_mib_report_only']
         self.assertLess(p1['candidate'], p1['reference'])
         better = pass_receipt()
         for row in better['telemetry']['state']:

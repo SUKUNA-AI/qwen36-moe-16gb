@@ -17,7 +17,7 @@ Owner decisions (2026-10-13), V6:
       gain excluded    upper one-sided 97.5% bound < 1.05 for EVERY gating case -> FAIL
                        (intersection-union; V5 rule kept).
   * Per arm: launcher identity (files + start environment) bound to the manifest and equal
-    for both arms; service-sampled minimum GPU free >= bench.VRAM_FLOOR_BYTES, 0.8 GiB (below: INVALID).
+    for both arms; service-sampled process VRAM footprint <= total - 1 GiB (bench.vram_budget; above: INVALID).
 Verdicts:
   PASS          complete valid data, non-inferior on every gating case and gain established
   FAIL          complete valid data, a >3% regression or a 5% gain is excluded
@@ -33,9 +33,9 @@ pilot, sync-v5 --apply or GPU job can change native files during the check.
 """
 import argparse,json,math,os,statistics,sys
 import bench
-from bench import (DEFAULT_LENGTHS,HARNESS_VERSION,BENCH_FIXTURE_VERSION,LAUNCHER_FILES,VRAM_FLOOR_BYTES,GpuLockBusy,
+from bench import (DEFAULT_LENGTHS,HARNESS_VERSION,BENCH_FIXTURE_VERSION,LAUNCHER_FILES,WINDOWS_RESERVE_BYTES,GpuLockBusy,
                    acquire_gpu_lock,parse_lengths,validate_receipt,current_run_spec,expected_cases,valid_sha,
-                   cache_requirement,canonical_hash,min_gpu_free)
+                   cache_requirement,canonical_hash,vram_budget)
 import tool_fixture_v5 as tool_fixture
 
 PAIRS=5
@@ -134,7 +134,7 @@ def compare_tool_tasks(root,name,baseline,candidate,manifest,fixed_runs,failures
                 require(run.get('run_id')==fixed_runs[(repeat,arm)],f'tool_run_binding_{repeat}_{arm}')
             else:failures.append(f'missing_fixed_report_for_tool_{repeat}_{arm}')
             row=as_dict(doc.get('row'))
-            observations['tool_min_gpu_free'][(repeat,arm)]=min_gpu_free([row])
+            observations['tool_rows'][(repeat,arm)]=row
             if not require(doc.get('status')=='complete' and row.get('correct') is True and row.get('failure_codes')==[],
                            f'tool_cycle_failed_{repeat}_{arm}'):
                 codes=doc.get('failure_codes') if isinstance(doc.get('failure_codes'),list) else []
@@ -208,7 +208,7 @@ def compare(root,name,candidate,baseline,lengths=DEFAULT_LENGTHS,output=128,veri
     lengths=parse_lengths(lengths)
     failures=[];groups={};positions=[]
     observations={'cache':[],'tool_cache':[],'tool_failures':[],'content_differs':0,'content_compared':0,
-                  'report_metric_gaps':[],'vram':[],'tool_min_gpu_free':{}}
+                  'report_metric_gaps':[],'vram':[],'tool_rows':{}}
     def require(condition,code):
         if not condition:failures.append(code)
         return bool(condition)
@@ -242,7 +242,7 @@ def compare(root,name,candidate,baseline,lengths=DEFAULT_LENGTHS,output=128,veri
     launcher_files=manifest.get('launcher_files')
     require(isinstance(launcher_files,dict) and set(launcher_files)==set(LAUNCHER_FILES)
             and all(valid_sha(v) for v in launcher_files.values()),'manifest_launcher_files')
-    require(manifest.get('vram_floor_bytes')==VRAM_FLOOR_BYTES,'manifest_vram_floor')
+    require(manifest.get('windows_reserve_bytes')==WINDOWS_RESERVE_BYTES,'manifest_windows_reserve')
     if failures:return result()
     if verify_current:
         current=current_run_spec(root,manifest['profiles'],lengths,output,PAIRS)
@@ -257,7 +257,7 @@ def compare(root,name,candidate,baseline,lengths=DEFAULT_LENGTHS,output=128,veri
     require(schedule==make_schedule(manifest['profiles'],PAIRS),'manifest_schedule_incomplete_or_unbalanced')
     matrix=load(root/'reports'/f'{name}-matrix.json',failures,'matrix_report')
     matrix=matrix if isinstance(matrix,list) else []
-    fixed_runs={};arm_vram={};launcher_envs=set()
+    fixed_runs={};arm_vram={};arm_pre_start={};launcher_envs=set()
     for repeat in range(PAIRS):
         indexed={}
         for arm in (baseline,candidate):
@@ -289,12 +289,14 @@ def compare(root,name,candidate,baseline,lengths=DEFAULT_LENGTHS,output=128,veri
                 require(as_dict(entry.get('launcher')).get('environment_sha256')==as_dict(report.get('launcher')).get('environment_sha256')
                         and as_dict(entry.get('launcher')).get('files')==manifest.get('launcher_files'),f'matrix_launcher_binding_{repeat}_{arm}')
                 require(entry.get('arm_verdict')=='VALID' and vram.get('gate') in ('PASS','UNAVAILABLE')
-                        and vram.get('floor_bytes')==VRAM_FLOOR_BYTES,f'matrix_arm_invalid_{repeat}_{arm}')
-                observations['vram'].append({'repeat':repeat,'arm':arm,'matrix_min_gpu_free_bytes':vram.get('min_gpu_free_bytes'),
+                        and vram.get('windows_reserve_bytes')==WINDOWS_RESERVE_BYTES,f'matrix_arm_invalid_{repeat}_{arm}')
+                arm_pre_start[(repeat,arm)]=vram.get('pre_start_gpu')
+                observations['vram'].append({'repeat':repeat,'arm':arm,'matrix_process_peak_bytes':vram.get('process_peak_bytes'),
+                    'matrix_min_gpu_free_bytes':vram.get('min_gpu_free_bytes'),
                     'foreign_gpu_used_bytes_pre_start':vram.get('foreign_gpu_used_bytes_pre_start'),'gate':vram.get('gate')})
                 positions.append({k:planned[0][k] for k in ('repeat','profile','schedule_position','pair_position')})
             all_rows=[r for r in report.get('rows',[]) if isinstance(r,dict)] if isinstance(report.get('rows'),list) else []
-            arm_vram[(repeat,arm)]=min_gpu_free(all_rows)
+            arm_vram[(repeat,arm)]=all_rows
             rows=[r for r in all_rows if r.get('case')!='warmup']
             keys=[(r.get('case'),r.get('length')) for r in rows]
             require(len(keys)==len(set(keys)),f'duplicate_case_{repeat}_{arm}')
@@ -311,7 +313,7 @@ def compare(root,name,candidate,baseline,lengths=DEFAULT_LENGTHS,output=128,veri
                          and type(row.get('cached_prompt_tokens')) is int and row['cached_prompt_tokens']>=0
                          and type(row.get('cache_hit_observed')) is bool)
                 if not metrics:failures.append(f'missing_metrics_{label}')
-                elif not positive(row['peaks'].get('min_gpu_free_bytes')):failures.append(f'missing_gpu_free_sample_{label}')
+                elif not positive(row['peaks'].get('gpu_total_used_bytes')):failures.append(f'missing_gpu_used_sample_{label}')
                 require(row.get('repeat')==repeat and (not metrics or (row.get('serving_run_id')==receipt.get('run_id')
                         and engine.get('run_id')==receipt.get('run_id'))),f'row_run_binding_{label}')
                 require(row.get('status')==200 and usage.get('completion_tokens')==sampling.get('max_tokens')==output
@@ -362,13 +364,14 @@ def compare(root,name,candidate,baseline,lengths=DEFAULT_LENGTHS,output=128,veri
                 ratio=row[metric]/b[metric] if metric=='decode_client_tps' else b[metric]/row[metric]
                 groups.setdefault((key,metric),[]).append(ratio)
     task_ratios=compare_tool_tasks(root,name,baseline,candidate,manifest,fixed_runs,failures,observations)
-    # VRAM floor per arm over every service-sampled request (bench rows incl. warmup/primers + tool steps).
-    for (repeat,arm),bench_free in sorted(arm_vram.items()):
-        values=[v for v in (bench_free,observations['tool_min_gpu_free'].get((repeat,arm))) if v is not None]
-        free=min(values) if values else None
-        if free is None:failures.append(f'missing_gpu_min_free_{repeat}_{arm}')
-        else:require(free>=VRAM_FLOOR_BYTES,f'gpu_min_free_below_floor_{repeat}_{arm}')
-        observations['vram'].append({'repeat':repeat,'arm':arm,'report_min_gpu_free_bytes':free})
+    # VRAM budget per arm over every service-sampled request (bench rows incl. warmup/primers + tool steps).
+    for (repeat,arm),bench_rows in sorted(arm_vram.items()):
+        tool=observations['tool_rows'].get((repeat,arm))
+        budget=vram_budget(bench_rows+([tool] if tool else []),arm_pre_start.get((repeat,arm)))
+        if budget['gate']=='UNAVAILABLE':failures.append(f'missing_vram_budget_sample_{repeat}_{arm}')
+        else:require(budget['gate']!='INVALID',f'process_vram_over_budget_{repeat}_{arm}')
+        observations['vram'].append({'repeat':repeat,'arm':arm,'report_process_peak_bytes':budget['process_peak_bytes'],
+                                     'budget_bytes':budget['budget_bytes'],'report_min_gpu_free_bytes':budget['min_gpu_free_bytes']})
     require(len(launcher_envs)<=1,'launcher_environment_differs_between_arms')
     candidates=max(1,len(manifest['profiles'])-1)
     gating_cases=len(expected_keys)+1
@@ -389,7 +392,7 @@ def compare(root,name,candidate,baseline,lengths=DEFAULT_LENGTHS,output=128,veri
                   no_regression_over_3pct_full_request_975=noninferior,
                   whole_request_gain_at_least_5pct_bonferroni=gain,
                   gain_comparison_family_size=family,gain_family={'gating_cases':gating_cases,'candidates':candidates},
-                  launcher_environment_sha256=sorted(launcher_envs),vram_floor_bytes=VRAM_FLOOR_BYTES,
+                  launcher_environment_sha256=sorted(launcher_envs),windows_reserve_bytes=WINDOWS_RESERVE_BYTES,
                   method=('Student t (df=4) on log paired ratios of exactly five pairs; one-sided 97.5% bounds; '
                           'gain bound Bonferroni over gating cases x candidates'),
                   ratio_units='Latency: baseline/candidate; throughput: candidate/baseline. 1/1.03 means at most 3% longer full request.',

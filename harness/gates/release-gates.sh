@@ -6,7 +6,7 @@
 #   D  GPU  tool pilot -> matrix BASELINE,CANDIDATE -> compare-ab (--release) or median screen (default)
 #   C  GPU  run-context-gates.sh CANDIDATE 131072 120000 NAME -> context-check (bound to B's teacher run)
 #   E  GPU  soak pilot 30 s -> soak (1800 s default, 7200 s --release) -> soak-analysis against the reference soak
-#           (f1): p1 free VRAM, Windows shared GPU memory, TTFT/decode medians; the 0.8 GiB floor is reported only
+#           (f1): Windows shared GPU memory, TTFT/decode medians; free VRAM is reported only (1 GiB is Windows')
 #   Z  CPU  summary reports/release-gates-RUN-summary.json
 # Site paths come from config/local.env (QWEN36_ROOT, QWEN36_NATIVE). Every report name carries the run id.
 # Usage: release-gates.sh --candidate C --reference-report REF --functional-baseline FB --reference-soak A

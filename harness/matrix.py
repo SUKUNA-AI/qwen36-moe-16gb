@@ -13,15 +13,16 @@ exactly that file). After readiness the serving process's launcher identity (fil
 hashes + filtered start environment from /proc/<MainPID>/environ) must match the
 manifest, the static run-experiment.sh contract and the first arm's environment
 (NAME-launcher.json, written once with O_EXCL). Every arm row records the foreign VRAM
-use before start (nvidia-smi, no CUDA context) and the service-sampled minimum GPU
-free; below the owner's 0.8 GiB floor (bench.VRAM_FLOOR_BYTES) the arm is INVALID (code
-gpu_min_free_below_floor) and the matrix exits 3 after the remaining arms.
+use before start (nvidia-smi, no CUDA context), the service-sampled peak used and minimum
+free VRAM; a process footprint above total - 1 GiB (bench.vram_budget, the owner's Windows
+reserve) makes the arm INVALID (code process_vram_over_budget) and the matrix exits 3 after
+the remaining arms. Free VRAM is reported, not gated.
 Exit codes: 0 all arms complete and valid; 1 an arm failed (stops the matrix);
-2 refused before any arm; 3 complete but some arm INVALID (VRAM floor); 75 lock busy.
+2 refused before any arm; 3 complete but some arm INVALID (VRAM budget); 75 lock busy.
 """
 import argparse,hashlib,json,os,pathlib,re,signal,subprocess,sys,time
 import bench
-from bench import (DEFAULT_LENGTHS,HARNESS_VERSION,BENCH_FIXTURE_VERSION,VRAM_FLOOR_BYTES,GpuLockBusy,acquire_gpu_lock,
+from bench import (DEFAULT_LENGTHS,HARNESS_VERSION,BENCH_FIXTURE_VERSION,WINDOWS_RESERVE_BYTES,GpuLockBusy,acquire_gpu_lock,
                    current_run_spec,parse_lengths,validate_receipt)
 import tool_fixture_v5 as tool_fixture
 
@@ -129,7 +130,7 @@ def build_spec(root,profiles,lengths,output,pairs,pilot_name):
     spec['bench_fixture_version']=BENCH_FIXTURE_VERSION
     spec['tool_fixture']=tool_fixture.describe()
     spec['tool_pilot']=validate_tool_pilot(root,pilot_name,profiles,spec['arms'],spec['harness_source_files'])
-    spec['vram_floor_bytes']=VRAM_FLOOR_BYTES
+    spec['windows_reserve_bytes']=WINDOWS_RESERVE_BYTES
     return spec
 
 
@@ -159,17 +160,14 @@ def check_launcher(root,name,profile,spec,launcher):
 
 
 def arm_vram(root,name,plan,pre_start):
-    """Owner floor: service-sampled min GPU free >= bench.VRAM_FLOOR_BYTES (0.8 GiB) over every request of the arm."""
+    """Owner budget (bench.vram_budget) over every service-sampled request of the arm, incl. tool steps."""
     bench_path,task_path=arm_files(root,name,plan);rows=[]
     for path,key in ((bench_path,'rows'),(task_path,'row')):
         try:doc=json.loads(path.read_text())
         except (OSError,ValueError):continue
         value=doc.get(key)
         rows+=value if isinstance(value,list) else [value]
-    free=bench.min_gpu_free(rows)
-    gate='UNAVAILABLE' if free is None else ('PASS' if free>=VRAM_FLOOR_BYTES else 'INVALID')
-    return {'floor_bytes':VRAM_FLOOR_BYTES,'min_gpu_free_bytes':free,'gate':gate,
-            'code':'gpu_min_free_below_floor' if gate=='INVALID' else None,
+    return {**bench.vram_budget(rows,pre_start),
             'pre_start_gpu':pre_start,
             'foreign_gpu_used_bytes_pre_start':pre_start.get('used_bytes') if isinstance(pre_start,dict) else None,
             'scope':'service samples during requests (incl. warmup, primers, tool steps); pre-start = nvidia-smi with no model unit active'}

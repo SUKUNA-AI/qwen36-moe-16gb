@@ -290,25 +290,50 @@ class Helpers(unittest.TestCase):
                     self.assertEqual(self.run_helper('env', str(path)), 3)
 
 
-class VramFloor(unittest.TestCase):
-    def test_floor_is_0_8_gib_everywhere(self):
-        import bench
-        self.assertEqual(bench.VRAM_FLOOR_BYTES, int(0.8 * GIB))
-        soak_analysis = load('soak_analysis_floor', HERE / 'soak-analysis.py')
-        self.assertEqual(soak_analysis.VRAM_FLOOR_BYTES, bench.VRAM_FLOOR_BYTES)
-        for name in ('matrix.py', 'compare-ab.py', 'bench.py'):
-            self.assertNotIn("owner's 0.5 GiB", (HERE / name).read_text(encoding='utf-8'))
-        self.assertNotIn('GIB//2', (HERE / 'bench.py').read_text(encoding='utf-8'))
+class VramBudget(unittest.TestCase):
+    """Owner rule 2026-10-15: 1 GiB for Windows itself, everything else for the model."""
+    TOTAL = 16303 * (1 << 20)
 
-    def test_matrix_marks_an_arm_between_the_old_and_new_floor_invalid(self):
+    def test_reserve_and_no_free_vram_floor(self):
+        import bench
+        self.assertEqual(bench.WINDOWS_RESERVE_BYTES, GIB)
+        self.assertFalse(hasattr(bench, 'VRAM_FLOOR_BYTES'))
+        for name in ('matrix.py', 'compare-ab.py', 'screen-chunk.py'):
+            self.assertNotIn('VRAM_FLOOR_BYTES', (HERE / name).read_text(encoding='utf-8'))
+
+    def test_budget_is_the_process_footprint_against_total_minus_reserve(self):
+        import bench
+        pre = {'used_bytes': GIB // 2, 'free_bytes': self.TOTAL - GIB // 2, 'total_bytes': self.TOTAL}
+        budget = self.TOTAL - GIB
+        def rows(peak, free=GIB // 4):
+            return [{'peaks': {'gpu_total_used_bytes': peak - GIB, 'min_gpu_free_bytes': GIB}},
+                    {'primer': {'peaks': {'gpu_total_used_bytes': peak, 'min_gpu_free_bytes': free}}}]
+        ok = bench.vram_budget(rows(budget + GIB // 2), pre)
+        # 0.25 GiB free is fine: the desktop shrinks, only the process footprint counts.
+        self.assertEqual((ok['gate'], ok['process_peak_bytes'], ok['budget_bytes'], ok['min_gpu_free_bytes']),
+                         ('PASS', budget, budget, GIB // 4))
+        over = bench.vram_budget(rows(budget + GIB // 2 + 1), pre)
+        self.assertEqual((over['gate'], over['code']), ('INVALID', 'process_vram_over_budget'))
+        for missing_rows, missing_pre in ((rows(GIB), None), ([{'peaks': {'min_gpu_free_bytes': GIB}}], pre),
+                                          (rows(GIB), {'used_bytes': None, 'total_bytes': self.TOTAL})):
+            self.assertEqual(bench.vram_budget(missing_rows, missing_pre)['gate'], 'UNAVAILABLE')
+        steps = [{'steps': [{'peaks': {'gpu_total_used_bytes': self.TOTAL}}]}]
+        self.assertEqual(bench.max_gpu_used(rows(GIB) + steps), self.TOTAL)
+
+    def test_matrix_arm_with_little_free_vram_but_within_budget_is_valid(self):
         import matrix
         with tempfile.TemporaryDirectory() as d:
             root = pathlib.Path(d); plan = {'repeat': 0, 'profile': CANDIDATE}
             bench_path, task_path = matrix.arm_files(root, 'm', plan)
-            write(bench_path, {'rows': [{'case': 'fresh', 'peaks': {'min_gpu_free_bytes': int(0.7 * GIB)}}]})
-            write(task_path, {'steps': []})
-            vram = matrix.arm_vram(root, 'm', plan, {'used_bytes': 0, 'free_bytes': 0, 'total_bytes': 0})
-            self.assertEqual((vram['gate'], vram['code']), ('INVALID', 'gpu_min_free_below_floor'))
+            pre = {'used_bytes': 2 * GIB, 'free_bytes': self.TOTAL - 2 * GIB, 'total_bytes': self.TOTAL}
+            write(bench_path, {'rows': [{'case': 'fresh', 'peaks': {'gpu_total_used_bytes': self.TOTAL - GIB // 2,
+                                                                   'min_gpu_free_bytes': GIB // 2}}]})
+            write(task_path, {'row': {'steps': []}})
+            vram = matrix.arm_vram(root, 'm', plan, pre)
+            self.assertEqual((vram['gate'], vram['process_peak_bytes'], vram['min_gpu_free_bytes']),
+                             ('PASS', self.TOTAL - GIB // 2 - 2 * GIB, GIB // 2))
+            pre['used_bytes'] = GIB // 4
+            self.assertEqual(matrix.arm_vram(root, 'm', plan, pre)['code'], 'process_vram_over_budget')
 
 
 class ContextGatesScript(unittest.TestCase):

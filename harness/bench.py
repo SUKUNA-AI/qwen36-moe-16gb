@@ -8,8 +8,9 @@ legitimate observed miss, never reported as a hit.
 V6 additions: launcher identity (sha256 of start-experiment.sh, run-experiment.sh,
 check-experiment.py + the filtered start environment of the serving process, read from
 /proc/<MainPID>/environ; secret-like names are redacted) in manifests (`launcher_files`)
-and in every bench report (`launcher`); the service-sampled minimum GPU free memory per
-arm against the owner's hard floor (0.8 GiB since 2026-10-15; 0.5 GiB for release f1).
+and in every bench report (`launcher`); the service-sampled VRAM footprint of the serving
+process per arm against the owner's budget (total - 1 GiB for Windows, since 2026-10-15;
+release f1 used a 0.5 GiB free-VRAM floor). Free VRAM is recorded, not gated.
 """
 import argparse, hashlib, json, math, os, pathlib, random, statistics, time, re
 import requests
@@ -39,11 +40,11 @@ LAUNCHER_ENV_KEYS=('PATH','CC','CXX','CUDAHOSTCXX','NVCC_CCBIN','MAX_JOBS','HF_H
 LAUNCHER_ENV_PREFIXES=('QWEN36_','FREETOKEN_','SGLANG_','FLA_','TORCH','TRITON_','PYTORCH_','CUDA_','NCCL_','NVIDIA_',
                        'OMP_','MKL_','LD_','LIBRARY_PATH','PYTHON')
 LAUNCHER_ENV_SECRET=re.compile('KEY|TOKEN|SECRET|PASSW|CREDENTIAL|AUTH|COOKIE',re.I)
-# Owner decision 2026-10-13: VRAM hard floor for every profile; foreign usage is recorded, not refused.
-# Raised 2026-10-15 from 0.5 to 0.8 GiB (VRAM test: below ~0.8 GiB free the desktop pages and decode drops ~20 %).
+# Owner rule 2026-10-15: "1 GiB for Windows itself, everything else wherever". The serving process may use all
+# VRAM but this reserve; free VRAM (WDDM shrinks the desktop under pressure) is recorded only.
 GIB=1<<30
 MIB=1<<20
-VRAM_FLOOR_BYTES=GIB*4//5
+WINDOWS_RESERVE_BYTES=GIB
 NVIDIA_SMI='/usr/lib/wsl/lib/nvidia-smi'
 
 
@@ -229,6 +230,35 @@ def min_gpu_free(rows):
         for step in item.get('steps') if isinstance(item.get('steps'),list) else ():visit(step)
     for row in rows if isinstance(rows,list) else ():visit(row)
     return min(values) if values else None
+
+
+def max_gpu_used(rows):
+    """Largest service-sampled total used GPU bytes over rows, their primers and tool steps; None if never sampled."""
+    values=[]
+    def visit(item):
+        if not isinstance(item,dict):return
+        peaks=item.get('peaks');value=peaks.get('gpu_total_used_bytes') if isinstance(peaks,dict) else None
+        if type(value) in (int,float) and math.isfinite(value) and value>=0:values.append(value)
+        visit(item.get('primer'))
+        for step in item.get('steps') if isinstance(item.get('steps'),list) else ():visit(step)
+    for row in rows if isinstance(rows,list) else ():visit(row)
+    return max(values) if values else None
+
+
+def vram_budget(rows,pre_start):
+    """Owner budget: process VRAM footprint <= total - WINDOWS_RESERVE_BYTES. NVML under WSL/WDDM reports no
+    per-process memory, so the footprint is the peak of total used VRAM during the arm minus what was used before
+    the unit started (nvidia-smi, no model unit). Minimum free VRAM is reported, not gated."""
+    used,free=max_gpu_used(rows),min_gpu_free(rows)
+    snapshot=pre_start if isinstance(pre_start,dict) else {}
+    total,foreign=snapshot.get('total_bytes'),snapshot.get('used_bytes')
+    known=used is not None and all(type(v) is int and v>=0 for v in (total,foreign))
+    footprint=max(0,used-foreign) if known else None
+    budget=total-WINDOWS_RESERVE_BYTES if known else None
+    gate='UNAVAILABLE' if not known else ('PASS' if footprint<=budget else 'INVALID')
+    return {'windows_reserve_bytes':WINDOWS_RESERVE_BYTES,'process_peak_bytes':footprint,'budget_bytes':budget,
+            'peak_gpu_used_bytes':used,'min_gpu_free_bytes':free,'gate':gate,
+            'code':'process_vram_over_budget' if gate=='INVALID' else None}
 
 
 def gpu_memory_snapshot(run=None):
