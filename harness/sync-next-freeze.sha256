@@ -1,4 +1,4 @@
-# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T16:59:48Z
+# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T17:21:29Z
 # rendered with site values digest=895052024cbcd577 (py/sh/config/profile bytes as written to native)
 # options: skip_runtime=0 extra_config=- (pass the same options to --dry-run/--apply)
 095e182f33349d2b2e7ea32694b3de3ca403ceed972342f3cab7d2dd0419e1ee  freetoken/python/freetoken/__init__.py
@@ -494,12 +494,12 @@ acdeaea3b1997a09e54adab0c5963d7b1b0b2f5b365e064394b323a44287afda  serving/metric
 343a6133c07c5de64af3d49dddc192694649365bd8aebcb5625043da9f9e49f3  serving/test-metrics.py
 98e781505cf77033b8816e614361ed39abaeb3ecb5b3320f5ca892566762452f  harness/experiment.py
 fd9615310e24a755a6012985f345577ad58fc15b1fa389eef3edcba96b8aee41  harness/bench.py
-fe0726873154b6feb65625d12cffa239583f7cd35d82fc4eea0f918d16c122ee  harness/matrix.py
+cf855b7cee68057003e2fb1505fbfbc6338bfa09fa5341ec393d1279db4d732d  harness/matrix.py
 296e1560e353dc9f7156fdff44259225c075b578d99be1e852e4d57ac256858c  harness/compare-ab.py
 b36127d03a3d2c94b718d6809c585f025ff88a3443ec5f632b84269983f6c5cb  harness/tool-task-bench.py
 17799241e0b2a8c448eb33089bc79d386a9f5bd0dd0edcce98feac67cd3ed0a5  harness/tool_fixture_v5.py
 49736cea4ea8fcdfb64600c17969fbae3651815ec34f6f2d061f512e3b0f0a7d  harness/tool-pilot.py
-46a40baa9b7933a70bbbed694a268bf493fbea776c2452b6e83496fdbf58d395  harness/test-paired-contract-cpu.py
+704db2428536268e2be2121ca2578ede214d2b6d7b380adbdc51f1c43e09fca3  harness/test-paired-contract-cpu.py
 e5b352a92bb68e3132944366e7b83a3888ddb4354515b84e41d7b535009c4239  harness/screen-chunk.py
 09e03aa0645eeb1b6a49c964ba4383a1e868971866c88e7fe10528031df9c047  harness/compare-logit-reference.py
 957b1ce1bf87961da0ae9f31c5ef1d170aee2993de5637266b274551a331a479  harness/test-tool-choice-guard-cpu.py
@@ -522,8 +522,8 @@ f3288fcb69dd2ca16ff2247ffc0257f09fd208cd3374766c3b2722cdc61c459e  harness/functi
 8c5cdb79e886369ebd45793cc7a6c4f9272925dd806773f54a8d9c279e82dc14  harness/lookup-qualification.py
 fb4fb5fe01c5d7dcc9a00a92b7df0664862f6bff86c3b96d034344712a00498f  harness/check-candidate-metrics.py
 f3d67f46132557616c59221d7ad8b3d220b1341e23dd2c3d28ce958cbb522f43  harness/profile-request.py
-ebda1ad441657eaf208d38db12bf9d9a8f153472eab42926fac68f72116cfeae  harness/analyze-model-nsys.py
-fc305bfc9c9f1fbdb429aac21df082278a6e224c20000768fd10ef3b5cb48c41  harness/test-analyze-model-nsys-cpu.py
+2021f8ba6b381a254491fd5eecbfdceeef3b615625cc171cad6d8a33592f08ba  harness/analyze-model-nsys.py
+ece3f29afed3c6e3c8b46d45ed54021655c0bc04459d781f50edb15d34365701  harness/test-analyze-model-nsys-cpu.py
 b4911728cb36e71d4a7634cbcd30df00c897fbe67b75422e0c69cb24091344f3  harness/soak.py
 7db9fdadab7dc9b17f69439bc42937a933a3abc6fd67c50b8687ab3d34729262  harness/soak-analysis.py
 cc235adb8528afb36cd3830198b5227d3dde1d1e81c3740c262b84239cc595f3  harness/test-soak-cpu.py
@@ -646,3 +646,13 @@ c0f4f2971631d4138d9ce1a36e3a1b9e0ed64eeb718e4b2dd6bd5dab76bb3d3c  harness/long25
 b9ed5bc93a63163d85f75220771df4efc6d6ab3841a9f3e3c0be64d0c310268c  harness/long256-release.json
 4bdbc732b853ce615080b94eeab64fa9248ddaad8152699dbcfc92a247687368  harness/profile-final-bf128.json
 97efd1a8ff727db21613591b9824c812db3b1fbbe799b11ba142e991f2e25925  harness/profile-final-cuda-bitexact128.json
+2f6d780c1b2b81c10989d26c2a9412ef86a5c4d5bd34e69fb5cb1ad700738f12  harness/profile-final-main-release-next-candidate.json
+f585cf9b7332a8c274f7a7ae3f5c415f6917a39d18fb741126b2435509dba981  harness/profile-final-main-release-next-he-r085.json
+dfc86117b2cdb85710e94fd007b8cdc5542d4c14007e2a99ab596cc2612838a5  harness/profile-final-main-release-next-he.json
+c5112b7d549a57e764864762429762e0064bec77252a7ce806a7aade510cc39e  harness/profile-final-main-release-next-k.json
+bfb88e596132f30c590e123618c07e38a4b9f6b79fe24afc8efd3d83930478ec  harness/profile-final-main-release-next-kc0.json
+48bf12afde242dceec08b9965e7166a3258ad0d82309340260cadef7d81d9e6c  harness/profile-final-main-release-overlap.json
+7112a3d1f29eca45e33136e14ef9987348ebc72cedf7b7a58e9daad4d226a39c  harness/profile-final-main-release-shortroute-fla-wu-overlap.json
+11d047a4b58dc064251046cca7d5ab1d9d6231bf626cdd014938bf30bdf92450  harness/profile-final-main-release-shortroute-fla-wu.json
+10ac93af08d343f4184a30b2899e3e0011336a3e4d0a9a08c30f4118103b6a24  harness/profile-final-main-release-shortroute.json
+c3ed7e860c1175f75355ca25451c104d8a22106c065c43f9f708405495f5355d  harness/profile-final-main-release.json
