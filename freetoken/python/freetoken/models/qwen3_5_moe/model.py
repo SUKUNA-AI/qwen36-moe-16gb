@@ -68,10 +68,29 @@ class Qwen3_5DecoderLayer(BaseOP):
             hidden = self.input_layernorm.forward(hidden)
         else:
             hidden, residual = self.input_layernorm.forward_add_residual(hidden, residual)
+        pregate = self._launch_pregate(residual)
         hidden = self.linear_attn.forward(hidden) if self._is_linear else self.self_attn.forward(hidden)
+        if pregate is not None:
+            pregate.release_input()  # post_attention_layernorm rewrites the residual the predictor reads
         hidden, residual = self.post_attention_layernorm.forward_add_residual(hidden, residual)
         hidden = self.mlp.forward(hidden)
         return hidden, residual
+
+    def _launch_pregate(self, residual):
+        """D3b (moe/pregate.py): fork this layer's speculative expert prefetch, predicted by this
+        layer's router on post_attention_layernorm of the residual entering it, behind the mixer."""
+        experts = getattr(self.mlp, "experts", None)
+        can = getattr(experts, "can_pregate", None)
+        if can is None or not can(residual):
+            return None
+        pregate = experts.offload_cache.decode_pregate
+        cap = pregate.cap(attention=not self._is_linear)
+        if cap == 0 or not pregate.predictor_ok(residual, self.post_attention_layernorm, self.mlp.gate,
+                                                experts.num_experts):
+            return None
+        pregate.launch(experts.layer_id, residual, self.post_attention_layernorm, self.mlp.gate,
+                       min(cap, experts.top_k), experts.top_k)
+        return pregate
 
 
 class Qwen3_5Model(BaseOP):

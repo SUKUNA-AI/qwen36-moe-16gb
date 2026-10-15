@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
+from freetoken.core import get_global_ctx
 from freetoken.layers import (
     BaseOP,
     LinearColParallelMerged,
@@ -68,10 +69,17 @@ class Qwen3_5MoE(BaseOP):
             prefix=f"{prefix}.shared_expert",
         )
         self.shared_expert_gate = LinearReplicated(config.hidden_size, 1, has_bias=False)
+        from freetoken.moe import shared_epilogue
+
+        # D5 (moe/shared_epilogue.py): decode merges sigmoid * mul + add into one launch
+        self._fused_epilogue = shared_epilogue.EPILOGUE if shared_epilogue.enabled() else None
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
         num_tokens, hidden_dim = hidden_states.shape
         hidden_states = hidden_states.view(-1, hidden_dim)
+        epilogue = getattr(self, "_fused_epilogue", None)
+        fused = epilogue is not None and not get_global_ctx().batch.is_prefill
+        shared_forward = self._shared_parts if fused else self._shared_forward
         # Compute the router + shared expert BEFORE the routed experts: the fused MoE
         # kernel may write into ``hidden_states`` in place, which would corrupt the
         # shared expert's input (HF also evaluates the shared expert first).
@@ -79,16 +87,23 @@ class Qwen3_5MoE(BaseOP):
         can_overlap = getattr(self.experts, "can_overlap_shared", None)
         if can_overlap is not None and can_overlap(hidden_states):
             routed, shared = self.experts.forward_with_shared(
-                hidden_states, router_logits, self._shared_forward,
+                hidden_states, router_logits, shared_forward,
             )
         else:
-            shared = self._shared_forward(hidden_states)
+            shared = shared_forward(hidden_states)
             routed = self.experts.forward(hidden_states=hidden_states, router_logits=router_logits)
+        if fused:
+            return epilogue(routed, *shared).view(num_tokens, hidden_dim)
         return (routed + shared).view(num_tokens, hidden_dim)
 
     def _shared_forward(self, hidden_states):
         shared = self.shared_expert.forward(hidden_states)
         return shared * torch.sigmoid(self.shared_expert_gate.forward(hidden_states))
+
+    def _shared_parts(self, hidden_states):
+        # the same two projections as _shared_forward; the gating and the merge run in the fused epilogue
+        shared = self.shared_expert.forward(hidden_states)
+        return shared, self.shared_expert_gate.forward(hidden_states)
 
 
 __all__ = ["Qwen3_5MoE", "Qwen3_5DenseMLP"]

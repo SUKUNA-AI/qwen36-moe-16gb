@@ -269,6 +269,20 @@ class OffloadMoELayer(MoELayer):
             and not cache.layer_major_active and cache.refill is None
         )
 
+    def can_pregate(self, residual: torch.Tensor | None) -> bool:
+        """D3b (moe/pregate.py): whether this layer's speculative plan may fork at the start of its
+        decoder layer; the same single-token GPU decode conditions as the T3 overlap, layers >= 1."""
+        cache = self.offload_cache
+        return (
+            cache is not None and getattr(cache, "decode_pregate", None) is not None
+            and self.layer_id >= 1 and residual is not None
+            and not get_global_ctx().batch.is_prefill
+            and residual.shape[0] == 1 and self.tp_size == 1
+            and cache.decode_target == "gpu" and not cache.is_cpu_layer(self.layer_id)
+            and not cache.is_unpinned_layer(self.layer_id) and cache._copy_fused_ok
+            and not cache.layer_major_active and cache.refill is None
+        )
+
     def forward_with_shared(self, hidden_states, router_logits, shared_forward):
         """Same kernels and merge order; only transport moves to the side stream."""
         cache = self.offload_cache

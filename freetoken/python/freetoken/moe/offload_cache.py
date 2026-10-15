@@ -382,6 +382,18 @@ class OffloadMoeCache:
 
         # D3a trace hook (QWEN36_ROUTE_TRACE=1): experimental, eager decode only
         self.route_trace = route_trace.install(self) if route_trace.enabled() else None
+        from freetoken.moe.pregate import DecodePregate, caps
+
+        # D3b speculative one-layer-ahead prefetch (QWEN36_DECODE_PREGATE): same exclusions as T3,
+        # plus the eager-only trace (it reads slot maps the side stream would be rewriting)
+        pregate_caps = caps()
+        self.decode_pregate = (
+            DecodePregate(self, torch.cuda, self.device, *pregate_caps,
+                          stream=self.decode_shared_overlap.stream if self.decode_shared_overlap else None)
+            if any(pregate_caps) and not refill_enabled() and self.route_trace is None
+            and self.device.type == "cuda" and self.decode_target == "gpu"
+            else None
+        )
 
     def begin_layer_major_prefill(self) -> None:
         """Open ONE prefill epoch for every chunk of a layer-major prefill (before layer 0, chunk 0)."""
@@ -413,6 +425,8 @@ class OffloadMoeCache:
         ``refill_group``: also snapshot the slots' maps (pinned D2H, read back only when the first
         group is refilled) and hand them to a ``SlotRefill`` that restores them group by group;
         until then they carry usage RESERVED so the decode LRU never picks them."""
+        if getattr(self, "decode_pregate", None) is not None:  # D3b: shares plan buffers and slot maps
+            self.decode_pregate.join()
         lo = self.cache_size - n
         assert n >= 0 and lo >= 2 * self.num_experts, (
             f"layer-major store needs {n} slots, only {self.cache_size - 2 * self.num_experts} lendable"
@@ -628,6 +642,8 @@ class OffloadMoeCache:
         """
         assert self.bank_sources, "set_bank_sources must run before rebuild"
         self.validate_rebuild(cache_size)
+        if getattr(self, "decode_pregate", None) is not None:  # D3b: shares plan buffers and slot maps
+            self.decode_pregate.join()
         self.refill = None  # its slots and pending copies belong to the old slot cache (synchronized below)
         self.refill_route_counts = self.refill_route_batch = None
         # 1. Tear down prefill-overlap (its buffer views alias the old bank_caches).
@@ -905,6 +921,8 @@ class OffloadMoeCache:
             self.prefill_selected_chunks += 1
 
     def begin_prefill(self) -> None:
+        if getattr(self, "decode_pregate", None) is not None:  # D3b: shares plan buffers and slot maps
+            self.decode_pregate.join()
         if not self.prefill_overlap:
             return
         self._prefill_buffer_layer = [None, None]
@@ -1276,6 +1294,8 @@ class OffloadMoeCache:
             self.decode_freq[layer_id].scatter_add_(0, ids, torch.ones_like(ids))
         if self.route_trace is not None:
             self.route_trace.observe(layer_id, expert_ids)
+        if getattr(self, "decode_pregate", None) is not None:  # D3b: shares plan buffers and slot maps
+            self.decode_pregate.join()
         self._pending_src_layer = layer_id
         self._pending_whole_layer = False
         ensure_experts(self, layer_id, expert_ids)
@@ -1295,6 +1315,8 @@ class OffloadMoeCache:
         if self.collect_decode_freq:
             ids = expert_ids.reshape(-1).long()
             self.decode_freq[layer_id].scatter_add_(0, ids, torch.ones_like(ids))
+        if getattr(self, "decode_pregate", None) is not None:  # D3b: shares plan buffers and slot maps
+            self.decode_pregate.join()
         self._pending_src_layer = layer_id
         self._pending_whole_layer = False
         ensure_experts_hybrid(
@@ -1304,6 +1326,8 @@ class OffloadMoeCache:
     def materialize_layer(self, layer_id: int) -> None:
         from freetoken.moe.offload_kernels import materialize_layer
 
+        if getattr(self, "decode_pregate", None) is not None:  # D3b: shares plan buffers and slot maps
+            self.decode_pregate.join()
         self._pending_src_layer = layer_id
         self._pending_whole_layer = True
         materialize_layer(self, layer_id)
@@ -1311,6 +1335,8 @@ class OffloadMoeCache:
     def reset(self) -> None:
         from freetoken.moe.offload_kernels import reset_cache
 
+        if getattr(self, "decode_pregate", None) is not None:  # D3b: shares plan buffers and slot maps
+            self.decode_pregate.join()
         reset_cache(self)
         self._prefill_epoch_open = False
         self.refill = None  # every slot is unmapped now; a pending publish would resurrect stale maps
@@ -1331,6 +1357,8 @@ class OffloadMoeCache:
         self.stat_active_layer.zero_()
         self.stat_fetched_layer.zero_()
         self.stat_steps_layer.zero_()
+        if getattr(self, "decode_pregate", None) is not None:
+            self.decode_pregate.reset_stats()
 
     def record_decode_stats(self, layer_id: int) -> None:
         """No-op: ``ensure_experts`` accumulates into ``lru_stats`` inside its own launch.
@@ -1456,35 +1484,7 @@ class OffloadMoeCache:
                 cache[: self.num_experts].copy_(per_layer[layer_id])
             return
         if self._copy_fused_ok:
-            if self._decode_gather is not None and not self._pending_whole_layer:
-                from freetoken.kernel.decode_gather import decode_gather_jit
-
-                # Opt-in: decode misses (ensure_experts plans) through the TMA bulk-copy
-                # gather -- same descriptor tensors and plan, same bytes moved.
-                decode_gather_jit(
-                    self._copy_dst_ptrs,
-                    self._copy_src_ptrs[layer_id],
-                    self._copy_feat_bytes,
-                    self.evict_slots,
-                    self.src_indices,
-                    self.num_indices,
-                    config=self._decode_gather,
-                )
-                return
-            from freetoken.kernel.fast_index_copy import fast_index_copy_multi_jit
-
-            # One launch copies the missing rows for every bank (instead of one launch per
-            # bank). evict_slots/src_indices/num_indices are shared across banks;
-            # src_indices holds layer-local expert rows, resolved against this layer's
-            # source pointers (layer_id is a static int per captured graph node).
-            fast_index_copy_multi_jit(
-                self._copy_dst_ptrs,
-                self._copy_src_ptrs[layer_id],
-                self._copy_feat_bytes,
-                self.evict_slots,
-                self.src_indices,
-                self.num_indices,
-            )
+            self.copy_planned(layer_id, tma=not self._pending_whole_layer)
             return
 
         from freetoken.kernel import fast_index_copy_jit
@@ -1497,6 +1497,39 @@ class OffloadMoeCache:
                 self.src_indices,
                 self.num_indices,
             )
+
+    def copy_planned(self, layer_id: int, tma: bool = True) -> None:
+        """Fused copy of the staged plan (evict_slots/src_indices/num_indices) from ``layer_id``'s
+        host banks; ``copy_missing``'s fused branch, also used by the D3b speculative plan."""
+        if self._decode_gather is not None and tma:
+            from freetoken.kernel.decode_gather import decode_gather_jit
+
+            # Opt-in: decode misses (ensure_experts plans) through the TMA bulk-copy
+            # gather -- same descriptor tensors and plan, same bytes moved.
+            decode_gather_jit(
+                self._copy_dst_ptrs,
+                self._copy_src_ptrs[layer_id],
+                self._copy_feat_bytes,
+                self.evict_slots,
+                self.src_indices,
+                self.num_indices,
+                config=self._decode_gather,
+            )
+            return
+        from freetoken.kernel.fast_index_copy import fast_index_copy_multi_jit
+
+        # One launch copies the missing rows for every bank (instead of one launch per
+        # bank). evict_slots/src_indices/num_indices are shared across banks;
+        # src_indices holds layer-local expert rows, resolved against this layer's
+        # source pointers (layer_id is a static int per captured graph node).
+        fast_index_copy_multi_jit(
+            self._copy_dst_ptrs,
+            self._copy_src_ptrs[layer_id],
+            self._copy_feat_bytes,
+            self.evict_slots,
+            self.src_indices,
+            self.num_indices,
+        )
 
 
 def iter_offload_moe_layers(model) -> Iterator:
