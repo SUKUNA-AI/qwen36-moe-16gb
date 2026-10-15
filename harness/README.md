@@ -16,7 +16,7 @@ Tracked copies use placeholders (`/home/USER/...`, `/path/to/qwen36-workspace`, 
 | Context / live gates | `run-context-gates.sh`, `run-live-gates.sh`, `test-backend-v2.py`, `test-resilience.py`, `test-prefill-cancel.py`, `test-output-budget.py` |
 | Soak | `soak.py`, `soak-analysis.py`, `test-soak-cpu.py` |
 | Nsight | `profile.sh`, `profile-request.py`, `analyze-model-nsys.py`, `profile-final-*.json`, `final-nsight-runbook.md` |
-| Release | `release.py`, `make-qualification.py`, `export-release-evidence.py`, `release-management.ps1`, `qwen36.cmd`, `sync-v5.sh`, `sync-final-freeze.sha256`, `gates/` (final gate driver used for release f1: A CPU suites -> B qualification -> D pilot/matrix -> C context gates -> E soak -> F install/live) |
+| Release | `release.py`, `make-qualification.py`, `export-release-evidence.py`, `release-main128.sh` + `release-main128.py` (main128 next: staging, decision, receipt, export, install over f1, rollback; OPERATIONS.md), `release-management.ps1`, `qwen36.cmd`, `sync-v5.sh`, `sync-final-freeze.sha256`, `gates/` (final gate driver used for release f1: A CPU suites -> B qualification -> D pilot/matrix -> C context gates -> E soak -> F install/live) |
 | Operations checks | `network-acceptance.py`, `ops-live-probe.py`, `ops-live-*.ps1`, `ops-control-tests.ps1`, `ops-readiness-tests.py`, `inspect-keepalive.py`, `ops-live-runbook.md`, `OPERATIONS.md` |
 | CPU test suites | `test-*-cpu.py`, `test-*-cpu.ps1`, `CPU-checks.sh`, `component-checks.sh` |
 | Evaluation runner | `eval-v1.py`, `eval-v1-compare.py`, `eval-v1-runbook.md`; the case set `eval-v1/` is private and gitignored |
