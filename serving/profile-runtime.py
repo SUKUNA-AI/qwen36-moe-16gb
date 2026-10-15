@@ -66,6 +66,10 @@ SWITCH_ENV = {
     'cuda_gdn': {'QWEN36_CUDA_GDN': '1', 'QWEN36_CUDA_GDN_DECODE': 'cluster'},
     # Bit-exact FP8 decode GEMV (kernel/cuda_fp8_gemv.py; the module also pins the library sha256).
     'cuda_fp8_gemv': {'QWEN36_FP8_GEMV': '1'},
+    # Bit-exact decode o-projection (kernel/cuda_oproj_gemv.py) and NVFP4 MoE decode GEMV
+    # (kernel/cuda_moe_decode.py); both modules also pin their library sha256.
+    'cuda_oproj_gemv': {'QWEN36_OPROJ_GEMV': '1'},
+    'cuda_moe_decode': {'QWEN36_MOE_DECODE_CUDA': '1'},
     # TMA decode expert gather (kernel/decode_gather.py): a JIT module that must load as a manifest-bound
     # prebuilt (KERNEL_MODULE_SWITCHES). TVM_FFI_CUDA_ARCH_LIST=12.0 is the arch the module is built for and
     # matches the qualification runs; it is inert because FREETOKEN_DISABLE_JIT=1 never lets tvm-ffi build.
@@ -115,11 +119,15 @@ NVFP4_LIBRARY = 'release/lib/libqwen_nvfp4_bitexact.so'
 # Bit-exact CUDA GDN kernels and FP8 decode GEMV: only with receipt evidence for the profile.
 GDN_LIBRARY = 'release/lib/libqwen36_gdn.so'
 FP8_GEMV_LIBRARY = 'release/lib/libqwen_fp8_gemv.so'
+OPROJ_GEMV_LIBRARY = 'release/lib/libqwen_oproj_gemv.so'
+MOE_DECODE_LIBRARY = 'release/lib/libqwen_moe_decode.so'
 # switch -> (environment variable FreeToken's ctypes loader reads, release path); nothing else ships.
 NATIVE_LIBRARIES = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE_LIBRARY', GATE_LIBRARY),
                     'cuda_nvfp4_prefill': ('QWEN36_CUDA_NVFP4_LIBRARY', NVFP4_LIBRARY),
                     'cuda_gdn': ('QWEN36_CUDA_GDN_LIBRARY', GDN_LIBRARY),
-                    'cuda_fp8_gemv': ('QWEN36_FP8_GEMV_LIBRARY', FP8_GEMV_LIBRARY)}
+                    'cuda_fp8_gemv': ('QWEN36_FP8_GEMV_LIBRARY', FP8_GEMV_LIBRARY),
+                    'cuda_oproj_gemv': ('QWEN36_OPROJ_GEMV_LIBRARY', OPROJ_GEMV_LIBRARY),
+                    'cuda_moe_decode': ('QWEN36_MOE_DECODE_LIBRARY', MOE_DECODE_LIBRARY)}
 LIBRARY_ENV = {path: env for env, path in NATIVE_LIBRARIES.values()}
 NATIVE_LIBRARY_KEYS = frozenset({'env', 'sha256', 'abi'})
 # ABI records the out-of-process probe must reproduce exactly. The value type selects what is probed:
@@ -141,7 +149,17 @@ FP8_GEMV_ABI = {'qwen_fp8_gemv_rowwise': True, 'qwen_fp8_gemv_init': True, 'qwen
                 'qwen_fp8_gemv_abi_version': 2, 'qwen_fp8_gemv_max_m': 8,
                 'qwen_fp8_gemv_source_sha256': '9844420833b0c33c5b5fb73280f63527597306adb49b979731ac1fe89ac708fc',
                 'libcuda_loaded': False}
-LIBRARY_ABI = {NVFP4_LIBRARY: NVFP4_ABI, GDN_LIBRARY: GDN_ABI, FP8_GEMV_LIBRARY: FP8_GEMV_ABI}
+# kernel/cuda_oproj_gemv.py / cuda_moe_decode.py pin ABI 1 and the CUDA source sha256 (static cudart);
+# records from kernels/decode-oproj and kernels/decode-moe build-info.txt.
+OPROJ_GEMV_ABI = {'qwen_oproj_tensorwise': True, 'qwen_oproj_init': True, 'qwen_oproj_error': True,
+                  'qwen_oproj_abi_version': 1, 'qwen_oproj_max_m': 8, 'qwen_oproj_splits': 3,
+                  'qwen_oproj_source_sha256': 'ff47a7d57830fa593d633a0482f26adc55724f03727ec3d80725f415146a7431',
+                  'libcuda_loaded': False}
+MOE_DECODE_ABI = {'qwen_moe_decode_gemv': True, 'qwen_moe_decode_error': True, 'qwen_moe_decode_abi_version': 1,
+                  'qwen_moe_decode_source_sha256': '088bb27525a60b602d9ebc84d1d6810343747fec116fa9c288b031cc5437c95a',
+                  'libcuda_loaded': False}
+LIBRARY_ABI = {NVFP4_LIBRARY: NVFP4_ABI, GDN_LIBRARY: GDN_ABI, FP8_GEMV_LIBRARY: FP8_GEMV_ABI,
+               OPROJ_GEMV_LIBRARY: OPROJ_GEMV_ABI, MOE_DECODE_LIBRARY: MOE_DECODE_ABI}
 ABI_PROBE_TIMEOUT = 60
 # Same library search path as start-inference.sh (libcudart.so.13 of the pinned toolkit).
 ABI_PROBE_LIBRARY_PATH = ('cuda-13.4/lib', 'cuda-13.4/lib64')
@@ -155,7 +173,8 @@ QUALIFICATION_KEYS = frozenset({'schema', 'checkpoint', 'profiles', 'source_file
 RECORD_KEYS = frozenset({'configuration_sha256', 'acceptance_status', 'known_limitations', 'evidence'})
 # CUDA library switches accepted only with bit-exact evidence bound to the released library bytes; the
 # receipt record key is the switch name.
-CUDA_EVIDENCE_SWITCHES = ('cuda_nvfp4_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'cuda_gdn_fla')
+CUDA_EVIDENCE_SWITCHES = ('cuda_nvfp4_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'cuda_gdn_fla', 'cuda_oproj_gemv',
+                          'cuda_moe_decode')
 CUDA_EVIDENCE_LIBRARIES = {**{k:v[1] for k,v in NATIVE_LIBRARIES.items()}, 'cuda_gdn_fla':GDN_LIBRARY}
 
 def cuda_evidence_enabled(profile, switch):
