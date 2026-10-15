@@ -194,9 +194,12 @@ def cuda_evidence_enabled(profile, switch):
 # only with these receipt evidence lists (each a non-empty set of listed evidence files): the GPU component
 # report, the run receipts and schema-2 teacher reports of its byte-exact gate, and the paired A/B report.
 EXPERIMENTAL_EVIDENCE = {'decode_shared_overlap': ('component_reports', 'run_receipts', 'bitexact_reports', 'ab_reports')}
-# T3 joins after test_decode_overlap_gpu.py, the teacher gate and the A/B of the combined candidate pass
-# (GPU_VALIDATION.md section 5); until then a qualified profile cannot enable it.
-QUALIFIABLE_EXPERIMENTAL = frozenset()
+# T3 is qualifiable only with that evidence: listing it here admits the profile schema, but release and start
+# refuse a receipt without all four lists (_experimental_evidence_valid), and make-qualification.py, the only
+# receipt producer, checks their contents (test_decode_overlap_gpu.py 4/4 without skips, run receipts bound to
+# the staged bytes, a 125/125 max_abs 0 teacher report bound to those runs, a compare-ab PASS; GPU_VALIDATION.md
+# section 5). Without that evidence a qualified profile still cannot enable it.
+QUALIFIABLE_EXPERIMENTAL = frozenset({'decode_shared_overlap'})
 
 CUDA_EVIDENCE_KEY = 'cuda_nvfp4_prefill'
 CUDA_EVIDENCE_KEYS = frozenset({'library', 'library_sha256', 'run_receipts', 'bitexact_reports'})
@@ -231,6 +234,13 @@ KERNEL_MODULE_ORIGIN = 'manifest'
 # receipt-unbound directory. aot.default_kernel_specs() lists the module, so a rebuilt release cache ships
 # it (and the manifest must bind it) whether or not the switch is on.
 KERNEL_MODULE_SWITCHES = {'decode_gather': ('freetoken__decode_gather_tma_8_3_16384',)}
+# The same for production flags and value fields. Hit-D2D prefill (moe/offload_cache.py _prefetch_split) gathers
+# resident experts with fast_index_copy_multi (64 blocks per bank) and copies misses with batch_memcpy; C1
+# (prefill_selected) runs the decode-gather module plus that gather. Without a prebuilt FreeToken logs one
+# warning and silently keeps the slower copies, so a qualified profile must find each as a manifest-bound prebuilt.
+KERNEL_MODULE_FLAGS = {'--moe-prefill-hit-d2d': ('freetoken__batch_memcpy', 'freetoken__fast_index_copy_multi_1024_64')}
+KERNEL_MODULE_FIELDS = {'prefill_selected': ('freetoken__decode_gather_tma_8_3_16384',
+                                             'freetoken__fast_index_copy_multi_1024_64')}
 # serve_argv/configure_environment run every production profile with --moe-strategy offload;
 # _cpu_moe is required only by the cpu/hybrid strategies.
 PRODUCTION_STRATEGY = 'offload'
@@ -380,12 +390,21 @@ def required_kernel_extensions(profiles):
 
 
 def required_kernel_modules(profiles):
-    """JIT kernel-cache modules a qualified profile switches on (KERNEL_MODULE_SWITCHES): each must be a
-    manifest-bound prebuilt in the venv cache, never a private JIT build."""
-    qualified = _qualified_names(profiles)
-    return sorted({module for switch, modules in KERNEL_MODULE_SWITCHES.items()
-                   if any(profiles['profiles'][name].get(switch) is True for name in qualified)
-                   for module in modules})
+    """JIT kernel-cache modules a qualified profile switches on (KERNEL_MODULE_SWITCHES, KERNEL_MODULE_FLAGS,
+    KERNEL_MODULE_FIELDS): each must be a manifest-bound prebuilt in the venv cache, never a private JIT build."""
+    selected = [profiles['profiles'][name] for name in _qualified_names(profiles)]
+    modules = set()
+    for profile in selected:
+        for switch, names in KERNEL_MODULE_SWITCHES.items():
+            if profile.get(switch) is True:
+                modules.update(names)
+        for flag, names in KERNEL_MODULE_FLAGS.items():
+            if flag in profile['flags']:
+                modules.update(names)
+        for field, names in KERNEL_MODULE_FIELDS.items():
+            if field in profile:
+                modules.update(names)
+    return sorted(modules)
 
 
 def sha256_regular_file(path):

@@ -55,7 +55,10 @@ PACKAGE_VERSIONS = {'torch': '2.11.0', 'triton': '3.6.0', 'flashinfer-python': '
                     'freetoken-kernel-cache': '0.1.3+cu130'}
 KERNEL_CACHE_FILES = {'__init__.py': b'# synthetic cache package\n', '_build_meta.py': b'__version__ = "0.1.3+cu130"\n',
                       'jit_cache/freetoken__batch_memcpy/freetoken__batch_memcpy.so': b'\x7fELF batch memcpy',
-                      'jit_cache/freetoken__store_1/freetoken__store_1.so': b'\x7fELF store'}
+                      'jit_cache/freetoken__store_1/freetoken__store_1.so': b'\x7fELF store',
+                      # hit-D2D gather (profile-runtime KERNEL_MODULE_FLAGS: the long256 fixture runs --moe-prefill-hit-d2d)
+                      'jit_cache/freetoken__fast_index_copy_multi_1024_64/freetoken__fast_index_copy_multi_1024_64.so':
+                          b'\x7fELF multi-bank gather'}
 MODEL_FILES = {'config.json': b'{"model_type": "synthetic"}\n', 'tokenizer.json': b'{"tok": 1}\n',
                'model-00001-of-00001.safetensors': b'synthetic shard bytes, long'}
 MODEL_LFS = ('tokenizer.json', 'model-00001-of-00001.safetensors')
@@ -69,10 +72,12 @@ KERNEL_SOURCES = {'kernel/csrc/pinned_tensor.cpp': b'// pinned tensor\n',
                   'kernel/csrc/ple_store/ple_store_ext.cpp': b'// ple store\n',
                   'kernel/csrc/include/freetoken/common.cuh': b'// shared header\n',
                   'kernel/csrc/jit/batch_memcpy.cu': b'// batch memcpy\n',
-                  'kernel/csrc/jit/store.cu': b'// store\n'}
+                  'kernel/csrc/jit/store.cu': b'// store\n',
+                  'kernel/csrc/jit/fast_index_copy.cuh': b'// multi-bank index copy\n'}
 EXTENSION_SO = {'kernel/%s.cpython-312-x86_64-linux-gnu.so' % name: b'\x7fELF synthetic ' + name.encode()
                 for name in ('_cpu_moe', '_pinned_tensor', '_ple_store')}
-CACHE_MODULES = {'freetoken__batch_memcpy': ('jit/batch_memcpy.cu',), 'freetoken__store_1': ('jit/store.cu',)}
+CACHE_MODULES = {'freetoken__batch_memcpy': ('jit/batch_memcpy.cu',), 'freetoken__store_1': ('jit/store.cu',),
+                 'freetoken__fast_index_copy_multi_1024_64': ('jit/fast_index_copy.cuh',)}
 CUDA_EVIDENCE = [{'path': 'runs/cuda-bitexact.json', 'sha256': '1' * 64},
                  {'path': 'reports/cuda-bitexact-logits.json', 'sha256': '2' * 64}]
 # Production bundle fixtures: the TMA decode-gather JIT module (csrc + venv cache .so) and the
