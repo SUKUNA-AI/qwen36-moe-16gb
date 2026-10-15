@@ -90,3 +90,30 @@ PTX and register spills. Build of the pinned library: 64 registers, 0 spills.
 | 8 | 17.5 | 12.7–12.9 |
 
   That is ≈ 5 µs × 40 ≈ 0.2 ms per decode step at M = 1. The kernel moves the 8 MiB of weights at ≈ 690 GB/s.
+
+## Model A/B (owner GPU, 2026-10-15, main-release profile + switches, S3 branch tree)
+
+Three rounds, alternating arm order. Each arm is a fresh server start: the `main-release` configuration,
+optionally with `QWEN36_OPROJ_GEMV=1` and/or `QWEN36_MOE_DECODE_CUDA=1` and the pinned libraries.
+Workload per arm: greedy, `ignore_eos`, 2 × (64-token prompt, 256 output) and 1 × (16K prompt, 256
+output). The prompts come from a fixed seed, so every arm receives byte-identical requests. No profiler.
+Medians are in `../decode-moe/ab-model-2026-10-15.json`.
+
+| arm | decode tok/s, 64-token prompt | vs base | decode tok/s, 16K prompt | vs base |
+|---|---|---|---|---|
+| base (main-release) | 158.4 | | 148.1 | |
+| + o-projection | 161.8 | +2.1 % | 150.7 | +1.7 % |
+| + MoE GEMV | 166.2 | +4.9 % | 154.9 | +4.6 % |
+| + both | 172.1 | +8.6 % | 159.4 | +7.6 % |
+
+- **Generated text:** byte-identical in all 12 server starts.
+- **Self-tests:** both libraries loaded their pinned sha256 and passed the self-test for M 1..8 in every
+  run. No mismatch event was logged.
+- **Round 1:** slower for every arm (base 148 tok/s against 159 in rounds 2–3). The paired comparisons
+  of rounds 2–3 alone give o-projection +1.8…+3.0 %, MoE +4.7…+5.0 % and both +8.3…+8.4 %.
+- **TTFT:** unchanged with both switches (0.38 s at 64 tokens, 1.28 s at 16K). The o-projection-only
+  arm showed a higher 64-token TTFT median (0.45 s) that the "both" arm, which also runs the
+  o-projection kernel, does not reproduce. This is not explained; re-check it in the paired release A/B.
+- **VRAM:** the first launch of every kernel variant of both libraries in a fresh process took 0 MiB
+  (`scripts/vram_first_launch.py`).
+- **Not yet done:** the teacher gate (125/125, max_abs 0) is for the coordinator.
