@@ -155,7 +155,9 @@ if [ "$MODE" = run ] && passed A; then note "A already PASS (skip)"; else
       --cache-dir "$CACHE" --require-extension _pinned_tensor > "$N/reports/$T-kernel-provenance.json" 2>&1
     check "kernel provenance: all prebuilt" logged "$PY" -I "$HERE/final-helpers.py" provenance "$N/reports/$T-kernel-provenance.json"
     check "CPU suite needs --cpu-python (isolated venv, not the serving venv)" test -n "$CPU_PY"
-    QWEN36_CPU_PYTHON=$CPU_PY bash "$C/harness/CPU-checks.sh" --output "$N/reports/$T-cpu" >> "$LOG" 2>&1; rc=$?
+    # repo_paths.py reads QWEN36_HARNESS_SOURCE as the harness dir: the suite must see this checkout, not the overlay.
+    env -u QWEN36_HARNESS_SOURCE -u QWEN36_DATA_ROOT QWEN36_CPU_PYTHON="$CPU_PY" \
+      bash "$C/harness/CPU-checks.sh" --output "$N/reports/$T-cpu" >> "$LOG" 2>&1; rc=$?
     check "CPU suite rc=$rc ($N/reports/$T-cpu/summary.json)" test "$rc" = 0
     record A PASS "t=$((SECONDS-A0))s"
   else

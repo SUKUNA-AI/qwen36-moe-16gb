@@ -52,15 +52,16 @@ instead of reading `config/local.env`. Until this is done, CPU suites and `sync-
 expected to run from this repository; the archive + native tree remain the working setup.
 Places to repoint (repo layout: `freetoken/`, `serving/`, `harness/`, `kernels/`):
 
-1. `harness/sync-v5.sh`: `NATIVE_DEFAULT`, `WORKSPACE_DEFAULT`, `LOCK_DEFAULT`, `OLD_WORKSPACE`;
-   `src_tree=$workspace/work/FreeToken-opt/python/freetoken` -> `freetoken/python/freetoken`;
-   `out_dir=$workspace/outputs/qwen36-api` -> `serving`; `opt_dir=$out_dir/optimization` -> `harness`;
-   `LIBS` source `work/cuda-nvfp4-bitexact/build/libqwen_nvfp4_bitexact.so` -> `kernels/nvfp4-moe/build/...`;
-   `snapshot=$out_dir/HANDOFF-SNAPSHOT.json` (now in `local/notes/serving/`); sandbox guard path;
-   manifest entries are workspace-relative (`outputs/qwen36-api/...`), so `CONFIG_JSON` and the
-   freeze format change together. Prune `CONFIG_JSON` to the configs still used.
-2. Freeze files (`--print-freeze` output, `harness/sync-final-freeze.sha256`): regenerate after (1);
-   the archived freeze uses old relative paths.
+1. Done (2026-10-15): `harness/sync-v5.sh` reads `QWEN36_ROOT`/`QWEN36_NATIVE` (lock, overlay) from
+   `config/local.env` (or `--env`), takes the workspace from its own checkout and uses the repo layout
+   (`freetoken/python/freetoken`, `serving/`, `harness/`). Tracked py/sh/config files are rendered with the
+   site values on the way to native (`/home/USER/qwen36-api` -> `QWEN36_ROOT`, the model placeholder ->
+   `QWEN36_MODEL_DIR`, the old harness source -> `QWEN36_NATIVE/config`, `/path/to/qwen36-workspace` ->
+   `QWEN36_ARCHIVE`); the freeze records the rendered bytes. `LIBS` is empty (pinned libraries stay in
+   native `private-*`), `CONFIG_JSON` is unchanged (all 66 present) plus the `main-release*` and
+   `long256-release*` patterns. Test: `harness/test-sync-v5-cpu.sh` (sandbox).
+2. Done: `harness/sync-next-freeze.sha256` is the `--print-freeze` output for the repository layout
+   (regenerate after any allowlisted change); `harness/sync-final-freeze.sha256` stays the f1 archive.
 3. `harness/sync.sh` (blind legacy sync): repoint or drop.
 4. `harness/release.py`: `PROJECT`, `OUTPUT=PROJECT/'outputs/qwen36-api'`,
    `RUNTIME_SOURCE=PROJECT/'work/FreeToken-opt/python/freetoken'`, pinned library paths

@@ -12,6 +12,8 @@ from repo_paths import CHECKOUT, FREETOKEN, SERVING, HARNESS
 PRIVATE = {'test-eval-v1-cpu.py'}
 
 def command_for_suite(f):
+    if f.suffix == '.sh':
+        return ['bash', str(f)]
     cmd = [sys.executable, str(f)]
     if f.name in ('test-tool-choice-guard-cpu.py', 'test-tool-semantics-guard-cpu.py'):
         cmd += ['--guard', os.environ.get('QWEN36_GUARD_UNDER_TEST', str(SERVING/'guard.py'))]
@@ -54,6 +56,7 @@ def main():
                PYTHONPATH=os.pathsep.join(map(str, (FREETOKEN/'python', SERVING, HARNESS))))
     # Script-tests execute at import or in __main__; default pytest discovery misses them.
     suites = [f for f in sorted(HARNESS.glob('test-*-cpu.py')) if f.name not in PRIVATE]
+    suites += sorted(HARNESS.glob('test-*-cpu.sh'))
     suites += [SERVING/'test-guard.py', SERVING/'test-metrics.py', HARNESS/'test-log-failure.py']
     rows = []
     for f in suites:

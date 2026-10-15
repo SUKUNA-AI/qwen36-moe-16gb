@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
-# sync-v5.sh - fail-closed, allowlisted sync of the Windows workspace into the
-# native experiment overlay /home/USER/qwen36-api/optimization.
+# sync-v5.sh - fail-closed, allowlisted sync of this repository checkout into the
+# native experiment overlay (QWEN36_NATIVE from config/local.env).
+#
+# Site paths come from config/local.env (or --env FILE): QWEN36_NATIVE is the overlay,
+# QWEN36_ROOT/run/gpu-exclusive.lock the GPU lock. The workspace is the checkout that
+# contains this script (harness/sync-v5.sh); QWEN36_WORKSPACE only when it runs from
+# elsewhere. Sources are repo-relative: freetoken/python/freetoken/** -> python/freetoken/**,
+# serving/*.py -> native root, harness/* -> native root, harness/*.json -> config/.
+# Tracked py/sh/config files carry the sanitized placeholders; they are rendered with the
+# site values on the way to native (and frozen as rendered bytes):
+#   /path/to/qwen36-workspace/outputs/qwen36-api/optimization -> QWEN36_NATIVE/config
+#   /path/to/qwen36-workspace -> QWEN36_ARCHIVE      /home/USER/qwen36-api -> QWEN36_ROOT
+#   /path/to/LLM/qwen36-api/model -> QWEN36_MODEL_DIR (local.env or environment)
+# A placeholder whose value is not configured is a blocker for the file that contains it.
 #
 # Replaces the blind `sync.sh` for frozen runs (V5 tool pilot, final3-v5 matrix,
 # qualifications, long256-final/fallback64, Nsight profile-final-*). It never
@@ -13,8 +25,8 @@
 #
 # Modes (exactly one):
 #   --print-freeze [--skip-runtime] [--extra-config N]...
-#                                  print "sha256  workspace-relative-path" for every
-#                                  allowlisted workspace source (reads workspace only)
+#                                  print "sha256  repo-relative-path" for every allowlisted
+#                                  source, as rendered for native (reads workspace only)
 #   --dry-run [--freeze F] [--label L] [--skip-runtime] [--extra-config N]...
 #                                  plan + hash diff; NO writes anywhere
 #   --apply --label L --freeze F [--skip-runtime] [--extra-config N]...
@@ -27,8 +39,9 @@
 #                                  against manifest L
 #   --skip-runtime                 leave python/freetoken untouched (runtime drift is still
 #                                  reported); use when the runtime tree is not part of the
-#                                  frozen decision (e.g. CUDA agents editing work/FreeToken-opt)
-#   --extra-config N               also sync optimization/N (N = name.json, repeatable): an
+#                                  frozen decision (e.g. CUDA agents editing freetoken/)
+#   --env FILE                     site config instead of <checkout>/config/local.env
+#   --extra-config N               also sync harness/N (N = name.json, repeatable): an
 #                                  experiment config, or a profile-final-*.json profile config;
 #                                  schema-checked like the built-in groups. Pass the SAME set to
 #                                  --print-freeze, --dry-run and --apply.
@@ -42,7 +55,7 @@
 # a `flock -n LOCK` wrapper it uses the inherited descriptor (lock held by the caller).
 # --dry-run only reads /proc/locks (busy -> 75 unless the holder is the calling wrapper).
 #
-# Native private libraries (V6): LIBS lists "workspace source|private-libraries/<name>.so". The
+# Native private libraries (V6): LIBS lists "repo-relative source|private-libraries/<name>.so". The
 # bytes are bound ONLY by the --freeze file (no sha256 is hardcoded here: a rebuilt library gets
 # a new freeze); --apply refuses (65) if the library differs from the freeze, a missing library
 # is a blocker (66). Installed with mode 0600 into a 0700 private-libraries/. No other private-* write.
@@ -55,15 +68,17 @@
 #
 # Test hook: SYNC_V5_SANDBOX=<dir named sync-v5-sandbox*> redirects native,
 # workspace and lock to <dir>/native, <dir>/workspace, <dir>/gpu-exclusive.lock.
-# It is refused for any path inside /home/USER/qwen36-api.
+# It is refused for any path inside QWEN36_ROOT; the site config is optional there.
 set -euo pipefail
 umask 077
 export LC_ALL=C
 shopt -s nullglob
 
-NATIVE_DEFAULT=/home/USER/qwen36-api/optimization
-WORKSPACE_DEFAULT=/path/to/qwen36-workspace
-LOCK_DEFAULT=/home/USER/qwen36-api/run/gpu-exclusive.lock
+here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+# Repo-relative source roots (MANIFEST layout).
+RT_REL=freetoken/python/freetoken
+SV_REL=serving
+HS_REL=harness
 # Pre-relocation workspace prefix; split literal so this script never matches its own scan.
 OLD_WORKSPACE='/mnt/c/Users/USER/Documents/Codex/''2026-10-13'
 LABEL_RE='^[a-z0-9][a-z0-9.-]{0,60}$'
@@ -89,11 +104,11 @@ PROFILE_FILTER='(type=="object") and ((keys-$allowed)|length==0)
   and ((.profile_plan // {})|type=="object")'
 
 # ---------------------------------------------------------------- allowlist
-# Python from outputs/qwen36-api (service files + their imports, release/ops).
+# Python from serving/ (service files + their imports, release/ops) -> native root.
 ROOT_PY=(guard.py ingress.py request_metrics.py serve_guarded.py placement.py
   readiness.py keepalive.py metrics_summary.py profile-runtime.py
   test-guard.py test-metrics.py)
-# Python from outputs/qwen36-api/optimization.
+# Python from harness/ -> native root.
 OPT_PY=(
   # service entry (bench.SERVICE_FILES)
   experiment.py
@@ -118,11 +133,11 @@ OPT_PY=(
   network-acceptance.py
   # component checks (component-checks.sh, CPU-checks.sh)
   test-kv.py test-spec-gpu.py test-mtp.py test-complement.py test-log-failure.py)
-# Shell from outputs/qwen36-api/optimization -> native root (all callers use `bash X`).
+# Shell from harness/ -> native root (all callers use `bash X`).
 SH_FILES=(start-experiment.sh run-experiment.sh profile.sh run-live-gates.sh
   run-context-gates.sh component-checks.sh build-complement.sh link-cublas-headers.sh
   profile-gdn-snapshot.sh CPU-checks.sh sync.sh sync-v5.sh)
-# Experiment profile configs (schema-checked, all required) -> native config/.
+# Experiment profile configs from harness/ (schema-checked, all required) -> native config/.
 CONFIG_JSON=(
   # S6 long256-final / fallback64 (long256-plan, 2026-10-13 19:00Z)
   baseline64-final.json bf256-final.json long256-final-candidate.json long256-final-retain.json
@@ -145,13 +160,17 @@ CONFIG_JSON=(
   cuda-bitexact128-2048.json cuda-bitexact128.json cuda-bitexact128-c2048.json cuda-bitexact128-c6144.json cuda-bitexact128-c8192.json cuda-bitexact128-c16384.json teacher-cuda-bitexact128-2048.json teacher-cuda-bitexact128.json)
 # Generated experiment configs, matched by explicit name patterns (optional; every match must
 # pass the experiment schema, otherwise it is a blocker): ratio variants long256-final-<V>-rNN /
-# bf256-final-rNN (long256-fallback64-plan L1), main-final (S5), teacher-<candidate> (qualify.py).
+# bf256-final-rNN (long256-fallback64-plan L1), main-final (S5), teacher-<candidate> (qualify.py),
+# main-release* / long256-release* (next-release candidates and slot steps).
 CONFIG_PATTERNS=('long256-final-*.json' 'bf256-final*.json' 'baseline64-final*.json'
-  'main-final*.json' 'teacher-*.json')
+  'main-final*.json' 'teacher-*.json' 'main-release*.json' 'long256-release*.json')
 # Nsight profile configs (profile-request.py plan --write) -> native config/, profile schema.
 PROFILE_PATTERNS=('profile-final-*.json')
-# Native libraries: "workspace-relative source|native destination" (group lib; sha256 from --freeze).
-LIBS=('work/cuda-nvfp4-bitexact/build/libqwen_nvfp4_bitexact.so|private-libraries/libqwen_nvfp4_bitexact.so')
+# Native libraries: "repo-relative source|native destination" (group lib; sha256 from --freeze). The pinned
+# libraries already live in native private-*/ and the repository ships no .so: a rebuilt library (e.g.
+# 'kernels/nvfp4-moe/build/libqwen_nvfp4_bitexact.so|private-libraries/libqwen_nvfp4_bitexact.so') is added
+# here explicitly, with a new freeze.
+LIBS=()
 LIB_DST_RE='^private-libraries/[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.so$'
 declare -A LIB_SRC=()
 # Destinations that must never be written, whatever the allowlist says. profile-final-*-ncu<k>
@@ -162,7 +181,7 @@ die() { local code=$1; shift; printf 'sync-v5: REFUSED(%s): %s\n' "$code" "$*" >
 usage() { awk 'NR>1 && /^#/ {sub(/^# ?/,""); print; next} NR>1 {exit}' "$0"; }
 
 # ---------------------------------------------------------------- arguments
-mode=; label=; freeze=; skip_runtime=0
+mode=; label=; freeze=; skip_runtime=0; env_file=
 declare -a EXTRA_CONFIG=()
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -170,6 +189,7 @@ while [ $# -gt 0 ]; do
       [ -z "$mode" ] || die 2 "exactly one mode is allowed"; mode=${1#--};;
     --label) [ $# -ge 2 ] || die 2 "--label needs a value"; label=$2; shift;;
     --freeze) [ $# -ge 2 ] || die 2 "--freeze needs a file"; freeze=$2; shift;;
+    --env) [ $# -ge 2 ] || die 2 "--env needs a file"; env_file=$2; shift;;
     --skip-runtime) skip_runtime=1;;
     --extra-config) [ $# -ge 2 ] || die 2 "--extra-config needs a name.json"
       [[ $2 =~ $CONFIG_NAME_RE ]] || die 2 "invalid --extra-config name (want $CONFIG_NAME_RE, no directories)"
@@ -192,20 +212,57 @@ for tool in sha256sum jq find sort flock stat realpath pgrep systemctl readlink 
   command -v "$tool" >/dev/null 2>&1 || die 66 "required tool missing: $tool"
 done
 
-native=$NATIVE_DEFAULT; workspace=$WORKSPACE_DEFAULT; lock=$LOCK_DEFAULT; sandbox=0
+site_value() {  # KEY -> value in $env_file (KEY=v | 'v' | "v"; a trailing ' # comment' is dropped)
+  local line v
+  [ -f "$env_file" ] || return 0
+  line=$(grep -E "^[[:space:]]*$1[[:space:]]*=" -- "$env_file" | tail -n 1) || return 0
+  v=${line#*=}; v=${v%%[[:space:]]#*}; v=${v#"${v%%[![:space:]]*}"}; v=${v%"${v##*[![:space:]]}"}
+  case "$v" in \'*\') v=${v:1:${#v}-2};; \"*\") v=${v:1:${#v}-2};; esac
+  printf '%s' "${v%/}"
+}
+# Placeholder literals are split so that rendering this script's own synced copy leaves them intact.
+site_path_ok() { [[ $1 =~ ^/ ]] && [[ $1 =~ $PATH_RE ]] && [[ $1 != *'/home/''USER'* ]] && [[ $1 != *'/path/''to/'* ]]; }
+repo=
+if [ -d "$here/../$RT_REL" ] && [ -f "$here/../$HS_REL/sync-v5.sh" ]; then repo=$(cd -- "$here/.." && pwd); fi
+env_file=${env_file:-${repo:+$repo/config/local.env}}
+site_root=$(site_value QWEN36_ROOT); site_native=$(site_value QWEN36_NATIVE); site_archive=$(site_value QWEN36_ARCHIVE)
+site_model=$(site_value QWEN36_MODEL_DIR); site_model=${site_model:-${QWEN36_MODEL_DIR:-}}; site_model=${site_model%/}
+workspace=${repo:-$(site_value QWEN36_WORKSPACE)}
+native=$site_native; lock=$site_root/run/gpu-exclusive.lock; sandbox=0
 if [ -n "${SYNC_V5_SANDBOX:-}" ]; then
   sb=$(realpath -m -- "$SYNC_V5_SANDBOX")
   case "${sb##*/}" in sync-v5-sandbox*) ;; *) die 2 "SYNC_V5_SANDBOX must be a dir named sync-v5-sandbox*";; esac
-  case "$sb/" in /home/USER/qwen36-api/*) die 2 "SYNC_V5_SANDBOX must not be inside /home/USER/qwen36-api";; esac
+  if [ -n "$site_root" ]; then case "$sb/" in "$site_root"/*) die 2 "SYNC_V5_SANDBOX must not be inside $site_root";; esac; fi
   [ -d "$sb/native" ] && [ -d "$sb/workspace" ] || die 2 "sandbox needs native/ and workspace/"
   native=$sb/native; workspace=$sb/workspace; lock=$sb/gpu-exclusive.lock; sandbox=1
+else
+  site_path_ok "$site_root" && site_path_ok "$site_native" \
+    || die 2 "set QWEN36_ROOT and QWEN36_NATIVE (absolute site paths, not placeholders) in ${env_file:-config/local.env} or pass --env"
+  [ -n "$workspace" ] && [ -d "$workspace/$RT_REL" ] || die 2 "workspace checkout not found (run harness/sync-v5.sh from a checkout or set QWEN36_WORKSPACE)"
 fi
-src_tree=$workspace/work/FreeToken-opt/python/freetoken
-out_dir=$workspace/outputs/qwen36-api
-opt_dir=$out_dir/optimization
+for v in "$site_archive" "$site_model"; do
+  [ -z "$v" ] || site_path_ok "$v" || die 2 "invalid site path in ${env_file:-environment}: $v"
+done
+src_tree=$workspace/$RT_REL
+out_dir=$workspace/$SV_REL
+opt_dir=$workspace/$HS_REL
 dst_tree=$native/python/freetoken
 reports=$native/reports
-snapshot=$out_dir/HANDOFF-SNAPSHOT.json
+snapshot=$workspace/local/notes/serving/HANDOFF-SNAPSHOT.json
+# Placeholder -> site value, longest first; applied to py/sh/config/profile entries only.
+RENDER_FROM=('/path/''to/qwen36-workspace/outputs/qwen36-api/optimization' '/path/''to/qwen36-workspace'
+  '/home/''USER/qwen36-api' '/path/''to/LLM/qwen36-api/model')
+RENDER_TO=("$native/config" "$site_archive" "$site_root" "$site_model")
+RENDER_KEY=('QWEN36_NATIVE' 'QWEN36_ARCHIVE' 'QWEN36_ROOT' 'QWEN36_MODEL_DIR')
+render() {  # stdout: file $1 with every configured placeholder replaced
+  local i; local -a args=()
+  for i in "${!RENDER_FROM[@]}"; do [ -z "${RENDER_TO[$i]}" ] || args+=(-e "s|${RENDER_FROM[$i]}|${RENDER_TO[$i]}|g"); done
+  if [ "${#args[@]}" -eq 0 ]; then cat -- "$1"; else sed "${args[@]}" -- "$1"; fi
+}
+render_digest() {  # identifies the site values a freeze was rendered with, without printing them
+  local i; for i in "${!RENDER_FROM[@]}"; do printf '%s=%s\n' "${RENDER_KEY[$i]}" "${RENDER_TO[$i]}"; done | sha256sum | cut -c1-16
+}
+rendered_group() { case "$1" in py|sh|config|profile) return 0;; esac; return 1; }
 
 # ---------------------------------------------------------------- safety checks
 unit_report=
@@ -224,13 +281,13 @@ check_units() {
   done < <(printf '%s\n' "$lines")
 }
 check_procs() {  # overlay drivers by absolute path OR started relative from cwd=native (e.g. `python matrix.py`)
-  local pid cwd args hits=
+  local pid cwd args hits= overlay=${site_native:-$native}
   while read -r pid; do
     [ -n "$pid" ] && [ "$pid" != "$$" ] || continue
     cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null || true)
     args=$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null || true)
-    case "$args" in *"$NATIVE_DEFAULT/"*) hits+="$pid:${args:0:100}; "; continue;; esac
-    if [ "$cwd" = "$NATIVE_DEFAULT" ]; then hits+="$pid:${args:0:100}; "; fi
+    case "$args" in *"$overlay/"*) hits+="$pid:${args:0:100}; "; continue;; esac
+    if [ "$cwd" = "$overlay" ]; then hits+="$pid:${args:0:100}; "; fi
   done < <(pgrep -u "$(id -u)" -f '(experiment\.py|matrix\.py|tool-pilot\.py|tool-task-bench\.py|qualify\.py|quality\.py|compare-ab\.py|soak\.py|lookup-qualification\.py|functional-matrix\.py|isolate-quality\.py|run-prefix-gates\.py|profile-request\.py|run-experiment\.sh|start-experiment\.sh|run-live-gates\.sh|run-context-gates\.sh|profile\.sh)' || true)
   [ -z "$hits" ] || die 73 "native overlay process running: $hits"
 }
@@ -287,14 +344,21 @@ take_lock() {  # --apply only: same flock the V5 matrix/pilot hold for their who
 
 # ---------------------------------------------------------------- inventory
 declare -a E_GROUP=() E_SRC=() E_DST=()
-declare -A DST_SEEN=() SRC_SEEN=() WS_SHA=() NAT_SHA=() NAT_MODE=() FREEZE=()
+declare -A DST_SEEN=() SRC_SEEN=() SRC_GROUP=() WS_SHA=() NAT_SHA=() NAT_MODE=() FREEZE=()
 declare -a BLOCKERS=() RT_ALL=()
 add_entry() {
   local g=$1 s=$2 d=$3
   [[ $d =~ $DENY_DST_RE ]] && { BLOCKERS+=("denied destination: $d"); return; }
   [ -z "${DST_SEEN[$d]+x}" ] || { BLOCKERS+=("duplicate destination: $d"); return; }
-  DST_SEEN[$d]=1; SRC_SEEN[$s]=1
+  DST_SEEN[$d]=1; SRC_SEEN[$s]=1; SRC_GROUP[$s]=$g
   E_GROUP+=("$g"); E_SRC+=("$s"); E_DST+=("$d")
+  rendered_group "$g" && [ -f "$workspace/$s" ] || return 0
+  local i
+  for i in "${!RENDER_FROM[@]}"; do
+    [ -z "${RENDER_TO[$i]}" ] && grep -qF -- "${RENDER_FROM[$i]}" "$workspace/$s" \
+      && BLOCKERS+=("placeholder ${RENDER_FROM[$i]} in $s needs ${RENDER_KEY[$i]} (config/local.env or environment)")
+  done
+  return 0
 }
 build_entries() {
   local f rel n
@@ -307,22 +371,22 @@ build_entries() {
     [[ $rel =~ $TREE_SUFFIX_RE ]] || { BLOCKERS+=("runtime tree unexpected suffix: $rel"); continue; }
     RT_ALL+=("$rel")
     [ "$skip_runtime" = 1 ] && continue
-    add_entry runtime "work/FreeToken-opt/python/freetoken/$rel" "python/freetoken/$rel"
+    add_entry runtime "$RT_REL/$rel" "python/freetoken/$rel"
   done < <(find "$src_tree" -name __pycache__ -prune -o ! -type d -print0 | sort -z)
   for n in "${ROOT_PY[@]}"; do
-    { [ -f "$out_dir/$n" ] && [ ! -L "$out_dir/$n" ]; } || BLOCKERS+=("missing: outputs/qwen36-api/$n")
-    [ ! -e "$opt_dir/$n" ] || BLOCKERS+=("ambiguous (root and optimization): $n")
-    add_entry py "outputs/qwen36-api/$n" "$n"
+    { [ -f "$out_dir/$n" ] && [ ! -L "$out_dir/$n" ]; } || BLOCKERS+=("missing: $SV_REL/$n")
+    [ ! -e "$opt_dir/$n" ] || BLOCKERS+=("ambiguous ($SV_REL and $HS_REL): $n")
+    add_entry py "$SV_REL/$n" "$n"
   done
   for n in "${OPT_PY[@]}"; do
-    { [ -f "$opt_dir/$n" ] && [ ! -L "$opt_dir/$n" ]; } || BLOCKERS+=("missing: outputs/qwen36-api/optimization/$n")
-    [ ! -e "$out_dir/$n" ] || BLOCKERS+=("ambiguous (root and optimization): $n")
-    add_entry py "outputs/qwen36-api/optimization/$n" "$n"
+    { [ -f "$opt_dir/$n" ] && [ ! -L "$opt_dir/$n" ]; } || BLOCKERS+=("missing: $HS_REL/$n")
+    [ ! -e "$out_dir/$n" ] || BLOCKERS+=("ambiguous ($SV_REL and $HS_REL): $n")
+    add_entry py "$HS_REL/$n" "$n"
   done
   for n in "${SH_FILES[@]}"; do
-    { [ -f "$opt_dir/$n" ] && [ ! -L "$opt_dir/$n" ]; } || BLOCKERS+=("missing: outputs/qwen36-api/optimization/$n")
+    { [ -f "$opt_dir/$n" ] && [ ! -L "$opt_dir/$n" ]; } || BLOCKERS+=("missing: $HS_REL/$n")
     if [ -f "$opt_dir/$n" ] && grep -q $'\r' "$opt_dir/$n"; then BLOCKERS+=("CRLF in shell script: $n"); fi
-    add_entry sh "outputs/qwen36-api/optimization/$n" "$n"
+    add_entry sh "$HS_REL/$n" "$n"
   done
   local spec lsrc ldst lextra
   for spec in "${LIBS[@]}"; do
@@ -331,7 +395,7 @@ build_entries() {
       || { BLOCKERS+=("unsafe library entry: $spec"); continue; }
     { [ -f "$workspace/$lsrc" ] && [ ! -L "$workspace/$lsrc" ]; } || { BLOCKERS+=("missing library: $lsrc"); continue; }
     [ -z "${DST_SEEN[$ldst]+x}" ] || { BLOCKERS+=("duplicate destination: $ldst"); continue; }
-    DST_SEEN[$ldst]=1; SRC_SEEN[$lsrc]=1; LIB_SRC[$lsrc]=$ldst
+    DST_SEEN[$ldst]=1; SRC_SEEN[$lsrc]=1; SRC_GROUP[$lsrc]=lib; LIB_SRC[$lsrc]=$ldst
     E_GROUP+=(lib); E_SRC+=("$lsrc"); E_DST+=("$ldst")
   done
   for n in "${CONFIG_JSON[@]}"; do add_config "$n" required; done
@@ -354,7 +418,7 @@ add_config() {  # $1 name.json, $2 origin; profile-final-* -> profile schema, el
   [[ $n =~ $CONFIG_NAME_RE ]] || { BLOCKERS+=("unsafe config name ($origin): $n"); return; }
   case "$n" in profile-final-*) kind=profile;; esac
   if [ ! -f "$f" ] || [ -L "$f" ]; then
-    BLOCKERS+=("missing ($origin): outputs/qwen36-api/optimization/$n")
+    BLOCKERS+=("missing ($origin): $HS_REL/$n")
   elif [ "$kind" = profile ]; then
     [[ $n =~ $PROFILE_NAME_RE ]] || BLOCKERS+=("profile config name rejected by profile.sh rule ($origin): $n")
     jq -e --argjson allowed "$PROFILE_KEYS" "$PROFILE_FILTER" "$f" >/dev/null 2>&1 \
@@ -363,12 +427,19 @@ add_config() {  # $1 name.json, $2 origin; profile-final-* -> profile schema, el
     jq -e --argjson allowed "$CONFIG_KEYS" "$EXP_FILTER" "$f" >/dev/null 2>&1 \
       || BLOCKERS+=("not an experiment config (schema) ($origin): $n")
   fi
-  add_entry "$kind" "outputs/qwen36-api/optimization/$n" "config/$n"
+  add_entry "$kind" "$HS_REL/$n" "config/$n"
   CONFIG_ORIGIN+=("$kind ${origin// /:} $n")
 }
-hash_workspace() {
-  local h p
-  while read -r h p; do WS_SHA[${p#\*}]=$h; done < <(cd "$workspace" && sha256sum -- "${E_SRC[@]}")
+hash_workspace() {  # rendered bytes for py/sh/config/profile, raw bytes for runtime/lib
+  local h p s
+  local -a raw=()
+  for s in "${E_SRC[@]}"; do
+    if rendered_group "${SRC_GROUP[$s]}"; then h=$(render "$workspace/$s" | sha256sum) || die 66 "cannot read $s"; WS_SHA[$s]=${h%% *}
+    else raw+=("$s"); fi
+  done
+  if [ "${#raw[@]}" -gt 0 ]; then
+    while read -r h p; do WS_SHA[${p#\*}]=$h; done < <(cd "$workspace" && sha256sum -- "${raw[@]}")
+  fi
   [ "${#WS_SHA[@]}" -eq "${#E_SRC[@]}" ] || die 66 "could not hash every workspace source"
 }
 hash_native() {
@@ -455,7 +526,7 @@ analyse_extras() {
     n=${f##*/}
     case "$f" in *.json) [ -n "${DST_SEEN[config/$n]+x}" ] && continue
                          if [ ! -f "$native/config/$n" ]; then st=config:absent
-                         elif cmp -s -- "$f" "$native/config/$n"; then st=config:same; else st=config:DIFFERS; fi
+                         elif cmp -s -- <(render "$f") "$native/config/$n"; then st=config:same; else st=config:DIFFERS; fi
                          # make missed configs visible: a schema-valid JSON here is probably a profile to add
                          if jq -e --argjson allowed "$CONFIG_KEYS" "$EXP_FILTER" "$f" >/dev/null 2>&1; then
                            st+=", EXPERIMENT-CONFIG SCHEMA: add to CONFIG_JSON or --extra-config if a run needs it"
@@ -464,7 +535,7 @@ analyse_extras() {
                          fi;;
                  *) [ -n "${DST_SEEN[$n]+x}" ] && continue
                     if [ ! -f "$native/$n" ]; then st=native:absent
-                    elif cmp -s -- "$f" "$native/$n"; then st=native:same; else st=native:DIFFERS; fi;;
+                    elif cmp -s -- <(render "$f") "$native/$n"; then st=native:same; else st=native:DIFFERS; fi;;
     esac
     UNLISTED+=("${f#"$workspace"/} [$st]")
   done
@@ -476,7 +547,7 @@ analyse_extras() {
     while IFS= read -r lib; do
       [ -n "$lib" ] || continue
       if [ -f "$lib" ]; then LIBREFS+=("$cfg -> $lib [present]"); else LIBREFS+=("$cfg -> $lib [MISSING]"); fi
-    done < <(jq -r '(.env // {}) | to_entries[] | select(.key|endswith("_LIBRARY")) | .value' "$opt_dir/$cfg" 2>/dev/null)
+    done < <(render "$opt_dir/$cfg" | jq -r '(.env // {}) | to_entries[] | select(.key|endswith("_LIBRARY")) | .value' 2>/dev/null)
   done
 }
 RT_REPORT=()
@@ -561,7 +632,8 @@ print_plan() {
 # ---------------------------------------------------------------- modes
 print_freeze() {
   local s
-  printf '# sync-v5 freeze candidate; workspace=%s; utc=%s\n' "$workspace" "$(date -u +%FT%TZ)"
+  printf '# sync-v5 freeze candidate; paths relative to the checkout; utc=%s\n' "$(date -u +%FT%TZ)"
+  printf '# rendered with site values digest=%s (py/sh/config/profile bytes as written to native)\n' "$(render_digest)"
   printf '# options: skip_runtime=%s extra_config=%s (pass the same options to --dry-run/--apply)\n' \
     "$skip_runtime" "$(if [ "${#EXTRA_CONFIG[@]}" -gt 0 ]; then printf '%s,' "${EXTRA_CONFIG[@]}"; else printf -- '-'; fi)"
   for s in "${E_SRC[@]}"; do printf '%s  %s\n' "${WS_SHA[$s]}" "$s"; done
@@ -574,7 +646,9 @@ do_verify() {
   while IFS=$'\t' read -r group src dst sha; do
     if [ -f "$native/$dst" ]; then cur=$(sha256sum -- "$native/$dst"); cur=${cur%% *}; else cur=MISSING; fi
     [ "$cur" = "$sha" ] || { printf '  NATIVE DRIFT    %s %s->%s\n' "$dst" "${sha:0:12}" "${cur:0:12}"; bad=$((bad+1)); }
-    if [ -f "$workspace/$src" ]; then cur=$(sha256sum -- "$workspace/$src"); cur=${cur%% *}; else cur=MISSING; fi
+    if [ ! -f "$workspace/$src" ]; then cur=MISSING
+    elif rendered_group "$group"; then cur=$(render "$workspace/$src" | sha256sum); cur=${cur%% *}
+    else cur=$(sha256sum -- "$workspace/$src"); cur=${cur%% *}; fi
     [ "$cur" = "$sha" ] || { printf '  WORKSPACE DRIFT %s %s->%s\n' "$src" "${sha:0:12}" "${cur:0:12}"; bad=$((bad+1)); }
   done < <(jq -r '.files[] | [.group,.src,.dst,.sha256] | @tsv' "$m")
   printf 'verify: %s drift(s)\n' "$bad"
@@ -596,7 +670,7 @@ write_manifest() {  # $1 = status; uses noclobber, never overwrites
   local units_now; units_now=$unit_report
   ( set -o noclobber
     jq -n --rawfile rows "$tsv" --arg status "$status" --arg label "$label" --arg utc "$(date -u +%FT%TZ)" \
-      --arg workspace "$workspace" --arg native "$native" --arg freeze "$(realpath -m -- "$freeze")" \
+      --arg workspace "$workspace" --arg native "$native" --arg freeze "$(realpath -m -- "$freeze")" --arg render "$(render_digest)" \
       --arg freeze_sha "$FREEZE_SHA" --arg script_sha "$(sha256sum -- "$0" | cut -d' ' -f1)" \
       --arg units "$units_now" --arg rollback "$ROLLBACK" --argjson sandbox "$sandbox" \
       --arg native_only "$(printf '%s\n' "${NATIVE_ONLY_TREE[@]}")" --arg unlisted "$(printf '%s\n' "${UNLISTED[@]}")" \
@@ -609,7 +683,7 @@ write_manifest() {  # $1 = status; uses noclobber, never overwrites
          sha256_native_now:(if .[6]=="-" then null else .[6] end),
          mode_before:(if .[7]=="-" then null else .[7] end),mode:(if .[8]=="-" then null else .[8] end)})) as $files
       | {schema:1,kind:"sync-v5-manifest",status:$status,label:$label,utc:$utc,sandbox:($sandbox==1),
-         workspace:$workspace,native:$native,freeze_file:$freeze,freeze_sha256:$freeze_sha,
+         workspace:$workspace,native:$native,freeze_file:$freeze,freeze_sha256:$freeze_sha,render_digest:$render,
          script_sha256:$script_sha,units_at_start:$units,gpu_lock:("for the whole apply: "+$gpu_lock),
          extra_config:($extra|lines),config_origins:($origins|lines),
          rollback_dir:$rollback,skip_runtime:($skip_runtime==1),runtime_report:($runtime_report|lines),
@@ -647,7 +721,7 @@ do_apply() {
     a=${P_ACTION[$i]}; [ "$a" = SAME ] && continue
     d=${E_DST[$i]}; s=${E_SRC[$i]}
     mkdir -p -- "$(dirname -- "$STAGE/files/$d")"
-    cp -- "$workspace/$s" "$STAGE/files/$d"
+    if rendered_group "${E_GROUP[$i]}"; then render "$workspace/$s" > "$STAGE/files/$d"; else cp -- "$workspace/$s" "$STAGE/files/$d"; fi
     got=$(sha256sum -- "$STAGE/files/$d"); got=${got%% *}
     [ "$got" = "${FREEZE[$s]}" ] || die 65 "staged bytes differ from freeze (changed during sync?): $s"
   done
@@ -725,8 +799,8 @@ hash_native; make_plan; analyse_extras; runtime_report
 
 printf 'sync-v5 %s%s label=%s%s\n' "$(printf '%s' "$mode" | tr a-z A-Z)" "$([ "$mode" = dry-run ] && echo ' (no writes)')" \
   "${label:--}" "$([ "$skip_runtime" = 1 ] && echo ' [skip-runtime]')"
-printf '  workspace=%s\n  native=%s%s\n  units: %s\n  gpu-lock %s: %s\n' "$workspace" "$native" \
-  "$([ "$sandbox" = 1 ] && echo ' [SANDBOX]')" "$unit_report" "$lock" "$lockinfo"
+printf '  workspace=%s\n  native=%s%s\n  site config: %s (render digest %s)\n  units: %s\n  gpu-lock %s: %s\n' "$workspace" "$native" \
+  "$([ "$sandbox" = 1 ] && echo ' [SANDBOX]')" "${env_file:--}" "$(render_digest)" "$unit_report" "$lock" "$lockinfo"
 if [ -n "$label" ]; then
   for d in "$reports/sync-v5-$label.json" "$reports/sync-v5-$label.sha256" "$native/sync-v5-rollback/$label"; do
     [ ! -e "$d" ] || printf '  WARNING label already used: %s exists\n' "$d"
