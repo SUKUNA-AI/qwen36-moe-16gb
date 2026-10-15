@@ -25,6 +25,7 @@
 - [Гарантия качества](#гарантия-качества)
 - [Стабильность и эксплуатация](#стабильность-и-эксплуатация)
 - [Найденные ошибки и подводные камни](#найденные-ошибки-и-подводные-камни)
+- [main128 next — кандидат следующего релиза](#main128-next--кандидат-следующего-релиза)
 - [Профили](#профили)
 - [Железо и софт](#железо-и-софт)
 - [Структура репозитория](#структура-репозитория)
@@ -322,6 +323,42 @@ flowchart LR
 
 ---
 
+## main128 next — кандидат следующего релиза
+
+> **Статус: кандидат, не релиз.** В `serving/profiles.json` профиль `main128` пока `qualified: false`, установлен f1. Цифры лесенки появятся после teacher-лесенки и релизного A/B против f1 (5 пар). Решение принимает владелец. До этого места под цифры ниже пустые («—»).
+
+Кандидат — это f1 плюс рычаги ниже. Каждый рычаг включается своим флагом и по умолчанию выключен. Каждый проверен на побитовую точность: teacher 125/125, `max_abs` 0. Конфиг прогонов — [`harness/main-release-next-candidate.json`](harness/main-release-next-candidate.json), профиль — `main128` в [`serving/profiles.json`](serving/profiles.json).
+
+| Рычаг | Профиль → переменная окружения | Что делает |
+|---|---|---|
+| hit-D2D | флаг `--moe-prefill-hit-d2d`, `layer_major_min_tokens: 2049` → `QWEN36_LAYER_MAJOR_MIN_TOKENS=2049` | эксперты, уже лежащие в VRAM, при коротком prefill копируются внутри GPU; layer-major включается только с 2049 некэшированных токенов |
+| FLA на CUDA | `cuda_gdn_fla: "wu"` → `QWEN36_CUDA_GDN_FLA=wu` | слитые побитово точные CUDA-ядра FLA-чанка GDN |
+| T3 | `decode_shared_overlap` → `QWEN36_DECODE_SHARED_OVERLAP=1` | gather промахов decode перекрывается с общим экспертом того же слоя |
+| эмбеддинги на хосте | `host_embeddings` → `QWEN36_HOST_EMBEDDINGS=1` | таблица эмбеддингов (≈0.95 ГиБ) уходит в pinned-память хоста, VRAM — под слоты экспертов |
+| ступень памяти | `memory_ratio: 0.85` | больше слотов экспертов: 4611 вместо 3164 |
+| o-proj decode | `cuda_oproj_gemv` → `QWEN36_OPROJ_GEMV=1` + `libqwen_oproj_gemv.so` | побитовая копия cuBLASLt split-K для 40 o-проекций, M 1..8 |
+| MoE decode | `cuda_moe_decode` → `QWEN36_MOE_DECODE_CUDA=1` + `libqwen_moe_decode.so` | CUDA GEMV вместо Triton для gate_up/down в decode |
+| C0 | `prefill_copy_priority` → `QWEN36_PREFILL_COPY_PRIORITY=1`, `QWEN36_PREFILL_EPOCH_INVALIDATE=1` | поток копирования prefill с высшим приоритетом, одна инвалидация буферов на эпоху |
+| C1 | `prefill_selected: 160` → `QWEN36_PREFILL_SELECTED=160` (нужен `decode_gather`) | чанк короче 160 токенов везёт только выбранных роутером экспертов |
+
+Полный список модулей и флагов — в [`freetoken/MODIFICATIONS.md`](freetoken/MODIFICATIONS.md).
+
+**Память.** Правило владельца: ровно 1 ГиБ VRAM остаётся Windows, всё остальное отдаётся модели. Валидатор ограничивает `memory_ratio < 0.95`. Ступень 0.85 выбрана по soak: на 0.90 decode и TTFT хуже из-за давления памяти.
+
+**Лесенка** (заполняется по итогам прогонов; графики строит `tools/ladder-charts.py`):
+
+| Шаг | TTFT 64 | TTFT 16K | decode 64 | decode 16K | teacher |
+|---|---:|---:|---:|---:|---|
+| f1 | — | — | — | — | 125/125 |
+| + каждый рычаг по очереди | — | — | — | — | — |
+| кандидат main128 next | — | — | — | — | — |
+
+Графики: [`results/ladder/charts/ttft-steps.svg`](results/ladder/charts/ttft-steps.svg), [`decode-steps.svg`](results/ladder/charts/decode-steps.svg), [`memory-steps.svg`](results/ladder/charts/memory-steps.svg), [`teacher-steps.svg`](results/ladder/charts/teacher-steps.svg); таблица — [`results/ladder/charts/ladder-table.md`](results/ladder/charts/ladder-table.md). Разбор — [`docs/RELEASE-MAIN128.md`](docs/RELEASE-MAIN128.md).
+
+**Релиз и откат.** Одна процедура [`harness/release-main128.sh`](harness/release-main128.sh): `--dry-run` → `--check` → `--apply` (только с разрешения владельца). Откат на f1 — `--rollback`. Шаги и что смотреть в логах — [`harness/OPERATIONS.md`](harness/OPERATIONS.md#main128-next-релиз-и-откат).
+
+---
+
 ## Профили
 
 | Профиль | Контекст | Слотов экспертов | Назначение |
@@ -412,9 +449,9 @@ API совместим с OpenAI chat completions: стриминг, автом�
 
 Подробно — в [docs/ROADMAP.md](docs/ROADMAP.md):
 
-1. **Короткие промпты через hit-d2d.** Эксперты, уже лежащие в VRAM, копируются внутри GPU. TTFT 64 токенов 0.57 → 0.45 с, правки диалога −0.12 с. Патч готов.
-2. **FLA на CUDA** как переключатель профиля: −3% TTFT на 16K, уже побитово точный.
-3. **Перекрытие gather с вычислением общего эксперта.** Тот же код, другой порядок запуска, +3–4% decode.
+1. **Короткие промпты через hit-d2d** (вошло в кандидат [main128 next](#main128-next--кандидат-следующего-релиза)). Эксперты, уже лежащие в VRAM, копируются внутри GPU. TTFT 64 токенов 0.57 → 0.45 с, правки диалога −0.12 с. Патч готов.
+2. **FLA на CUDA** как переключатель профиля (вошло в кандидат): −3% TTFT на 16K, уже побитово точный.
+3. **Перекрытие gather с вычислением общего эксперта** (T3, вошло в кандидат). Тот же код, другой порядок запуска, +3–4% decode.
 4. **Переход на новый стек** (torch 2.14, Triton 3.8): сначала анализ, что изменится в повторяемых нами ядрах.
 
 ---
