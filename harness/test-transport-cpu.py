@@ -16,6 +16,7 @@ from cpu_control_flow import methods
 from repo_paths import CHECKOUT, FREETOKEN
 
 CACHE = FREETOKEN / 'python/freetoken/moe/offload_cache.py'
+BATCH = FREETOKEN / 'python/freetoken/kernel/batch_memcpy.py'
 OVERLAP = FREETOKEN / 'python/freetoken/decode_overlap.py'
 
 
@@ -251,6 +252,33 @@ class Counters(unittest.TestCase):
         self.assertFalse(c._xfer_rows_dirty)
         ns['_fold_xfer_rows'](c)
         self.assertEqual(c._prefill_h2d_bytes, 335)
+
+
+class BatchMemcpyProbe(unittest.TestCase):
+    def test_copy_stream_waits_for_the_zero_fill(self):
+        log = []
+        current = S(name='current')
+
+        class Stream:
+            cuda_stream = 7
+
+            def __init__(self):
+                log.append('stream')
+
+            def wait_stream(self, other):
+                log.append(f'wait:{other.name}')
+
+            def synchronize(self):
+                log.append('sync')
+
+        dst = S(data_ptr=lambda: 1, cpu=lambda: 'bytes')
+        src = S(data_ptr=lambda: 2)
+        fake = S(uint8='u8', arange=lambda *a, **k: S(pin_memory=lambda: src),
+                 zeros=lambda *a, **k: (log.append('zeros@current'), dst)[1], tensor=lambda x: x,
+                 equal=lambda a, b: True, cuda=S(Stream=Stream, current_stream=lambda: current))
+        ns = module_functions(BATCH, {'_probe'}, {'torch': fake})
+        ns['_probe'](lambda *a: log.append('copy@side'))
+        self.assertEqual(log, ['zeros@current', 'stream', 'wait:current', 'copy@side', 'sync'])
 
 
 class RouteTrace(unittest.TestCase):
