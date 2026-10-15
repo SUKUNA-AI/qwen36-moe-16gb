@@ -89,9 +89,12 @@ VALUE_FIELDS = {field: spec for field, spec in {
     'cuda_gdn_fla': ('QWEN36_CUDA_GDN_FLA', ('wu', 'ho'), 'cuda_gdn'),
     # moe/slot_refill.py policies (FreeToken default: last_chunk).
     'layer_major_refill_policy': ('QWEN36_LAYER_MAJOR_REFILL_POLICY', ('last_chunk', 'restore'), 'layer_major_refill'),
-    # Optional attention batching of layer-major prefill (QWEN36_LAYER_MAJOR_ATTN_BATCH=<k>, e.g. 2; under test).
+    # Short-prompt route: layer-major only from this many uncached prompt tokens (engine/layer_major.py
+    # min_tokens); at most chunk + 1 (validate_profile_schema).
     'layer_major_min_tokens': ('QWEN36_LAYER_MAJOR_MIN_TOKENS', range(0, 2147483648), 'layer_major_prefill'),
-    'layer_major_attn_batch': ('QWEN36_LAYER_MAJOR_ATTN_BATCH', tuple(range(1, 65)), 'layer_major_prefill'),
+    # Optional attention batching of layer-major prefill (QWEN36_LAYER_MAJOR_ATTN_BATCH=<k>, e.g. 2; under test).
+    # engine/layer_major.py attn_batch() honours 1-4 only and silently runs k=1 for anything else.
+    'layer_major_attn_batch': ('QWEN36_LAYER_MAJOR_ATTN_BATCH', tuple(range(1, 5)), 'layer_major_prefill'),
 }.items() if spec[2] in SWITCH_ENV}
 # Layer-major + hit-D2D requires a positive min-tokens threshold to separate short chunked
 # requests from epochs that borrow decode slots. Layer-major + CUDA NVFP4 remains allowed.
@@ -274,6 +277,9 @@ def validate_profile_schema(name, profile):
             _require(type(value) in (str, int) and type(value) is type(allowed[0]) and value in allowed,
                      'Invalid ' + field)
             _require(profile.get(switch) is True, field + ' requires ' + switch)
+    # A threshold above chunk + 1 would send multi-chunk prompts down chunked prefill (measured slower).
+    _require(profile.get('layer_major_min_tokens', 0) <= profile['chunk'] + 1,
+             'layer_major_min_tokens must not exceed chunk + 1')
     if 'prefix_margin' in profile:
         _require(type(profile['prefix_margin']) is int and 1 <= profile['prefix_margin'] <= 64,
                  'Invalid prefix margin')

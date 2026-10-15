@@ -98,7 +98,7 @@ EXPECTED_VALUE_FIELDS = {
     'layer_major_min_tokens': ('QWEN36_LAYER_MAJOR_MIN_TOKENS', range(0, 2147483648), 'layer_major_prefill'),
     'cuda_gdn_fla': ('QWEN36_CUDA_GDN_FLA', ('wu', 'ho'), 'cuda_gdn'),
     'layer_major_refill_policy': ('QWEN36_LAYER_MAJOR_REFILL_POLICY', ('last_chunk', 'restore'), 'layer_major_refill'),
-    'layer_major_attn_batch': ('QWEN36_LAYER_MAJOR_ATTN_BATCH', tuple(range(1, 65)), 'layer_major_prefill')}
+    'layer_major_attn_batch': ('QWEN36_LAYER_MAJOR_ATTN_BATCH', tuple(range(1, 5)), 'layer_major_prefill')}
 
 
 def sha(data):
@@ -1571,11 +1571,17 @@ class BundleSchemaTests(unittest.TestCase):
             self.skipTest('no optional value field left in profile-runtime.py')
         for field, (_, allowed, switch) in runtime.VALUE_FIELDS.items():
             on = {switch: True, 'layer_major_prefill': True}
-            values = (0, 1, 2048, 2049, 2147483647) if field == 'layer_major_min_tokens' else allowed
+            values = (0, 1, 2048, 2049) if field == 'layer_major_min_tokens' else allowed
             for value in values:
                 runtime._profiles_schema(self.doc(**on, **{field: value}))
+            if field == 'layer_major_min_tokens':
+                chunk = self.doc()['profiles']['main128']['chunk']
+                runtime._profiles_schema(self.doc(**on, **{field: chunk + 1}))
+                for value in (chunk + 2, 2147483647):  # at most chunk + 1
+                    with self.subTest(field=field, value=value):
+                        self.refused(self.doc(**on, **{field: value}), 'must not exceed chunk + 1')
             bad_values = ('hot', 'Restore', '', 1, True, None, 0.5) if type(allowed[0]) is str else \
-                (0, 65, -1, '4', True, 4.0, None)
+                (0, 5, 65, -1, '4', True, 4.0, None)
             if field == 'layer_major_min_tokens':bad_values = (-1, 2147483648, '4', True, 4.0, None)
             for value in bad_values:
                 with self.subTest(field=field, value=value):

@@ -16,6 +16,9 @@ class NextProfile(unittest.TestCase):
         for value in (True,False,-1,'2049',2.5,None,2147483648):
             with self.subTest(value=value),self.assertRaises(ValueError):r.validate_profile_schema('main128',dict(p,layer_major_min_tokens=value))
         for value in (0,2049):r.validate_profile_schema('main128',dict(p,layer_major_min_tokens=value))
+        for value in (p['chunk']+2,2147483647):
+            with self.subTest(value=value),self.assertRaisesRegex(ValueError,'chunk \\+ 1'):
+                r.validate_profile_schema('main128',dict(p,layer_major_min_tokens=value))
         both=dict(p,flags=['--moe-prefill-hit-d2d'])
         for value in (None,0):
             with self.assertRaises(ValueError):r.validate_profile_schema('main128',dict(both,**({} if value is None else {'layer_major_min_tokens':value})))
