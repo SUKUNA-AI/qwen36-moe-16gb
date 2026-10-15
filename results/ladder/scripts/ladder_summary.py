@@ -178,7 +178,8 @@ def write_readme(d, s, ab):
         t, m = r['teacher'], r.get('memory') or {}
         lines.append(f"| {r['id']} | {r['label']} | {t['status']} {t.get('passed') or '—'}/{t.get('total') or '—'} | {t.get('max_abs')} | "
                      f"{m.get('memory_ratio', '—')} | {m.get('expert_slots', '—')} | {fmt(m.get('process_peak_mib'), 0)} | {fmt((m.get('misses_per_token') or {}).get('16384'), 1)} |")
-    for kind, title, key in (('decode_tps', 'Декод, ток/с (медиана пар)', 'decode_tps'), ('ttft_s', 'TTFT, с (медиана пар)', 'ttft_s')):
+    for kind, title, key in (('decode_tps', 'Декод, ток/с', 'decode_tps'), ('ttft_s', 'TTFT, с', 'ttft_s'),
+                             ('elapsed_s', 'Полная латентность запроса (отправка → последний токен, `elapsed_s`), с', 'elapsed_s')):
         lines += ['', f'## {title}', '', '| Ступень | ' + ' | '.join(LENGTHS) + ' | vs пред., 16K | vs L0, 16K |', '|---|' + '---|' * (len(LENGTHS) + 2)]
         for r in s['steps']:
             ab_ = r.get('ab') or {}
