@@ -80,7 +80,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--reports', type=pathlib.Path, required=True)
     p.add_argument('--logs', type=pathlib.Path, required=True)
-    p.add_argument('--ts', required=True); p.add_argument('--ref', required=True); p.add_argument('--fb', required=True)
+    p.add_argument('--ts', default='20261015t1555'); p.add_argument('--ref', required=True); p.add_argument('--fb', required=True)
     p.add_argument('--steps', type=pathlib.Path, required=True)
     p.add_argument('--out', type=pathlib.Path, required=True)
     a = p.parse_args()
@@ -91,7 +91,7 @@ def main():
            'steps': []}
     for step in steps:
         label, cand = step['id'], step['config']
-        name = f's5-q-{label}-{a.ts}'
+        name = f"s5-q-{label}-{step.get('teacher_ts', a.ts)}"
         q = load(a.reports / f'quality-{name}.json')
         func = load(a.reports / f'{name}-functional.json')
         row = {'id': label, 'config': cand, 'quality_report': f'quality-{name}.json'}
@@ -118,6 +118,12 @@ def main():
               and lc.get('all_byte_equal') is True and not q.get('new_functional_failures')
               and all((row.get('t1_checks') or {}).values()))
         row['status'] = 'PASS' if ok else 'FAIL'
+        if step.get('teacher_ts_previous_tree'):
+            prev = load(a.reports / f"quality-s5-q-{label}-{step['teacher_ts_previous_tree']}.json") or {}
+            plc = prev.get('logit_comparisons') or {}
+            row['previous_tree'] = {'quality_report': f"quality-s5-q-{label}-{step['teacher_ts_previous_tree']}.json",
+                                    'bit_exact_pass': prev.get('bit_exact_pass'), 'observed': plc.get('observed'),
+                                    'max_abs': plc.get('max_abs'), 'new_functional_failures': prev.get('new_functional_failures')}
         out['steps'].append(row)
     a.out.write_text(json.dumps(out, indent=1) + '\n')
     print(json.dumps([(s['id'], s['status']) for s in out['steps']]))

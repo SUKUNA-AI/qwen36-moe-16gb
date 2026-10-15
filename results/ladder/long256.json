@@ -1,0 +1,57 @@
+{
+ "schema": "ladder-long256-1",
+ "tree": "integration-main128-s8 19f8d1f (sync s5-a-ladder)",
+ "profile": "long256-release",
+ "teacher": {
+  "report": "quality-s5-q-l256-20261015t1730.json",
+  "observed": 125,
+  "expected": 125,
+  "max_abs": 0.0,
+  "all_byte_equal": true,
+  "bit_exact_pass": true,
+  "new_functional_failures": [],
+  "reference": "teacher-bf128",
+  "note": "same REF/FB as the ladder; f1 needed PASS_EQUIV_R1B256, with the clean-cache 120K case (harness v7) it is exact"
+ },
+ "screen": {
+  "report": "s5-l256-screen-20261015t1730.json",
+  "repeats": 2,
+  "warmup_s": 60,
+  "fresh": {
+   "120000": {
+    "ttft_s_median": 20.522849807000284,
+    "decode_tps_median": 88.99836534979781,
+    "prompt_tokens": 120068,
+    "prefill_tps": 5850.454548424613
+   },
+   "250000": {
+    "ttft_s_median": 72.68067872250003,
+    "decode_tps_median": 67.34335525058454,
+    "prompt_tokens": 250068,
+    "prefill_tps": 3440.6393060083724
+   }
+  }
+ },
+ "boundary": {
+  "report": "s5-l256-boundary-20261015t1730.json",
+  "context": 262144,
+  "prompt_tokens": 261468,
+  "completion_tokens": 28,
+  "ttft_s": 78.74373380099996,
+  "decode_tps": 67.52288232320268,
+  "overflow_plus_one": {
+   "status": 400,
+   "code": "context_length_exceeded"
+  },
+  "pass": true,
+  "prefill_tps": 3320.4927856326726
+ },
+ "f1_reference": {
+  "source": "results/metrics/metrics.json, results/context-gates/final-f1-l256-a1-evaluation.json",
+  "prefill_tps_250K": 3111.9,
+  "prefill_tps_261K_boundary": 2863.8,
+  "teacher_f1": "121/125 (PASS_EQUIV_R1B256), exact 125/125 with clean cache",
+  "f1_evaluation_verdict": "PASS",
+  "f1_min_gpu_free_GiB": 1.4058
+ }
+}
