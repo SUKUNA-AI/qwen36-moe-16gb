@@ -38,6 +38,10 @@ GDN_LIBRARY_SOURCE=ROOT/'optimization/private-cuda-gdn/pinned/libqwen36_gdn-a8a8
 # Bit-exact FP8 decode GEMV the qualification runs load (QWEN36_FP8_GEMV_LIBRARY); freetoken/kernel/
 # cuda_fp8_gemv.py itself refuses any bytes but sha256 685c78cf...
 FP8_GEMV_LIBRARY_SOURCE=ROOT/'optimization/private-fp8gemv/libqwen_fp8_gemv-685c78cf89e60d02.so'
+# Bit-exact decode o-projection / NVFP4 MoE decode GEMV (kernels/decode-oproj, kernels/decode-moe); the
+# FreeToken modules refuse any bytes but the sha256 they pin.
+OPROJ_GEMV_LIBRARY_SOURCE=ROOT/'optimization/private-decode-kernels/libqwen_oproj_gemv-fa9302e31cb88a02.so'
+MOE_DECODE_LIBRARY_SOURCE=ROOT/'optimization/private-decode-kernels/libqwen_moe_decode-83e90c43cb63ce11.so'
 QUALIFICATION_SOURCE=OUTPUT/'qualification.json'
 QUALIFICATION_TARGET='release/qualification.json'
 # Receipt evidence paths are relative to this private root (e.g. 'reports/x.json');
@@ -109,7 +113,8 @@ def staged_sources(validator,profiles):
     verify_qualified_runtime(validator,sources)
     # Only a library some qualified profile switches on enters the release (and its inventory).
     libraries={validator.GATE_LIBRARY:GATE_LIBRARY_SOURCE,validator.NVFP4_LIBRARY:NVFP4_LIBRARY_SOURCE,
-               validator.GDN_LIBRARY:GDN_LIBRARY_SOURCE,validator.FP8_GEMV_LIBRARY:FP8_GEMV_LIBRARY_SOURCE}
+               validator.GDN_LIBRARY:GDN_LIBRARY_SOURCE,validator.FP8_GEMV_LIBRARY:FP8_GEMV_LIBRARY_SOURCE,
+               validator.OPROJ_GEMV_LIBRARY:OPROJ_GEMV_LIBRARY_SOURCE,validator.MOE_DECODE_LIBRARY:MOE_DECODE_LIBRARY_SOURCE}
     for library in sorted(validator.required_libraries(profiles)):
         if library not in libraries:raise RuntimeError('Unexpected native library request')
         sources[library]=libraries[library]

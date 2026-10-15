@@ -60,7 +60,8 @@ DECISION_KEYS = frozenset({'schema', 'profiles'})
 DECISION_PROFILE_KEYS = frozenset({'acceptance_status', 'known_limitations', 'evidence'})
 # CUDA library switch -> decision key of its bit-exact evidence (receipt record key: the switch name).
 CUDA_DECISION_EVIDENCE = {'cuda_nvfp4_prefill': 'cuda_nvfp4_evidence', 'cuda_gdn': 'cuda_gdn_evidence',
-                          'cuda_fp8_gemv': 'cuda_fp8_gemv_evidence', 'cuda_gdn_fla':'cuda_gdn_fla_evidence'}
+                          'cuda_fp8_gemv': 'cuda_fp8_gemv_evidence', 'cuda_gdn_fla':'cuda_gdn_fla_evidence',
+                          'cuda_oproj_gemv': 'cuda_oproj_gemv_evidence', 'cuda_moe_decode': 'cuda_moe_decode_evidence'}
 DECISION_OPTIONAL_KEYS = frozenset({'run_receipts', *CUDA_DECISION_EVIDENCE.values()})
 CUDA_DECISION_KEYS = frozenset({'run_receipts', 'bitexact_reports'})
 # Same representation as optimization/experiment.py and bench.py source receipts.
@@ -75,7 +76,9 @@ RUN_FEATURE_ENV = frozenset({'QWEN36_PREFIX_MARGIN', 'QWEN36_FUSED_ATTN_GATE', '
                              'QWEN36_CUDA_GDN_DECODE', 'QWEN36_FP8_GEMV', 'QWEN36_FP8_GEMV_LIBRARY',
                              'QWEN36_DECODE_GATHER', 'TVM_FFI_CUDA_ARCH_LIST', 'QWEN36_LAYER_MAJOR_REFILL',
                              'QWEN36_LAYER_MAJOR_REFILL_POLICY', 'QWEN36_SYNC_LEAN', 'QWEN36_LAYER_MAJOR_ATTN_BATCH',
-                             'QWEN36_CUDA_GDN_FLA', 'QWEN36_LAYER_MAJOR_MIN_TOKENS', 'QWEN36_DECODE_SHARED_OVERLAP'})
+                             'QWEN36_CUDA_GDN_FLA', 'QWEN36_LAYER_MAJOR_MIN_TOKENS', 'QWEN36_DECODE_SHARED_OVERLAP',
+                             'QWEN36_OPROJ_GEMV', 'QWEN36_OPROJ_GEMV_LIBRARY', 'QWEN36_MOE_DECODE_CUDA',
+                             'QWEN36_MOE_DECODE_LIBRARY'})
 # Profile switch -> (run environment variable, value that switches it on).
 RUN_SWITCH_ENV = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE', '1'),
                   'fp32_gdn_snapshot': ('QWEN36_FP32_GDN_SNAPSHOT', '1'),
@@ -84,6 +87,8 @@ RUN_SWITCH_ENV = {'fused_attention_gate': ('QWEN36_FUSED_ATTN_GATE', '1'),
                   'layer_major_prefill': ('QWEN36_LAYER_MAJOR_PREFILL', '1'),
                   'cuda_gdn': ('QWEN36_CUDA_GDN', '1'),
                   'cuda_fp8_gemv': ('QWEN36_FP8_GEMV', '1'),
+                  'cuda_oproj_gemv': ('QWEN36_OPROJ_GEMV', '1'),
+                  'cuda_moe_decode': ('QWEN36_MOE_DECODE_CUDA', '1'),
                   'decode_gather': ('QWEN36_DECODE_GATHER', 'tuned'),
                   'layer_major_refill': ('QWEN36_LAYER_MAJOR_REFILL', '1'),
                   'decode_shared_overlap': ('QWEN36_DECODE_SHARED_OVERLAP', '1'),
@@ -96,14 +101,16 @@ RUN_VALUE_ENV = {'cuda_gdn_fla': 'QWEN36_CUDA_GDN_FLA', 'layer_major_refill_poli
 # Another spelling FreeToken might also accept ('true', 'on', 'cta', ...) is not the qualified configuration.
 RUN_EXACT_ENV = {'QWEN36_DECODE_SHARED_OVERLAP': '1', 'QWEN36_LAYER_MAJOR_PREFILL': '1', 'QWEN36_CUDA_GDN': '1', 'QWEN36_CUDA_GDN_DECODE': 'cluster',
                  'QWEN36_FP8_GEMV': '1', 'QWEN36_DECODE_GATHER': 'tuned', 'TVM_FFI_CUDA_ARCH_LIST': '12.0',
-                 'QWEN36_LAYER_MAJOR_REFILL': '1', 'QWEN36_SYNC_LEAN': '1'}
+                 'QWEN36_LAYER_MAJOR_REFILL': '1', 'QWEN36_SYNC_LEAN': '1', 'QWEN36_OPROJ_GEMV': '1',
+                 'QWEN36_MOE_DECODE_CUDA': '1'}
 # Variables production exports only together with a switch (variable -> switch variable).
 RUN_COMPANION_ENV = {'QWEN36_CUDA_GDN_DECODE': 'QWEN36_CUDA_GDN', 'TVM_FFI_CUDA_ARCH_LIST': 'QWEN36_DECODE_GATHER',
                      'QWEN36_LAYER_MAJOR_REFILL_POLICY': 'QWEN36_LAYER_MAJOR_REFILL',
                      'QWEN36_LAYER_MAJOR_MIN_TOKENS': 'QWEN36_LAYER_MAJOR_PREFILL',
                      'QWEN36_LAYER_MAJOR_ATTN_BATCH': 'QWEN36_LAYER_MAJOR_PREFILL', 'QWEN36_CUDA_GDN_FLA': 'QWEN36_CUDA_GDN'}
 # Library switches whose run must name its library explicitly (switch variable -> library variable).
-RUN_LIBRARY_ENV = {'QWEN36_CUDA_GDN': 'QWEN36_CUDA_GDN_LIBRARY', 'QWEN36_FP8_GEMV': 'QWEN36_FP8_GEMV_LIBRARY'}
+RUN_LIBRARY_ENV = {'QWEN36_CUDA_GDN': 'QWEN36_CUDA_GDN_LIBRARY', 'QWEN36_FP8_GEMV': 'QWEN36_FP8_GEMV_LIBRARY',
+                   'QWEN36_OPROJ_GEMV': 'QWEN36_OPROJ_GEMV_LIBRARY', 'QWEN36_MOE_DECODE_CUDA': 'QWEN36_MOE_DECODE_LIBRARY'}
 # Teacher fixtures only record logits for the quality comparison; anything else differs.
 RUN_DIAGNOSTIC_ENV = frozenset({'QWEN36_TEACHER_FIXTURE', 'QWEN36_LOGIT_REFERENCE', 'QWEN36_TEACHER_REFERENCE_REPORT'})
 EXPERIMENT_DEFAULT_MEMORY_RATIO = 0.75

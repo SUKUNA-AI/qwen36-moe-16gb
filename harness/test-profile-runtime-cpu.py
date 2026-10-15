@@ -86,11 +86,14 @@ BUNDLE = ('cuda_nvfp4_prefill', 'layer_major_prefill', 'cuda_gdn', 'cuda_fp8_gem
 OPTIONAL_SWITCHES = ('layer_major_refill', 'sync_lean')
 REFILL = 'layer_major_refill' in runtime.SWITCH_ENV
 REFILL_ON = {'layer_major_refill': True} if REFILL else {}
-NEW_SWITCHES = ('layer_major_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'decode_gather') + tuple(
+NEW_SWITCHES = ('layer_major_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'cuda_oproj_gemv', 'cuda_moe_decode',
+                'decode_gather') + tuple(
     switch for switch in OPTIONAL_SWITCHES if switch in runtime.SWITCH_ENV)
 EXPECTED_SWITCH_ENV = {'layer_major_prefill': {'QWEN36_LAYER_MAJOR_PREFILL': '1'},
                        'cuda_gdn': {'QWEN36_CUDA_GDN': '1', 'QWEN36_CUDA_GDN_DECODE': 'cluster'},
                        'cuda_fp8_gemv': {'QWEN36_FP8_GEMV': '1'},
+                       'cuda_oproj_gemv': {'QWEN36_OPROJ_GEMV': '1'},
+                       'cuda_moe_decode': {'QWEN36_MOE_DECODE_CUDA': '1'},
                        'decode_gather': {'QWEN36_DECODE_GATHER': 'tuned', 'TVM_FFI_CUDA_ARCH_LIST': '12.0'},
                        'layer_major_refill': {'QWEN36_LAYER_MAJOR_REFILL': '1'},
                        'sync_lean': {'QWEN36_SYNC_LEAN': '1'}}
@@ -1511,7 +1514,8 @@ class BundleSchemaTests(unittest.TestCase):
                          ('QWEN36_FP8_GEMV_LIBRARY', 'release/lib/libqwen_fp8_gemv.so'))
         self.assertEqual(runtime.SWITCH_REQUIRES, {'layer_major_refill': 'layer_major_prefill'} if REFILL else {})
         self.assertEqual(runtime.KERNEL_MODULE_SWITCHES, {'decode_gather': (GATHER,)})
-        self.assertEqual(runtime.CUDA_EVIDENCE_SWITCHES, ('cuda_nvfp4_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'cuda_gdn_fla'))
+        self.assertEqual(runtime.CUDA_EVIDENCE_SWITCHES, ('cuda_nvfp4_prefill', 'cuda_gdn', 'cuda_fp8_gemv', 'cuda_gdn_fla',
+                                                          'cuda_oproj_gemv', 'cuda_moe_decode'))
         # Every variable a switch exports is cleared from an inherited environment when the switch is off.
         for exports in runtime.SWITCH_ENV.values():
             for key in exports:
@@ -1707,7 +1711,9 @@ class BundleLibraryTests(TempRootCase):
 
     def test_abi_records_and_probe_specs(self):
         self.assertEqual(runtime.LIBRARY_ABI, {runtime.NVFP4_LIBRARY: runtime.NVFP4_ABI, runtime.GDN_LIBRARY: runtime.GDN_ABI,
-                                               runtime.FP8_GEMV_LIBRARY: runtime.FP8_GEMV_ABI})
+                                               runtime.FP8_GEMV_LIBRARY: runtime.FP8_GEMV_ABI,
+                                               runtime.OPROJ_GEMV_LIBRARY: runtime.OPROJ_GEMV_ABI,
+                                               runtime.MOE_DECODE_LIBRARY: runtime.MOE_DECODE_ABI})
         # work/wf-fp8gemv/results/release-tooling.json abi_probe_record_expected, verbatim.
         self.assertEqual(runtime.FP8_GEMV_ABI, {
             'libcuda_loaded': False, 'qwen_fp8_gemv_abi_version': 2, 'qwen_fp8_gemv_error': True,

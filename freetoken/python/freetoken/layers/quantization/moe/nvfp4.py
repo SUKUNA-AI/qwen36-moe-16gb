@@ -32,6 +32,8 @@ logger = init_logger(__name__)
 
 FP8 = torch.float8_e4m3fn
 MARLIN_MAX_SLOTS = 992
+# QWEN36_MOE_DECODE_CUDA=1: bit-exact CUDA replacement of the Triton decode GEMV (kernel/cuda_moe_decode.py)
+_MOE_DECODE_CUDA = os.environ.get("QWEN36_MOE_DECODE_CUDA") == "1"
 B12X_MIN_INTERMEDIATE = 1024
 
 
@@ -82,6 +84,16 @@ class TritonNvfp4MoEKernel(MoEKernel):
                 return self._cuda_prefill(x,*banks,topk_weights,topk_ids,view.n,layer.activation,
                                           layer.apply_router_weight_on_input,alpha,limit)
             return fused_experts_nvfp4(x, *banks, topk_weights, topk_ids, view.n, layer.activation, layer.apply_router_weight_on_input, alpha, limit)
+        if _MOE_DECODE_CUDA:
+            # opt-in bit-exact CUDA decode GEMV (kernel/cuda_moe_decode.py): None keeps the Triton GEMV
+            from freetoken.kernel.cuda_moe_decode import gemm_for_layer
+            from freetoken.moe.fused_nvfp4 import _fused_experts_decode_nvfp4
+
+            gemm = gemm_for_layer(layer, x, banks, topk_weights, topk_ids, layer.activation, alpha, limit,
+                                  layer.apply_router_weight_on_input)
+            if gemm is not None:
+                return _fused_experts_decode_nvfp4(gemm, x, *banks, topk_weights, topk_ids, layer.activation,
+                                                   layer.apply_router_weight_on_input, alpha, limit)
         return fused_experts_decode_nvfp4_marlin(x, *banks, topk_weights, topk_ids, layer.activation, layer.apply_router_weight_on_input, alpha, limit)
 
 

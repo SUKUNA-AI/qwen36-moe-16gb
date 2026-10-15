@@ -96,5 +96,6 @@ def fused_attention_output(layer, attention, gate):
         layer._fused_attention_gate = GateFp8(library)
     quantized = layer._fused_attention_gate(flat, gate, scale)
     # Match the uniform-scale branch of _scaled_mm, without a second quantize.
-    return torch._scaled_mm(quantized, weight.t(), scale_a=scale.reshape(()),
-                            scale_b=ws[0].reshape(()), out_dtype=torch.bfloat16)
+    from freetoken.kernel.triton.fp8_pertensor_linear import uniform_scaled_mm
+
+    return uniform_scaled_mm(quantized, weight, scale, ws, oproj=getattr(projection, '_oproj_gemv', False))

@@ -170,7 +170,9 @@ class ReleaseLibraryTests(unittest.TestCase):
             'release/lib/libqwen_attention_gate.so': root / 'private-libraries/libqwen_attention_gate.so',
             'release/lib/libqwen_nvfp4_bitexact.so': root / 'private-libraries/libqwen_nvfp4_bitexact.so',
             'release/lib/libqwen36_gdn.so': root / 'private-cuda-gdn/pinned/libqwen36_gdn-a8a806eda3a90a65.so',
-            'release/lib/libqwen_fp8_gemv.so': root / 'private-fp8gemv/libqwen_fp8_gemv-685c78cf89e60d02.so'})
+            'release/lib/libqwen_fp8_gemv.so': root / 'private-fp8gemv/libqwen_fp8_gemv-685c78cf89e60d02.so',
+            'release/lib/libqwen_oproj_gemv.so': root / 'private-decode-kernels/libqwen_oproj_gemv-fa9302e31cb88a02.so',
+            'release/lib/libqwen_moe_decode.so': root / 'private-decode-kernels/libqwen_moe_decode-83e90c43cb63ce11.so'})
         # A library request the release does not know (validator/release drift) is refused.
         with mock.patch.object(self.validator, 'required_libraries', lambda profiles: {'release/lib/libqwen36_kv.so'}):
             with self.assertRaises(RuntimeError): self.libraries(self.profiles())

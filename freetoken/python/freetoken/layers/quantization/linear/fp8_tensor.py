@@ -42,6 +42,12 @@ class TorchFp8TensorLinearKernel(LinearKernel):
         layer._fp8_uniform_scale = uniform
         layer._fp8_scale_segments = None if uniform else weight_scale_segments(scale)
         layer._fp8_gemv = False
+        layer._oproj_gemv = False
+        if uniform and os.environ.get("QWEN36_OPROJ_GEMV") == "1":
+            # opt-in bit-exact decode o-projection kernel, decided here (eager, before graph capture)
+            from freetoken.kernel.cuda_oproj_gemv import prepare_layer as prepare_oproj
+
+            layer._oproj_gemv = prepare_oproj(layer)
         if not uniform:
             rowwise_scaled_mm_ok()
             if os.environ.get("QWEN36_FP8_GEMV") == "1":
@@ -57,7 +63,7 @@ class TorchFp8TensorLinearKernel(LinearKernel):
         return fp8_pertensor_linear(
             x, layer.weight, layer.weight_scale, layer.bias,
             layer.input_scale, layer._fp8_uniform_scale, scale_segments=layer._fp8_scale_segments,
-            gemv=getattr(layer, "_fp8_gemv", False),
+            gemv=getattr(layer, "_fp8_gemv", False), oproj=getattr(layer, "_oproj_gemv", False),
         )
 
 

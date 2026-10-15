@@ -273,10 +273,28 @@ def _static_quant(a: torch.Tensor, input_scale: torch.Tensor) -> torch.Tensor:
 _GEMV_MAX_M = 8
 
 
+def uniform_scaled_mm(qa: torch.Tensor, weight: torch.Tensor, input_scale: torch.Tensor,
+                      weight_scale: torch.Tensor, out_dtype: torch.dtype = torch.bfloat16,
+                      oproj: bool = False) -> torch.Tensor:
+    """The tensor-wise (uniform-scale) W8A8 GEMM of an already quantized activation: torch._scaled_mm
+    with 0-d scales (cuBLASLt). ``oproj`` (opt-in QWEN36_OPROJ_GEMV, decided per layer at load): for
+    1 <= M <= 8 the bit-identical decode o-projection kernel of ``cuda_oproj_gemv`` runs instead; it
+    returns None for anything it does not cover exactly, and then torch._scaled_mm runs unchanged."""
+    sa = input_scale.reshape(())
+    sb = weight_scale[0].reshape(())
+    if oproj and out_dtype == torch.bfloat16 and qa.shape[0] <= _GEMV_MAX_M:
+        from freetoken.kernel.cuda_oproj_gemv import tensorwise as _oproj_tensorwise
+
+        out = _oproj_tensorwise(qa, weight, sa, sb)
+        if out is not None:
+            return out
+    return torch._scaled_mm(qa, weight.t(), scale_a=sa, scale_b=sb, out_dtype=out_dtype)
+
+
 def _scaled_mm(
     a: torch.Tensor, weight: torch.Tensor, weight_scale: torch.Tensor,
     input_scale: torch.Tensor, uniform_scale: bool, out_dtype: torch.dtype,
-    scale_segments: list[tuple[int, int]] | None = None, gemv: bool = False,
+    scale_segments: list[tuple[int, int]] | None = None, gemv: bool = False, oproj: bool = False,
 ) -> torch.Tensor:
     """``a @ (weight_fp8 * weight_scale)^T`` as a W8A8 cuBLASLt GEMM.
 
@@ -302,9 +320,7 @@ def _scaled_mm(
     wt = weight.t()  # [N, K] row-major -> [K, N] column-major, stride-only
     sa = input_scale.reshape(())
     if uniform_scale:
-        return torch._scaled_mm(
-            qa, wt, scale_a=sa, scale_b=weight_scale[0].reshape(()), out_dtype=out_dtype,
-        )
+        return uniform_scaled_mm(qa, weight, input_scale, weight_scale, out_dtype, oproj=oproj)
     if scale_segments is not None:
         return torch.cat([
             torch._scaled_mm(
@@ -334,6 +350,7 @@ def fp8_pertensor_linear(
     uniform_scale: bool = False,
     scale_segments: list[tuple[int, int]] | None = None,
     gemv: bool = False,
+    oproj: bool = False,
 ) -> torch.Tensor:
     """``y = x @ (weight_fp8 * weight_scale)^T``. ``weight`` [N, K] fp8-e4m3, ``weight_scale``
     [N] fp32 (per output row). ``scale_segments``: the fused parts' row ranges, precomputed at
@@ -357,7 +374,7 @@ def fp8_pertensor_linear(
     if w8a8:
         out = _scaled_mm(
             x.reshape(-1, K), weight, weight_scale, input_scale, uniform_scale, x.dtype,
-            scale_segments=segments, gemv=gemv and segments is None,
+            scale_segments=segments, gemv=gemv and segments is None, oproj=oproj,
         ).reshape(*lead, N)
     elif x.numel() // K == 1:
         out = _gemv(x.reshape(K), e4m3_kernel_view(weight), weight_scale, x.dtype).reshape(*lead, N)
