@@ -1,0 +1,141 @@
+[
+  {
+    "path": "python/freetoken/kernel/triton/nvfp4_fused_moe.py",
+    "base_sha256_lf": "d0368dbd7b40bc4ff26b3ef41cd2021d0ca625b1498af3ba95a7bf5406d5ae0f",
+    "target_sha256_lf": "f189cf420c02ee32f50f2317d78101c5c625269ad90c3c0da150ec341ddfbefd",
+    "identical": false,
+    "prefill_function_ast_identical": true
+  },
+  {
+    "path": "python/freetoken/moe/fused_nvfp4.py",
+    "base_sha256_lf": "b294a5d606174ff3ff336c70b606c0e9aeaf769ed1f81dbc273a44bf2a5933a8",
+    "target_sha256_lf": "773f733f1d6ce381725f4249884d5a39accdf88663a05fb1377df1e7fc5cf8b1",
+    "identical": false
+  },
+  {
+    "path": "python/freetoken/attention/fi.py",
+    "base_sha256_lf": "f1b19484bbbb05530ecc748d2e7030a5653eb3319c0f01bb9b2e5bcbfa86f797",
+    "target_sha256_lf": "f1b19484bbbb05530ecc748d2e7030a5653eb3319c0f01bb9b2e5bcbfa86f797",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/triton/fp8_pertensor_linear.py",
+    "base_sha256_lf": "3ea60ab5673b4f07198c457786866435cdc268dbed9db1c62501cc88a8c91e9a",
+    "target_sha256_lf": "3ea60ab5673b4f07198c457786866435cdc268dbed9db1c62501cc88a8c91e9a",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/triton/nvfp4_linear.py",
+    "base_sha256_lf": "4391de023b61c04b9a049934a9637ac9a0ad8560acaa2a3fba93ad29a8825012",
+    "target_sha256_lf": "4391de023b61c04b9a049934a9637ac9a0ad8560acaa2a3fba93ad29a8825012",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/models/qwen3_5_moe/gdn.py",
+    "base_sha256_lf": "49529ef0ffc45562501554852284e5927d97eddbce6b85a517d3548c9789da51",
+    "target_sha256_lf": "49529ef0ffc45562501554852284e5927d97eddbce6b85a517d3548c9789da51",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/chunk_delta_h.py",
+    "base_sha256_lf": "f554abb259fae7da75abb14a7ba560d9fcd3c72f88cfa0f55c579325566918dd",
+    "target_sha256_lf": "f554abb259fae7da75abb14a7ba560d9fcd3c72f88cfa0f55c579325566918dd",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/utils.py",
+    "base_sha256_lf": "f2ec0572d74951f0f76a334c07e8c0ed8343fa034e0d229a665a069eedecd109",
+    "target_sha256_lf": "f2ec0572d74951f0f76a334c07e8c0ed8343fa034e0d229a665a069eedecd109",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/op.py",
+    "base_sha256_lf": "1a0f5c243c552e8c71aba296451121b4c1e819e818e39aaa6bf734868fd17d62",
+    "target_sha256_lf": "1a0f5c243c552e8c71aba296451121b4c1e819e818e39aaa6bf734868fd17d62",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/wy_fast.py",
+    "base_sha256_lf": "fad673b00f5cfb8ccbd07dcb7e5da4cbe52066d4c2aec9213cea6f31247478c5",
+    "target_sha256_lf": "fad673b00f5cfb8ccbd07dcb7e5da4cbe52066d4c2aec9213cea6f31247478c5",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/chunk_fwd.py",
+    "base_sha256_lf": "a3819ab221e4021b742e609578926de0224d2687a9025533d0c66952e4e8cb0d",
+    "target_sha256_lf": "a3819ab221e4021b742e609578926de0224d2687a9025533d0c66952e4e8cb0d",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/fused_recurrent.py",
+    "base_sha256_lf": "fe4a8a0b51cef8dbffa5e99dfde08bb456da23f8ec24d341fedb473d1b34ea64",
+    "target_sha256_lf": "fe4a8a0b51cef8dbffa5e99dfde08bb456da23f8ec24d341fedb473d1b34ea64",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/__init__.py",
+    "base_sha256_lf": "c9856a422f7fe02221f7e640c75c5497d99976a26154e39b3a8e3a0ae1a4f555",
+    "target_sha256_lf": "c9856a422f7fe02221f7e640c75c5497d99976a26154e39b3a8e3a0ae1a4f555",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/kda_chunk_delta_h.py",
+    "base_sha256_lf": "32da9002205f1828c8b8bdc466a31961e1907d66684c037515ad30a96f8dc989",
+    "target_sha256_lf": "32da9002205f1828c8b8bdc466a31961e1907d66684c037515ad30a96f8dc989",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/index.py",
+    "base_sha256_lf": "6b90b44731342213ca8ea473e03aa158e2dbbf1491d0818a10abde847ec5b161",
+    "target_sha256_lf": "6b90b44731342213ca8ea473e03aa158e2dbbf1491d0818a10abde847ec5b161",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/l2norm.py",
+    "base_sha256_lf": "3b82c3b9ded0c83d0604c3a47ee9f788d8a7f50d8bbf9e77be522bdf5710162a",
+    "target_sha256_lf": "3b82c3b9ded0c83d0604c3a47ee9f788d8a7f50d8bbf9e77be522bdf5710162a",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/fused_sigmoid_gating_recurrent.py",
+    "base_sha256_lf": "c43b42de43606bd50537cba3ef28fa314e90d153223e82bd85ef0bf149cadbb9",
+    "target_sha256_lf": "c43b42de43606bd50537cba3ef28fa314e90d153223e82bd85ef0bf149cadbb9",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/solve_tril.py",
+    "base_sha256_lf": "5a46d2716ee985712adb35ed4d5834aa611d51f7a914e6b464e5800a1d81b6fe",
+    "target_sha256_lf": "5a46d2716ee985712adb35ed4d5834aa611d51f7a914e6b464e5800a1d81b6fe",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/chunk_o.py",
+    "base_sha256_lf": "4813e639cbcb001ab816c6de1fef23f78bc00c0661e590aa20d11e89f4aff0d1",
+    "target_sha256_lf": "4813e639cbcb001ab816c6de1fef23f78bc00c0661e590aa20d11e89f4aff0d1",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/chunk.py",
+    "base_sha256_lf": "0b909d8e222d127e47b7e79355ca3abd740925be631f06e745a2b22c15962ed3",
+    "target_sha256_lf": "0b909d8e222d127e47b7e79355ca3abd740925be631f06e745a2b22c15962ed3",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/layernorm_gated.py",
+    "base_sha256_lf": "5246eed37bcba9a8d48455b4314e84f2c8fbebc596470b261644df718ad5f93f",
+    "target_sha256_lf": "5246eed37bcba9a8d48455b4314e84f2c8fbebc596470b261644df718ad5f93f",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/kda.py",
+    "base_sha256_lf": "e5511f78cba01cf2ae69d663908ebb3997f9c637d6d1e0decfd681764bc22c70",
+    "target_sha256_lf": "e5511f78cba01cf2ae69d663908ebb3997f9c637d6d1e0decfd681764bc22c70",
+    "identical": true
+  },
+  {
+    "path": "python/freetoken/kernel/fla/cumsum.py",
+    "base_sha256_lf": "967721b93d4499435db3f4df2ec5a3454f6150eb9d66099c187469868070eecd",
+    "target_sha256_lf": "967721b93d4499435db3f4df2ec5a3454f6150eb9d66099c187469868070eecd",
+    "identical": true
+  }
+]

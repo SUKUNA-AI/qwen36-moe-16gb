@@ -1,0 +1,171 @@
+{
+  "torch": {
+    "version": "2.14.1",
+    "requires_python": ">=3.10",
+    "requires_dist": [
+      "filelock",
+      "typing-extensions>=4.10.0",
+      "setuptools>=77.0.3",
+      "sympy>=1.13.3",
+      "networkx>=2.5.1",
+      "jinja2",
+      "fsspec>=0.8.5",
+      "cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == \"Linux\"",
+      "cuda-bindings<14,>=13.0.3; platform_system == \"Linux\" and python_version < \"3.15\"",
+      "nvidia-cudnn-cu13==9.24.0.43; platform_system == \"Linux\"",
+      "nvidia-cusparselt-cu13==0.8.1; platform_system == \"Linux\"",
+      "nvidia-nccl-cu13==2.30.7; platform_system == \"Linux\"",
+      "nvidia-nvshmem-cu13==3.4.5; platform_system == \"Linux\"",
+      "triton~=3.8.0; platform_system == \"Linux\" and python_version < \"3.15\"",
+      "optree>=0.13.0; extra == \"optree\"",
+      "opt-einsum>=3.3; extra == \"opt-einsum\"",
+      "pyyaml; extra == \"pyyaml\""
+    ],
+    "files": [
+      {
+        "filename": "torch-2.14.1-cp312-cp312-manylinux_2_28_x86_64.whl",
+        "digests": {
+          "blake2b_256": "bafdc470857d0dfc5d4c94430658b3eed60fd5292b0bf596a8aae7b9fd66d674",
+          "md5": "e5b84b727e37cc5d0b5b1f5fac1d467f",
+          "sha256": "23011fe29a99b591eabb3a31a25080c62e2c2f0690a3c798744e5489dae50451"
+        },
+        "size": 554618695,
+        "upload_time_iso_8601": "2026-09-30T17:53:06.800553Z",
+        "url": "https://files.pythonhosted.org/packages/ba/fd/c470857d0dfc5d4c94430658b3eed60fd5292b0bf596a8aae7b9fd66d674/torch-2.14.1-cp312-cp312-manylinux_2_28_x86_64.whl"
+      }
+    ]
+  },
+  "triton": {
+    "version": "3.8.0",
+    "requires_python": "<3.15,>=3.10",
+    "requires_dist": [
+      "importlib-metadata; python_version < \"3.10\""
+    ],
+    "files": [
+      {
+        "filename": "triton-3.8.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+        "digests": {
+          "blake2b_256": "c109b7012e5bfae67640f268aa584caa80fe1674f6b0da949046b679972c33e3",
+          "md5": "872647a663dbaee7e2c5fe35aac82051",
+          "sha256": "e91ffa46d095b252248297292dd22bcbacd53a125a0c2eefbbbf74925a320bc3"
+        },
+        "size": 247972921,
+        "upload_time_iso_8601": "2026-08-28T15:55:53.157278Z",
+        "url": "https://files.pythonhosted.org/packages/c1/09/b7012e5bfae67640f268aa584caa80fe1674f6b0da949046b679972c33e3/triton-3.8.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl"
+      }
+    ]
+  },
+  "torchvision": {
+    "version": "0.29.1",
+    "requires_python": "!=3.14.1,>=3.10",
+    "requires_dist": [
+      "numpy",
+      "torch>=2.14.0",
+      "pillow!=8.3.*,>=5.3.0",
+      "gdown>=4.7.3; extra == \"gdown\"",
+      "scipy; extra == \"scipy\""
+    ],
+    "files": [
+      {
+        "filename": "torchvision-0.29.1-cp312-cp312-manylinux_2_28_x86_64.whl",
+        "digests": {
+          "blake2b_256": "226f78267c9791b5b883421fe4dbba6041f06b59c01d43dbe0f57b4497a74f59",
+          "md5": "80938f8e32c6c92fbb8fc8644bf33309",
+          "sha256": "6c717bd68dddaebbd9525377a17a84e38a291a33a218f59fdb76e8bb41e61c99"
+        },
+        "size": 7430669,
+        "upload_time_iso_8601": "2026-09-30T17:57:11.471704Z",
+        "url": "https://files.pythonhosted.org/packages/22/6f/78267c9791b5b883421fe4dbba6041f06b59c01d43dbe0f57b4497a74f59/torchvision-0.29.1-cp312-cp312-manylinux_2_28_x86_64.whl"
+      }
+    ]
+  },
+  "sglang-kernel": {
+    "version": "0.4.9",
+    "requires_python": ">=3.10",
+    "requires_dist": [
+      "torch==2.14.1"
+    ],
+    "files": [
+      {
+        "filename": "sglang_kernel-0.4.9-cp310-abi3-manylinux2014_x86_64.whl",
+        "digests": {
+          "blake2b_256": "8b71a85afdbc7c3c1b984c3a39db08da9c7e202662aeaf0605728f4b69b089e8",
+          "md5": "898aaafb989da3ead2c0caa4d8328a69",
+          "sha256": "bc3ff04f576484ff52b68ea58423b2da5943f6bcb036a6eb395e049268c8e51c"
+        },
+        "size": 371377990,
+        "upload_time_iso_8601": "2026-10-03T23:34:08.163578Z",
+        "url": "https://files.pythonhosted.org/packages/8b/71/a85afdbc7c3c1b984c3a39db08da9c7e202662aeaf0605728f4b69b089e8/sglang_kernel-0.4.9-cp310-abi3-manylinux2014_x86_64.whl"
+      }
+    ]
+  },
+  "flashinfer-python": {
+    "version": "0.6.18.post1",
+    "requires_python": "<4.0,>=3.10",
+    "requires_dist": [
+      "apache-tvm-ffi!=0.1.8,!=0.1.8.post0,<0.2,>=0.1.6",
+      "click",
+      "cuda-python>=12.0",
+      "cuda-tile>=1.4.0",
+      "einops",
+      "nccl4py>=0.3.1",
+      "ninja",
+      "numpy",
+      "nvidia-cudnn-frontend>=1.25.0",
+      "nvidia-cutlass-dsl>=4.6.2a0",
+      "nvidia-ml-py",
+      "packaging>=24.2",
+      "requests",
+      "tabulate",
+      "torch",
+      "tqdm",
+      "nvidia-cutlass-dsl>=4.6.2a0; extra == \"cu12\"",
+      "nvidia-cutlass-dsl[cu13]>=4.6.2a0; extra == \"cu13\""
+    ],
+    "files": [
+      {
+        "filename": "flashinfer_python-0.6.18.post1-py3-none-any.whl",
+        "digests": {
+          "blake2b_256": "643fbd0a74bfbb4f3813bfe61267ff696fb229ab70c0f1f44848287221928c95",
+          "md5": "0011eb621eec6b059bfb85f8c4fdbe07",
+          "sha256": "adb6d2952b47131138e108bd2999b1fe18b71f1a4c0b2684f168753db9563991"
+        },
+        "size": 18348022,
+        "upload_time_iso_8601": "2026-09-05T03:26:06.084596Z",
+        "url": "https://files.pythonhosted.org/packages/64/3f/bd0a74bfbb4f3813bfe61267ff696fb229ab70c0f1f44848287221928c95/flashinfer_python-0.6.18.post1-py3-none-any.whl"
+      }
+    ]
+  },
+  "flashlib": {
+    "version": "0.4.0",
+    "requires_python": ">=3.9",
+    "requires_dist": [
+      "torch>=2.0",
+      "triton>=3.6; platform_system == \"Linux\"",
+      "triton-windows>=3.6; platform_system == \"Windows\"",
+      "numpy",
+      "tqdm",
+      "nvidia-cutlass-dsl<4.7,>=4.4; platform_system == \"Linux\" and extra == \"cutedsl\"",
+      "pytest>=7; extra == \"dev\"",
+      "scikit-learn<1.8,>=1.5; extra == \"dev\"",
+      "tqdm; extra == \"dev\"",
+      "flashlib[cutedsl]; extra == \"dev\"",
+      "scikit-learn<1.8,>=1.5; extra == \"bench\"",
+      "tqdm; extra == \"bench\"",
+      "matplotlib; extra == \"bench\""
+    ],
+    "files": [
+      {
+        "filename": "flashlib-0.4.0-py3-none-any.whl",
+        "digests": {
+          "blake2b_256": "d3e29a8076db4e3c30e490f59ce229b73708926305ecf850956533f355fdca99",
+          "md5": "5bf2ff43b1ff58b437871c5072248156",
+          "sha256": "86a1b45f7a179ae7a3eed9bc965a033212096a5f2beac4478947b4821997a561"
+        },
+        "size": 811355,
+        "upload_time_iso_8601": "2026-10-13T05:43:57.664352Z",
+        "url": "https://files.pythonhosted.org/packages/d3/e2/9a8076db4e3c30e490f59ce229b73708926305ecf850956533f355fdca99/flashlib-0.4.0-py3-none-any.whl"
+      }
+    ]
+  }
+}

@@ -1,0 +1,486 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 5511c1f..b308045 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,7 @@
+ # own, and a mismatch links the C++ extensions against the wrong libtorch.
+ # setuptools floor: 77 is the first release that understands the PEP 639 `license`
+ # SPDX string and `license-files` below.
+-requires = ["setuptools>=77", "torch>=2.11,<2.12", "wheel"]
++requires = ["setuptools>=77", "torch>=2.14,<2.15", "wheel"]
+ build-backend = "setuptools.build_meta"
+ 
+ [project]
+@@ -23,6 +23,7 @@ classifiers = [
+     "Intended Audience :: Science/Research",
+     "Operating System :: POSIX :: Linux",
+     "Environment :: GPU :: NVIDIA CUDA",
++    "Environment :: GPU :: AMD ROCm",
+     "Programming Language :: Python :: 3",
+     "Programming Language :: Python :: 3.10",
+     "Programming Language :: Python :: 3.11",
+@@ -38,13 +39,12 @@ dependencies = [
+     "einops>=0.8,<1",
+     "fastapi>=0.115,<1",
+     # slot_cache: the device-side LRU admission kernel behind the MoE expert cache.
+-    "flashlib==0.3.0", # pin it
++    "flashlib==0.4.0", # pin it
+     "gguf>=0.19,<1",
+     "huggingface_hub>=1.5,<2",
+     "msgpack>=1.1,<2",
+     "modelscope>=1.37,<2",
+-    # ceiling: numba (via flashlib) needs numpy<2.5
+-    "numpy>=2.0,<2.5",
++    "numpy>=2.0,<3",
+     "openai>=2.0,<3",
+     "partial-json-parser>=0.2,<1",
+     "pillow>=10,<13",
+@@ -52,14 +52,17 @@ dependencies = [
+     "pydantic>=2.9,<3",
+     "pyzmq>=27,<28",
+     "safetensors>=0.6,<1",
+-    # floor+ceiling: sglang-kernel 0.4.5 links libtorch symbols only 2.11 has.
+-    # PyPI's torch 2.11.0 wheel is itself the cu130 build, so plain pip resolves
++    # floor+ceiling: sglang-kernel 0.4.9 requires torch==2.14.1.
++    # PyPI's torch 2.14.1 wheel is itself the cu130 build, so plain pip resolves
+     # correctly from PyPI alone; uv additionally pins the index below.
+-    "torch>=2.11,<2.12",
+-    "torchvision>=0.26,<0.27",
++    "torch>=2.14,<2.15",
++    "torchvision>=0.29,<0.30",
+     "tqdm>=4.66,<5",
+     "transformers>=5.16,<5.17",
+-    "triton==3.6.0; platform_system == 'Linux'",
++    # CUDA torch 2.14 resolves Triton 3.8; AMD's ROCm 7.14 image supplies its
++    # gfx1201-enabled Triton 3.7 build. Keep both supported without replacing the
++    # runtime-specific wheel selected by the PyTorch distribution.
++    "triton>=3.6,<3.9; platform_system == 'Linux'",
+     "uvicorn>=0.30,<1",
+ ]
+ 
+@@ -76,9 +79,9 @@ dev = ["pytest>=6.0"]
+ # Native fused-kernel packages. Without them the runtime falls back to the pure-Triton
+ # kernels in freetoken.kernel.triton (and the 'triton' attention backend). Install
+ # `freetoken[accel]` for the full native fast path.
+-fi = ["flashinfer-python[cu13]>=0.6,<0.7"]
++fi = ["flashinfer-python[cu13]==0.6.18.post1"]
+ # renamed from sgl-kernel at 0.4; still imports as `sgl_kernel`, so never co-install both
+-sgl = ["sglang-kernel==0.4.5"]
++sgl = ["sglang-kernel==0.4.9"]
+ accel = ["freetoken[fi,sgl]"]
+ # NOTE: the Marlin W4A16 NVFP4 expert-GEMM path (sm_80-99) borrows vLLM's AOT wheel
+ # (vllm>=0.14,<0.15), which pins transformers>=4.56,<5 and so is INCOMPATIBLE with the
+@@ -87,24 +90,18 @@ accel = ["freetoken[fi,sgl]"]
+ # in a dedicated environment when you specifically need the Marlin path.
+ 
+ # uv-only provenance pins — pip ignores this section and resolves from PyPI, which
+-# works: PyPI's torch 2.11.0 and sglang-kernel 0.4.5 are the same cu130 builds these
+-# indexes serve. `explicit = true` scopes each index to the one package that needs it
++# works: PyPI's torch 2.14.1 is the same cu130 build this index serves.
++# `explicit = true` scopes the index to the one package that needs it
+ # (the torch index also mirrors stale copies of common deps, e.g. packaging<=24.1,
+ # which would otherwise shadow PyPI under uv's first-index strategy).
+ [tool.uv.sources]
+ torch = { index = "pytorch-cu130" }
+-sglang-kernel = { index = "sglang-cu130" }
+ 
+ [[tool.uv.index]]
+ name = "pytorch-cu130"
+ url = "https://download.pytorch.org/whl/cu130"
+ explicit = true
+ 
+-[[tool.uv.index]]
+-name = "sglang-cu130"
+-url = "https://docs.sglang.io/whl/cu130"
+-explicit = true
+-
+ [tool.setuptools]
+ include-package-data = true
+ package-dir = {"" = "python"}
+diff --git a/python/freetoken/kernel/triton/nvfp4_fused_moe.py b/python/freetoken/kernel/triton/nvfp4_fused_moe.py
+index a1064bc..b1de443 100644
+--- a/python/freetoken/kernel/triton/nvfp4_fused_moe.py
++++ b/python/freetoken/kernel/triton/nvfp4_fused_moe.py
+@@ -30,6 +30,7 @@ import triton
+ import triton.language as tl
+ 
+ from freetoken.kernel.triton.e4m3_compat import e4m3_native_cx, e4m3_u8_to_f32
++from freetoken.kernel.triton.nvfp4_linear import _nvfp4_pair_f32
+ 
+ _E2M1_VALUES = [
+     0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0,
+@@ -130,6 +131,31 @@ def _decode_nvfp4_moe_kernel(
+     tl.store(c_ptrs, accumulator.to(compute_type), mask=(route_id < total_routes) & n_mask)
+ 
+ 
++@triton.jit
++def _bf16x4_to_f32(v):
++    """Four bf16 packed in one int64 -> four fp32 (a bf16 is the high half of its fp32)."""
++    lo = v.to(tl.int32)
++    hi = (v >> 32).to(tl.int32)
++    return (
++        (lo << 16).to(tl.float32, bitcast=True),
++        (lo & -65536).to(tl.float32, bitcast=True),
++        (hi << 16).to(tl.float32, bitcast=True),
++        (hi & -65536).to(tl.float32, bitcast=True),
++    )
++
++
++@triton.jit
++def _f16x4_to_f32(v):
++    lo = v.to(tl.int32)
++    hi = (v >> 32).to(tl.int32)
++    return (
++        lo.to(tl.int16).to(tl.float16, bitcast=True).to(tl.float32),
++        (lo >> 16).to(tl.int16).to(tl.float16, bitcast=True).to(tl.float32),
++        hi.to(tl.int16).to(tl.float16, bitcast=True).to(tl.float32),
++        (hi >> 16).to(tl.int16).to(tl.float16, bitcast=True).to(tl.float32),
++    )
++
++
+ @triton.jit
+ def _decode_nvfp4_marlin_kernel(
+     a_ptr,             # [M, K] activations (compute dtype)
+@@ -139,7 +165,6 @@ def _decode_nvfp4_marlin_kernel(
+     c_ptr,             # [M, TOP_K, N] output (compute dtype)
+     topk_weights_ptr,  # [M, TOP_K] fp32
+     topk_ids_ptr,      # [M, TOP_K] int32 -> cache slot
+-    lut_ptr,           # [16] fp32
+     total_routes,
+     N,
+     K,
+@@ -151,9 +176,11 @@ def _decode_nvfp4_marlin_kernel(
+     stride_tw_m, stride_tw_k,
+     stride_tid_m, stride_tid_k,
+     BLOCK_SIZE_N: tl.constexpr,
+-    BLOCK_SIZE_KW: tl.constexpr,  # int32 words per K-iter (covers 8*KW k-values)
++    BLOCK_SIZE_KW: tl.constexpr,  # int32 words per tile (covers 8*KW k-values)
++    UNROLL: tl.constexpr,         # tiles per loop trip
+     TOP_K: tl.constexpr,
+     A_ROW_IS_ROUTE: tl.constexpr,
++    A_WIDE: tl.constexpr,         # activation rows are contiguous bf16/fp16, 16-byte aligned
+     MUL_ROUTED_WEIGHT: tl.constexpr,
+     compute_type: tl.constexpr,
+ ):
+@@ -165,13 +192,18 @@ def _decode_nvfp4_marlin_kernel(
+       * Loads the FP4 codes as **int32 words** (8 codes / 4 bytes per element) so the HBM
+         read issues wide coalesced transactions -- the single biggest lever for the
+         gate/up GEMM, whose mem-only ceiling jumps from ~65% to ~85% of peak read BW.
+-      * **Defers** the K reduction: the ``[BLOCK_KW, BLOCK_N]`` partial accumulates across
++      * **Defers** the K reduction: the ``[BLOCK_N, BLOCK_KW]`` partial accumulates across
+         *all* K-iters and is reduced once at the end, removing the per-iter ``tl.sum``
+         barrier so the weight loads of successive iters pipeline.
+ 
+-    The e2m1 codes share one fp8 block scale per 16 k-values (== 2 words), applied per
+-    word. Mirrors the fast kernel's route/tile mapping and epilogue so it is a drop-in
+-    decode GEMV (CUDA-graph safe: fixed shapes, no host sync)."""
++    Every load in the K-loop is shaped so the compiler keeps the whole loop in the word
++    tile's register layout (no shared-memory layout conversions): the block scales are
++    loaded as a half tile and interleaved in registers (one e4m3 scale per 16 k-values
++    == 2 words), the e2m1 codes are decoded with the fp16 bit trick of
++    :func:`_nvfp4_pair_f32` (2^14 folded into the scale), and with ``A_WIDE`` the 8
++    activations of a word are read as two int64 and unpacked by shifts. Mirrors the fast
++    kernel's route/tile mapping and epilogue so it is a drop-in decode GEMV (CUDA-graph
++    safe: fixed shapes, no host sync)."""
+     route_id = tl.program_id(0)
+     n_block_id = tl.program_id(1)
+     token_id = route_id // TOP_K
+@@ -185,37 +217,70 @@ def _decode_nvfp4_marlin_kernel(
+     a_base = a_ptr + a_row * stride_am
+ 
+     offs_kw = tl.arange(0, BLOCK_SIZE_KW)
++    offs_kh = tl.arange(0, BLOCK_SIZE_KW // 2)
+     K_WORDS = K // 8
+-    partial = tl.zeros((BLOCK_SIZE_KW, BLOCK_SIZE_N), dtype=tl.float32)
+-
+-    packed_slot = packed_ptr + slot * stride_pe
+-    scale_slot = scale_ptr + slot * stride_se
+-    for kw_start in range(0, tl.cdiv(K_WORDS, BLOCK_SIZE_KW)):
+-        widx = kw_start * BLOCK_SIZE_KW + offs_kw
+-        w_mask = widx < K_WORDS
+-
+-        word = tl.load(
+-            packed_slot + offs_n[None, :] * stride_pn + widx[:, None] * stride_pkw,
+-            mask=w_mask[:, None] & n_mask[None, :], other=0,
+-        )
+-        # 8 codes/word fall in the same or adjacent 16-wide block -> one scale per word.
+-        s_ptrs = scale_slot + offs_n[None, :] * stride_sn + (widx[:, None] // 2) * stride_sblk
+-        s_mask = w_mask[:, None] & n_mask[None, :]
+-        if e4m3_native_cx():
+-            scale = tl.load(s_ptrs, mask=s_mask, other=0.0).to(tl.float32)
+-        else:
+-            scale = e4m3_u8_to_f32(tl.load(s_ptrs, mask=s_mask, other=0))
+-
+-        kbase = 8 * widx
+-        acc_w = tl.zeros((BLOCK_SIZE_KW, BLOCK_SIZE_N), dtype=tl.float32)
+-        for j in tl.static_range(8):
+-            code = (word >> (4 * j)) & 0xF
+-            b = tl.load(lut_ptr + code)
+-            a_j = tl.load(a_base + (kbase + j) * stride_ak, mask=w_mask, other=0.0).to(tl.float32)
+-            acc_w += a_j[:, None] * b
+-        partial += acc_w * scale
+-
+-    accumulator = tl.sum(partial, axis=0)
++    partial = tl.zeros((BLOCK_SIZE_N, BLOCK_SIZE_KW), dtype=tl.float32)
++
++    p_base = packed_ptr + slot * stride_pe + offs_n[:, None] * stride_pn
++    s_base = scale_ptr + slot * stride_se + offs_n[:, None] * stride_sn
++    for kw_start in range(0, tl.cdiv(K_WORDS, BLOCK_SIZE_KW), UNROLL):
++        for u in tl.static_range(UNROLL):
++            widx = (kw_start + u) * BLOCK_SIZE_KW + offs_kw
++            w_mask = widx < K_WORDS
++            word = tl.load(
++                p_base + widx[None, :] * stride_pkw,
++                mask=n_mask[:, None] & w_mask[None, :], other=0,
++            )
++            hidx = (kw_start + u) * (BLOCK_SIZE_KW // 2) + offs_kh
++            s_ptrs = s_base + hidx[None, :] * stride_sblk
++            s_mask = n_mask[:, None] & (hidx[None, :] < K_WORDS // 2)
++            if e4m3_native_cx():
++                s_half = tl.load(s_ptrs, mask=s_mask, other=0.0).to(tl.float32)
++            else:
++                s_half = e4m3_u8_to_f32(tl.load(s_ptrs, mask=s_mask, other=0))
++            s_half = s_half * 16384.0
++            scale = tl.interleave(s_half, s_half)
++
++            if A_WIDE:
++                a64 = a_base.to(tl.pointer_type(tl.int64), bitcast=True)
++                v = tl.load(
++                    a64 + widx[:, None] * 2 + tl.arange(0, 2)[None, :],
++                    mask=w_mask[:, None], other=0,
++                )
++                v0, v1 = tl.split(v)
++                if a_ptr.dtype.element_ty == tl.bfloat16:
++                    a0, a1, a2, a3 = _bf16x4_to_f32(v0)
++                    a4, a5, a6, a7 = _bf16x4_to_f32(v1)
++                else:
++                    a0, a1, a2, a3 = _f16x4_to_f32(v0)
++                    a4, a5, a6, a7 = _f16x4_to_f32(v1)
++            else:
++                kbase = 8 * widx
++                a0 = tl.load(a_base + kbase * stride_ak, mask=w_mask, other=0.0).to(tl.float32)
++                a1 = tl.load(a_base + (kbase + 1) * stride_ak, mask=w_mask, other=0.0).to(tl.float32)
++                a2 = tl.load(a_base + (kbase + 2) * stride_ak, mask=w_mask, other=0.0).to(tl.float32)
++                a3 = tl.load(a_base + (kbase + 3) * stride_ak, mask=w_mask, other=0.0).to(tl.float32)
++                a4 = tl.load(a_base + (kbase + 4) * stride_ak, mask=w_mask, other=0.0).to(tl.float32)
++                a5 = tl.load(a_base + (kbase + 5) * stride_ak, mask=w_mask, other=0.0).to(tl.float32)
++                a6 = tl.load(a_base + (kbase + 6) * stride_ak, mask=w_mask, other=0.0).to(tl.float32)
++                a7 = tl.load(a_base + (kbase + 7) * stride_ak, mask=w_mask, other=0.0).to(tl.float32)
++
++            acc_w = tl.zeros((BLOCK_SIZE_N, BLOCK_SIZE_KW), dtype=tl.float32)
++            b0, b4 = _nvfp4_pair_f32(word)
++            b1, b5 = _nvfp4_pair_f32(word >> 4)
++            b2, b6 = _nvfp4_pair_f32(word >> 8)
++            b3, b7 = _nvfp4_pair_f32(word >> 12)
++            acc_w += a0[None, :] * b0
++            acc_w += a1[None, :] * b1
++            acc_w += a2[None, :] * b2
++            acc_w += a3[None, :] * b3
++            acc_w += a4[None, :] * b4
++            acc_w += a5[None, :] * b5
++            acc_w += a6[None, :] * b6
++            acc_w += a7[None, :] * b7
++            partial += acc_w * scale
++
++    accumulator = tl.sum(partial, axis=1)
+     g = tl.load(global_ptr + slot * stride_ge + offs_n * stride_gn, mask=n_mask, other=0.0).to(tl.float32)
+     accumulator = accumulator * g
+ 
+diff --git a/python/freetoken/layers/moe.py b/python/freetoken/layers/moe.py
+index c209454..79ad9e3 100644
+--- a/python/freetoken/layers/moe.py
++++ b/python/freetoken/layers/moe.py
+@@ -1,5 +1,5 @@
+ import os
+-from typing import TYPE_CHECKING, Tuple
++from typing import TYPE_CHECKING, Iterator, Tuple
+ 
+ import torch
+ from freetoken.core import get_global_ctx
+@@ -189,6 +189,10 @@ class OffloadMoELayer(MoELayer):
+         )
+         self.offload_cache: OffloadMoeCache | None = None
+ 
++    @property
++    def skips_inactive_slots(self) -> bool:
++        return self.quant_method is not None and self.quant_method.kernel.supports_inactive_slots
++
+     def forward(
+         self,
+         hidden_states: torch.Tensor,
+@@ -289,7 +293,7 @@ class OffloadMoELayer(MoELayer):
+             hidden_states,
+             topk_weights,
+             topk_ids,
+-            views=cache.bank_views(),
++            views=cache.pool_bank_views(self.layer_id),
+             n=None,
+             alphas=cache.alphas_for_slots(self.layer_id),
+             is_prefill=False,
+@@ -307,19 +311,19 @@ class OffloadMoELayer(MoELayer):
+ 
+         The CPU pool is kicked off (``decode_submit``) before the GPU PCIe fetch + GEMM so
+         the CPU overflow GEMV runs concurrently with the GPU work. Capture-safe: the
+-        routing split is device-side elementwise and the CPU submit/sync are host nodes.
+-        Each route is computed exactly once -- the GPU weights are zeroed for CPU-assigned
+-        routes and the CPU ids are -1 for GPU-assigned routes (the C++ kernel skips id<0).
++        routing split runs inside the hybrid ensure kernel and the CPU submit/sync are host nodes.
++        Each route is computed exactly once -- CPU-assigned routes reach the GPU as slot -1 with
++        weight 0 (a kernel with ``supports_inactive_slots`` skips them without a read; any other reads
++        slot 0, whose storage is a payload or the bank's zero fill) and the CPU ids are -1 for
++        GPU-assigned routes (the C++ kernel skips id<0).
+         """
+         executor = cache.cpu_executor
+         assert executor is not None, "CPU MoE executor was not initialized"
+-        raw = topk_ids.clone()  # raw expert ids for the CPU partial
+-        cache.ensure_experts_hybrid(self.layer_id, topk_ids)  # -> slot (hit/fetched) or -1
+-        if cache.collect_stats:
+-            cache.record_decode_stats_hybrid(self.layer_id)
+-        on_gpu = topk_ids >= 0
+-
+-        cpu_ids = torch.where(on_gpu, raw.new_full((), -1), raw).contiguous()
++        # the kernel reads every route's slot: give the inactive ones slot 0, which holds a
++        # complete payload or the bank's zero fill (never uninitialized storage), times weight 0
++        # with several quants this holds only because the cache zeroes staged slot 0 rows (zero_inactive_route_slots)
++        clamp = not self.skips_inactive_slots
++        gpu_slots, gpu_w, cpu_ids = cache.ensure_experts_hybrid(self.layer_id, topk_ids, topk_weights, clamp=clamp)
+         pending = executor.decode_submit(self.layer_id, hidden_states, topk_weights, cpu_ids)
+ 
+         # Measurement knob: FREETOKEN_HYBRID_OVERLAP=0 syncs the CPU pool *before* the
+@@ -329,20 +333,19 @@ class OffloadMoELayer(MoELayer):
+         )
+ 
+         cache.copy_missing()
+-        gpu_slots = topk_ids.clamp_min(0)  # -1 -> slot 0 (zero-weighted below)
+-        gpu_w = torch.where(on_gpu, topk_weights, topk_weights.new_zeros(())).contiguous()
+         gpu_routed = self._expert_gemm(
+             cache,
+             hidden_states,
+             gpu_w,
+             gpu_slots,
+-            views=cache.bank_views(),
++            views=cache.pool_bank_views(self.layer_id),
+             n=None,
+             alphas=cache.alphas_for_slots(self.layer_id),
+             is_prefill=False,
+         )
+-        cpu_routed = cpu_routed_early if not _HYBRID_OVERLAP else executor.decode_sync(pending)
+-        return gpu_routed + cpu_routed
++        if not _HYBRID_OVERLAP:
++            return gpu_routed + cpu_routed_early
++        return executor.decode_sync(pending, add_to=gpu_routed)
+ 
+     def _prefill_routed(
+         self,
+@@ -372,16 +375,18 @@ class OffloadMoELayer(MoELayer):
+             return out
+         cache.materialize_layer(self.layer_id)
+         cache.copy_missing()
+-        return self._expert_gemm(
++        out = self._expert_gemm(
+             cache,
+             hidden_states,
+             topk_weights,
+             topk_ids,
+-            views=cache.bank_views(self.num_experts),
++            views=cache.stage_views(self.layer_id, 0),
+             n=self.num_experts,
+             alphas=cache.alphas_for_layer(self.layer_id),
+             is_prefill=True,
+         )
++        cache.release_prefill_layer(self.layer_id)
++        return out
+ 
+     def _wait_prefill_overlap(self, cache: OffloadMoeCache) -> tuple[torch.Tensor, ...]:
+         """Double-buffer choreography for this layer's overlap prefill: kick off the
+@@ -435,6 +440,19 @@ class OffloadMoELayer(MoELayer):
+         raise AssertionError(f"offload experts without a quant method only serve q4_0 banks, got {fmt!r}")
+ 
+ 
++def iter_moe_layers(model) -> Iterator[MoELayer]:
++    if isinstance(model, MoELayer):
++        yield model
++    if not isinstance(model, BaseOP):
++        return
++    for value in model.__dict__.values():
++        if isinstance(value, BaseOP):
++            yield from iter_moe_layers(value)
++        elif isinstance(value, (list, tuple)):
++            for item in value:
++                yield from iter_moe_layers(item)
++
++
+ def make_moe_layer(
+     config: "ModelConfig",
+     *,
+@@ -483,10 +501,10 @@ def make_moe_layer(
+         has_bias=has_bias,
+         quant_config=quant_config,
+         prefix=prefix,
++        layer_id=layer_id,
+     )
+     if offload:
+         assert layer_id is not None, "offload MoE backends need the layer_id"
+-        kwargs["layer_id"] = layer_id
+         kwargs["strategy"] = config.moe_strategy
+         kwargs["decode_target"] = config.decode_target
+     return layer_cls(**kwargs)
+diff --git a/python/freetoken/moe/fused_nvfp4.py b/python/freetoken/moe/fused_nvfp4.py
+index 7988fa9..375d2a5 100644
+--- a/python/freetoken/moe/fused_nvfp4.py
++++ b/python/freetoken/moe/fused_nvfp4.py
+@@ -31,17 +31,15 @@ _DECODE_BLOCK_N = 64
+ _DECODE_BLOCK_KB = 128
+ _DECODE_WARPS = 4
+ 
+-# Marlin-style decode config (int32 wide loads + deferred reduction). Offline sweep over
+-# the qwen35/qwen3moe (I=512/768) decode shapes picked BLOCK_N=16, BLOCK_KW=16 (== 128
+-# k-values/iter), 4 warps -- the wide load lifts the gate/up GEMM ~43%->~51% of peak BW.
++# Marlin-style decode: every K-loop load must keep the word tile's register layout, so BLOCK_N * BLOCK_KW <= 128 * num_warps and BLOCK_KW <= 32 at 4 warps.
++# Long K (gate_up) uses the narrow N tile for more programs at M=1; short K (down) uses the wide one.
+ _DECODE_MARLIN_BLOCK_N = 16
+ _DECODE_MARLIN_BLOCK_KW = 16
++_DECODE_MARLIN_UNROLL = 2
+ _DECODE_MARLIN_WARPS = 4
+-# Deep-K variant: at K > 2048 (qwen4_exp gate_up, K=2560) a narrower N tile with the whole
+-# K strip in one program iteration measures ~13% faster (18.6 vs 21.0us); short-K shapes
+-# regress under it, so the split is by K, not by gemm position.
+ _DECODE_MARLIN_DEEPK_BLOCK_N = 8
+-_DECODE_MARLIN_DEEPK_BLOCK_KW = 128
++_DECODE_MARLIN_DEEPK_BLOCK_KW = 32
++_DECODE_MARLIN_DEEPK_UNROLL = 2
+ _DECODE_MARLIN_DEEPK_THRESHOLD = 2048
+ 
+ 
+@@ -111,13 +109,18 @@ def _decode_gemm_marlin(
+     packed_i32 = packed.view(torch.int32)  # [S, N, K // 8]
+     scale = e4m3_kernel_view(scale)
+     total_routes = M * top_k
+-    deep_k = K > _DECODE_MARLIN_DEEPK_THRESHOLD
++    deep_k = K >= _DECODE_MARLIN_DEEPK_THRESHOLD
+     block_n = _DECODE_MARLIN_DEEPK_BLOCK_N if deep_k else _DECODE_MARLIN_BLOCK_N
+     block_kw = _DECODE_MARLIN_DEEPK_BLOCK_KW if deep_k else _DECODE_MARLIN_BLOCK_KW
++    unroll = _DECODE_MARLIN_DEEPK_UNROLL if deep_k else _DECODE_MARLIN_UNROLL
++    # int64 activation loads need contiguous 16-bit rows that start 16-byte aligned
++    a_wide = (
++        a.dtype in (torch.bfloat16, torch.float16)
++        and a.stride(1) == 1 and a.stride(0) % 8 == 0 and a.data_ptr() % 16 == 0
++    )
+     grid = (total_routes, triton.cdiv(N, block_n))
+     _decode_nvfp4_marlin_kernel[grid](
+         a, packed_i32, scale, glob, c, topk_weights, topk_ids,
+-        _e2m1_lut(a.device.index),
+         total_routes, N, K,
+         a.stride(0), a.stride(1),
+         packed_i32.stride(0), packed_i32.stride(1), packed_i32.stride(2),
+@@ -128,8 +131,10 @@ def _decode_gemm_marlin(
+         topk_ids.stride(0), topk_ids.stride(1),
+         BLOCK_SIZE_N=block_n,
+         BLOCK_SIZE_KW=block_kw,
++        UNROLL=unroll,
+         TOP_K=top_k,
+         A_ROW_IS_ROUTE=a_row_is_route,
++        A_WIDE=a_wide,
+         MUL_ROUTED_WEIGHT=mul_routed_weight,
+         compute_type=_tl_dtype(c.dtype),
+         num_warps=_DECODE_MARLIN_WARPS,

@@ -1,0 +1,778 @@
+{
+  "base": "cac247a860e316e06580d05aeb05f2e647bde214",
+  "target": "b416f85c40970c033462b47773020872209978a3",
+  "line_endings": "LF normalized for diff only",
+  "files": [
+    {
+      "path": "python/freetoken/attention/fi.py",
+      "fork_sha256_lf": "f5355ae55d1f995074996dcb56b08e8679483def46ea28efe22c7d98cf2fb063",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "f1b19484bbbb05530ecc748d2e7030a5653eb3319c0f01bb9b2e5bcbfa86f797",
+      "upstream_sha256_lf": "f1b19484bbbb05530ecc748d2e7030a5653eb3319c0f01bb9b2e5bcbfa86f797",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/attention/linear.py",
+      "fork_sha256_lf": "c6ffb80f8df45aa8d3a5eafd35fcf3d76014ed70563d18ccb4012c2286c8e883",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "c8e17d4c146bbbc744b2890f4059edd44f4af14bb846e5039f9948b19c4c16e2",
+      "upstream_sha256_lf": "c8e17d4c146bbbc744b2890f4059edd44f4af14bb846e5039f9948b19c4c16e2",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/core.py",
+      "fork_sha256_lf": "e1ecf89da9691b035493f641a9dcd4f7ab34eb5bba740081648f92e62df0a45e",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "5d8338dc20d70cf84697a4ff05ad5ac5248668f26744cb877a8ced2938798e60",
+      "upstream_sha256_lf": "2144182f2d9f45bc3cc8c23c4f73fe7f96b5b7dcc4ab2cc7216028c80d8e1daf",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 1
+    },
+    {
+      "path": "python/freetoken/decode_overlap.py",
+      "fork_sha256_lf": "a16988e647a342e0fac0fc2c1040ddd285ed52100fc7ff4325ad7362207f5334",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/engine/engine.py",
+      "fork_sha256_lf": "340f73be57bbaf4658c6ced959bcecdb779220126b4cf1b0d2f3910d39a5fc84",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "cba67403c12d17ef52346270cdbcef0e49e9bd1839b7d1db72354135fb6bbbfe",
+      "upstream_sha256_lf": "111d75c7bb50ad759b9ce0659bfb59f3ec557388656cff1a144cbd007e3896cc",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 1
+    },
+    {
+      "path": "python/freetoken/engine/layer_major.py",
+      "fork_sha256_lf": "63985eab85ea94da17dfc57b9e9fcfec2a9704df436393cc19591c1b0b657774",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/engine/mtp.py",
+      "fork_sha256_lf": "ca3d8a32b9357a739106703f4b16b3ef7b03d083d26bd0cd46ef7706091e526b",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/engine/qualification.py",
+      "fork_sha256_lf": "690dc75ea17ec41b08f1293768114fd344c1eb8dacbc39c3099f1e6e9e683de6",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/engine/sample.py",
+      "fork_sha256_lf": "5b3d4cf7f459074873f0db0cc426a2afe241d269ad5fcbc23b29d7fd7a603a75",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "224be3ab7cc4aae8c756cb83cb0b92d23bbac3878de7d4d0d9c32cdc7c6a6614",
+      "upstream_sha256_lf": "aae92eb89dfd603c14d9e425ad5ed6660fa4b4486f132e0bf5afa6d657ab5d44",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 2
+    },
+    {
+      "path": "python/freetoken/engine/speculative.py",
+      "fork_sha256_lf": "9f9a39a9c92a95b381f323c4a08bffc4bfc51fca97321484546d7ce13594d807",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/engine/telemetry.py",
+      "fork_sha256_lf": "a251697ee25ffcec24d661629dbd7922e69f64563e75f02049521aaad4df0535",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/fla_constants.py",
+      "fork_sha256_lf": "35b29b055720a1c6d437fe3a6bac460bffb945ee38f306775d92eaee48efe436",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/gdn_options.py",
+      "fork_sha256_lf": "3e894519ad2d84fc86b756171b5faec9feb2d1a58be45a22f076cbe09bfd5df4",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/aot.py",
+      "fork_sha256_lf": "3c79dac936d89d1e57566cfeccac696bb768349c36aa48b21a0824c8a208a806",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "de1b7e8b678187737f2993be3a6323a91f85b45e75310e22251df4dfa0ab8f49",
+      "upstream_sha256_lf": "0a994a87c9425b00d7b7592999ff6e5a03651c7a033851e384e1bfb0833d7a75",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/kernel/aot_models.py",
+      "fork_sha256_lf": "a84b7dd73e1bb8fc2a452dcb8c3fbb189bc8624531259192924daaf2ae67cced",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "5bce66c186440bb3663394c2f81a30def79cda765c0ca45b8933c9bc7a2ef50e",
+      "upstream_sha256_lf": "80bca2e9eff933acb31ea4586d1c9082528aaec2e72d2a87f94f2f665078fc22",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/kernel/csrc/cpu_moe/cpu_moe_ext.cpp",
+      "fork_sha256_lf": "48d9c8515f9ba0f48a0e35180af210e181b5dffa0e6b4b18531be82769039721",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "2fa052f5b477225062ced6c6a0815f71b363dbb545275f835b55778599f1e41d",
+      "upstream_sha256_lf": "2298a2c60a844d87efc81eb68ae3c00a03bb797823b077c1d3f06bead9368b3e",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 6
+    },
+    {
+      "path": "python/freetoken/kernel/csrc/jit/decode_gather.cuh",
+      "fork_sha256_lf": "549b223d437c13f4b6367de98cd24bc6da99b49f4646a74288ac78e365cc12da",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/csrc/qwen36_attention_gate.cu",
+      "fork_sha256_lf": "329524efd5416f0b5dc35e326bbbc016686f522675a0d1129da47c76bfed89e9",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/csrc/qwen36_complement.cu",
+      "fork_sha256_lf": "a49c2a28724068013bbfd33618c6596a62a73445857202026666e936a46e9cb0",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/csrc/qwen36_kv.cu",
+      "fork_sha256_lf": "809bddfe854fab15eac6ddf1a3535d520a2096ef4f07792b89eb0bec2212a653",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/csrc/qwen36_nvfp4_matched.cu",
+      "fork_sha256_lf": "ddb0efa3f804ab58231838f4716012eb67009d4bd6c3d949fc4659901b7428cf",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/csrc/qwen36_nvfp4_prefill.cu",
+      "fork_sha256_lf": "9527ee9dd74c17a7a44dda347547d6e00576ae274506276ca10d69a538d13412",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/csrc/qwen36_transport.cu",
+      "fork_sha256_lf": "d24144517f0ed5e5686f72f7af83df30778b7f712d27bda55a8e40781e0bc576",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/cuda_attention_gate.py",
+      "fork_sha256_lf": "7a4a6109a16c4a48b4ad3ddeb02e9ce846801594f4b5618dbcb1ac6bf103cf63",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/cuda_fp8_gemv.py",
+      "fork_sha256_lf": "9f76b9e88d64d972deec476f11bb0ba19568c8a722c64e6dd6cfec56d69558f4",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/cuda_gdn.py",
+      "fork_sha256_lf": "21742bec37bd6b6b9c2df66a518141a9e4889ac3f4096de98f15dd89eadc1826",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/cuda_kv.py",
+      "fork_sha256_lf": "c9a32cb31b58f4b07bab00fa08aa657acb3c61916c55c89d6eb60065ca2f2c28",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/cuda_kv_integration.py",
+      "fork_sha256_lf": "09f73f52e64738ef4260be80d2a75531fa77cadaba848d4d9865ff1218e06132",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/decode_gather.py",
+      "fork_sha256_lf": "d9883cbfcd560e1e0c4f653556da7a699f1ee223231705437b2e6d02555850b8",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/fla/chunk.py",
+      "fork_sha256_lf": "00d3bb4c05caab5bdd3705d9bda8802e442a9c80f80d960b0e383ca9e08426a6",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "0b909d8e222d127e47b7e79355ca3abd740925be631f06e745a2b22c15962ed3",
+      "upstream_sha256_lf": "0b909d8e222d127e47b7e79355ca3abd740925be631f06e745a2b22c15962ed3",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/kernel/fla/chunk_delta_h.py",
+      "fork_sha256_lf": "1bfceeef988df875f70d19e59e1ae247d364ab8449ef84fdd13b1929829d742c",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "f554abb259fae7da75abb14a7ba560d9fcd3c72f88cfa0f55c579325566918dd",
+      "upstream_sha256_lf": "f554abb259fae7da75abb14a7ba560d9fcd3c72f88cfa0f55c579325566918dd",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/kernel/fla/utils.py",
+      "fork_sha256_lf": "b791fbedbc4301935252cabf0e5ab6558de3e70e77dac2b6f526f1d925cc57b9",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "f2ec0572d74951f0f76a334c07e8c0ed8343fa034e0d229a665a069eedecd109",
+      "upstream_sha256_lf": "f2ec0572d74951f0f76a334c07e8c0ed8343fa034e0d229a665a069eedecd109",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/kernel/kernel_provenance.py",
+      "fork_sha256_lf": "db7091405693ceff813b709aa898629b729b189f2645e0e715e14484bcb61cb4",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/triton/fp8_kv.py",
+      "fork_sha256_lf": "dfab432e0f563a53259e519f2bcc7d10f782a011e23ba73ce474767133ee412f",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/kernel/triton/fp8_pertensor_linear.py",
+      "fork_sha256_lf": "9e5ea8f350f60cb15aa35d363564b600eb12e76cc3b3b5de72a1f964561ca85a",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "3ea60ab5673b4f07198c457786866435cdc268dbed9db1c62501cc88a8c91e9a",
+      "upstream_sha256_lf": "3ea60ab5673b4f07198c457786866435cdc268dbed9db1c62501cc88a8c91e9a",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/kernel/utils.py",
+      "fork_sha256_lf": "3e20bbb75cd4386b9fcc053956db925365f92cd86e1ce237e40fcae81f7d4776",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "4474994487259a5a78462015a2aac0008db03a4d34adcf59d2b1a87efb1ed85c",
+      "upstream_sha256_lf": "612d618eb1987d3f81050a6eecd1adb99902a50b565a2ee78a929ccdcf118a5a",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 5
+    },
+    {
+      "path": "python/freetoken/kvcache/hybrid_radix_cache.py",
+      "fork_sha256_lf": "2e38458ae6270bd6b6b1388a129e3b45206a58ae4bd92473a2b9278e5fc2b103",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "91471fa72d8ebdd628319bd16e9a3f4cc88b7ef7a0b5d7c7bd6074e5a547e320",
+      "upstream_sha256_lf": "4399367242b937a082330bc57d85b02f9447d599f05f12cffe8f9426a3f4d287",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/kvcache/mha_pool.py",
+      "fork_sha256_lf": "64f7e3df5f31e5a244c6b3aa9d40ec46109cce7db359c2dcfd4095609b7aa3f7",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "6b5e42a1d8ef610d208f0a8fed74aa9924acedea35804474b552162b25ae42a0",
+      "upstream_sha256_lf": "6b5e42a1d8ef610d208f0a8fed74aa9924acedea35804474b552162b25ae42a0",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/layers/embedding.py",
+      "fork_sha256_lf": "736bed8dbace79a7613b046d672af170efab407686bd7e39561ca72fa24edd93",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "51e30090b3e94fe3ff7e644e0b47f9d3ac1e645c0f690565501b40b38d193257",
+      "upstream_sha256_lf": "51e30090b3e94fe3ff7e644e0b47f9d3ac1e645c0f690565501b40b38d193257",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/layers/moe.py",
+      "fork_sha256_lf": "8b0dbae439f2579f6b5ed59b8fa675083cfc1021895b42eab29eacc05df8d404",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "c3f4345fd4484b3539d6558e2d94c3aca784e67821a496879e0204ecd9b77c27",
+      "upstream_sha256_lf": "e79791ef92056a8c61c0860918ce2809d4166187f9e160a028128e02229ad745",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/layers/quantization/linear/fp8_tensor.py",
+      "fork_sha256_lf": "9c2d0c9e6df87d42ac4afdc1889af0439de0b85aa313a1a560410061619601b2",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "46bfb00a130e2f42e4578fa84fe17059d629ba289d713f345158c771c0d3ad1a",
+      "upstream_sha256_lf": "46bfb00a130e2f42e4578fa84fe17059d629ba289d713f345158c771c0d3ad1a",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/layers/quantization/linear/nvfp4.py",
+      "fork_sha256_lf": "eefdfcc47b1ad954eb7cac907c6b7df24f19e6723ab5cb2933d3d510ca4f66de",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "a5041c0971eacf022da342b868529e8ec102ee86cb92970f2049aa384f1f9fb2",
+      "upstream_sha256_lf": "c1e569bf1acfd9aff09a2241c50ec6482ea7be8da2e46a488f65dd47a85f5b62",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/layers/quantization/moe/base.py",
+      "fork_sha256_lf": "b0bd6a2d6cf9e8f090c7940277429de7e2d1b89da6ef54a0f7b2e8183454852b",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "7edc4cd6ea96ae5fa2adf49bd27c4c52a487aaa2fa003905e62089e5a9f66f5d",
+      "upstream_sha256_lf": "1e661490c9db91d3ee526d120889f29378666a13a2eea7b472bd51e2f7e4f8c6",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/layers/quantization/moe/nvfp4.py",
+      "fork_sha256_lf": "ba9a57c18535cc7505f36ef92377c7832d885ac39c4a06f5f0e03f245ea1e46f",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "51a615fab5b31c5d077ec20d135695764cc899836de80ec27ede58ef4875e351",
+      "upstream_sha256_lf": "d068a981593666d8eb1fe80e8bf7f835f503ffc9a612c7aec108e74bdd870d79",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/message/tokenizer.py",
+      "fork_sha256_lf": "e0a381722ea1c5e0b6e2da642efd5a553530afbeff955d6c9f1ee5b063245a06",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "196d58921928bf53e7d3bae963316a47b16ace355fb54142f3db33331fae65df",
+      "upstream_sha256_lf": "29b21e214966d5a72aa22838aa3c49ecfb458fa4b34b507f9d89ae616e2eee7e",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 1
+    },
+    {
+      "path": "python/freetoken/models/gemma4/weight.py",
+      "fork_sha256_lf": "8e47ee272ed616dd6a7e21c4bc6e892e53746aec2e87da22866616653bbf4008",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "2e7a5baf1bdc9600a9dc9a2d46c7052d0df8132d4f1486796c9cb812403f99b7",
+      "upstream_sha256_lf": "2e7a5baf1bdc9600a9dc9a2d46c7052d0df8132d4f1486796c9cb812403f99b7",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/models/glm4_moe/weight.py",
+      "fork_sha256_lf": "bf61dbdda850e7664434882ac2ae78532cff953b59f3e2023c2b735e655ae786",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "cd71bddb945c65361450a6cae0e11adc2fa8c344eea90336bf7f472add2e59d1",
+      "upstream_sha256_lf": "09501a135fcf975048a91a7f92f65066d20817b49525f9074fd1334752de8cf4",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/models/loader.py",
+      "fork_sha256_lf": "04a4ef766cab56c13bebf6be266f41a326dc342cc34325dae5115394635122b7",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "2f819ff498e222869cb5fce7ff60c38c84a5c3230065863bf354d0cd64612a86",
+      "upstream_sha256_lf": "2f819ff498e222869cb5fce7ff60c38c84a5c3230065863bf354d0cd64612a86",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/models/nvfp4_banks.py",
+      "fork_sha256_lf": "6deab98f0a313c8ea68ae41912ffe76fc08c1bc8c02f53fb39004e4a5d807710",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "2fab64d714364831487e2cf64fbe0649b7d90e2fd2f3be072ba7692522fbe986",
+      "upstream_sha256_lf": "2fab64d714364831487e2cf64fbe0649b7d90e2fd2f3be072ba7692522fbe986",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/models/qwen3_5_moe/attention.py",
+      "fork_sha256_lf": "3441828851d04103f03ca5924e5c41126daa247fd52c4fb8b3610369bf17d3f4",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "4b50ae406633ac6e33b19c78c8485e03ea1b755a54265abf0da306731ad0419a",
+      "upstream_sha256_lf": "4b50ae406633ac6e33b19c78c8485e03ea1b755a54265abf0da306731ad0419a",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/models/qwen3_5_moe/gdn.py",
+      "fork_sha256_lf": "54939d5bb5c1a55ad05d4cc5a053265ddd42fe98834ddca0e3df98829b28dada",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "49529ef0ffc45562501554852284e5927d97eddbce6b85a517d3548c9789da51",
+      "upstream_sha256_lf": "49529ef0ffc45562501554852284e5927d97eddbce6b85a517d3548c9789da51",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/models/qwen3_5_moe/gdn_kernels.py",
+      "fork_sha256_lf": "1a7ba71e5ef8cefbf451cf5511eb0639a0475c3f199e02500a11a5d55ce239ea",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "aea550467b6df186e6e0e7ec3837ba4b617d73ea201f64b9e58d8d371f342d95",
+      "upstream_sha256_lf": "aea550467b6df186e6e0e7ec3837ba4b617d73ea201f64b9e58d8d371f342d95",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/models/qwen3_5_moe/model.py",
+      "fork_sha256_lf": "fffd01c21a1a2d49d1d06e0f31433cf19ba81db1a3919b7aa3c3035760860c29",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "50ffb9050ed92dde223755dbc025f02e6ffb93c9f2ee343c9f81bf591151e94e",
+      "upstream_sha256_lf": "50ffb9050ed92dde223755dbc025f02e6ffb93c9f2ee343c9f81bf591151e94e",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/models/qwen3_5_moe/moe.py",
+      "fork_sha256_lf": "b09ce7c4a0ccdda68064660dde09690ca51f5382383509358e990221959cb66c",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "36a417fe3361fda69a124d871187a976b862e045890cfb840f6fb0a8e0238c7b",
+      "upstream_sha256_lf": "36a417fe3361fda69a124d871187a976b862e045890cfb840f6fb0a8e0238c7b",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/models/qwen3_5_moe/weight.py",
+      "fork_sha256_lf": "2afc0aaf2b3d9743247d17bc9ce62bc4a78d75cbafc6ef4c79de3dbfb9bf09d8",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "26af1c41a0fa33ad0e576cba9ca730a9e52d0a2f91609a046b6d0799569f1f38",
+      "upstream_sha256_lf": "7973c2e443af2859d0b189f6ace641d816768be38fd869a9e974475031a91aa8",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/moe/benchbw.py",
+      "fork_sha256_lf": "64089971be4f87d8fe814cdaad979f0feb91103f5da2caff8d4dd41a5ea11c25",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "1e37924d692c94cbd33f93bdbc451eff46985c7348f7061cfccacb2fde6c66cc",
+      "upstream_sha256_lf": "141912489176a37485faa083bf6924a8f8d93b603a16d06333bf78564b066bb0",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/moe/complement.py",
+      "fork_sha256_lf": "2fcb370660e9c481c1e3b720aa70d43db8fcaf0a8799ca6e03bb04a312f4a71e",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/moe/complement_cuda.py",
+      "fork_sha256_lf": "094813ee2147c0194cd81f1fd1722a293bf38f41256f7a59832e92fe0ee99dfd",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/moe/complement_kernels.py",
+      "fork_sha256_lf": "abf406e90b43f0a49b09e4ef0ebadcc4d2bde308232d4eadc03ce1e72b146391",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/moe/cpu_executor.py",
+      "fork_sha256_lf": "3693fc772e0303f97a0726f79f7ac8727d11bd7bd415d48def5780265db37bf1",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "6792a069d0e66ef09f019062ad15a44ce6e44ad20cb53989ebfedaa9faa2646a",
+      "upstream_sha256_lf": "6123f8a3c14bec20efa10449af51c2aa13f66ee9e03e5c3b0b8d25de8845d3a5",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 1
+    },
+    {
+      "path": "python/freetoken/moe/cuda_nvfp4.py",
+      "fork_sha256_lf": "a669e2066b9b78dd6d4f461ef9d2a1ed66bf3400d1fc2de6fba66adf3f152882",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/moe/cuda_transport.py",
+      "fork_sha256_lf": "86727a0e6aa6a670cf7f6b48b42d9e047f59029a76f6d32773230245fb4208d0",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/moe/fused_nvfp4.py",
+      "fork_sha256_lf": "384ac1903450ee2463098a3de32a7cc738941b9876892023652dac99ccccdf7a",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "b294a5d606174ff3ff336c70b606c0e9aeaf769ed1f81dbc273a44bf2a5933a8",
+      "upstream_sha256_lf": "773f733f1d6ce381725f4249884d5a39accdf88663a05fb1377df1e7fc5cf8b1",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/moe/host_banks.py",
+      "fork_sha256_lf": "61abed604424df3fc132cee33cd49437145e79ccfc11b84b01f24e12a680d88d",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "ebb2f8ef41f18fae3974281acb71a7e8b58e28a9c6f01862985e61f16d117bb8",
+      "upstream_sha256_lf": "ebb2f8ef41f18fae3974281acb71a7e8b58e28a9c6f01862985e61f16d117bb8",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/moe/layer_major.py",
+      "fork_sha256_lf": "9e08bd5ebcdd2c913ca01a233b909e8a56e79c0c5fffe49a0c1c3c5debe1f367",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/moe/offload_cache.py",
+      "fork_sha256_lf": "45540acd4d1c76ab637f4f924a34cfee6bd3c89da398bfa8b434172fdfdd194d",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "2412d1b6b48b31af20dc471236f8f1da55c5fec69a1759800463a7feb0914816",
+      "upstream_sha256_lf": "d868cb1000e0b3575df12acf5dffb03627ebda2bd2dae9ccdac7adf0d977e7f4",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 6
+    },
+    {
+      "path": "python/freetoken/moe/slot_refill.py",
+      "fork_sha256_lf": "c7a3e4fad2e67458c865cdd1f455b1dc38a853bc9d554c292e4fedfff01b482d",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/quality_evidence.py",
+      "fork_sha256_lf": "7834d8f91bb8762e742289626472526a9207599d53897c99afaa3312df39a6f5",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/scheduler/cache.py",
+      "fork_sha256_lf": "db9abffdabc29097239e02e7e95f922753845bf589bcdf0453a4e28db1b1c738",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "f2e5398b97f6ef525257a6c600c267dc8d482426b50782f0c487a655046667bc",
+      "upstream_sha256_lf": "4205104cd06635c69ab35903a380cdeb2e64d6d284b41c0f12a988d3ef5e1725",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/scheduler/layer_major.py",
+      "fork_sha256_lf": "a9a8b188ad9d25c08b01f1cb82286c9801303e2667b499bac7165ad8eaf41863",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/scheduler/prefill.py",
+      "fork_sha256_lf": "2d332dda5afe2173f2a19319adc36da4ffafb0a729f10a4f9fce38d58918ba54",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "ee72522cee3391e5cf43dc68981827154766ff4e0a4d9fcaf491efa095f74784",
+      "upstream_sha256_lf": "da5a098ae1a892a01cb19c2c1bebfb683f7ca61778fafb4cb3c3d08efc3e9f67",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/scheduler/scheduler.py",
+      "fork_sha256_lf": "d820478bd9fe5267cc597a04342ee115d145b32e1cf2d2879595809d67056934",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "fea2d2af34300b255964ef831d7c378e74c18bd510dfa1e405032fa2d92041b4",
+      "upstream_sha256_lf": "23352abbde3392f12d38ba82a5176adb9627ce29d8cc0b3343f2efd0f97ec653",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 1
+    },
+    {
+      "path": "python/freetoken/scheduler/speculative.py",
+      "fork_sha256_lf": "74e1f321bba2dd03ddf1d015f9a3ec0149c06bd24a38125380fa7a3fdd7bf8b4",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "python/freetoken/server/api_models.py",
+      "fork_sha256_lf": "4a6d78a55e9db393216cfb543cfc26ca56f663a01a048c40cf18372ad1c48c75",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "ec0eab4c178cc98ba2b8662cb7e20599a1e2e940cce30e0ef95c96b4fe4c1d57",
+      "upstream_sha256_lf": "9d47a4a2e60be1d4960d5fd01ba5108a192389cabf2c39fcee879a2b87ebf5b1",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "python/freetoken/server/generation.py",
+      "fork_sha256_lf": "2346caa4a0ac87a971509cf91f7a7226cccc20f3c921aee90deb990e73b64167",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "05b4c1134d56a2cfb0f57ec7bb6a8bfac018d61711394dacd23baf5c2ad33d12",
+      "upstream_sha256_lf": "1dd628653815d7b910feec092964504ece1e69e4bd6f1e4827265b57e150f1bc",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 2
+    },
+    {
+      "path": "python/freetoken/server/openai_api.py",
+      "fork_sha256_lf": "651805bf4e698cac7b3961bb6021775cdee58aa968018a8428b40b02495660da",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "fb716a2f054327f40816316a513967f3bda2d6a64507cc0205ad96e52e90633d",
+      "upstream_sha256_lf": "bd157606a3d41188d7f795b21db0f76727c34db25bfe7c4e4fe0d84c55ecbdb3",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 1
+    },
+    {
+      "path": "python/freetoken/tokenizer/tokenize.py",
+      "fork_sha256_lf": "8fa1116c663658a4837d2f10ff0839171fc65182e069a54bceadd6d0c7771723",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "ac8f10e0563fb9dd3cf200aec8fdb7ea0b731fbf4ca48b837bf6593891776703",
+      "upstream_sha256_lf": "5323a2d3b802e4ff52e4df4372c8b9b63d2b4c722970b6c6be2d0b9707ed37b8",
+      "upstream_changed": true,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "tests/engine/test_speculative.py",
+      "fork_sha256_lf": "fe606d779be3905c34afca67f3e0e652047ca629b2ae70510446f3a6f349e384",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "tests/kernels/test_cuda_fp8_gemv.py",
+      "fork_sha256_lf": "324d8393b3c796890a1ecdb3fd6b30a5447092a7175cdd17eb14c528a96f3cb8",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "tests/kernels/test_gdn_fp32_snapshot.py",
+      "fork_sha256_lf": "cdea54e537ccedae4fa46c789f81cac9e02e2d0e628ddc62244f858043e449da",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "tests/kvcache/radix/driver.py",
+      "fork_sha256_lf": "050da065786f41aac4370fae5d8bdb9cae96846a7c39568578904836d4da6bda",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "047278c46ac6317d604306cc0a4f4618daa6d6c620abf118682f232af2b3d18d",
+      "upstream_sha256_lf": "047278c46ac6317d604306cc0a4f4618daa6d6c620abf118682f232af2b3d18d",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "tests/kvcache/radix/test_hybrid_radix.py",
+      "fork_sha256_lf": "2f8c7bb6940e28597d0961d0ac358044292eb62664bf57658e122912bede501e",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "59a2aadc5f77f1523527510e2ac51c54ed52898e1265a316b74d6b78f5aef43f",
+      "upstream_sha256_lf": "59a2aadc5f77f1523527510e2ac51c54ed52898e1265a316b74d6b78f5aef43f",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "tests/kvcache/radix/test_plain_radix.py",
+      "fork_sha256_lf": "b3c971e11f45e68bebb767002dcbde51a4bd505d31ef21e4ba23ae0cfade2b9c",
+      "base_exists": true,
+      "upstream_exists": true,
+      "base_sha256_lf": "0a46a3e7e3450b56db3b5bc0b24a5485b7cab7f283e46dee24fd5d32e5359a7b",
+      "upstream_sha256_lf": "0a46a3e7e3450b56db3b5bc0b24a5485b7cab7f283e46dee24fd5d32e5359a7b",
+      "upstream_changed": false,
+      "textual_merge_conflicts": 0
+    },
+    {
+      "path": "tests/moe/test_decode_gather.py",
+      "fork_sha256_lf": "30e29a8218ab76e501227a64dc345a6bdda907ececbaa77ce4366b6d6169008a",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "tests/moe/test_decode_overlap_gpu.py",
+      "fork_sha256_lf": "a391e1435338b4428c57e760ea22a8e25f221fb1b85f511efe348570e003b83e",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "tests/moe/test_short_route_gpu.py",
+      "fork_sha256_lf": "9456ef94d76a027894bcdf7ce9f3c33423ea559c73206359b578120d746876ea",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "tests/scheduler/test_overlap_output_budget.py",
+      "fork_sha256_lf": "4e80f84b22b6903a4854ac9b32db8a35224c29dab858141925ecf6dd7532b9bc",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "tests/scheduler/test_prefix_snapshot_identity.py",
+      "fork_sha256_lf": "1100c2bbb6ae76f91ab453204e0a6a7c6497d6a80e33ba1efb9652b9517bbcba",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "tests/scheduler/test_retain_chunk_snapshot.py",
+      "fork_sha256_lf": "7d50a6715bc59bf0da1771a377ad6b4dd430d5941e440f379dbe9de90e12c7e8",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    },
+    {
+      "path": "tests/scheduler/test_speculative_state.py",
+      "fork_sha256_lf": "0e1e4c87fc81fba46c91b86c8132c662a147ef72234eea365e2059f496c5e014",
+      "base_exists": false,
+      "upstream_exists": false,
+      "status": "fork-only"
+    }
+  ]
+}
