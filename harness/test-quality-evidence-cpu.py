@@ -13,14 +13,26 @@ def load(name):
 
 cmp = load('compare-quality')
 
+def make_receipt(profile, run, configuration=None, source_files=None):
+    source_files = source_files or {'synthetic.py':'a'*64}
+    # Teacher configs historically omit 'flags'; functional configs carry the list.
+    return {'profile':profile, 'run_id':run, 'started_utc':'synthetic',
+            'configuration':configuration or {'context':131072,'chunk':2048,'env':{}},
+            'source_sha256':__import__('hashlib').sha256(json.dumps(source_files,sort_keys=True).encode()).hexdigest(),
+            'source_files':source_files, 'service_source_files':{k:'b'*64 for k in ('experiment.py','serve_guarded.py','guard.py','ingress.py','request_metrics.py')},
+            'packages':{k:'synthetic' for k in ('torch','triton','flashinfer-python','sglang-kernel','transformers')},
+            'checkpoint':'synthetic', 'checkpoint_revision':'synthetic', 'native_libraries':{}}
+
+def functional_report(profile, run, length=120000):
+    receipt = make_receipt(profile, run, {'context':131072,'chunk':2048,'flags':[],'env':{}})
+    return {'fixture_version':1, 'functional_matrix':{'version':1,'long':length}, 'run':receipt,
+            'rows':[{'case':c,'pass':True,'status':200,'run_id':run,'serving_run_id':run}
+                    for c in ('russian','executable-code','tool-cycle','long-facts-16384',f'long-facts-{length}')]}
+
 def fixtures(clean=False):
     records = {}
     def report(profile, run):
-        receipt = {'profile':profile, 'run_id':run, 'started_utc':'synthetic', 'configuration':{'context':131072,'chunk':2048,'env':{}},
-                   'source_sha256':__import__('hashlib').sha256(json.dumps({'synthetic.py':'a'*64},sort_keys=True).encode()).hexdigest(),
-                   'source_files':{'synthetic.py':'a'*64}, 'service_source_files':{k:'b'*64 for k in ('experiment.py','serve_guarded.py','guard.py','ingress.py','request_metrics.py')},
-                   'packages':{k:'synthetic' for k in ('torch','triton','flashinfer-python','sglang-kernel','transformers')},
-                   'checkpoint':'synthetic', 'checkpoint_revision':'synthetic', 'native_libraries':{}}
+        receipt = make_receipt(profile, run)
         out = {'fixture_version':1, 'run':receipt, 'fixture_sha256':'f'*64, 'targets':{}, 'rows':[]}
         if clean:
             cold = dict(receipt, run_id=run+'-cold', started_utc='later')
@@ -39,10 +51,7 @@ def fixtures(clean=False):
                 'logit_comparisons':[{'position':p,'finite':True,'byte_equal':True,'max_abs':0.0,'relative_l2':0.0} for p in (0,8)]}
         return out
     a,b = report('teacher-bf128','base'),report('teacher-candidate','new')
-    def functional(length=120000):
-        return {'fixture_version':1, 'functional_matrix':{'version':1,'long':length},
-                'rows':[{'case':c,'pass':True,'status':200} for c in ('russian','executable-code','tool-cycle','long-facts-16384',f'long-facts-{length}')]}
-    return [a,b,functional(),functional(),records]
+    return [a,b,functional_report('bf128','base-functional'),functional_report('candidate','new-functional'),records]
 
 class QualityEvidence(unittest.TestCase):
     def compare(self, f):
@@ -123,7 +132,7 @@ class QualityEvidence(unittest.TestCase):
                     f=fixtures();doc=f[arm]
                     if mode=='empty':doc['rows']=[]
                     elif mode=='missing':doc['rows'].pop(0)
-                    elif mode=='extra':doc['rows'].append({'case':'other','pass':True})
+                    elif mode=='extra':doc['rows'].append({'case':'other','pass':True,'status':200,'run_id':doc['run']['run_id']})
                     elif mode=='duplicate':doc['rows'].append(dict(doc['rows'][0]))
                     elif mode=='type':doc['rows'][0]['pass']=1
                     elif mode=='row-type':doc['rows'][0]='bad'
@@ -279,6 +288,119 @@ class QualityEvidence(unittest.TestCase):
                 self.assertEqual(json.loads(result.stdout)['pass'],mode=='good')
         driver=helper.with_name('final-gates.sh').read_text()
         self.assertNotIn('then st=PASS_EQUIV_R1B256; q=0',driver)
+
+    def test_functional_evidence_is_bound_to_the_teacher_arm(self):
+        # H1: functional rows count only when served by their own receipt, and that receipt served the same
+        # sources, packages, libraries, checkpoint and configuration as the arm's teacher run.
+        def resource(doc, **changes):
+            run = doc['run']
+            doc['run'] = make_receipt(run['profile'], run['run_id'], changes.pop('configuration', run['configuration']),
+                                      changes.pop('source_files', run['source_files']))
+            doc['run'].update(changes)
+        library = {'path':'/lib/x.so','sha256':'c'*64}
+        def same_run(d, arm):
+            d['run']['run_id'] = {2:'base', 3:'new'}[arm]
+            for r in d['rows']: r.update(run_id=d['run']['run_id'], serving_run_id=None)
+        mutations = {
+            'unrelated-run': lambda d, arm: d.update(run={'run_id':'unrelated-run','profile':'wrong-profile','source_files':{'wrong.py':'bad'}}),
+            'missing-run': lambda d, arm: d.pop('run'),
+            'wrong-profile': lambda d, arm: d['run'].update(profile='teacher-candidate'),
+            'teacher-profile-as-functional': lambda d, arm: d['run'].update(profile='teacher-'+d['run']['profile']),
+            'row-run': lambda d, arm: d['rows'][2].update(run_id='other'),
+            'row-run-missing': lambda d, arm: d['rows'][2].pop('run_id'),
+            'served-by-other': lambda d, arm: d['rows'][4].update(serving_run_id='other'),
+            'clean-cache': lambda d, arm: d.update(clean_cache={'runs':[]}),
+            'source': lambda d, arm: resource(d, source_files={'synthetic.py':'d'*64}),
+            'service': lambda d, arm: d['run']['service_source_files'].update({'guard.py':'d'*64}),
+            'package': lambda d, arm: d['run']['packages'].update(torch='other'),
+            'checkpoint': lambda d, arm: d['run'].update(checkpoint_revision='other'),
+            'env': lambda d, arm: d['run']['configuration']['env'].update(QWEN36_PREFIX_MARGIN='8'),
+            'library': lambda d, arm: (d['run']['configuration']['env'].update(QWEN36_FP8_GEMV_LIBRARY='/lib/x.so'),
+                                       d['run']['native_libraries'].update(QWEN36_FP8_GEMV_LIBRARY=library)),
+            'flags': lambda d, arm: d['run']['configuration'].update(flags=['--moe-prefill-hit-d2d']),
+            'memory-ratio': lambda d, arm: d['run']['configuration'].update(memory_ratio=0.8),
+            'context': lambda d, arm: d['run']['configuration'].update(context=262144),
+            'extra-field': lambda d, arm: d['run'].update(kernel_inventory_sha256='d'*64),
+            'same-run-as-teacher': same_run,
+        }
+        for arm in (2, 3):
+            for name, mutate in mutations.items():
+                with self.subTest(arm=arm, mutation=name):
+                    f = fixtures(); mutate(f[arm], arm)
+                    with self.assertRaises(EvidenceError): self.compare(f)
+        # A request whose metrics join timed out has no serving run; that alone is not a mismatch.
+        f = fixtures(); f[3]['rows'][0]['serving_run_id'] = None; del f[2]['rows'][1]['serving_run_id']
+        self.assertTrue(self.compare(f)['bit_exact_pass'])
+        self.assertEqual(self.compare(fixtures())['functional_runs'], {'baseline':'base-functional', 'candidate':'new-functional'})
+
+    def test_teacher_knobs_and_missing_flags_are_not_identity(self):
+        f = fixtures()
+        knobs = {k:'/synthetic/'+k for k in TEACHER_DIAGNOSTIC_ENV}
+        for arm, teacher in ((0, 'teacher-bf128'), (1, 'teacher-candidate')):
+            f[arm]['run']['configuration']['env'].update(knobs)
+            for row in f[4].values():
+                if row['profile'] == teacher: row['receipt_sha256'] = digest(f[arm]['run'])
+        self.assertNotIn('flags', f[1]['run']['configuration'])
+        self.assertTrue(self.compare(f)['bit_exact_pass'])
+        # Only the three declared knobs are ignored; creating a reference is a different served run.
+        f[1]['run']['configuration']['env']['QWEN36_TEACHER_CREATE_REFERENCE'] = '1'
+        for row in f[4].values():
+            if row['profile'] == 'teacher-candidate': row['receipt_sha256'] = digest(f[1]['run'])
+        with self.assertRaisesRegex(EvidenceError, 'serving identity differs'): self.compare(f)
+
+    def test_teacher_knobs_match_the_qualification_tool(self):
+        self.assertEqual(TEACHER_DIAGNOSTIC_ENV, load('make-qualification').RUN_DIAGNOSTIC_ENV)
+        self.assertEqual(serving_profile('teacher-main-release'), 'main-release')
+        for bad in ('main-release', 'teacher-', None):
+            with self.subTest(bad=bad), self.assertRaises(EvidenceError): serving_profile(bad)
+
+    def test_qualify_preflight_binds_the_functional_baseline(self):
+        import types
+        from unittest.mock import patch
+        qualify = load('qualify'); f = fixtures()
+        with tempfile.TemporaryDirectory() as d:
+            root = pathlib.Path(d); reports = root/'reports'; reports.mkdir()
+            (reports/'teacher.jsonl').write_text(''.join(json.dumps(v)+'\n' for k,v in f[4].items() if k[0]=='teacher-bf128'))
+            (reports/'ref.json').write_text(json.dumps(f[0]))
+            other = copy.deepcopy(f[2]); other['run']['packages']['torch'] = 'other'
+            (reports/'fb.json').write_text(json.dumps(f[2])); (reports/'fb-other.json').write_text(json.dumps(other))
+            (reports/'fb-teacher.json').write_text(json.dumps(dict(f[2], run=dict(f[2]['run'], profile='teacher-bf128'))))
+            args = lambda **kw: types.SimpleNamespace(**{'baseline_teacher':False,'reference_report':'ref','functional_baseline':'fb',**kw})
+            with patch.object(qualify, 'ROOT', root):
+                qualify.preflight(args(), ['new'])
+                with self.assertRaisesRegex(SystemExit, 'serving identity differs'): qualify.preflight(args(functional_baseline='fb-other'), ['new'])
+                # A new reference is created in the same call: only the functional report's own binding is checked now.
+                qualify.preflight(args(baseline_teacher=True, functional_baseline='fb-other'), ['new'])
+                with self.assertRaisesRegex(SystemExit, 'not run-bound'):
+                    qualify.preflight(args(baseline_teacher=True, functional_baseline='fb-teacher'), ['new'])
+
+    def test_quality_functional_pass_rechecks_the_receipt_after_each_request(self):
+        from unittest.mock import patch
+        quality = load('quality')
+        receipt = make_receipt('candidate', 'live')
+        state = {}
+        def generate(*a, **k):
+            return {'status':200, 'serving_run_id':state['served']}, state['text']
+        def request(*a, **k):
+            message = {'tool_calls':[{'id':'c1','function':{'name':'get_fixture_weather','arguments':'{"city": "Казань"}'}}]}
+            if state['tool'] == 1: message = {'content':'17'}
+            state['tool'] += 1
+            return {'choices':[{'message':message}]}, state['served']
+        def run_receipt():
+            state['reads'] += 1
+            return dict(receipt, run_id='restarted') if state['reads'] == state['change_at'] else receipt
+        def run(change_at=None, served='live'):
+            state.update(reads=0, change_at=change_at, served=served, tool=0, text='Москва')
+            with patch.multiple(quality, generate=generate, request=request, run_receipt=run_receipt,
+                                document=lambda *a: 'x'*30, code_check=lambda text: True):
+                return quality.functional(None, 120000, receipt)
+        rows = run()
+        self.assertEqual([r['case'] for r in rows], ['russian','executable-code','tool-cycle','long-facts-16384','long-facts-120000'])
+        self.assertTrue(all(r['run_id'] == r['serving_run_id'] == 'live' for r in rows))
+        self.assertEqual(state['reads'], 5)
+        with self.assertRaisesRegex(RuntimeError, 'changed during functional pass'): run(change_at=3)
+        with self.assertRaisesRegex(RuntimeError, 'served by another run'): run(served='other')
+        self.assertTrue(all(r['serving_run_id'] is None for r in run(served=None)))
 
     def test_context_matrices_and_distinct_verdicts(self):
         f=fixtures(); f[3]['functional_matrix']['long']=250000; f[3]['rows'][-1]['case']='long-facts-250000'

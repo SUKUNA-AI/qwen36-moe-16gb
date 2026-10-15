@@ -206,14 +206,56 @@ def bind_teacher(report, records, profile):
         require(own == {'long-120000'}, 'clean-cache run served other cases')
     return selected
 
-def functional_rows(report):
+TEACHER_PREFIX = 'teacher-'
+# Same set as make-qualification.RUN_DIAGNOSTIC_ENV (a CPU test pins the equality): the only knobs a teacher
+# profile adds to its serving profile. They record logits and do not change the served arithmetic.
+TEACHER_DIAGNOSTIC_ENV = frozenset({'QWEN36_TEACHER_FIXTURE', 'QWEN36_LOGIT_REFERENCE', 'QWEN36_TEACHER_REFERENCE_REPORT'})
+RUN_INSTANCE_FIELDS = ('profile', 'run_id', 'started_utc')
+
+def serving_profile(teacher_profile):
+    """The functional (non-teacher) arm of a teacher profile: qualify.py serves 'teacher-X' and 'X'."""
+    require(type(teacher_profile) is str and teacher_profile.startswith(TEACHER_PREFIX) and
+            len(teacher_profile) > len(TEACHER_PREFIX), f'not a teacher profile: {teacher_profile!r}')
+    return teacher_profile[len(TEACHER_PREFIX):]
+
+def serving_identity(receipt):
+    """Receipt fields that define what was served: everything except the run instance and teacher knobs."""
+    identity = {k: v for k, v in receipt.items() if k not in RUN_INSTANCE_FIELDS}
+    cfg = dict(identity['configuration'])
+    # Historical teacher configs omit flags; the launcher treats a missing list as no flags.
+    cfg['flags'] = cfg.get('flags', [])
+    cfg['env'] = {k: v for k, v in cfg['env'].items() if k not in TEACHER_DIAGNOSTIC_ENV}
+    identity['configuration'] = cfg
+    return identity
+
+def bind_functional(report, profile):
+    """Complete functional matrix bound to its own receipt: every row was served by report['run']."""
     matrix = report.get('functional_matrix')
     require(type(matrix) is dict and type(matrix.get('version')) is int and matrix['version'] == 1 and type(matrix.get('long')) is int and
             matrix['long'] in FUNCTIONAL_LENGTHS, 'missing/unsupported functional matrix')
     expected = ('russian', 'executable-code', 'tool-cycle', 'long-facts-16384', f'long-facts-{matrix["long"]}')
     rows = unique_rows(report.get('rows'), expected, 'functional')
     require(type(report.get('fixture_version')) is int and report['fixture_version'] == 1, 'functional fixture differs')
-    for row in rows.values():
+    require('clean_cache' not in report, 'functional report must come from one run')
+    receipts = receipt_map(report, profile)
+    run = report['run']['run_id']
+    require(set(receipts) == {run}, 'functional report must come from one run')
+    for case, row in rows.items():
         require(type(row.get('pass')) is bool, 'functional pass must be boolean')
         require(type(row.get('status')) is int and row['status'] == 200, 'functional request status missing/invalid')
+        require(row.get('run_id') == run, f'functional {case}: row run differs from report receipt')
+        # The request log's serving generation; absent when the metrics join timed out, never a different run.
+        require(row.get('serving_run_id') in (None, run), f'functional {case}: served by another run')
+    return rows, report['run']
+
+def functional_rows(report, profile, teacher_run):
+    """bind_functional plus: the functional run served exactly what the teacher run served, except teacher knobs."""
+    rows, run = bind_functional(report, profile)
+    require(type(teacher_run) is dict and type(teacher_run.get('configuration')) is dict and
+            type(teacher_run['configuration'].get('env')) is dict, 'missing teacher run receipt')
+    require(serving_profile(teacher_run.get('profile')) == profile, 'functional profile is not the teacher arm')
+    require(teacher_run.get('run_id') != run['run_id'], 'functional and teacher runs must be distinct')
+    ours, theirs = serving_identity(run), serving_identity(teacher_run)
+    differs = sorted(k for k in set(ours) | set(theirs) if ours.get(k) != theirs.get(k))
+    require(not differs, f'functional run serving identity differs from teacher run: {differs}')
     return rows

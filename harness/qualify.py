@@ -3,6 +3,8 @@ import argparse,json,os,pathlib,subprocess
 from matrix import run,PY
 from bench import ROOT
 
+BASELINE='teacher-bf128'
+
 def start(profile):
     run(['systemctl','--user','stop','qwen36-experiment'],60)
     run(['bash',str(ROOT/'start-experiment.sh'),profile],60)
@@ -10,15 +12,19 @@ def start(profile):
 
 def preflight(a, outputs):
     """CPU-only, before any unit starts: a run that cannot produce a valid comparison costs no GPU pass."""
-    from freetoken.quality_evidence import bind_teacher, evidence_records, functional_rows, strict_json
+    from freetoken.quality_evidence import bind_functional, bind_teacher, evidence_records, functional_rows, serving_profile, strict_json
     reports=ROOT/'reports'
     taken=[name for name in outputs if (reports/f'{name}.json').exists()]
     if taken:raise SystemExit('report names already exist (pass a new --name): '+', '.join(taken))
     try:
-        if not a.baseline_teacher:
+        functional=strict_json((reports/f'{a.functional_baseline}.json').read_text())
+        if a.baseline_teacher:
+            # The reference run does not exist yet; compare-quality binds the functional identity to it.
+            bind_functional(functional,serving_profile(BASELINE))
+        else:
             report=strict_json((reports/f'{a.reference_report}.json').read_text())
-            bind_teacher(report,evidence_records(reports/'teacher.jsonl',[report]),'teacher-bf128')
-        functional_rows(strict_json((reports/f'{a.functional_baseline}.json').read_text()))
+            bind_teacher(report,evidence_records(reports/'teacher.jsonl',[report]),BASELINE)
+            functional_rows(functional,serving_profile(BASELINE),report['run'])
     except (OSError,ValueError,TypeError,KeyError) as error:
         raise SystemExit(f'reference or functional baseline is not run-bound schema-2 evidence: {error}')
 

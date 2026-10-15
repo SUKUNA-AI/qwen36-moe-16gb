@@ -107,19 +107,85 @@ def is_ftw_checkpoint(path: str) -> bool:
     return os.path.isfile(os.path.join(path, INDEX_NAME))
 
 
+class FTWIndexError(ValueError):
+    """The FTW index is not a layout this reader can interpret byte-exactly."""
+
+
+def _int(value) -> bool:
+    return type(value) is int and value >= 0
+
+
+def _check(ok: bool, path: str, message: str) -> None:
+    if not ok:
+        raise FTWIndexError(f"{os.path.join(path, INDEX_NAME)}: {message}")
+
+
+def _load_index(path: str) -> tuple[dict, list[dict], dict[str, dict]]:
+    """Read and validate an FTW index before any shard is opened.
+
+    Returns (index, shards sorted by offset, tensors by name). Everything the reader later
+    trusts is checked here: format/version/alignment, shard names and contiguity, unique
+    tensor names, ``nbytes`` against dtype x shape, and every tensor inside the region."""
+    with open(os.path.join(path, INDEX_NAME)) as f:
+        index = json.load(f)
+    _check(type(index) is dict, path, "index must be an object")
+    _check(index.get("format") == FORMAT_TAG, path, f"not a {FORMAT_TAG}")
+    _check(type(index.get("version")) is int and index["version"] == FORMAT_VERSION, path,
+           f"unsupported version {index.get('version')!r} (reader supports {FORMAT_VERSION})")
+    _check(type(index.get("align")) is int and index["align"] == ALIGN, path, f"align must be {ALIGN}")
+    limit, total = index.get("shard_limit"), index.get("total_bytes")
+    _check(_int(limit) and limit > 0 and limit % ALIGN == 0, path, "invalid shard_limit")
+    _check(_int(total) and total % ALIGN == 0, path, "invalid total_bytes")
+    shards, tensors = index.get("shards"), index.get("tensors")
+    _check(type(shards) is list and type(tensors) is list, path, "shards/tensors must be lists")
+
+    end = 0
+    for i, sh in enumerate(shards):
+        # Shards are written in offset order; any other name or position is a foreign or damaged index.
+        _check(type(sh) is dict and sh.get("file") == _SHARD_FMT.format(i), path, f"shard {i}: unexpected file name")
+        off, n = sh.get("global_off"), sh.get("nbytes")
+        _check(_int(off) and off == end, path, f"shard {i}: gap or overlap at offset {off!r}")
+        _check(_int(n) and n % ALIGN == 0 and n <= limit, path, f"shard {i}: invalid nbytes {n!r}")
+        end = off + n
+    _check(end == total, path, f"shards cover {end} bytes, total_bytes is {total}")
+
+    by_name: dict[str, dict] = {}
+    sizes: dict[str, int] = {}
+    previous_end = 0
+    for t in tensors:
+        _check(type(t) is dict and type(t.get("name")) is str and t["name"], path, "tensor without a name")
+        name = t["name"]
+        _check(name not in by_name, path, f"duplicate tensor {name!r}")
+        _check(type(t.get("kind")) is str and t["kind"], path, f"{name}: missing kind")
+        dtype = t.get("dtype")
+        if dtype not in sizes:
+            dt = getattr(torch, dtype, None) if type(dtype) is str else None
+            _check(isinstance(dt, torch.dtype), path, f"{name}: unknown dtype {dtype!r}")
+            sizes[dtype] = _elsize(dt)
+        shape, off, n = t.get("shape"), t.get("global_off"), t.get("nbytes")
+        _check(type(shape) is list and all(_int(d) for d in shape), path, f"{name}: invalid shape")
+        _check(_int(n) and n == math.prod(shape) * sizes[dtype], path, f"{name}: nbytes {n!r} != dtype x shape")
+        _check(_int(off) and off % ALIGN == 0, path, f"{name}: unaligned offset {off!r}")
+        # The writer appends tensors in order; overlapping ranges would alias two tensors' bytes.
+        _check(off >= previous_end, path, f"{name}: overlaps the previous tensor")
+        _check(off + n <= total, path, f"{name}: range exceeds the FTW region")
+        previous_end = _align_up(off + n)
+        by_name[name] = t
+    return index, list(shards), by_name
+
+
 def ftw_tensor_names(path: str, *kinds: str) -> list[str]:
     """Names the FTW index lists for ``kinds`` (every kind when none is given)."""
     keep = set(kinds)
-    with open(os.path.join(path, INDEX_NAME)) as f:
-        return [t["name"] for t in json.load(f)["tensors"] if not keep or t["kind"] in keep]
+    _, _, tensors = _load_index(path)
+    return [t["name"] for t in tensors.values() if not keep or t["kind"] in keep]
 
 
 def ftw_quant_format(path: str) -> str | None:
     """The ``quant_format`` an FTW checkpoint's expert banks were packed for; None when ``path`` is not an FTW checkpoint or holds no banks."""
     if not is_ftw_checkpoint(path):
         return None
-    with open(os.path.join(path, INDEX_NAME)) as f:
-        return json.load(f).get("quant_format")
+    return _load_index(path)[0].get("quant_format")
 
 
 # ============================== writer ==============================
@@ -215,12 +281,8 @@ class FTWReader:
     (the rounding reads into the region's padding, which is discarded by the tensor view)."""
 
     def __init__(self, path: str):
-        with open(os.path.join(path, INDEX_NAME)) as f:
-            self.index = json.load(f)
-        assert self.index.get("format") == FORMAT_TAG, f"not a {FORMAT_TAG}: {path}"
+        self.index, self.shards, self.tensors = _load_index(path)
         self.dir = path
-        self.shards = sorted(self.index["shards"], key=lambda s: s["global_off"])
-        self.tensors = {t["name"]: t for t in self.index["tensors"]}
         self._fds: dict[str, int] = {}
         self._maps: dict[str, tuple[mmap.mmap, memoryview]] = {}
         # O_DIRECT (DMA straight from disk, bypassing the page cache) is the fast path but a
@@ -660,7 +722,7 @@ def load_ftw_banks(
 
 
 __all__ = [
-    "INDEX_NAME", "FORMAT_TAG", "FORMAT_VERSION", "ALIGN", "DEFAULT_SHARD_LIMIT",
+    "INDEX_NAME", "FORMAT_TAG", "FORMAT_VERSION", "ALIGN", "DEFAULT_SHARD_LIMIT", "FTWIndexError",
     "is_ftw_checkpoint", "ftw_tensor_names", "FTWWriter", "FTWReader",
     "iter_ftw_weights", "load_ftw_banks", "layer_bank_entry_name",
 ]

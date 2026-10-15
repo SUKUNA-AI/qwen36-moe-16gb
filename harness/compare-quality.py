@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import numpy as np
 from freetoken.quality_evidence import (EvidenceError, bind_teacher, functional_rows, require,
-                                       strict_json, evidence_records, digest)
+                                       strict_json, evidence_records, digest, serving_profile)
 
 ROOT = Path(os.environ.get('QWEN36_DATA_ROOT', Path(__file__).resolve().parent))
 
@@ -26,7 +26,9 @@ def compare(baseline, candidate, functional_baseline, functional_candidate, reco
     # Config/source/library differences are legitimate; each arm is bound to its own receipt.
     for key in ('checkpoint', 'checkpoint_revision'):
         require(baseline['run'][key] == candidate['run'][key], f'reference {key} differs')
-    fa, fb = functional_rows(functional_baseline), functional_rows(functional_candidate)
+    # Each functional arm is the serving profile of its teacher arm and served the same bytes/config.
+    fa = functional_rows(functional_baseline, serving_profile(baseline_profile), baseline['run'])
+    fb = functional_rows(functional_candidate, serving_profile(candidate_profile), candidate['run'])
     failures = []
     for case, row in fb.items():
         baseline_case = case if case in fa else f'long-facts-{functional_baseline["functional_matrix"]["long"]}'
@@ -43,7 +45,9 @@ def compare(baseline, candidate, functional_baseline, functional_candidate, reco
               'baseline_perplexity':math.exp(sum(r['baseline_sum'] for r in rows)/length.sum()),
               'relative_perplexity_growth':math.exp(diff.sum()/length.sum())-1,
               'relative_growth_ci95':np.quantile(bootstrap,[.025,.975]).tolist(), 'rows':rows,
-              'fixture_sha256':baseline['fixture_sha256'], 'case_runs':{
+              'fixture_sha256':baseline['fixture_sha256'],
+              'functional_runs':{'baseline':functional_baseline['run']['run_id'], 'candidate':functional_candidate['run']['run_id']},
+              'case_runs':{
                   'baseline':{k:v['run_id'] for k,v in a.items()}, 'candidate':{k:v['run_id'] for k,v in b.items()}},
               'reports_sha256':{'baseline':digest(baseline), 'candidate':digest(candidate),
                                 'functional_baseline':digest(functional_baseline), 'functional_candidate':digest(functional_candidate)}}

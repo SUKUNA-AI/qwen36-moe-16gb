@@ -1,7 +1,7 @@
 """Owner-local quality qualification; saves verdicts/losses/hashes, never responses."""
 import argparse, os, hashlib, json, re, time
 import requests
-from bench import ROOT, generate, headers, document, run_receipt
+from bench import ROOT, attach_metrics, generate, headers, document, run_receipt
 from fixtures import prepare
 from freetoken.quality_evidence import EvidenceError, teacher_records, file_digest, digest
 
@@ -42,6 +42,7 @@ def teacher(tokenizer,cases):
         if case['case'] in CLEAN_CACHE_CASES:
             current=restart_clean(current);clean.append(current)
         result,text=generate([{'role':'user','content':case['prompt']}],len(case['ids']),case['seed'],0,True)
+        if run_receipt()!=current:raise RuntimeError('Serving generation changed during teacher pass')
         row={'case':case['case'],'status':result['status'],'expected_tokens':len(case['ids']),'usage':result.get('usage'),
              'forced_text_matches':text==tokenizer.decode(case['ids']),'run_id':current['run_id'],
              'clean_cache':case['case'] in CLEAN_CACHE_CASES}
@@ -75,18 +76,27 @@ def request(messages,**kwargs):
     payload={'model':'qwen36-35b','messages':messages,'max_tokens':512,'temperature':0,
              'seed':417,'chat_template_kwargs':{'enable_thinking':False},**kwargs}
     r=requests.post('http://127.0.0.1:1919/v1/chat/completions',headers=headers(),json=payload,timeout=900)
-    r.raise_for_status();return r.json()
+    r.raise_for_status()
+    served={'request_id':r.headers.get('x-qwen36-request-id')};attach_metrics(served)
+    return r.json(),served.get('serving_run_id')
 
 
-def functional(tokenizer,long_length):
+def functional(tokenizer,long_length,receipt):
+    """Functional pass bound to one serving run: the receipt is taken before and re-read after every request."""
     rows=[]
+    def record(row,*served):
+        if run_receipt()!=receipt:raise RuntimeError('Serving generation changed during functional pass')
+        seen={run for run in served if run is not None}
+        if seen-{receipt['run_id']}:raise RuntimeError(f"functional {row['case']} was served by another run: {sorted(seen)}")
+        row.update(run_id=receipt['run_id'],serving_run_id=next(iter(seen),None));rows.append(row)
     result,text=generate([{'role':'user','content':'Ответь одним русским словом: столица России?'}],64,temperature=0)
-    rows.append({'case':'russian','status':result['status'],'pass':'москва' in text.lower()})
+    record({'case':'russian','status':result['status'],'pass':'москва' in text.lower()},result.get('serving_run_id'))
     result,text=generate([{'role':'user','content':'Напиши только функцию Python rotate(a, k), циклически сдвигающую список вправо на k. Пустой список верни пустым. k может быть отрицательным. Используй срезы, без импортов, циклов, comprehensions, методов и комментариев. Только функцию.'}],256,temperature=0)
-    rows.append({'case':'executable-code','status':result['status'],'pass':code_check(text),'sha256':hashlib.sha256(text.encode()).hexdigest()})
+    record({'case':'executable-code','status':result['status'],'pass':code_check(text),'sha256':hashlib.sha256(text.encode()).hexdigest()},
+           result.get('serving_run_id'))
     tools=[{'type':'function','function':{'name':'get_fixture_weather','description':'Return synthetic weather for a city.','parameters':{'type':'object','properties':{'city':{'type':'string'}},'required':['city'],'additionalProperties':False}}}]
     messages=[{'role':'user','content':'Вызови get_fixture_weather для города Казань, затем сообщи температуру из результата. Не придумывай результат.'}]
-    first=request(messages,tools=tools)
+    first,served=request(messages,tools=tools);served=[served]
     msg=first['choices'][0]['message'];calls=msg.get('tool_calls',[])
     ok=len(calls)==1
     if ok:
@@ -94,9 +104,9 @@ def functional(tokenizer,long_length):
         try:args=json.loads(call['function']['arguments']);ok=bool(call['id']) and call['function']['name']=='get_fixture_weather' and args.get('city')=='Казань'
         except (ValueError,KeyError):ok=False
     if ok:
-        second=request(messages+[msg,{'role':'tool','tool_call_id':call['id'],'content':'{"temperature_c":17,"synthetic":true}'}],tools=tools)
-        ok='17' in (second['choices'][0]['message'].get('content') or '')
-    rows.append({'case':'tool-cycle','status':200,'pass':ok})
+        second,run=request(messages+[msg,{'role':'tool','tool_call_id':call['id'],'content':'{"temperature_c":17,"synthetic":true}'}],tools=tools)
+        ok='17' in (second['choices'][0]['message'].get('content') or '');served.append(run)
+    record({'case':'tool-cycle','status':200,'pass':ok},*served)
     for length in [16384,long_length]:
         body=document(tokenizer,length,9721+length);a=len(body)//3;b=2*len(body)//3
         content='Код задачи АЛЬФА-917.\n'+body[:a]+'\nКоличество деталей: 23.\n'+body[a:b]+'\nОтветственный: Ирина.\n'+body[b:]+'\nЦена детали 14 рублей. Ответь только JSON с полями code, count, owner, total для этой задачи.'
@@ -106,11 +116,11 @@ def functional(tokenizer,long_length):
             parsed=json.loads(re.search(r'\{.*\}',text,re.S).group(0))
             ok=parsed=={'code':'АЛЬФА-917','count':23,'owner':'Ирина','total':322}
         except Exception:ok=False
-        rows.append({'case':f'long-facts-{length}','status':result['status'],'pass':ok,'usage':result.get('usage'),'ttft_content_s':result.get('ttft_content_s'),
+        record({'case':f'long-facts-{length}','status':result['status'],'pass':ok,'usage':result.get('usage'),'ttft_content_s':result.get('ttft_content_s'),
             'field_equal':{k:isinstance(parsed,dict) and parsed.get(k)==v for k,v in {'code':'АЛЬФА-917','count':23,'owner':'Ирина','total':322}.items()},
             'content_sha256':hashlib.sha256(text.encode()).hexdigest(),
             'cached_prompt_tokens':result.get('cached_prompt_tokens'),'engine':result.get('engine'),
-            'engine_metrics_status':result.get('engine_metrics_status')})
+            'engine_metrics_status':result.get('engine_metrics_status')},result.get('serving_run_id'))
     return rows
 
 
@@ -133,7 +143,9 @@ def main():
         extra['targets']={c['case']:{'count':len(c['ids']),'sha256':digest(c['ids'])} for c in cases}
         extra['clean_cache']={'harness':'v7','mode':'restart_same_profile','cases':list(CLEAN_CACHE_CASES),'runs':clean}
     else:
-        rows=functional(tokenizer,args.long);run=run_receipt()
+        run=run_receipt()
+        if not run.get('run_id') or not run.get('profile'):raise RuntimeError('functional run needs active-run.json')
+        rows=functional(tokenizer,args.long,run)
         extra['functional_matrix']={'version':1,'long':args.long}
     with report.open('x') as out:out.write(json.dumps({'fixture_version':1,'run':run,'rows':rows,**extra},indent=2,allow_nan=False))
     print(json.dumps({'report':str(report),'rows':rows}),flush=True)

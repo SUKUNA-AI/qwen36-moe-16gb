@@ -15,6 +15,7 @@ def main():
     suites=['kvcache/test_linear_state_pool_alloc.py','kvcache/radix','daemon']
     with tempfile.TemporaryDirectory(prefix='qwen36-core-cpu-') as temp:
         xml=Path(temp)/'result.xml'
+        suites.append('checkpoint/test_ftw_index.py')
         rc=pytest.main(['-q','--tb=short',*[str(FREETOKEN/'tests'/p) for p in suites],f'--junitxml={xml}'])
         root=ET.parse(xml).getroot()
         rows=list(root.iter('testsuite'))
