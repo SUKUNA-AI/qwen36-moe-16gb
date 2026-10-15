@@ -72,16 +72,15 @@ again: they already exist in the owner's branch.
 
 ## Owner's first commands
 
-Cloud push to the existing `agent/cloud-next-update` branch was attempted after
-the integrated validation and rejected with **HTTP 403** (`Permission ... denied
-to SUKUNA-AI`). The remote was not updated. All changes remain in local commits;
-the delivery ZIP includes the complete branch bundle, incremental patches from
-31c1006 and exact committed sources. Restore the bundle in a new directory first:
+Cloud push to the existing `agent/cloud-next-update` branch was rejected with
+**HTTP 403**, so the delivery was a ZIP with the complete branch bundle,
+incremental patches from 31c1006 and exact committed sources. The owner reviewed
+it and published the branch on 2026-10-15. To restore the bundle offline instead:
 
 ```bash
 git clone -b agent/cloud-next-update /absolute/path/qwen36-t3-t5-t6.bundle qwen36-review
 cd qwen36-review
-git remote set-url origin https://github.com/SUKUNA-AI/qwen36-moe-16gb.git
+git remote set-url origin https://github.com/<owner>/qwen36-moe-16gb.git
 git log -6 --oneline
 ```
 
