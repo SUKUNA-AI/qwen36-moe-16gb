@@ -14,8 +14,10 @@ from freetoken.moe.offload_cache import (
 )
 
 E, L, N = 32, 6, 6
-ROW_BYTES = {"gate_up_packed": 1 << 16, "gate_up_scale": 4096, "gate_up_global": 512,
-             "down_packed": 1 << 15, "down_scale": 2048, "down_global": 1024}
+# real Qwen3.6 NVFP4 row bytes: the packed banks are >= 256 KiB, so the hit-D2D split serves them
+# from its snapshot (smaller banks always ship whole and would hide a stale-snapshot bug)
+ROW_BYTES = {"gate_up_packed": 1 << 20, "gate_up_scale": 1 << 17, "gate_up_global": 4096,
+             "down_packed": 1 << 19, "down_scale": 1 << 16, "down_global": 8192}
 cuda = pytest.mark.skipif(not torch.cuda.is_available(), reason="requires owner CUDA/SM120 stack")
 
 

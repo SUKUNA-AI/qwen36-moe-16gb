@@ -6,7 +6,7 @@ set -uo pipefail
 here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 gpu=${S4_GPU_SH:?path of the lock wrapper}
 tag=$1 rounds=$2; shift 2
-for ((r = 0; r < rounds; r++)); do
+for ((r = ${S4_ROUND0:-0}; r < rounds; r++)); do
   for group in "$@"; do
     arms=$group
     if ((r % 2)); then arms=$(echo "$group" | tr ',' '\n' | tac | paste -sd,); fi
