@@ -120,6 +120,11 @@ def screen(tok, rnd, rep):
     return items + [('fresh-4096', fresh(tok, 4096, seed + 4)), ('fresh-16384', fresh(tok, 16384, seed + 5))]
 
 
+def long_prompt(tok, rnd, rep):
+    """One fresh ~120K-token document per repeat (layer-major, the 128K profile's long end)."""
+    return [('fresh-120k', fresh(tok, 120000, 1000 * rnd + 10 * rep + 6))]
+
+
 def threshold(tok, rnd, rep):
     """C1 crossover: chat turns whose uncached suffix is ~155 / 195 / 235 tokens (~75 tokens of template)."""
     seed = 1000 * rnd + 10 * rep
@@ -156,7 +161,7 @@ def run_arm(arm, tok, args, out):
         meta['sustained_warmup'] = sustained_warmup(tok, args.warmup)
         with rows_path.open('w') as f:
             for rep in range(args.reps):
-                for case, messages in {'screen': screen, 'threshold': threshold}.get(args.workload, workload)(tok, args.round, rep):
+                for case, messages in {'screen': screen, 'threshold': threshold, 'long': long_prompt}.get(args.workload, workload)(tok, args.round, rep):
                     sha = hashlib.sha256(json.dumps(messages, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
                     r = stream(messages, args.out_tokens)
                     row = slim(arm, case, rep, sha, r)
@@ -253,7 +258,7 @@ def main():
     p.add_argument('--nsys', action='store_true')
     p.add_argument('--trace', action='store_true')
     p.add_argument('--out-tokens', type=int, default=32)
-    p.add_argument('--workload', choices=('short', 'screen', 'threshold'), default='short')
+    p.add_argument('--workload', choices=('short', 'screen', 'threshold', 'long'), default='short')
     p.add_argument('--trace-tokens', type=int, default=256)
     args = p.parse_args()
     from transformers import AutoTokenizer
