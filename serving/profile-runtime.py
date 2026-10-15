@@ -83,6 +83,9 @@ SWITCH_ENV = {
     'decode_shared_overlap': {'QWEN36_DECODE_SHARED_OVERLAP': '1'},
     # Token-embedding table in pinned host memory (engine/host_embeddings.py): its VRAM goes to expert slots.
     'host_embeddings': {'QWEN36_HOST_EMBEDDINGS': '1'},
+    # C0 (moe/offload_cache.py): prefill copy stream at top priority plus one compute-stream invalidation of both
+    # double buffers per prefill epoch, so each layer's DMA no longer waits behind the previous expert GEMM.
+    'prefill_copy_priority': {'QWEN36_PREFILL_COPY_PRIORITY': '1', 'QWEN36_PREFILL_EPOCH_INVALIDATE': '1'},
     # PLACEHOLDER (possible future switch, not in the runtime tree yet).
     'sync_lean': {'QWEN36_SYNC_LEAN': '1'},
 }
@@ -104,6 +107,9 @@ VALUE_FIELDS = {field: spec for field, spec in {
     # Optional attention batching of layer-major prefill (QWEN36_LAYER_MAJOR_ATTN_BATCH=<k>, e.g. 2; under test).
     # engine/layer_major.py attn_batch() honours 1-4 only and silently runs k=1 for anything else.
     'layer_major_attn_batch': ('QWEN36_LAYER_MAJOR_ATTN_BATCH', tuple(range(1, 5)), 'layer_major_prefill'),
+    # C1 (moe/offload_cache.py): a non-layer-major chunk shorter than this many tokens fetches only the experts its
+    # router selected (device-side lists); measured together with C0, break-even ~170 tokens, release value 160.
+    'prefill_selected': ('QWEN36_PREFILL_SELECTED', range(1, 512), 'prefill_copy_priority'),
 }.items() if spec[2] in SWITCH_ENV}
 # Layer-major + hit-D2D requires a positive min-tokens threshold to separate short chunked
 # requests from epochs that borrow decode slots. Layer-major + CUDA NVFP4 remains allowed.

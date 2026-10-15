@@ -33,7 +33,8 @@ def force(logits, batch):
             'teacher-cuda-matched128','teacher-b12x-fixed','teacher-main-candidate',
             'teacher-main-retain','teacher-main-retain2048','teacher-main-final','teacher-cuda-bitexact128-2048','teacher-cuda-bitexact128','teacher-cuda-bitexact128-c6144','teacher-cuda-bitexact128-c8192','teacher-bf128-fp16compat','teacher-long256-final-cuda2048','teacher-baseline64-final','teacher-main-layermajor','teacher-main-layermajor-c4096','teacher-long256-layermajor','teacher-main-layermajor-gdn','teacher-main-layermajor-fp8gemv','teacher-main-layermajor-gather','teacher-main-layermajor-refill','teacher-main-layermajor-refill-restore','teacher-main-combined','teacher-main-release','teacher-long256-release','teacher-main-candidate-r3','teacher-main-candidate-r2','teacher-main-combined-attn','teacher-long256-combined','teacher-main-release-shortroute','teacher-main-release-fla-wu','teacher-main-release-shortroute-fla-wu','teacher-main-release-overlap','teacher-main-release-shortroute-fla-wu-overlap',
             'teacher-main-release-next-he','teacher-main-release-next-r080','teacher-main-release-next-r082','teacher-main-release-next-r0845',
-            'teacher-main-release-next-he-r085','teacher-main-release-next-he-r090','teacher-main-release-next-he-r094'):
+            'teacher-main-release-next-he-r085','teacher-main-release-next-he-r090','teacher-main-release-next-he-r094',
+            'teacher-main-release-next-k','teacher-main-release-next-kc0','teacher-main-release-next-candidate'):
         raise RuntimeError('Teacher forcing is restricted to explicit experiment profiles')
     if _fixtures is None:
         # Bind everything first: a failed binding must not leave a half-initialised module state.

@@ -36,6 +36,10 @@
       "cuda_gdn_fla": "wu",
       "decode_shared_overlap": true,
       "host_embeddings": true,
+      "cuda_oproj_gemv": true,
+      "cuda_moe_decode": true,
+      "prefill_copy_priority": true,
+      "prefill_selected": 160,
       "qualified": false
     },
     "long256": {
