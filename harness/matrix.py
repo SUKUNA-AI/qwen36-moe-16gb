@@ -19,6 +19,8 @@ reserve) makes the arm INVALID (code process_vram_over_budget) and the matrix ex
 the remaining arms. Free VRAM is reported, not gated.
 Exit codes: 0 all arms complete and valid; 1 an arm failed (stops the matrix);
 2 refused before any arm; 3 complete but some arm INVALID (VRAM budget); 75 lock busy.
+--pairs N (N >= 3, default 5): N != 5 is a screen. Its manifest carries screen:true, and on completion
+NAME-screen.json lists every pair and the medians per profile/case/metric; compare-ab still takes only 5 pairs.
 """
 import argparse,hashlib,json,os,pathlib,re,signal,subprocess,sys,time
 import bench
@@ -29,6 +31,8 @@ import tool_fixture_v5 as tool_fixture
 PY=os.environ.get('QWEN36_GPU_PYTHON','/home/USER/qwen36-api/.venv/bin/python')
 NAME_PATTERN=re.compile(r'[a-z0-9][a-z0-9.-]{0,60}')
 PAIRS=5
+MIN_PAIRS=3
+SCREEN_METRICS=('elapsed_s','ttft_content_s','decode_client_tps')
 MIN_PILOT_REPEATS=3
 # Failures before any request was served may be retried under the same manifest.
 RESUMABLE_FAILED_STEPS=('preflight','start','readiness')
@@ -131,7 +135,30 @@ def build_spec(root,profiles,lengths,output,pairs,pilot_name):
     spec['tool_fixture']=tool_fixture.describe()
     spec['tool_pilot']=validate_tool_pilot(root,pilot_name,profiles,spec['arms'],spec['harness_source_files'])
     spec['windows_reserve_bytes']=WINDOWS_RESERVE_BYTES
+    if pairs!=PAIRS:spec['screen']=True   # absent for 5 pairs: release manifests stay unchanged
     return spec
+
+
+def screen_summary(root,name,rows):
+    """Every pair and the median per profile/case/metric of a screen matrix (not a gate)."""
+    import statistics
+    values={}
+    for arm in rows:
+        if arm.get('status')!='complete':continue
+        doc=json.loads((root/'reports'/arm['report']).read_text())
+        for row in doc.get('rows',[]):
+            if row.get('status')!=200 or row.get('case') in (None,'warmup','warmup_sustained'):continue
+            for metric in SCREEN_METRICS:
+                if type(row.get(metric)) in (int,float):
+                    key=(arm['profile'],f"{row['case']}_{row.get('length')}",metric)
+                    values.setdefault(key,{})[arm['repeat']]=row[metric]
+    out={}
+    for (profile,case,metric),by_repeat in sorted(values.items()):
+        pairs=[by_repeat[r] for r in sorted(by_repeat)]
+        out.setdefault(profile,{}).setdefault(case,{})[metric]={'pairs':pairs,'repeats':sorted(by_repeat),
+                                                                'median':statistics.median(pairs)}
+    return {'kind':'matrix-screen','screen':True,'gate':False,'name':name,'profiles':out,
+            'note':'medians and every pair as measured; the release decision is compare-ab over five pairs'}
 
 
 def workspace_config_drift(root,profile,workspace=None):
@@ -304,7 +331,10 @@ def run_matrix(a,profiles,lengths,root):
         if interrupted is not None:raise interrupted
         if row['status']!='complete':return 1
         if row.get('arm_verdict')=='INVALID':invalid_arms.append(row)
-    print(json.dumps({'result':'complete','name':a.name,'arms':len(spec['schedule']),
+    if spec.get('screen'):
+        fd=os.open(root/'reports'/f'{a.name}-screen.json',os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+        with os.fdopen(fd,'w') as target:json.dump(screen_summary(root,a.name,rows),target,indent=2)
+    print(json.dumps({'result':'complete','name':a.name,'arms':len(spec['schedule']),'screen':bool(spec.get('screen')),
                       'invalid_arms':[{'repeat':r['repeat'],'profile':r['profile'],'codes':r.get('invalid_codes')} for r in invalid_arms]}),flush=True)
     return EXIT_ARM_INVALID if invalid_arms else 0
 
@@ -315,8 +345,8 @@ def main(argv=None,root=None,lock_path=None):
     p.add_argument('--lengths',default=','.join(map(str,DEFAULT_LENGTHS)));p.add_argument('--output',type=int,default=128)
     p.add_argument('--tool-pilot',required=True,help='NAME of a PASS reports/NAME-tool-pilot.json from tool-pilot.py')
     a=p.parse_args(argv);profiles=a.profiles.split(',');lengths=parse_lengths(a.lengths)
-    if len(profiles)<2 or len(set(profiles))!=len(profiles) or a.pairs!=PAIRS or not 1<=a.output<=8192:
-        raise ValueError('Invalid matrix dimensions: >=2 distinct profiles, exactly 5 pairs')
+    if len(profiles)<2 or len(set(profiles))!=len(profiles) or a.pairs<MIN_PAIRS or not 1<=a.output<=8192:
+        raise ValueError('Invalid matrix dimensions: >=2 distinct profiles, >=3 pairs (5 for compare-ab)')
     if not NAME_PATTERN.fullmatch(a.name):raise ValueError('Invalid --name')
     try:lock=acquire_gpu_lock(lock_path)
     except GpuLockBusy as error:

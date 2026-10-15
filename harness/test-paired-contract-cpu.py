@@ -551,6 +551,42 @@ class V5Lock(unittest.TestCase):
 
 
 # =============================================================================================
+class ScreenPairs(unittest.TestCase):
+    def test_fewer_than_three_pairs_refused_before_the_lock(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=pathlib.Path(folder);(root/'reports').mkdir();lock=root/'gpu.lock'
+            for pairs in ('2','1','0'):
+                with self.subTest(pairs=pairs),self.assertRaisesRegex(ValueError,'>=3 pairs'):
+                    matrix.main(['--profiles',','.join(PROFILES),'--pairs',pairs,'--name','m1','--tool-pilot','p'],root=root,lock_path=lock)
+            self.assertFalse(lock.exists())
+            held=bench.acquire_gpu_lock(lock)
+            try:
+                with redirect_stderr(io.StringIO()),redirect_stdout(io.StringIO()):
+                    code=matrix.main(['--profiles',','.join(PROFILES),'--pairs','3','--name','m1','--tool-pilot','p'],root=root,lock_path=lock)
+                self.assertEqual(code,75)   # three pairs pass the dimension check and reach the lock
+            finally:os.close(held)
+
+    def test_screen_flag_only_off_five_pairs(self):
+        with patch.object(matrix,'current_run_spec',return_value={'arms':{},'harness_source_files':{}}),\
+             patch.object(matrix,'validate_tool_pilot',return_value={}):
+            three=matrix.build_spec(None,PROFILES,bench.DEFAULT_LENGTHS,128,3,'p')
+            five=matrix.build_spec(None,PROFILES,bench.DEFAULT_LENGTHS,128,5,'p')
+        self.assertIs(three['screen'],True);self.assertNotIn('screen',five)
+        self.assertEqual(len(three['schedule']),3*len(PROFILES))
+
+    def test_screen_summary_lists_every_pair_and_the_median(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=pathlib.Path(folder);fixture(root)
+            rows=[row for row in json.loads((root/'reports/fixture-matrix.json').read_text()) if row['repeat']<3]
+            summary=matrix.screen_summary(root,'fixture',rows)
+        self.assertTrue(summary['screen']);self.assertFalse(summary['gate'])
+        self.assertEqual(sorted(summary['profiles']),sorted(PROFILES))
+        cell=summary['profiles'][PROFILES[0]]['fresh_64']['elapsed_s']
+        self.assertEqual((len(cell['pairs']),cell['repeats']),(3,[0,1,2]))
+        self.assertEqual(cell['median'],sorted(cell['pairs'])[1])
+
+
+# =============================================================================================
 class V5MatrixResume(unittest.TestCase):
     def test_refuses_v4_manifest_stale_receipts_and_failed_workload(self):
         with tempfile.TemporaryDirectory() as folder:
