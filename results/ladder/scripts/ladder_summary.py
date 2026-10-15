@@ -38,6 +38,13 @@ def med(values):
     return statistics.median(values) if values else None
 
 
+def stats(values):
+    v = [x for x in values or [] if isinstance(x, (int, float))]
+    if not v:
+        return None
+    return {'median': statistics.median(v), 'mean': statistics.fmean(v), 'n': len(v), 'min': min(v), 'max': max(v)}
+
+
 def buckets(raw):
     out = {}
     for key, value in (raw or {}).items():
@@ -110,6 +117,7 @@ def main():
                          'ttft_s': per_length(cur, 'ttft_s'), 'ref_ttft_s': per_length(par, 'ttft_s') if par else None,
                          'decode_tps': per_length(cur, 'decode_tps'), 'ref_decode_tps': per_length(par, 'decode_tps') if par else None,
                          'elapsed_s': per_length(cur, 'elapsed_s'), 'report': ab.get('matrix') + '-screen.json'}
+            row['ab']['stats'] = {m: {l: stats(v) for l, v in row['ab'][m].items()} for m in ('ttft_s', 'decode_tps', 'elapsed_s')}
             vram = cur.get('vram') or {}
             row['memory'] = {'memory_ratio': cfg.get('memory_ratio'), 'expert_slots': (cur.get('expert_slots') or [None])[-1],
                              'process_peak_mib': (vram.get('process_peak_bytes_max') or 0) / MIB or None,
@@ -132,6 +140,8 @@ def main():
             ref, cand = r['steps']
             summary['release_ab'] = {'candidate': cand['config'], 'reference': ref['config'], 'pairs': r['pairs'],
                                      'ttft_s': per_length(cand, 'ttft_s'), 'ref_ttft_s': per_length(ref, 'ttft_s'),
+                                     'stats': {'candidate': {m: {l: stats(v) for l, v in per_length(cand, m).items()} for m in ('ttft_s', 'decode_tps', 'elapsed_s')},
+                                               'reference': {m: {l: stats(v) for l, v in per_length(ref, m).items()} for m in ('ttft_s', 'decode_tps', 'elapsed_s')}},
                                      'decode_tps': per_length(cand, 'decode_tps'), 'ref_decode_tps': per_length(ref, 'decode_tps'),
                                      'verdict': (cmp_ or {}).get('verdict'), 'contract_pass': (cmp_ or {}).get('contract_pass'),
                                      'report': r['matrix']}
@@ -153,7 +163,7 @@ def pct(x):
 def write_readme(d, s, ab):
     lines = ['# Лесенка main128: вклад каждого рычага', '',
              f"Сгенерировано {s['generated_utc']} скриптами `scripts/ladder_*.py` из отчётов GPU-прогона. Бит-точность: teacher 125/125, max_abs 0.",
-             'A/B без профайлера: ротирующаяся матрица, 3 пары, прогрев 60 с, вывод 128 токенов; медианы пар. Шаги кумулятивные: ступень = предыдущая + один рычаг.', '',
+             'A/B без профайлера: ротирующаяся матрица, 3 пары, прогрев 60 с, вывод 128 токенов. В ячейках: медиана (среднее; min–max; n) по парам. Шаги кумулятивные: ступень = предыдущая + один рычаг.', '',
              '## Teacher и память', '', '| Ступень | Рычаг | teacher | max_abs | ratio | слоты | пик VRAM процесса, МиБ | промахов/ток (16K) |', '|---|---|---|---|---|---|---|---|']
     for r in s['steps']:
         t, m = r['teacher'], r.get('memory') or {}
@@ -163,10 +173,12 @@ def write_readme(d, s, ab):
         lines += ['', f'## {title}', '', '| Ступень | ' + ' | '.join(LENGTHS) + ' | vs пред., 16K | vs L0, 16K |', '|---|' + '---|' * (len(LENGTHS) + 2)]
         for r in s['steps']:
             ab_ = r.get('ab') or {}
-            meds = [med((ab_.get(key) or {}).get(l, [])) for l in LENGTHS]
+            st_ = [stats((ab_.get(key) or {}).get(l, [])) for l in LENGTHS]
+            nd_ = 1 if key == 'decode_tps' else 3
+            meds = [None if x is None else f"{x['median']:.{nd_}f} (ср. {x['mean']:.{nd_}f}; {x['min']:.{nd_}f}–{x['max']:.{nd_}f}; n={x['n']})" for x in st_]
             dp = ab['deltas_vs_prev'].get(r['id'].lower() if r['id'] != 'T3only' else 't3', {}).get('fresh_16384', {}).get(key + '_pct', {}).get('median')
             d0 = ab['deltas_vs_l0'].get(r['id'].lower() if r['id'] != 'T3only' else 't3', {}).get('fresh_16384', {}).get(key + '_pct', {}).get('median')
-            lines.append(f"| {r['id']} | " + ' | '.join(fmt(v, 1 if key == 'decode_tps' else 3) for v in meds) + f' | {pct(dp)} | {pct(d0)} |')
+            lines.append(f"| {r['id']} | " + ' | '.join('—' if v is None else v for v in meds) + f' | {pct(dp)} | {pct(d0)} |')
     lines += ['', '## Nsight Systems: критический путь', '',
               'Корзины в мс: декод на шаг (16K), prefill на окно (короткий 278 токенов и 16K). Время под профайлером, только диагностика.', '']
     for name, title in (('decode_16k', 'Декод 16K, мс/шаг'), ('prefill_short', 'Prefill короткого запроса, мс'), ('prefill_16k', 'Prefill 16K, мс')):
