@@ -25,6 +25,42 @@ _FUSED_COPY = os.getenv("FREETOKEN_FUSED_COPY", "1").strip().lower() not in {"0"
 # entry the batch sees is >= this size.
 _SMALL_BANK_FEAT_BYTES = 256 * 1024
 
+# C0 transport knobs, default off. PRIORITY gives the prefill copy stream the highest stream
+# priority, so the small bookkeeping kernels queued ahead of each layer's DMA are not starved
+# behind the previous layer's expert GEMM blocks. EPOCH_INVALIDATE unmaps both double buffers
+# once per prefill epoch on the compute stream, leaving only copy-engine work on the copy stream.
+PREFILL_COPY_PRIORITY_ENV = "QWEN36_PREFILL_COPY_PRIORITY"
+PREFILL_EPOCH_INVALIDATE_ENV = "QWEN36_PREFILL_EPOCH_INVALIDATE"
+# C1: a non-layer-major prefill chunk of fewer than N tokens fills each layer's double buffer with
+# only the experts its router selected, after the router (0/unset = off). The GEMM reads only routed
+# rows, so the unselected rows' stale bytes are never read. SYNC=1 builds the H2D list on the host
+# (one sync per layer, cudaMemcpyBatchAsync); otherwise the list stays on the device (TMA gather).
+PREFILL_SELECTED_ENV = "QWEN36_PREFILL_SELECTED"
+PREFILL_SELECTED_SYNC_ENV = "QWEN36_PREFILL_SELECTED_SYNC"
+# C2: non-layer-major prefill H2D (full layer, or the hit-D2D misses) through the decode TMA gather
+# kernel on the copy stream instead of the copy engine; device-side lists, no hit-D2D snapshot sync.
+PREFILL_TMA_GATHER_ENV = "QWEN36_PREFILL_TMA_GATHER"
+# D6: after each layer's GEMM of a non-layer-major chunk, D2D the N experts this chunk routed to most
+# from the double buffer into decode slots before the buffer is released (0/unset = off), so the
+# first decode steps start with them resident. Same bytes as the host banks; only residency moves.
+PREFILL_WARM_DECODE_ENV = "QWEN36_PREFILL_WARM_DECODE"
+
+
+def strict_flag(name: str) -> bool:
+    raw = os.environ.get(name, "0")
+    if raw not in ("", "0", "1"):
+        raise ValueError(f"{name}={raw!r}: expected unset, 0 or 1")
+    return raw == "1"
+
+
+def int_flag(name: str) -> int:
+    raw = os.environ.get(name, "0").strip()
+    if raw == "":
+        return 0
+    if not raw.isdigit():
+        raise ValueError(f"{name}={raw!r}: expected unset or a non-negative integer")
+    return int(raw)
+
 from freetoken.utils import init_logger
 
 logger = init_logger(__name__)
@@ -324,12 +360,36 @@ class OffloadMoeCache:
         if flag is None:
             flag = os.environ.get("QWEN36_LAYER_MAJOR_PREFILL", "0")
         self.syncfree_invalidate = flag.strip().lower() in {"1", "true", "yes", "on"}
+        self.prefill_copy_priority = strict_flag(PREFILL_COPY_PRIORITY_ENV)
+        self.prefill_epoch_invalidate = strict_flag(PREFILL_EPOCH_INVALIDATE_ENV)
+        # True between an epoch-invalidating begin_prefill and the last layer's release: no
+        # slot-cache writer runs inside a prefill epoch, so the buffers stay unmapped until then.
+        self._prefill_epoch_open = False
+        self.prefill_selected_max = int_flag(PREFILL_SELECTED_ENV)
+        self.prefill_selected_sync = strict_flag(PREFILL_SELECTED_SYNC_ENV)
+        self.prefill_tma_gather = strict_flag(PREFILL_TMA_GATHER_ENV)
+        self.prefill_selected_active = False  # chosen per chunk by select_prefill_route
+        self._prefill_tma_active = False      # chosen per epoch by begin_prefill
+        self.prefill_selected_chunks = 0
+        self.prefill_warm_decode = int_flag(PREFILL_WARM_DECODE_ENV)
+        self.prefill_warm_active = False   # chosen per chunk by select_prefill_route
+        self.prefill_warm_rows = None      # device counter of experts installed by D6
+        self._xfer_lists = None
+        self._xfer_rows = None
+        self._xfer_rows_dirty = False
+        self._xfer_status: dict[bool, bool] = {}
+        from freetoken.moe import route_trace
+
+        # D3a trace hook (QWEN36_ROUTE_TRACE=1): experimental, eager decode only
+        self.route_trace = route_trace.install(self) if route_trace.enabled() else None
 
     def begin_layer_major_prefill(self) -> None:
         """Open ONE prefill epoch for every chunk of a layer-major prefill (before layer 0, chunk 0)."""
         if self.layer_major_active:
             raise RuntimeError("layer-major epoch already active")
         self.layer_major_active = True
+        self.prefill_selected_active = False
+        self.prefill_warm_active = False
         try:
             self.begin_prefill()
         except BaseException:
@@ -339,6 +399,7 @@ class OffloadMoeCache:
 
     def end_layer_major_prefill(self) -> None:
         self._prefill_hit_d2d_active = False
+        self._prefill_epoch_open = False
         self.layer_major_active = False
 
     def borrow_tail_slots(self, n: int, bank_ids=None, refill_group: int | None = None) -> list[torch.Tensor]:
@@ -629,6 +690,36 @@ class OffloadMoeCache:
         if self.prefill_overlap:
             self._init_prefill_overlap_buffers()
 
+    @property
+    def prefill_h2d_bytes(self) -> int:
+        self._fold_xfer_rows()
+        return self._prefill_h2d_bytes
+
+    @prefill_h2d_bytes.setter
+    def prefill_h2d_bytes(self, value: int) -> None:
+        self._prefill_h2d_bytes = value
+
+    @property
+    def prefill_d2d_bytes(self) -> int:
+        self._fold_xfer_rows()
+        return self._prefill_d2d_bytes
+
+    @prefill_d2d_bytes.setter
+    def prefill_d2d_bytes(self, value: int) -> None:
+        self._prefill_d2d_bytes = value
+
+    def _fold_xfer_rows(self) -> None:
+        """Add the device-side C1/C2 row counters (whole-expert rows) into the byte totals: one
+        read when the totals are read (telemetry already syncs there), never in the copy paths."""
+        if not getattr(self, "_xfer_rows_dirty", False):
+            return
+        self._xfer_rows_dirty = False
+        h2d, d2d = self._xfer_rows.tolist()
+        self._xfer_rows.zero_()
+        row = sum(self._copy_feat_bytes_host)
+        self._prefill_h2d_bytes += h2d * row
+        self._prefill_d2d_bytes += d2d * row
+
     def set_alphas(
         self, gate_up_alpha: torch.Tensor | None, down_alpha: torch.Tensor | None
     ) -> None:
@@ -710,8 +801,11 @@ class OffloadMoeCache:
             cache[: 2 * self.num_experts].view(2, self.num_experts, *cache.shape[1:])
             for _, cache in self.banks
         ]
+        self._prefill_epoch_open = False
         if self.device.type == "cuda":
-            self.prefill_copy_stream = torch.cuda.Stream(device=self.device)
+            # torch maps -1 to the device's highest priority when the range is narrower
+            priority = -1 if getattr(self, "prefill_copy_priority", False) else 0
+            self.prefill_copy_stream = torch.cuda.Stream(device=self.device, priority=priority)
             self.prefill_ready_events = [torch.cuda.Event() for _ in range(2)]
             self.prefill_release_events = [torch.cuda.Event() for _ in range(2)]
             self.prefill_begin_event = torch.cuda.Event()
@@ -727,6 +821,32 @@ class OffloadMoeCache:
                 (self.num_experts,), dtype=torch.int32, device=self.device
             )
             self._prefill_hit_num = torch.zeros((1,), dtype=torch.int64, device=self.device)
+        if self.device.type == "cuda":
+            E = self.num_experts
+            dev = self.device
+
+            def lists():
+                return (torch.zeros(E, dtype=torch.int32, device=dev), torch.zeros(E, dtype=torch.int32, device=dev),
+                        torch.zeros(1, dtype=torch.int64, device=dev), torch.zeros(E, dtype=torch.int32, device=dev),
+                        torch.zeros(E, dtype=torch.int32, device=dev), torch.zeros(1, dtype=torch.int64, device=dev))
+
+            # per-buffer (hit_dst, hit_src, hit_num, miss_dst, miss_src, miss_num) gather lists for C1/C2;
+            # one set per buffer, so writing layer L+2's lists never races the copy of layer L
+            self._xfer_lists = [lists(), lists()]
+            self._xfer_selected = torch.zeros(E, dtype=torch.int32, device=dev)
+            self._xfer_rows = torch.zeros(2, dtype=torch.int64, device=dev)
+            self._xfer_rows_dirty = False
+            self._xfer_event = torch.cuda.Event()
+            self._xfer_full_dst = [torch.arange(b * E, (b + 1) * E, dtype=torch.int32, device=dev) for b in range(2)]
+            self._xfer_expert_ids = torch.arange(E, dtype=torch.int32, device=dev)
+            self._xfer_host_ids = torch.empty(E, dtype=torch.int32, pin_memory=True)
+            self._xfer_host_num = torch.empty(2, dtype=torch.int64, pin_memory=True)
+            n = max(1, min(self.prefill_warm_decode, E))
+            self._warm_counts = torch.zeros(E, dtype=torch.int64, device=dev)
+            self._warm_key_bias = (E - 1 - torch.arange(E, device=dev)).to(torch.int64)
+            self._warm_lists = (torch.zeros(n, dtype=torch.int32, device=dev), torch.zeros(n, dtype=torch.int32, device=dev),
+                                torch.zeros(1, dtype=torch.int64, device=dev))
+            self.prefill_warm_rows = torch.zeros((), dtype=torch.int64, device=dev)
 
     def _invalidate_prefill_buffer(self, buffer_id: int) -> None:
         slot_start = buffer_id * self.num_experts
@@ -743,11 +863,58 @@ class OffloadMoeCache:
         # ensure_experts evicts them first.
         self.usage[slot_start:slot_end].zero_()
 
+    def _xfer_usable(self, sync: bool) -> bool:
+        """Whether the C1/C2 transport can run here (cached per mode; logs the first fallback):
+        the fused copy descriptors, plus the TMA gather module or, for ``sync``, batch memcpy."""
+        if sync in self._xfer_status:
+            return self._xfer_status[sync]
+        reason = None
+        if self._xfer_lists is None or self.prefill_copy_stream is None:
+            reason = "prefill overlap buffers are not initialized for this device"
+        elif not self._copy_fused_ok:
+            reason = "the fused copy plan is unavailable"
+        elif sync:
+            if not self._resolve_batch_memcpy():
+                reason = "cudaMemcpyBatchAsync is unavailable"
+        else:
+            try:
+                from freetoken.kernel.decode_gather import TUNED_DECODE_GATHER, _jit_decode_gather_module
+
+                _jit_decode_gather_module(TUNED_DECODE_GATHER)
+            except Exception as exc:  # noqa: BLE001 -- refused or failed module => legacy copies
+                reason = f"the TMA gather module is unavailable ({exc})"
+        if reason is not None:
+            logger.warning(f"MoE prefill C1/C2 transport unavailable ({reason}); using the default copies")
+        self._xfer_status[sync] = reason is None
+        return reason is None
+
+    def select_prefill_route(self, tokens: int) -> None:
+        """C1: decide, before this chunk's begin_prefill, whether it moves only the experts its
+        router selects. Never inside layer-major (its chunks share full-layer buffers), never while
+        a refill owns slots, never for a subclass with its own prefetch."""
+        self.prefill_selected_active = False
+        self.prefill_warm_active = (self.prefill_warm_decode > 0 and type(self) is OffloadMoeCache
+                                    and not self.layer_major_active and self.refill is None
+                                    and self._xfer_lists is not None and self._copy_fused_ok)
+        if not 0 < tokens < self.prefill_selected_max or type(self) is not OffloadMoeCache:
+            return
+        if self.layer_major_active or self.refill is not None:
+            return
+        self.prefill_selected_active = self._xfer_usable(self.prefill_selected_sync)
+        if self.prefill_selected_active:
+            self.prefill_selected_chunks += 1
+
     def begin_prefill(self) -> None:
         if not self.prefill_overlap:
             return
         self._prefill_buffer_layer = [None, None]
         self._prefill_buffer_released = [True, True]
+        if self.prefill_copy_stream is not None and getattr(self, "prefill_epoch_invalidate", False):
+            # Compute-stream order puts this after any decode that mapped buffer slots and
+            # before the fence below, so every copy of this epoch lands in unmapped slots.
+            self._invalidate_prefill_buffer(0)
+            self._invalidate_prefill_buffer(1)
+            self._prefill_epoch_open = True
         if self.prefill_copy_stream is not None:
             # Fence this prefill's copy-stream work behind everything already enqueued
             # on the compute stream. The release/ready events only order against the
@@ -759,7 +926,10 @@ class OffloadMoeCache:
             self.prefill_copy_stream.wait_event(self.prefill_begin_event)
         self._prefill_hit_d2d_active = (self.prefill_hit_d2d and not self.layer_major_active
                                         and self._hit_d2d_usable())
-        if self._prefill_hit_d2d_active:
+        self._prefill_tma_active = (getattr(self, "prefill_tma_gather", False) and not self.layer_major_active
+                                    and type(self) is OffloadMoeCache and self._xfer_usable(False))
+        if (self._prefill_hit_d2d_active and not getattr(self, "prefill_selected_active", False)
+                and not self._prefill_tma_active):
             # The copy stream is fenced behind the previous decode, so the snapshot
             # observes its final slot map; one host sync per chunk, then per-layer
             # classification is pure host math.
@@ -784,20 +954,28 @@ class OffloadMoeCache:
             )
 
         def copy() -> None:
-            self._invalidate_prefill_buffer(buffer_id)
+            if not getattr(self, "_prefill_epoch_open", False):
+                self._invalidate_prefill_buffer(buffer_id)
             for (per_layer, _), buffer in zip(self.banks, self.prefill_bank_buffers):
                 buffer[buffer_id].copy_(per_layer[layer_id], non_blocking=True)
                 self.prefill_h2d_bytes += per_layer[layer_id].numel()*per_layer[layer_id].element_size()
 
+        tma = getattr(self, "_prefill_tma_active", False)
         if self._prefill_hit_d2d_active and not self.layer_major_active:
-            self._prefetch_split(layer_id, buffer_id)
+            if tma:
+                self._prefetch_split_tma(layer_id, buffer_id)
+            else:
+                self._prefetch_split(layer_id, buffer_id)
         elif self.prefill_copy_stream is None:
             copy()
         else:
             with torch.cuda.stream(self.prefill_copy_stream):
                 if self._prefill_buffer_has_release_event[buffer_id]:
                     self.prefill_copy_stream.wait_event(self.prefill_release_events[buffer_id])
-                copy()
+                if tma:
+                    self._tma_full_copy(layer_id, buffer_id)
+                else:
+                    copy()
                 self.prefill_ready_events[buffer_id].record(self.prefill_copy_stream)
 
         self._prefill_buffer_layer[buffer_id] = layer_id
@@ -894,7 +1072,8 @@ class OffloadMoeCache:
         with torch.cuda.stream(self.prefill_copy_stream):
             if self._prefill_buffer_has_release_event[buffer_id]:
                 self.prefill_copy_stream.wait_event(self.prefill_release_events[buffer_id])
-            self._invalidate_prefill_buffer(buffer_id)
+            if not self._prefill_epoch_open:
+                self._invalidate_prefill_buffer(buffer_id)
             if miss.size:
                 run_starts = np.concatenate(([0], np.nonzero(np.diff(miss) != 1)[0] + 1))
                 starts = miss[run_starts]
@@ -922,6 +1101,143 @@ class OffloadMoeCache:
                 )
             self.prefill_ready_events[buffer_id].record(self.prefill_copy_stream)
 
+    def _tma_full_copy(self, layer_id: int, buffer_id: int) -> None:
+        """C2, on the copy stream: the whole layer through the TMA gather (row e -> buffer row e)."""
+        from freetoken.kernel.decode_gather import TUNED_DECODE_GATHER, decode_gather_jit
+
+        if not self._prefill_epoch_open:
+            self._invalidate_prefill_buffer(buffer_id)
+        decode_gather_jit(self._copy_dst_ptrs, self._copy_src_ptrs[layer_id], self._copy_feat_bytes,
+                          self._xfer_full_dst[buffer_id], self._xfer_expert_ids, None, config=TUNED_DECODE_GATHER)
+        self._prefill_h2d_bytes += self.num_experts * sum(self._copy_feat_bytes_host)
+
+    def _prefetch_split_tma(self, layer_id: int, buffer_id: int) -> None:
+        """C2 with hit-D2D: one device-side compaction splits the layer (live slot_for_id) into
+        resident hits, gathered D2D on the compute stream (every bank), and misses, gathered from
+        the host banks by the TMA kernel on the copy stream; no snapshot, no host list."""
+        from freetoken.kernel.decode_gather import TUNED_DECODE_GATHER, decode_gather_jit
+        from freetoken.kernel.fast_index_copy import fast_index_copy_multi_jit
+        from freetoken.moe.offload_kernels import prefill_split_compact
+
+        if self.layer_major_active:
+            raise RuntimeError("hit-D2D cannot read slots borrowed by layer-major prefill")
+        lists = self._xfer_lists[buffer_id]
+        hit_dst, hit_src, hit_num, miss_dst, miss_src, miss_num = lists
+        prefill_split_compact(self, layer_id, buffer_id, lists)
+        self._xfer_rows_dirty = True
+        self._xfer_event.record(torch.cuda.current_stream(self.device))
+        fast_index_copy_multi_jit(self._copy_dst_ptrs, self._copy_dst_ptrs, self._copy_feat_bytes,
+                                  hit_dst, hit_src, hit_num, blocks_per_bank=64)
+        with torch.cuda.stream(self.prefill_copy_stream):
+            if self._prefill_buffer_has_release_event[buffer_id]:
+                self.prefill_copy_stream.wait_event(self.prefill_release_events[buffer_id])
+            self.prefill_copy_stream.wait_event(self._xfer_event)
+            if not self._prefill_epoch_open:
+                self._invalidate_prefill_buffer(buffer_id)
+            decode_gather_jit(self._copy_dst_ptrs, self._copy_src_ptrs[layer_id], self._copy_feat_bytes,
+                              miss_dst, miss_src, miss_num, config=TUNED_DECODE_GATHER)
+            self.prefill_ready_events[buffer_id].record(self.prefill_copy_stream)
+
+    def selected_prefill_layer(self, layer_id: int, topk_ids: torch.Tensor) -> tuple[torch.Tensor, ...]:
+        """C1: fill this layer's double buffer with only the experts ``topk_ids`` routes to, after
+        the router, and return its bank views (row == expert id, like the full-layer path).
+        Resident experts (slot >= 2E) are gathered D2D, the rest cross PCIe. Reads the slot maps
+        only: no LRU usage or stats are written. The buffer's previous reader (the GEMM two layers
+        back) and this layer's routing precede on the compute stream, so no release event is
+        needed; the copy stream joins through ``_xfer_event``."""
+        from freetoken.kernel.fast_index_copy import fast_index_copy_multi_jit
+        from freetoken.moe.offload_kernels import mark_selected, prefill_split_compact
+
+        buffer_id = layer_id % 2
+        compute = torch.cuda.current_stream(self.device)
+        if not self._prefill_epoch_open:
+            self._invalidate_prefill_buffer(buffer_id)
+        selected = self._xfer_selected
+        selected.zero_()
+        mark_selected(topk_ids, selected)
+        lists = self._xfer_lists[buffer_id]
+        hit_dst, hit_src, hit_num, miss_dst, miss_src, miss_num = lists
+        if self.prefill_selected_sync:
+            prefill_split_compact(self, layer_id, buffer_id, lists, selected=selected, count=False)
+            self._selected_sync_h2d(layer_id, buffer_id, lists)
+            gather_dst, gather_feat = self._gather_dst_ptrs, self._gather_feat_bytes
+        else:
+            from freetoken.kernel.decode_gather import TUNED_DECODE_GATHER, decode_gather_jit
+
+            prefill_split_compact(self, layer_id, buffer_id, lists, selected=selected)
+            self._xfer_rows_dirty = True
+            self._xfer_event.record(compute)
+            with torch.cuda.stream(self.prefill_copy_stream):
+                self.prefill_copy_stream.wait_event(self._xfer_event)
+                decode_gather_jit(self._copy_dst_ptrs, self._copy_src_ptrs[layer_id], self._copy_feat_bytes,
+                                  miss_dst, miss_src, miss_num, config=TUNED_DECODE_GATHER)
+                self.prefill_ready_events[buffer_id].record(self.prefill_copy_stream)
+            gather_dst, gather_feat = self._copy_dst_ptrs, self._copy_feat_bytes
+        if gather_dst is not None:
+            fast_index_copy_multi_jit(gather_dst, gather_dst, gather_feat, hit_dst, hit_src, hit_num,
+                                      blocks_per_bank=64)
+        compute.wait_event(self.prefill_ready_events[buffer_id])
+        self._prefill_buffer_layer[buffer_id] = None
+        return tuple(buffer[buffer_id] for buffer in self.prefill_bank_buffers)
+
+    def _selected_sync_h2d(self, layer_id: int, buffer_id: int, lists) -> None:
+        """C1 without device lists: read this layer's miss list back (one host sync per layer), then
+        ONE cudaMemcpyBatchAsync on the copy stream: coalesced expert runs for the big banks, whole
+        layers for the small ones (the batch API's async floor, see _SMALL_BANK_FEAT_BYTES)."""
+        import numpy as np
+
+        _, _, hit_num, _, miss_src, miss_num = lists
+        compute = torch.cuda.current_stream(self.device)
+        self._xfer_host_ids.copy_(miss_src, non_blocking=True)
+        self._xfer_host_num[0:1].copy_(miss_num, non_blocking=True)
+        self._xfer_host_num[1:2].copy_(hit_num, non_blocking=True)
+        compute.synchronize()
+        n_miss, n_hit = (int(x) for x in self._xfer_host_num.tolist())
+        miss = self._xfer_host_ids.numpy()[:n_miss].astype(np.int64)
+        E = self.num_experts
+        dst, src, nbytes = [], [], []
+        if miss.size:
+            run_starts = np.concatenate(([0], np.nonzero(np.diff(miss) != 1)[0] + 1))
+            starts = miss[run_starts]
+            lengths = np.diff(np.concatenate((run_starts, [miss.size])))
+        for b, feat in enumerate(self._copy_feat_bytes_host):
+            if feat < _SMALL_BANK_FEAT_BYTES:
+                dst.append(self._copy_dst_ptrs_host[b] + buffer_id * E * feat)
+                src.append(self._copy_src_ptrs_host[layer_id][b])
+                nbytes.append(E * feat)
+            elif miss.size:
+                dst.extend(self._copy_dst_ptrs_host[b] + (buffer_id * E + starts) * feat)
+                src.extend(self._copy_src_ptrs_host[layer_id][b] + starts * feat)
+                nbytes.extend(lengths * feat)
+        with torch.cuda.stream(self.prefill_copy_stream):
+            if dst:
+                self._batch_memcpy(torch.tensor(dst, dtype=torch.int64), torch.tensor(src, dtype=torch.int64),
+                                   torch.tensor(nbytes, dtype=torch.int64), self.prefill_copy_stream.cuda_stream)
+            self.prefill_ready_events[buffer_id].record(self.prefill_copy_stream)
+        self._prefill_h2d_bytes += int(sum(nbytes))
+        self._prefill_d2d_bytes += n_hit * sum(f for f in self._copy_feat_bytes_host if f >= _SMALL_BANK_FEAT_BYTES)
+
+    def warm_decode_layer(self, layer_id: int, topk_ids: torch.Tensor) -> None:
+        """D6, on the compute stream after this layer's GEMM and before its release: install the
+        chunk's most-routed experts of this layer (ties -> lower id) into decode slots, copied D2D
+        from the double buffer that still holds them."""
+        from freetoken.kernel.fast_index_copy import fast_index_copy_multi_jit
+        from freetoken.moe.offload_kernels import warm_decode_install
+
+        E = self.num_experts
+        n = self._warm_lists[0].numel()
+        counts = self._warm_counts
+        counts.zero_()
+        ids = topk_ids.reshape(-1).long()
+        counts.index_add_(0, ids, torch.ones_like(ids))
+        top = (counts * E + self._warm_key_bias).topk(n).indices
+        candidates = torch.where(counts[top] > 0, top, -1).to(torch.int32)
+        dst, src, num = self._warm_lists
+        warm_decode_install(self, layer_id, candidates, layer_id % 2, self._warm_lists)
+        fast_index_copy_multi_jit(self._copy_dst_ptrs, self._copy_dst_ptrs, self._copy_feat_bytes, dst, src, num,
+                                  blocks_per_bank=64)
+        self.prefill_warm_rows += num[0]
+
     def wait_prefill_layer(self, layer_id: int) -> tuple[torch.Tensor, ...]:
         """Full-layer ``[num_experts, ...]`` bank views for ``layer_id``, one per
         registered bank in registration order: bf16 ``(gate_up, down)``; nvfp4
@@ -939,6 +1255,9 @@ class OffloadMoeCache:
     def release_prefill_layer(self, layer_id: int) -> None:
         if not self.prefill_overlap:
             return
+        if layer_id == self.num_layers - 1:
+            # no copy of this epoch follows; a prefetch without begin_prefill invalidates per layer
+            self._prefill_epoch_open = False
         buffer_id = layer_id % 2
         if self._prefill_buffer_layer[buffer_id] != layer_id:
             return
@@ -955,6 +1274,8 @@ class OffloadMoeCache:
             # slot ids in place), so snapshot the routing histogram before that happens.
             ids = expert_ids.reshape(-1).long()
             self.decode_freq[layer_id].scatter_add_(0, ids, torch.ones_like(ids))
+        if self.route_trace is not None:
+            self.route_trace.observe(layer_id, expert_ids)
         self._pending_src_layer = layer_id
         self._pending_whole_layer = False
         ensure_experts(self, layer_id, expert_ids)
@@ -991,6 +1312,7 @@ class OffloadMoeCache:
         from freetoken.moe.offload_kernels import reset_cache
 
         reset_cache(self)
+        self._prefill_epoch_open = False
         self.refill = None  # every slot is unmapped now; a pending publish would resurrect stale maps
         self.refill_route_counts = self.refill_route_batch = None
         # Per-expert recency is not cache_size-shaped, so reset_cache leaves it alone; wipe
