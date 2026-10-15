@@ -16,6 +16,23 @@ def med(values):
     return statistics.median(values) if values else None
 
 
+def percentile(sorted_values, q):
+    """Linear interpolation between order statistics (numpy default); with few values p95/p99 approach the max."""
+    k = (len(sorted_values) - 1) * q
+    lo = int(k)
+    hi = min(lo + 1, len(sorted_values) - 1)
+    return sorted_values[lo] + (sorted_values[hi] - sorted_values[lo]) * (k - lo)
+
+
+def stats(values):
+    """median, mean, n, min, max of the numeric values (the pair list itself is kept next to it)."""
+    v = [x for x in values if isinstance(x, (int, float))]
+    if not v:
+        return {'median': None, 'mean': None, 'n': 0, 'min': None, 'max': None, 'p95': None, 'p99': None}
+    return {'median': statistics.median(v), 'mean': statistics.fmean(v), 'n': len(v), 'min': min(v), 'max': max(v),
+            'p95': percentile(sorted(v), .95), 'p99': percentile(sorted(v), .99)}
+
+
 def case_key(row):
     return f"{row.get('case')}_{row.get('length')}"
 
@@ -87,9 +104,9 @@ def main():
             st['cases'][c] = {}
             for m in METRICS:
                 vals = [((mine[r] or {}).get('cases', {}).get(c) or {}).get(m) for r in repeats]
-                st['cases'][c][m] = {'pairs': vals, 'median': med(vals)}
+                st['cases'][c][m] = {'pairs': vals, **stats(vals)}
         tt = [((mine[r] or {}).get('tool') or {}).get('elapsed_s') for r in repeats]
-        st['tool_task_elapsed_s'] = {'pairs': tt, 'median': med(tt)}
+        st['tool_task_elapsed_s'] = {'pairs': tt, **stats(tt)}
         vr = [(mine[r] or {}).get('vram') or {} for r in repeats]
         peaks = [x.get('process_peak_bytes') for x in vr]
         free = [x.get('min_gpu_free_bytes') for x in vr]
@@ -113,7 +130,7 @@ def main():
                     x = (((arms.get((cand, r)) or {}).get('cases', {})).get(c) or {}).get(m)
                     ok = isinstance(b, (int, float)) and isinstance(x, (int, float)) and b
                     pr.append(100 * (x / b - 1) if ok else None)
-                res[c][m + '_pct'] = {'pairs': pr, 'median': med(pr)}
+                res[c][m + '_pct'] = {'pairs': pr, **stats(pr)}
         return res
 
     ids = {s['id']: s['config'] for s in steps}

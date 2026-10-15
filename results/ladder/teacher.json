@@ -690,7 +690,7 @@
   {
    "id": "l8",
    "config": "main-release-next-candidate",
-   "quality_report": "quality-s5-q-l8-20261015t1555.json",
+   "quality_report": "quality-s5-q-l8-20261015t1730.json",
    "teacher": {
     "evidence_valid": true,
     "bit_exact_pass": true,
@@ -759,6 +759,271 @@
      1017118720
     ],
     "decode_missing_per_forward": 32.9815157116451,
+    "peak_torch_reserved_bytes": 13748928512
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS",
+   "previous_tree": {
+    "quality_report": "quality-s5-q-l8-20261015t1555.json",
+    "bit_exact_pass": true,
+    "observed": 125,
+    "max_abs": 0.0,
+    "new_functional_failures": []
+   }
+  },
+  {
+   "id": "l9",
+   "config": "main-release-next-d5",
+   "quality_report": "quality-s5-q-l9-20261015t1730.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 41576595456,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     4603
+    ],
+    "host_embedding_bytes": [
+     1017118720
+    ],
+    "decode_missing_per_forward": 32.9815157116451,
+    "peak_torch_reserved_bytes": 13748928512
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "l10",
+   "config": "main-release-next-d5-d3b",
+   "quality_report": "quality-s5-q-l10-20261015t1800.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 41520316416,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     4603
+    ],
+    "host_embedding_bytes": [
+     1017118720
+    ],
+    "decode_missing_per_forward": 18.30406654343808,
+    "peak_torch_reserved_bytes": 13748928512
+   },
+   "journal": {
+    "hit_d2d_unavailable": 0,
+    "c1_c2_transport_unavailable": 0,
+    "tracebacks": 0
+   },
+   "t1_checks": {
+    "short_case_with_d2d": true,
+    "long_cases_layer_major": true,
+    "no_hit_d2d_fallback": true
+   },
+   "status": "PASS"
+  },
+  {
+   "id": "l11",
+   "config": "main-release-next-all",
+   "quality_report": "quality-s5-q-l11-20261015t1730.json",
+   "teacher": {
+    "evidence_valid": true,
+    "bit_exact_pass": true,
+    "quality_gate_pass": true,
+    "ppl_gate_pass": true,
+    "relative_perplexity_growth": 0.0,
+    "relative_growth_ci95": [
+     0.0,
+     0.0
+    ],
+    "new_functional_failures": [],
+    "forced_targets_complete": true,
+    "tokens": 943,
+    "expected": 125,
+    "observed": 125,
+    "all_byte_equal": true,
+    "max_abs": 0.0,
+    "max_relative_l2": 0.0
+   },
+   "functional": [
+    {
+     "case": "russian",
+     "pass": true
+    },
+    {
+     "case": "executable-code",
+     "pass": false
+    },
+    {
+     "case": "tool-cycle",
+     "pass": true
+    },
+    {
+     "case": "long-facts-16384",
+     "pass": false
+    },
+    {
+     "case": "long-facts-120000",
+     "pass": true
+    }
+   ],
+   "telemetry": {
+    "engine_rows": 26,
+    "short_rows": 20,
+    "short_rows_with_d2d": 18,
+    "short_d2d_bytes": 44660699136,
+    "long_rows": 6,
+    "long_rows_with_layer_major_stats": 6,
+    "layer_major_prefill_last": {
+     "prefills": 2,
+     "aborted": 0,
+     "last_chunks": 59,
+     "last_windows": 1,
+     "last_window_chunks": 59,
+     "last_borrowed_slots": 624,
+     "last_attn_batch": 2,
+     "attn_groups": 330,
+     "attn_grouped_chunks": 660,
+     "attn_fallback_groups": 0,
+     "attn_member_probes": 66
+    },
+    "expert_slots": [
+     4603
+    ],
+    "host_embedding_bytes": [
+     1017118720
+    ],
+    "decode_missing_per_forward": 16.63493530499076,
     "peak_torch_reserved_bytes": 13748928512
    },
    "journal": {

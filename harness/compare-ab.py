@@ -297,7 +297,7 @@ def compare(root,name,candidate,baseline,lengths=DEFAULT_LENGTHS,output=128,veri
                 positions.append({k:planned[0][k] for k in ('repeat','profile','schedule_position','pair_position')})
             all_rows=[r for r in report.get('rows',[]) if isinstance(r,dict)] if isinstance(report.get('rows'),list) else []
             arm_vram[(repeat,arm)]=all_rows
-            rows=[r for r in all_rows if r.get('case')!='warmup']
+            rows=[r for r in all_rows if r.get('case') not in ('warmup','warmup_sustained')]  # sustained warm-up rows (QWEN36_BENCH_WARMUP_S) are not cases
             keys=[(r.get('case'),r.get('length')) for r in rows]
             require(len(keys)==len(set(keys)),f'duplicate_case_{repeat}_{arm}')
             require(set(keys)<=expected_keys,f'unexpected_case_{repeat}_{arm}')
