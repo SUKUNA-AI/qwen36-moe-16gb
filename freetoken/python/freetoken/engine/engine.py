@@ -307,6 +307,9 @@ class Engine:
         from freetoken.gpu_select import bind_assigned_gpu
 
         self.device = bind_assigned_gpu(config.tp_info.rank)
+        from . import memory_history
+
+        memory_history.start()  # diagnostic only; before the first allocation
         _adjust_config(config)
         torch.manual_seed(42)
         self.stream = torch.cuda.Stream()
@@ -332,6 +335,12 @@ class Engine:
             self.model = create_model(config.model_config)
         self.model.load_state_dict(self._load_weight_state_dict(config))
         finalize_quant(self.model)
+        from . import host_embeddings
+
+        # before the weights are measured below, so the freed VRAM goes to the expert slots
+        self._host_embed_bytes = host_embeddings.move_embeddings_to_host(self.model) if host_embeddings.enabled() else 0
+        if self._host_embed_bytes:
+            logger.info_rank0(f"{host_embeddings.ENV}=1: embedding table in pinned host memory ({mem_GB(self._host_embed_bytes)})")
         import os
         self.native_mtp = None
         if os.environ.get('QWEN36_SPEC') == 'mtp':
@@ -365,9 +374,9 @@ class Engine:
         # Host-side auxiliary stores (qwen4_exp's pinned PLE table): after the weights so a
         # load failure is not masked, before the MoE offload cache so the bank residency
         # planning sees the pin quota the table already spent.
-        self._host_tables_bytes = 0
+        self._host_tables_bytes = self._host_embed_bytes
         if hasattr(self.model, "load_host_tables"):
-            self._host_tables_bytes = int(self.model.load_host_tables(config) or 0)
+            self._host_tables_bytes += int(self.model.load_host_tables(config) or 0)
         if is_offload_moe_strategy(config.moe_strategy):
             self._init_offload_moe_cache(config)
         if hasattr(self.model, "prepare_for_runtime"):
