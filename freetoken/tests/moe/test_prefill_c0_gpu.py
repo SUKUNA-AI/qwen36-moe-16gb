@@ -17,22 +17,8 @@ ROW_BYTES = {"gate_up_packed": 1 << 20, "gate_up_scale": 1 << 17, "gate_up_globa
 E, L, EPOCHS = 32, 4, 12
 
 
-def ordered_probe(fn):
-    """batch_memcpy._probe with its dst zero-fill ordered before the copy (the original races)."""
-    src = torch.arange(16, dtype=torch.uint8).pin_memory()
-    dst = torch.zeros(16, dtype=torch.uint8, device="cuda")
-    stream = torch.cuda.Stream()
-    stream.wait_stream(torch.cuda.current_stream())
-    fn(torch.tensor([dst.data_ptr()]), torch.tensor([src.data_ptr()]), torch.tensor([16]), stream.cuda_stream)
-    stream.synchronize()
-    if not torch.equal(dst.cpu(), src):
-        raise RuntimeError("cudaMemcpyBatchAsync probe copied wrong bytes")
-
 
 def make_cache(monkeypatch, sources, hit_d2d, priority, epoch):
-    from freetoken.kernel import batch_memcpy
-
-    monkeypatch.setattr(batch_memcpy, "_probe", ordered_probe)
     monkeypatch.setenv(PREFILL_COPY_PRIORITY_ENV, "1" if priority else "0")
     monkeypatch.setenv(PREFILL_EPOCH_INVALIDATE_ENV, "1" if epoch else "0")
     monkeypatch.setenv("QWEN36_PREFILL_SYNCFREE_INVALIDATE", "1")

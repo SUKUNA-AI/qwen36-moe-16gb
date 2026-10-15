@@ -21,21 +21,8 @@ ROW_BYTES = {"gate_up_packed": 1 << 20, "gate_up_scale": 1 << 17, "gate_up_globa
 cuda = pytest.mark.skipif(not torch.cuda.is_available(), reason="requires owner CUDA/SM120 stack")
 
 
-def ordered_probe(fn):
-    src = torch.arange(16, dtype=torch.uint8).pin_memory()
-    dst = torch.zeros(16, dtype=torch.uint8, device="cuda")
-    stream = torch.cuda.Stream()
-    stream.wait_stream(torch.cuda.current_stream())
-    fn(torch.tensor([dst.data_ptr()]), torch.tensor([src.data_ptr()]), torch.tensor([16]), stream.cuda_stream)
-    stream.synchronize()
-    if not torch.equal(dst.cpu(), src):
-        raise RuntimeError("cudaMemcpyBatchAsync probe copied wrong bytes")
-
 
 def make(monkeypatch, env):
-    from freetoken.kernel import batch_memcpy
-
-    monkeypatch.setattr(batch_memcpy, "_probe", ordered_probe)
     for name in (PREFILL_EPOCH_INVALIDATE_ENV, PREFILL_SELECTED_ENV, PREFILL_TMA_GATHER_ENV, PREFILL_WARM_DECODE_ENV):
         monkeypatch.setenv(name, str(env.get(name, 0)))
     monkeypatch.setenv("QWEN36_PREFILL_SYNCFREE_INVALIDATE", "1")
