@@ -1,4 +1,4 @@
-# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T17:21:29Z
+# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T20:09:45Z
 # rendered with site values digest=895052024cbcd577 (py/sh/config/profile bytes as written to native)
 # options: skip_runtime=0 extra_config=- (pass the same options to --dry-run/--apply)
 095e182f33349d2b2e7ea32694b3de3ca403ceed972342f3cab7d2dd0419e1ee  freetoken/python/freetoken/__init__.py
@@ -643,6 +643,7 @@ ffb21540215149ebdc5fb6498cde9029b1a63ecddf5b0dd2e74e177641e8dbb4  harness/main-r
 56ba8be8c8508c6660fba1e111f6250c3838e739a0c0157667518e4168ca015b  harness/main-release-shortroute.json
 60763d5e6f1c581b7591fcf1772e2d03d9ceaa6105ffe65eee7312b0d56acd36  harness/main-release.json
 c0f4f2971631d4138d9ce1a36e3a1b9e0ed64eeb718e4b2dd6bd5dab76bb3d3c  harness/long256-release-fp8kv.json
+edd7787c5860f5d64cc4113eb972a800a3cf09277bf0f0e7c7bd46ef667ed1ef  harness/long256-release-next-candidate.json
 b9ed5bc93a63163d85f75220771df4efc6d6ab3841a9f3e3c0be64d0c310268c  harness/long256-release.json
 4bdbc732b853ce615080b94eeab64fa9248ddaad8152699dbcfc92a247687368  harness/profile-final-bf128.json
 97efd1a8ff727db21613591b9824c812db3b1fbbe799b11ba142e991f2e25925  harness/profile-final-cuda-bitexact128.json
