@@ -82,6 +82,37 @@ def prefill_hit_compact(cache, layer_id: int, buffer_id: int) -> None:
     )
 
 
+def mark_selected(topk_ids: torch.Tensor, selected: torch.Tensor) -> None:
+    """``selected[e] = 1`` for every routed expert id (C1); ``selected`` must be zeroed first.
+    Duplicate ids store the same value, so the racing stores are benign; no host sync."""
+    ids = topk_ids.reshape(-1)
+    n = ids.numel()
+    if n:
+        _mark_selected_kernel[(triton.cdiv(n, 1024),)](ids, selected, n, BLOCK=1024)
+
+
+def prefill_split_compact(cache, layer_id: int, buffer_id: int, lists, selected=None, count=True) -> None:
+    """Split this layer's experts (all, or only ``selected``) into resident hits (cache slot
+    >= 2E) and misses, as fixed-shape gather lists for the double buffer row == expert id:
+    ``lists`` = (hit_dst, hit_src, hit_num, miss_dst, miss_src, miss_num); miss_src is the
+    expert id (host-bank row). One launch on the current stream, no host sync; ``count`` adds
+    the row counts to ``cache._xfer_rows`` ([h2d rows, d2d rows], whole-expert rows)."""
+    num_experts = cache.num_experts
+    hit_dst, hit_src, hit_num, miss_dst, miss_src, miss_num = lists
+    _prefill_split_compact_kernel[(1,)](
+        cache.slot_for_id[layer_id],
+        selected if selected is not None else hit_dst,
+        hit_dst, hit_src, hit_num, miss_dst, miss_src, miss_num,
+        cache._xfer_rows,
+        buffer_id * num_experts,
+        2 * num_experts,
+        num_experts,
+        HAS_SEL=selected is not None,
+        COUNT=count,
+        BLOCK=triton.next_power_of_2(num_experts),
+    )
+
+
 def materialize_layer(cache, layer_id: int) -> None:
     _materialize_layer_gpu(cache, layer_id)
 
@@ -429,3 +460,48 @@ def _prefill_hit_compact_kernel(
     tl.store(dst_ptr + pos, (buffer_base + offs).to(tl.int32), mask=is_hit)
     tl.store(src_ptr + pos, slots, mask=is_hit)
     tl.store(num_ptr, tl.sum(is_hit.to(tl.int64)))
+
+
+@triton.jit
+def _mark_selected_kernel(ids_ptr, sel_ptr, n, BLOCK: tl.constexpr):
+    offs = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)
+    mask = offs < n
+    ids = tl.load(ids_ptr + offs, mask=mask, other=0)
+    tl.store(sel_ptr + ids, tl.full((BLOCK,), 1, tl.int32), mask=mask)
+
+
+@triton.jit(do_not_specialize=["buffer_base"])
+def _prefill_split_compact_kernel(
+    slot_ptr,     # [num_experts] int32: this layer's slot_for_id row
+    sel_ptr,      # [num_experts] int32: 1 = routed in this chunk (read only with HAS_SEL)
+    hit_dst_ptr, hit_src_ptr, hit_num_ptr,     # buffer row / cache slot / count
+    miss_dst_ptr, miss_src_ptr, miss_num_ptr,  # buffer row / expert id / count
+    rows_ptr,     # [2] int64: running [h2d rows, d2d rows]
+    buffer_base,  # buffer_id * num_experts
+    threshold,    # 2 * num_experts
+    num_experts,
+    HAS_SEL: tl.constexpr,
+    COUNT: tl.constexpr,
+    BLOCK: tl.constexpr,
+):
+    offs = tl.arange(0, BLOCK)
+    want = offs < num_experts
+    slots = tl.load(slot_ptr + offs, mask=want, other=-1)
+    if HAS_SEL:
+        want = want & (tl.load(sel_ptr + offs, mask=want, other=0) != 0)
+    is_hit = want & (slots >= threshold)
+    is_miss = want & (slots < threshold)
+    hit_pos = tl.cumsum(is_hit.to(tl.int32)) - 1
+    miss_pos = tl.cumsum(is_miss.to(tl.int32)) - 1
+    rows = (buffer_base + offs).to(tl.int32)
+    tl.store(hit_dst_ptr + hit_pos, rows, mask=is_hit)
+    tl.store(hit_src_ptr + hit_pos, slots, mask=is_hit)
+    tl.store(miss_dst_ptr + miss_pos, rows, mask=is_miss)
+    tl.store(miss_src_ptr + miss_pos, offs.to(tl.int32), mask=is_miss)
+    hits = tl.sum(is_hit.to(tl.int64))
+    misses = tl.sum(is_miss.to(tl.int64))
+    tl.store(hit_num_ptr, hits)
+    tl.store(miss_num_ptr, misses)
+    if COUNT:
+        tl.store(rows_ptr, tl.load(rows_ptr) + misses)
+        tl.store(rows_ptr + 1, tl.load(rows_ptr + 1) + hits)

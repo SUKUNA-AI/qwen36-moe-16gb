@@ -8,20 +8,30 @@ invalidate capture and must propagate; this is not recovery from device failure.
 import os
 
 ENV = "QWEN36_DECODE_SHARED_OVERLAP"
+# Highest stream priority for the side (gather) stream, so its CTAs are dispatched ahead of
+# the shared expert's blocks; default off.
+PRIORITY_ENV = "QWEN36_DECODE_OVERLAP_PRIORITY"
+
+
+def _flag(name):
+    raw = os.environ.get(name, "0")
+    if raw not in ("", "0", "1"):
+        raise ValueError(f"{name}={raw!r}: expected unset, 0 or 1")
+    return raw == "1"
 
 
 def enabled():
-    raw = os.environ.get(ENV, "0")
-    if raw not in ("", "0", "1"):
-        raise ValueError(f"{ENV}={raw!r}: expected unset, 0 or 1")
-    return raw == "1"
+    return _flag(ENV)
 
 
 class DecodeSharedOverlap:
     def __init__(self, cuda, device):
         self.cuda = cuda
         self.device = device
-        self.stream = cuda.Stream(device=device)
+        if _flag(PRIORITY_ENV):
+            self.stream = cuda.Stream(device=device, priority=-1)
+        else:
+            self.stream = cuda.Stream(device=device)
         self.ready = cuda.Event()
         self.done = cuda.Event()
         # Materialize CUDA handles before capture; construction follows cache init.

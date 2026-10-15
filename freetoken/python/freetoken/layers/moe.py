@@ -392,7 +392,15 @@ class OffloadMoELayer(MoELayer):
             ids = topk_ids.reshape(-1).long()
             counts[self.layer_id].index_add_(0, ids, torch.ones_like(ids, dtype=counts.dtype))
         if cache.prefill_overlap:
-            views = self._wait_prefill_overlap(cache)
+            if self.layer_id == 0 and not getattr(cache, "layer_major_active", False):
+                cache.select_prefill_route(hidden_states.shape[0])
+            if cache.prefill_selected_active:
+                # C1: this chunk moves only the experts its router selected, after the router
+                if self.layer_id == 0:
+                    cache.begin_prefill()
+                views = cache.selected_prefill_layer(self.layer_id, topk_ids)
+            else:
+                views = self._wait_prefill_overlap(cache)
             out = self._expert_gemm(
                 cache,
                 hidden_states,
