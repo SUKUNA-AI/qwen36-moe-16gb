@@ -427,9 +427,9 @@ class SchemaTests(unittest.TestCase):
                 self.refused(self.doc(chunk=chunk))
 
     def test_memory_ratio_finite_open_interval(self):
-        for ratio in (0.01, 0.72, 0.75, 0.89):
+        for ratio in (0.01, 0.72, 0.75, 0.89, 0.9, 0.94):
             runtime._profiles_schema(self.doc(memory_ratio=ratio))
-        for ratio in (0, 0.0, -0.1, 0.9, 0.95, 1.0, 1, float('nan'), float('inf'), float('-inf'), True, '0.75', None):
+        for ratio in (0, 0.0, -0.1, 0.95, 0.96, 1.0, 1, float('nan'), float('inf'), float('-inf'), True, '0.75', None):
             with self.subTest(ratio=ratio):
                 self.refused(self.doc(memory_ratio=ratio))
 

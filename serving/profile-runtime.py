@@ -50,7 +50,9 @@ CHECKPOINT = {'id': 'nvidia/Qwen3.6-35B-A3B-NVFP4',
               'revision': '1355db6a052410cfd62085d94b58866fd0f2c3c5'}
 CONTEXTS = {'baseline64': 65536, 'main128': 131072, 'long256': 262144}
 CHUNKS = (1024, 2048, 4096, 8192)
-MAX_MEMORY_RATIO = 0.9
+# Exclusive ceiling. Owner rule (15.10): Windows keeps 1 GiB and the model may use the rest; the measured
+# footprint at ratio r is about r * 14.65 GiB + 0.67 GiB, so 0.95 stays under 15.6 GiB - 1 GiB.
+MAX_MEMORY_RATIO = 0.95
 ALLOWED_FLAGS = frozenset({'--moe-prefill-hit-d2d', '--enable-special-token-ckpt'})
 # Feature switches (exact booleans in a profile). SWITCH_ENV is the complete fixed environment a switch
 # exports when true (configure_environment); a switch with a ctypes library also exports its release path
