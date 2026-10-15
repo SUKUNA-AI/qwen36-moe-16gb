@@ -68,7 +68,7 @@ def test_undecided_capture_keeps_torch():
     assert E.decided is None
 
 
-def test_qwen35_moe_block_flag_on_equals_off():
+def test_qwen35_moe_block_flag_on_equals_off(monkeypatch):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'models'))
     try:
         from qwen4_exp.test_skeleton import _config, _fill, _fresh_ctx
@@ -82,6 +82,10 @@ def test_qwen35_moe_block_flag_on_equals_off():
 
     if try_get_tp_info() is None:
         set_tp_info(rank=0, size=1)
+    # both arms run the same shared-expert activation; the Triton one needs no nvcc (flashinfer JITs)
+    from freetoken.kernel.triton.activation import silu_and_mul
+    from freetoken.models.qwen3_5_moe import moe as qmoe
+    monkeypatch.setattr(qmoe, 'silu_and_mul', silu_and_mul)
     config = _config()
     with torch.device('cuda'), torch_dtype(torch.bfloat16):
         moe = Qwen4ExpMoE(config, 0)

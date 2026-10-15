@@ -1,0 +1,59 @@
+{
+ "device": "NVIDIA GeForce RTX 5070 Ti",
+ "torch": "2.11.0+cu130",
+ "d5": {
+  "torch_us_per_step": 131.24999999547526,
+  "fused_us_per_step": 61.29149998912453,
+  "saved_us_per_step": 69.95850000635073
+ },
+ "d3b": [
+  {
+   "mix_us_per_layer": 35.69056250007918,
+   "serial_us_per_layer": 85.24981249991015,
+   "spec_us_per_layer": 83.32456249959819,
+   "hidden_fraction": 0.03884744019166005,
+   "k": 1,
+   "mixer_rows": 6400
+  },
+  {
+   "mix_us_per_layer": 35.87874999944063,
+   "serial_us_per_layer": 145.06531250013666,
+   "spec_us_per_layer": 145.263749999458,
+   "hidden_fraction": -0.0018174168576842304,
+   "k": 2,
+   "mixer_rows": 6400
+  },
+  {
+   "mix_us_per_layer": 67.94674999888173,
+   "serial_us_per_layer": 118.45856250225495,
+   "spec_us_per_layer": 117.36606250067894,
+   "hidden_fraction": 0.021628604230011648,
+   "k": 1,
+   "mixer_rows": 12800
+  },
+  {
+   "mix_us_per_layer": 68.20618749969753,
+   "serial_us_per_layer": 177.32168750050903,
+   "spec_us_per_layer": 178.23987499809846,
+   "hidden_fraction": -0.0084148218867402,
+   "k": 2,
+   "mixer_rows": 12800
+  },
+  {
+   "mix_us_per_layer": 132.87437499975852,
+   "serial_us_per_layer": 182.59156250088893,
+   "spec_us_per_layer": 182.80862500041906,
+   "hidden_fraction": -0.004365944866153063,
+   "k": 1,
+   "mixer_rows": 25600
+  },
+  {
+   "mix_us_per_layer": 132.84574999872234,
+   "serial_us_per_layer": 243.25337500208377,
+   "spec_us_per_layer": 242.9177500005153,
+   "hidden_fraction": 0.003039871580955168,
+   "k": 2,
+   "mixer_rows": 25600
+  }
+ ]
+}

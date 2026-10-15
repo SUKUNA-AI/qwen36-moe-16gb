@@ -62,7 +62,8 @@ def test_pregate_bytes_residency_and_capture_replay(monkeypatch, overlap, gather
         caches.append(cache); models.append(make_models(cache, layers))
     pregate = caches[1].decode_pregate
     assert caches[0].decode_pregate is None and pregate is not None
-    assert (pregate.stream is caches[1].decode_shared_overlap.stream) == bool(overlap)
+    overlap_stream = getattr(caches[1].decode_shared_overlap, 'stream', None)
+    assert (pregate.stream is overlap_stream) == bool(overlap)
     truth = [torch.cat([per_layer[lid].to(device) for lid in range(layers)]) for per_layer in sources.values()]
 
     residual = torch.randn((1, H), device=device).to(torch.bfloat16)

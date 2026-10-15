@@ -55,7 +55,8 @@ def bench_d5(reps):
     return {'torch_us_per_step': ref, 'fused_us_per_step': fused, 'saved_us_per_step': ref - fused}
 
 
-def bench_d3b(layers, reps, k, mixer_rows):
+def bench_d3b(layers, reps, k, mixer_rows, gather='', priority=False):
+    from flashlib.kernels.slot_cache import Stat
     from freetoken.moe.offload_cache import OffloadMoeCache, _BANK_SCHEMAS
 
     E, H = 32, 2048
@@ -64,8 +65,13 @@ def bench_d3b(layers, reps, k, mixer_rows):
                for name, size in zip(_BANK_SCHEMAS['nvfp4'], sizes)}
     os.environ['QWEN36_DECODE_PREGATE'] = str(k)
     os.environ['QWEN36_DECODE_PREGATE_ATTN'] = str(k)
+    os.environ['QWEN36_DECODE_GATHER'] = gather
+    # priority: pregate rides on T3's side stream at the highest stream priority
+    os.environ['QWEN36_DECODE_SHARED_OVERLAP'] = '1' if priority else ''
+    os.environ['QWEN36_DECODE_OVERLAP_PRIORITY'] = '1' if priority else ''
     cache = OffloadMoeCache(layers, E, layers * E, torch.device('cuda'), quant_format='nvfp4')
     cache.set_bank_sources(sources)
+    cache.collect_stats = True
     pregate = cache.decode_pregate
     residual = torch.randn((1, H), device='cuda').to(torch.bfloat16)
     norm = type('N', (), {})(); norm.weight = torch.ones(H, device='cuda', dtype=torch.bfloat16); norm.eps = 1e-6
@@ -109,11 +115,16 @@ def bench_d3b(layers, reps, k, mixer_rows):
             torch.cuda.synchronize()
             times.append((time.perf_counter() - t) * 1e6 / layers)
         out[name + '_us_per_layer'] = statistics.median(times)
+        # one more cold replay with fresh counters: real misses left and speculative admissions per layer
+        cache.reset(); cache.reset_stats()
+        graph.replay(); torch.cuda.synchronize()
+        out[name + '_real_misses_per_layer'] = int(cache.lru_stats[:, Stat.MISS].sum()) / layers
+        out[name + '_spec_rows_per_layer'] = int(pregate.rows.sum()) / layers
         del graph
     serial_extra = out['serial_us_per_layer'] - out['mix_us_per_layer']
     out['hidden_fraction'] = ((out['serial_us_per_layer'] - out['spec_us_per_layer']) / serial_extra
                               if serial_extra > 0 else None)
-    out['k'] = k
+    out.update(k=k, gather=gather or 'default', priority=priority)
     return out
 
 
@@ -126,11 +137,13 @@ def main():
     torch.manual_seed(0)
     result = {'device': torch.cuda.get_device_name(), 'torch': torch.__version__, 'd5': bench_d5(a.reps), 'd3b': []}
     print(json.dumps(result['d5']))
-    for mixer_rows in (6400, 12800, 25600):  # ~16 / 33 / 66 MB of bf16: ~25 / 45 / 85 us at ~750 GB/s
+    for mixer_rows in (6400, 25600):  # ~16 / 66 MB of bf16 per mixer call
         for k in (1, 2):
-            row = dict(bench_d3b(a.layers, a.reps, k, mixer_rows), mixer_rows=mixer_rows)
-            print(json.dumps(row))
-            result['d3b'].append(row)
+            for gather in ('', 'tuned'):
+                for priority in (False, True):
+                    row = dict(bench_d3b(a.layers, a.reps, k, mixer_rows, gather, priority), mixer_rows=mixer_rows)
+                    print(json.dumps(row))
+                    result['d3b'].append(row)
     with open(a.out, 'w') as f:
         json.dump(result, f, indent=1)
 
