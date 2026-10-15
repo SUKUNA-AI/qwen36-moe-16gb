@@ -1,0 +1,612 @@
+{
+ "schema": "qwen36-ladder-summary",
+ "schema_version": 1,
+ "synthetic": true,
+ "fixture_note": "СИНТЕТИКА: собрано из замеров разных сессий с разной нагрузкой (f1 soak, S2 soak, S3/S4 A/B, nsys). Не результат лесенки и не публикуется. Только для черновиков графиков.",
+ "generated_utc": null,
+ "profile": "main128",
+ "lengths": [
+  64,
+  2048,
+  4096,
+  16384,
+  120000
+ ],
+ "output_tokens": null,
+ "gpu_total_mib": 16303,
+ "steps": [
+  {
+   "id": "L0",
+   "label": "main-release (f1)",
+   "lever": "f1",
+   "config": "harness/main-release.json",
+   "parent": null,
+   "cumulative": true,
+   "teacher": {
+    "status": "pass",
+    "passed": 125,
+    "total": 125,
+    "max_abs": 0.0,
+    "report": "results/metrics/metrics.json quality.teacher_forcing (main-release B gate)"
+   },
+   "ab": {
+    "reference": null,
+    "pairs": 1,
+    "ttft_s": {
+     "64": [
+      0.601
+     ],
+     "4096": [
+      0.6063
+     ],
+     "16384": [
+      1.3601
+     ],
+     "120000": [
+      20.9662
+     ]
+    },
+    "decode_tps": {
+     "64": [
+      133.7449
+     ],
+     "4096": [
+      135.0443
+     ],
+     "16384": [
+      129.834
+     ],
+     "120000": [
+      97.458
+     ]
+    }
+   },
+   "memory": {
+    "memory_ratio": 0.75,
+    "expert_slots": 3164,
+    "process_peak_mib": null,
+    "free_vram_min_mib": 436,
+    "misses_per_token": {
+     "64": 28.8976,
+     "16384": 26.8976
+    }
+   },
+   "nsys": {
+    "decode_16k": {
+     "ms_per_step": 8.1036,
+     "buckets_ms": {
+      "moe_experts": 1.6582,
+      "expert_h2d": 0.137,
+      "gdn": 0.2997,
+      "full_attention": 0.5928,
+      "fp8_gemv_gemm": 2.242,
+      "decode_gather": 1.4866,
+      "norms_misc": 0.9939,
+      "cpu_gaps_gpu_idle": 0.6933
+     }
+    },
+    "prefill_short": {
+     "window_ms": 599.1567,
+     "buckets_ms": {
+      "moe_experts": 124.9512,
+      "expert_h2d": 452.0647,
+      "gdn": 1.9985,
+      "full_attention": 0.4067,
+      "fp8_gemv_gemm": 7.6626,
+      "decode_gather": 0.0,
+      "norms_misc": 3.2478,
+      "cpu_gaps_gpu_idle": 8.8251
+     },
+     "h2d_busy_ms": 515.4924,
+     "h2d_overlap_pct": 12.3
+    },
+    "prefill_16k": {
+     "window_ms": 1529.1315,
+     "buckets_ms": {
+      "moe_experts": 613.7669,
+      "expert_h2d": 78.0166,
+      "gdn": 126.4219,
+      "full_attention": 291.2099,
+      "fp8_gemv_gemm": 228.9916,
+      "decode_gather": 0.0,
+      "norms_misc": 121.9117,
+      "cpu_gaps_gpu_idle": 68.8129
+     },
+     "h2d_busy_ms": 533.9567,
+     "h2d_overlap_pct": 85.4
+    }
+   },
+   "fixture_source": "f1: soak 2 h p50 (metrics.json latency.soak, 256 output tokens; no 2K point), misses from the f1 matrix, nsys from results/nsight/dashboard.json"
+  },
+  {
+   "id": "L1",
+   "label": "+T1 hit-D2D + layer-major от 2049",
+   "lever": "T1",
+   "config": "harness/main-release-shortroute.json",
+   "parent": "L0",
+   "cumulative": true,
+   "teacher": {
+    "status": "pending"
+   },
+   "ab": {
+    "reference": "L0",
+    "pairs": 10,
+    "ttft_s": {
+     "64": [
+      0.4683,
+      0.4794,
+      0.4665,
+      0.4687,
+      0.4686,
+      0.4264,
+      0.4228,
+      0.4218,
+      0.4258,
+      0.4226
+     ],
+     "2048": [
+      0.606,
+      0.5983,
+      0.5868,
+      0.5784,
+      0.6013,
+      0.5824,
+      0.5835,
+      0.5225,
+      0.6105,
+      0.5446
+     ],
+     "4096": [
+      0.5969,
+      0.5798,
+      0.5851,
+      0.5944,
+      0.5778,
+      0.6416,
+      0.5586,
+      0.5429,
+      0.5268,
+      0.6038
+     ]
+    },
+    "ref_ttft_s": {
+     "64": [
+      0.5694,
+      0.5683,
+      0.5783,
+      0.5853,
+      0.5693,
+      0.5623,
+      0.5552,
+      0.5606,
+      0.5584,
+      0.555
+     ],
+     "2048": [
+      0.5796,
+      0.61,
+      0.641,
+      0.5691,
+      0.569,
+      0.5565,
+      0.5844,
+      0.5496,
+      0.6012,
+      0.5509
+     ],
+     "4096": [
+      0.6227,
+      0.5758,
+      0.6623,
+      0.5684,
+      0.5691,
+      0.5689,
+      0.5586,
+      0.5521,
+      0.5676,
+      0.5388
+     ]
+    },
+    "decode_tps": {
+     "64": [
+      132.0051
+     ],
+     "2048": [
+      144.1125
+     ],
+     "4096": [
+      143.3673
+     ]
+    },
+    "ref_decode_tps": {
+     "64": [
+      132.1844
+     ],
+     "2048": [
+      143.504
+     ],
+     "4096": [
+      143.6409
+     ]
+    }
+   },
+   "memory": {
+    "memory_ratio": 0.75,
+    "misses_per_token": {
+     "64": 36.1429
+    }
+   },
+   "fixture_source": "next-update/short-route/results/summary.json, arm p vs r, TTFT 10 rounds, decode medians"
+  },
+  {
+   "id": "L2",
+   "label": "+T2 GDN FLA wu",
+   "lever": "T2",
+   "config": "harness/main-release-shortroute-fla-wu.json",
+   "parent": "L1",
+   "cumulative": true,
+   "teacher": {
+    "status": "pending"
+   },
+   "ab": {
+    "reference": "L1",
+    "pairs": 1,
+    "ttft_s": {
+     "16384": [
+      1.3766
+     ],
+     "120000": [
+      21.6532
+     ]
+    },
+    "ref_ttft_s": {
+     "16384": [
+      1.4196
+     ],
+     "120000": [
+      21.8472
+     ]
+    }
+   },
+   "memory": {
+    "memory_ratio": 0.75
+   },
+   "fixture_source": "next-update/fla/results/nsys-compare.json: GPU prefill window on/off under nsys (stands in for TTFT; structure only)"
+  },
+  {
+   "id": "L3",
+   "label": "+T3 decode_shared_overlap",
+   "lever": "T3",
+   "config": "harness/main-release-shortroute-fla-wu-overlap.json",
+   "parent": "L2",
+   "cumulative": true,
+   "teacher": {
+    "status": "pending"
+   },
+   "ab": null,
+   "memory": {
+    "memory_ratio": 0.75,
+    "expert_slots": 3164,
+    "free_vram_min_mib": 2603,
+    "windows_shared_drift_mib": -3,
+    "misses_per_token": {
+     "all": 39.7
+    }
+   },
+   "fixture_source": "no isolated T3 A/B yet; memory from the S2 control soak (= this config)"
+  },
+  {
+   "id": "L4",
+   "label": "+эмбеддинги на хосте",
+   "lever": "he",
+   "config": "harness/main-release-next-he.json",
+   "parent": "L3",
+   "cumulative": true,
+   "teacher": {
+    "status": "pending"
+   },
+   "ab": {
+    "reference": "L3",
+    "pairs": 1,
+    "ttft_s": {
+     "64": [
+      0.334
+     ],
+     "2048": [
+      0.312
+     ],
+     "4096": [
+      0.461
+     ],
+     "16384": [
+      1.307
+     ],
+     "120000": [
+      21.36
+     ]
+    },
+    "ref_ttft_s": {
+     "64": [
+      0.331
+     ],
+     "2048": [
+      0.314
+     ],
+     "4096": [
+      0.43
+     ],
+     "16384": [
+      1.294
+     ],
+     "120000": [
+      21.34
+     ]
+    },
+    "decode_tps": {
+     "64": [
+      141.0
+     ],
+     "2048": [
+      145.9
+     ],
+     "4096": [
+      144.9
+     ],
+     "16384": [
+      138.7
+     ],
+     "120000": [
+      100.0
+     ]
+    },
+    "ref_decode_tps": {
+     "64": [
+      135.5
+     ],
+     "2048": [
+      138.5
+     ],
+     "4096": [
+      137.5
+     ],
+     "16384": [
+      132.5
+     ],
+     "120000": [
+      96.4
+     ]
+    }
+   },
+   "memory": {
+    "memory_ratio": 0.75,
+    "expert_slots": 3729,
+    "free_vram_min_mib": 2562,
+    "windows_shared_drift_mib": 0,
+    "misses_per_token": {
+     "all": 28.8
+    }
+   },
+   "fixture_source": "S2 25-min soaks control vs he (medians, one pair)"
+  },
+  {
+   "id": "L5",
+   "label": "+memory_ratio 0.85",
+   "lever": "r085",
+   "config": "harness/main-release-next-he-r085.json",
+   "parent": "L4",
+   "cumulative": true,
+   "teacher": {
+    "status": "pending"
+   },
+   "ab": {
+    "reference": "L4",
+    "pairs": 1,
+    "ttft_s": {
+     "64": [
+      0.252
+     ],
+     "2048": [
+      0.252
+     ],
+     "4096": [
+      0.401
+     ],
+     "16384": [
+      1.212
+     ],
+     "120000": [
+      20.09
+     ]
+    },
+    "ref_ttft_s": {
+     "64": [
+      0.334
+     ],
+     "2048": [
+      0.312
+     ],
+     "4096": [
+      0.461
+     ],
+     "16384": [
+      1.307
+     ],
+     "120000": [
+      21.36
+     ]
+    },
+    "decode_tps": {
+     "64": [
+      164.8
+     ],
+     "2048": [
+      167.3
+     ],
+     "4096": [
+      166.0
+     ],
+     "16384": [
+      158.7
+     ],
+     "120000": [
+      111.2
+     ]
+    },
+    "ref_decode_tps": {
+     "64": [
+      141.0
+     ],
+     "2048": [
+      145.9
+     ],
+     "4096": [
+      144.9
+     ],
+     "16384": [
+      138.7
+     ],
+     "120000": [
+      100.0
+     ]
+    }
+   },
+   "memory": {
+    "memory_ratio": 0.85,
+    "expert_slots": 4611,
+    "free_vram_min_mib": 1128,
+    "windows_shared_drift_mib": -1,
+    "misses_per_token": {
+     "all": 16.2
+    }
+   },
+   "fixture_source": "S2 25-min soaks he vs he-r085 (medians, one pair)"
+  },
+  {
+   "id": "L6",
+   "label": "+ядра S3 (o-proj, MoE decode)",
+   "lever": "S3",
+   "config": null,
+   "parent": "L5",
+   "cumulative": true,
+   "teacher": {
+    "status": "pending"
+   },
+   "ab": {
+    "reference": "L5",
+    "pairs": 1,
+    "decode_tps": {
+     "64": [
+      172.1
+     ],
+     "16384": [
+      159.4
+     ]
+    },
+    "ref_decode_tps": {
+     "64": [
+      158.4
+     ],
+     "16384": [
+      148.1
+     ]
+    }
+   },
+   "memory": {
+    "memory_ratio": 0.85
+   },
+   "fixture_source": "S3 model A/B on main-release, 3 rounds, medians (+8.6 % / +7.6 %); base is f1, not L5"
+  },
+  {
+   "id": "L7",
+   "label": "+C0 приоритет копий",
+   "lever": "C0",
+   "config": null,
+   "parent": "L6",
+   "cumulative": true,
+   "teacher": {
+    "status": "pending"
+   },
+   "ab": {
+    "reference": "L6",
+    "pairs": 3,
+    "ttft_s": {
+     "64": [
+      0.294,
+      0.3527,
+      0.4284
+     ],
+     "120000": [
+      21.7997
+     ]
+    },
+    "ref_ttft_s": {
+     "64": [
+      0.361,
+      0.4623,
+      0.485
+     ],
+     "120000": [
+      21.8331
+     ]
+    }
+   },
+   "memory": {
+    "memory_ratio": 0.85
+   },
+   "nsys": {
+    "prefill_short": {
+     "window_ms": 429.0
+    }
+   },
+   "fixture_source": "S4 ab-runs.json t1 -> c0pe per round (fresh 123-token prompt), ab-long120k.json; base is T1, not L6; nsys window from REPORT.md (c0pe)"
+  },
+  {
+   "id": "L8",
+   "label": "+C1 только выбранные эксперты (кандидат)",
+   "lever": "C1",
+   "config": null,
+   "parent": "L7",
+   "cumulative": true,
+   "teacher": {
+    "status": "pending"
+   },
+   "ab": {
+    "reference": "L7",
+    "pairs": 3,
+    "ttft_s": {
+     "64": [
+      0.2558,
+      0.2788,
+      0.2945
+     ]
+    },
+    "ref_ttft_s": {
+     "64": [
+      0.294,
+      0.3527,
+      0.4284
+     ]
+    }
+   },
+   "memory": {
+    "memory_ratio": 0.85
+   },
+   "fixture_source": "S4 ab-runs.json c0pe -> c1pe per round (fresh 123-token prompt)"
+  },
+  {
+   "id": "T3only",
+   "label": "f1 + только T3",
+   "lever": "T3",
+   "config": "harness/main-release-overlap.json",
+   "parent": "L0",
+   "cumulative": false,
+   "teacher": {
+    "status": "not_run"
+   },
+   "ab": null,
+   "memory": null,
+   "fixture_source": "not measured yet"
+  }
+ ],
+ "release_ab": null
+}
