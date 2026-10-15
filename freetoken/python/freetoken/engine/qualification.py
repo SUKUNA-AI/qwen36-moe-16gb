@@ -36,7 +36,7 @@ def force(logits, batch):
             'teacher-main-release-next-he-r085','teacher-main-release-next-he-r090','teacher-main-release-next-he-r094',
             'teacher-main-release-next-k','teacher-main-release-next-kc0','teacher-main-release-next-candidate',
             'teacher-main-release-next-d5','teacher-main-release-next-d5-d3b','teacher-main-release-next-all',
-            'teacher-long256-next-candidate'):
+            'teacher-long256-release-next-candidate'):
         raise RuntimeError('Teacher forcing is restricted to explicit experiment profiles')
     if _fixtures is None:
         # Bind everything first: a failed binding must not leave a half-initialised module state.
