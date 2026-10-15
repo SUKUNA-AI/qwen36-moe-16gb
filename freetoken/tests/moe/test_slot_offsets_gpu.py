@@ -1,10 +1,11 @@
 """SM120 owner gate: expert slots whose byte offset passes 2**32 (memory_ratio stages near 4096 slots).
 
 Qwen3.6-35B-A3B's gate_up bank row is 1 MiB, so slot 4096 starts at byte 2**32 and slot 2048 at
-2**31. Every kernel that addresses a slot by index must compute that offset in 64 bits: the decode
-GEMVs that read slots, and the two gathers that write missed experts into them. (Prefill kernels
+2**31; the top stage (memory_ratio 0.94 with host embeddings) plans ~5400 slots. Every kernel that
+addresses a slot by index must compute that offset in 64 bits: the decode GEMVs that read slots, and
+the two gathers that write missed experts into them. (Prefill kernels
 index a 256-position layer buffer, never the slot cache.) Each check compares a high slot with the
-same bytes at a low slot. Needs ~5 GiB of free VRAM; run under the GPU lock.
+same bytes at a low slot. Needs ~6.5 GiB of free VRAM; run under the GPU lock.
 """
 import pytest
 import torch
@@ -12,7 +13,7 @@ import torch
 pytestmark = pytest.mark.skipif(not torch.cuda.is_available(), reason="owner CUDA/SM120 required")
 
 HIDDEN, INTER = 2048, 512
-SLOTS = 4100  # gate_up bank: 4100 MiB, past 2**32 bytes
+SLOTS = 5600  # gate_up bank: 5600 MiB, past 2**32 bytes and above every planned stage
 HIGH = (SLOTS - 1, 4096, 2049, 2048)
 LOW = (3, 4, 5, 6)
 

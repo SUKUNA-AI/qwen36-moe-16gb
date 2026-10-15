@@ -24,7 +24,9 @@ component = load('s2_component_report', HARNESS / 'component-report.py')
 
 BASE = 'main-release-shortroute-fla-wu-overlap'
 STAGES = {'main-release-next-r080': (0.80, False), 'main-release-next-r082': (0.82, False),
-          'main-release-next-r0845': (0.845, False), 'main-release-next-he': (0.75, True)}
+          'main-release-next-r0845': (0.845, False), 'main-release-next-he': (0.75, True),
+          'main-release-next-he-r085': (0.85, True), 'main-release-next-he-r090': (0.90, True),
+          'main-release-next-he-r094': (0.94, True)}
 
 
 def config(name):

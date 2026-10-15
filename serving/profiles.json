@@ -17,7 +17,7 @@
     "main128": {
       "context": 131072,
       "chunk": 2048,
-      "memory_ratio": 0.75,
+      "memory_ratio": 0.85,
       "kv_dtype": "bf16",
       "flags": [
         "--moe-prefill-hit-d2d"
@@ -35,6 +35,7 @@
       "layer_major_min_tokens": 2049,
       "cuda_gdn_fla": "wu",
       "decode_shared_overlap": true,
+      "host_embeddings": true,
       "qualified": false
     },
     "long256": {
