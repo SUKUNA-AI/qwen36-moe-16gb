@@ -169,8 +169,27 @@ def category(name):
     # and StringIds can contain user data, paths, prompt content or API secrets.
     if "attention_gate_fp8" in name or "gate_quant_kernel" in name:
         return "attention_gate_fp8_fused"
-    if "prefill_nvfp4" in name or "nvfp4_prefill" in name:
+    if "prefill_nvfp4" in name or "nvfp4_prefill" in name or "fast_gemm" in name:
         return "moe_prefill_nvfp4"
+    # Project CUDA libraries (kernels/): bit-exact NVFP4 prefill above, FP8 GEMV, S3 decode kernels, CUDA GDN/FLA.
+    if "moe_gemv_kernel" in name:
+        return "moe_decode_nvfp4"
+    if "oproj_kernel" in name:
+        return "dense_fp8_oproj_gemv"
+    if "gemv_rowwise_kernel" in name:
+        return "dense_fp8_gemv"
+    if "decode_gather_tma_kernel" in name:
+        return "expert_mapped_host_gather"
+    if "gdn_gated_norm_kernel" in name:
+        return "gdn_output_gated_norm"
+    if any(token in name for token in ("gdn_conv_qkv_kernel", "gdn_decode_cluster_kernel", "gdn_decode_fused_kernel",
+                                       "gdn_gate_cumsum_kernel", "chunk_ho_fused_kernel", "chunk_wu_ho_fused_kernel")):
+        return "gdn_recurrence_conv_chunk"
+    if any(token in name for token in ("_prefill_hit_compact_kernel", "_mark_selected_kernel",
+                                       "_prefill_split_compact_kernel", "_warm_install_kernel")):
+        return "expert_lru_metadata"
+    if "_host_rows_kernel" in name:
+        return "embedding_host_rows"
     if "fast_index_copy_multi" in name or "mapped_gather" in name:
         return "expert_mapped_host_gather"
     if any(token in name for token in ("_decode_nvfp4_marlin_kernel", "_nvfp4_gemv_splitk_kernel")):
