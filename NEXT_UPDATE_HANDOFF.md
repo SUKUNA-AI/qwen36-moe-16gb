@@ -1,108 +1,95 @@
-# Cloud next-update handoff
+# Next-update handoff — T3/T5/T6, 2026-10-15
 
-Branch `agent/cloud-next-update`, based on clean public
-`7c78a4824faf03c0eee6f8b3e6fa9cd4cf7df401`. Code is committed locally; no push,
-upstream PR/issue, release, deployment, installed runtime or production operation.
-`serving/profiles.json`, historical f1 results and production dependency locks are
-unchanged. This is an unqualified CPU-verified candidate.
+Branch: `agent/cloud-next-update`. Fetched and fast-forwarded the owner's five new
+commits to **31c10060375d4bd068e14f22bdf3f918cbc18f2b** before implementation.
+Prior cloud work through 7c30166 and all owner changes are preserved. No main
+update, force push, merge commit, upstream PR, service/deployment operation,
+production upgrade or model download.
 
-## Delivered
+## New deliverables
 
-- P0: source-relative CPU runner with explicit Python/paths, mandatory nonzero
-  coverage, per-suite logs and separate NOT_RUN categories. CPU state helpers use
-  real source/arithmetic and CPU radix C++, including a checkout with spaces.
-- T4: per-case teacher run binding to report receipts and clean-cache restarts;
-  strict rotated-log reader plus run snapshots; fixture/target/reference/source
-  identity, typed complete finite rows, functional matrix coverage/status, separate
-  evidence/quality/byte-exact verdicts and the final qualification gate. Missing
-  baseline arrays fail; existing arrays and fixture targets are never overwritten.
-  Reports use exclusive creation. `/health` readiness is bounded and authenticated.
-  Actual scheduler control flow is regression-tested with fake streams; existing
-  waits were retained. Elapsed-time speedup documentation corrected.
-- T1: archived short-route patch integrated into engine/scheduler/cache. Remaining
-  uncached tokens select the route; D2D stays disabled throughout borrowed-slot
-  epochs, with begin failure cleanup and short-path rearming. Default unset/0
-  routing is retained. New GPU transport test covers enabled/disabled hits and
-  BF16/native NVFP4/Marlin banks; NOT_RUN here.
-- T2: existing `cuda_gdn_fla` value field completed, no duplicate boolean switch.
-  Fused evidence must bind variant, actual library, component rows and candidate
-  teacher run receipts. Generic cuda_gdn receipts cannot qualify FLA. Unknown raw
-  engine values/dependencies now fail; `1` remains the engine's legacy `wu` alias.
-- P2: `FREETOKEN_STRICT_PROVENANCE=1` requires manifest/recipe/binary binding before
-  prebuilt load and forbids rebuilding. Production pins it with DISABLE_JIT=1;
-  DISABLE_JIT alone remains a build-availability policy in development. The
-  stronger wrapper verification remains. Fixture execution runs in a bounded
-  Linux child (input/AST/CPU/address-space/output limits, wall timeout and cleanup),
-  preserving the syntax policy. It is not a full security sandbox; unsupported
-  platforms fail instead of using in-process exec.
-- T3: **DEFERRED**, no active overlap path/flag. Concrete producer/consumer ownership,
-  graph capture/replay and negative-control plan is in
-  `next-update/gather-prefetch/OVERLAP-DESIGN.md`.
-
-The final driver now uses the same schema-2 checker under `python -I -O`. Its
-historical R1b equivalence exception is retired for new runs; f1 records and the
-historical methodology are preserved.
-
-## Candidates and compatibility
-
-All three configs are `qualified:false`, under `harness/`:
-
-| Config | Explicit enablement |
+| Task | Result |
 |---|---|
-| `main-release-shortroute.json` | `--moe-prefill-hit-d2d`, `QWEN36_LAYER_MAJOR_MIN_TOKENS=2049` |
-| `main-release-fla-wu.json` | `QWEN36_CUDA_GDN_FLA=wu`, existing CUDA GDN enabled |
-| `main-release-shortroute-fla-wu.json` | both, only after isolated gates |
+| T3 | Real default-off same-layer gather/shared overlap; producer fence, join before routed GEMM, exception cleanup, pre-created capture streams/events; CPU control-flow/mutant tests and dedicated owner CUDA replay/stress test. |
+| T5 | Repository-wide source inventory/syntax checks plus subsystem review, ranked confirmed findings and separate GPU hypotheses in REVIEW.md; repeatable CPU reproductions; 184 additional cache/daemon tests integrated. This is not a proof that every possible bug/race was found. |
+| T6 | MIGRATION.md: exact public target versions/wheel hashes, driver-family assessment, source and compiler diffs, 11 textual conflict files, semantic cache conflicts, rebase order and isolated owner validation plan. Analysis only, no stack upgrade. |
 
-Profile field `layer_major_min_tokens`: exact integer 0..2147483647, needs
-layer_major_prefill. Combined layer-major/hit-D2D needs a positive threshold.
-The engine preserves the archived parser contract: malformed/negative raw env
-falls back to 0; production profile validation rejects those values and bools.
-FLA profiles accept exactly `wu`/`ho` with cuda_gdn; absent disables it and inherited
-FLA env is cleared. Engine unset/0/empty disables, legacy `1` selects wu. Neither
-candidate config nor historical patch measurements is a new qualification result.
+Flag **QWEN36_DECODE_SHARED_OVERLAP=1**, profile field `decode_shared_overlap`.
+Unset/0 uses the serial path. Eligible: Qwen GPU offload, one decode token, TP1,
+pinned banks/fused copy layout. Unsupported modes remain serial. Configured refill
+disables overlap before capture, regardless of whether a refill job is active.
+The wrapper clears inherited env. Unknown raw values fail. Qualified=true is
+explicitly refused for T3; no old receipt can qualify it accidentally.
 
-## Reviewable commits and rollback
+Unqualified configs:
 
-Apply in order; the CPU scaffolding and evidence changes are dependencies of the
-feature tests/gates. A following documentation commit contains this handoff and
-validation summaries; its SHA is `git rev-parse HEAD` in the delivered branch.
+- `harness/main-release-overlap.json`: T3 alone on main-release.
+- `harness/main-release-shortroute-fla-wu-overlap.json`: T1+T2-wu+T3.
 
-| Commit | Purpose |
-|---|---|
-| `9ce1f6a` | public CPU paths/runner/import contour |
-| `5ac6b98` | run-bound quality/reference/functional gates, health/ordering regression |
-| `e60e7d8` | T1 optional short-route and epoch lifetime |
-| `7c74b38` | T2 fused evidence and candidate configs |
-| `f11b7e7` | strict provenance loader policy |
-| `0c236bd` | bounded fixture-code worker |
-| `47534d7` | invalid raw FLA env rejection |
-| `883e400` | GPU bank-layout/producers component coverage (unrun) |
-| `6d3bfad` | declared teacher fixture version gate |
-| `070eebd` | initial handoff/evidence and preflight documentation |
-| `01e5645` | shared final qcheck contract; retire R1b override for new runs |
+Released profiles/production dependency locks/f1 historical results are unchanged.
+The +3-4% decode estimate is historical, not a result from this implementation.
+For 256K, read `next-update/long256-analysis/` and MIGRATION.md's final section:
+T3 targets decode; it does not remove the dominant long-prefill attention work.
 
-For a clean owner checkout of the same base, cherry-pick these commits in this
-order and then the documentation commit. Revert dependents in reverse order;
-T1/T2 can also be disabled by using the unchanged main-release config. Do not
-revert receipt/evidence hardening merely to accept invalid reports. The combined
-config needs both features. A local bundle/combined patch is supplied with the
-final response for offline review; no remote branch was published.
+## Commits and cherry-pick/revert
 
-## Verified and next actions
+Apply on the fetched owner head 31c1006, in this order (plus the final handoff
+commit shown by `git log -1`):
 
-Final scope/results: `CPU_VALIDATION.md` and `validation/`; exact commands and
-counts are there. GPU numerical correctness, graphs, speed and release suitability
-remain **NOT_RUN**. CUDA compile/SASS, model/private fixtures and Windows/WSL are
-unavailable; archived toy/soak before copies are absent. No acceptance receipt
-was created. Source export from monorepo history and remaining site launcher paths
-are confirmed limitations in `REVIEW.md`.
+1. `f7e3ac2` — T3 runtime, config, CPU/GPU tests and runbook.
+2. `eca9d92` — T5 review, reproduction/inventory helpers, expanded CPU suites.
+3. `abeb3e5` — T6 migration study and pinned source/metadata evidence.
+4. `7aab36a` — T3 exporter/qualification mapping integration and regressions.
 
-First run the documented CPU entry point. On the owner machine, stage/review only
-the experiment overlay and configure its local paths; use the read-only
-`next-update-preflight.py` command in `GPU_VALIDATION.md`. If a schema-2 reference
-is missing, deliberately verify the existing immutable reference on GPU under a
-new report name; do not generate missing arrays or rewrite f1. Then default-off,
-T1, T2 separately: byte components -> clean-cache run-bound teacher/functional ->
-request boundaries/prefix/edit/cancel -> unprofiled rotating five-pair A/B. Only
-then test the combined candidate. All GPU work is an explicit owner action under
-the existing exclusive lock, managing the experiment unit only.
+T3 requires **both f7e3ac2 and 7aab36a**. To remove T3, first disable the flag/use
+main-release; if reverting code, revert 7aab36a then f7e3ac2. T5/T6 are independent
+of runtime enablement; T5's requirements are test-only. Revert dependent handoff
+text if removing its referenced commits. Do not revert the prior evidence gates
+to accept an invalid report. Do not cherry-pick the earlier delivered commits
+again: they already exist in the owner's branch.
+
+## Validation and remaining blockers
+
+- Complete mandatory CPU: **32 suites, 892 passed/executed, 0 failed, 3 skipped**;
+  also passed from `/` with a physical checkout/log path containing spaces.
+- T3 optimized Python: **10 tests passed**, including exception paths and missing
+  producer/consumer wait mutants. Explicit env/profile checks remain active.
+- Syntax/import scope, red runs and exact commands: CPU_VALIDATION.md;
+  machine-readable final summaries: `validation/cpu-t3-*.json`.
+- **NOT_RUN:** CUDA compile/SASS (no nvcc/cuobjdump), GPU/model/capture replay,
+  private teacher fixtures and Windows/WSL. No GPU bit-exactness, release readiness
+  or speed claim. T3 implementation is complete as an experimental candidate;
+  target execution is still an owner gate.
+- T5's remaining release blocker: **H1 functional reports are not yet run-bound**.
+  Further confirmed findings: FTW index validation, legacy -O budget asserts,
+  site paths/export basis/frozen final driver, 250K profiling/teacher coverage,
+  and a T1 post-borrow test gap. REVIEW.md includes conditions/reproductions;
+  no device race is reported as confirmed without evidence.
+- T6 target: Torch 2.14.1 / Triton 3.8.0 / sglang-kernel 0.4.9 / flashlib 0.4.0,
+  retaining FlashInfer 0.6.18.post1. Driver 617.14 meets the published CUDA13
+  driver-family floor, but loading/execution/ABI and compiler numerics need GPU
+  validation. Rebase and new-stack qualification are not performed by this study.
+
+## Owner's first commands
+
+```bash
+git switch agent/cloud-next-update
+git pull --ff-only origin agent/cloud-next-update
+QWEN36_CPU_PYTHON=/absolute/path/to/cpu-python \
+  bash harness/CPU-checks.sh --output /absolute/path/to/new-cpu-logs
+```
+
+Then follow GPU_VALIDATION.md's read-only preflight and site configuration.
+Under the existing exclusive lock and with only the experiment unit controlled,
+run the new component first:
+
+```bash
+flock -w 3600 -E 75 "$LOCK" timeout 1800 "$P" -m pytest -v \
+  "$C/freetoken/tests/moe/test_decode_overlap_gpu.py"
+```
+
+All four cases must execute without skips. Validate default-off -> T1 -> T2 ->
+T3 independently -> combined, then run-bound teacher with the clean-cache case
+mapping, prefix/cancel/long256 request coverage and unprofiled five-pair rotating
+A/B. Close H1 before any release acceptance decision. MIGRATION.md's new-stack
+reference is a separate owner opt-in; it never overwrites the old reference.

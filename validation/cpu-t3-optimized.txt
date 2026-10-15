@@ -1,0 +1,15 @@
+test_actual_routed_control_flow (__main__.OverlapTests.test_actual_routed_control_flow) ... ok
+test_copy_exception_records_completion_and_joins (__main__.OverlapTests.test_copy_exception_records_completion_and_joins) ... ok
+test_env_fail_closed (__main__.OverlapTests.test_env_fail_closed) ... ok
+test_handles_are_materialized_before_capture (__main__.OverlapTests.test_handles_are_materialized_before_capture) ... ok
+test_model_default_and_enabled_merge_keep_input_and_order (__main__.OverlapTests.test_model_default_and_enabled_merge_keep_input_and_order) ... ok
+test_producer_and_consumer_wait_mutants_are_detected (__main__.OverlapTests.test_producer_and_consumer_wait_mutants_are_detected) ... ok
+test_profile_is_optional_hash_bound_and_unqualified (__main__.OverlapTests.test_profile_is_optional_hash_bound_and_unqualified) ... ok
+test_repeated_calls_rejoin_before_next_metadata (__main__.OverlapTests.test_repeated_calls_rejoin_before_next_metadata) ... ok
+test_shared_exception_joins_before_propagating (__main__.OverlapTests.test_shared_exception_joins_before_propagating) ... ok
+test_unsupported_modes_use_serial (__main__.OverlapTests.test_unsupported_modes_use_serial) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.033s
+
+OK

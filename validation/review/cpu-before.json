@@ -1,0 +1,20 @@
+{
+  "summary": {
+    "name": "pytest",
+    "errors": "81",
+    "failures": "57",
+    "skipped": "0",
+    "tests": "185",
+    "time": "7.947",
+    "timestamp": "2026-10-15T07:36:25.507779+00:00",
+    "hostname": "3c1a841e608a"
+  },
+  "errors_by_message": {
+    "ModuleNotFoundError: No module named 'einops'": 6,
+    "FileNotFoundError: [Errno 2] No such file or directory: 'ninja'": 49,
+    "RuntimeError: torch.cat(): expected a non-empty list of Tensors": 1,
+    "failed on setup with \"ModuleNotFoundError: No module named 'einops'\"": 81,
+    "AssertionError: daemon import-safety child exited 1\n  --- stdout ---\n  \n  --- stderr ---\n  daemon import-safety violated: ModuleNotFoundError(\"No module named 'fastapi'\")\n  \nassert 1 == 0\n +  where 1 = CompletedProcess(args=['/workspace/.venv-qwen36-cpu/bin/python', '-c', 'FORBIDDEN = (\\'torch\\', \\'transformers\\', \\'fl... returncode=1, stdout='', stderr='daemon import-safety violated: ModuleNotFoundError(\"No module named \\'fastapi\\'\")\\n').returncode": 1
+  },
+  "result": "FAIL, environment/import issues and Torch exception-type test"
+}

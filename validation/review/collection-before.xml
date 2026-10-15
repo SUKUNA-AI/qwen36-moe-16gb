@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="2.100" timestamp="2026-10-15T07:34:50.348593+00:00" hostname="3c1a841e608a"><testcase classname="" name="tests.engine.test_cache_budget" time="0.000"><error message="collection failure">ImportError while importing test module '/workspace/qwen36-moe-16gb/freetoken/tests/engine/test_cache_budget.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+freetoken/tests/engine/test_cache_budget.py:11: in &lt;module&gt;
+    from freetoken.engine.engine import _pin_budget_bytes
+freetoken/python/freetoken/engine/engine.py:14: in &lt;module&gt;
+    from freetoken.layers import set_rope_device
+E   ImportError: cannot import name 'set_rope_device' from 'freetoken.layers' (unknown location)</error></testcase></testsuite></testsuites>

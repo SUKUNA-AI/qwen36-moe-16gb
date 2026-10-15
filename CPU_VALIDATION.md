@@ -1,4 +1,102 @@
-# CPU validation — cloud Linux, 2026-10-14 UTC
+# CPU validation — T3/T5/T6 follow-up, 2026-10-15 UTC
+
+Latest code tested: `7aab36a` on `agent/cloud-next-update`. Follow-up began clean
+at `7c30166`; on the user's request, `git fetch origin` and a fast-forward brought
+in five owner commits to `31c10060375d4bd068e14f22bdf3f918cbc18f2b`. No merge commit,
+main update or overwrite of owner work. That fetched revision is this follow-up's
+baseline. T3/T5/T6 supersede the previous DEFERRED/not-delivered statuses below.
+
+Same isolated CPU environment as the prior run: Python 3.12.14, Torch 2.8.0+cpu,
+Triton 3.6.0, pytest 8.4.2. Added only test dependencies fastapi 0.115.12,
+starlette 0.46.2, anyio 4.12.1 via:
+
+```bash
+uv pip install --python /workspace/.venv-qwen36-cpu/bin/python \
+  fastapi==0.115.12 starlette==0.46.2 anyio==4.12.1
+```
+
+Exit 0; these are now in requirements-cpu.txt. T6 target wheels were inspected
+through metadata; Torch 2.14/Triton 3.8 were **not installed**. Production locks,
+released profile values and model weights are unchanged.
+
+## Before / integration / final results
+
+- Baseline command: `QWEN36_CPU_PYTHON=/workspace/.venv-qwen36-cpu/bin/python bash
+  harness/CPU-checks.sh --output /workspace/scratch/t3-baseline-cpu` — exit0,
+  30 suites, 698 passed/executed, 0 failed, 2 archive skips.
+- First expanded pytest attempt also selected `engine/test_cache_budget.py`:
+  collection exit2, no tests executed; importing engine through the CPU namespace
+  requires model-layer initialization. `validation/review/collection-before.xml`
+  records this unsupported import contour; it is not a passed budget suite.
+- Cache/radix/daemon run before CPU adjustments: exit1, 47 passed, 57 failed,
+  81 setup errors, zero skips. Causes: GPU-module import for CHUNK_SIZE, Ninja
+  missing from PATH, missing FastAPI, and Torch's RuntimeError vs the test's
+  expected ValueError for an empty cold handle. Compact evidence is in
+  `validation/review/cpu-before.json`. No prefix arithmetic was changed.
+- Corrected expanded suite: exit0, 184 passed, 0 failed/errors, one unsupported
+  hybrid geometry skip, CUDA uninitialized. It now runs as the mandatory
+  `test-core-cache-cpu.py` with exact JUnit counts.
+- First full T3 integration: exit1, 29/32 suites passed, 3 failed suites with
+  17 test failures/errors (892 executed; 3 skipped). It caught missing overlap
+  export/receipt mappings and the switch-list expectation. See
+  `validation/cpu-t3-integration-red.json`; fixed in `7aab36a`, without relaxing
+  profile/evidence gates.
+- Final complete CPU command below: **exit0, 32 suites, 892 passed/executed,
+  0 failed, 3 skipped**. See `validation/cpu-t3-final.json`.
+- `PYTHONPATH=freetoken/python:harness /workspace/.venv-qwen36-cpu/bin/python -O
+  harness/test-decode-overlap-cpu.py`: exit0, **10 tests passed**. Explicit
+  checks/mutants execute under optimization; this does not make all legacy engine
+  assertions safe under -O (REVIEW M4).
+
+```bash
+QWEN36_CPU_PYTHON=/workspace/.venv-qwen36-cpu/bin/python \
+  bash harness/CPU-checks.sh --output /workspace/scratch/t3-t5-t6-regression-cpu
+```
+
+The three skips are two pre-existing archive-only cases plus hybrid radix
+page_size=128, which the implementation explicitly does not support. Missing
+required dependencies, collection errors and zero execution fail the runner.
+Each legacy guard/metrics/logging script is one integrated scenario, not its
+individual assertion count. Fake stream tests execute real helper/model methods
+and kill missing-wait mutants; they do not prove absence of CUDA races.
+
+The follow-up also reproduces functional attribution, FTW version/duplicates,
+-O budget rejection and long256 profiling findings with temporary/synthetic data:
+`/workspace/.venv-qwen36-cpu/bin/python tools/reproduce-review-findings.py`, exit0.
+Here exit0 means the documented defects were reproduced, not that they were fixed.
+See REVIEW.md. No synthetic fixture is used as production evidence.
+
+## Path, syntax and publication checks
+
+The same 32-suite set also passed from `/` using a physical source copy at
+`/workspace/scratch/qwen t3 with spaces` and a log directory with spaces:
+
+```bash
+cd /
+QWEN36_CPU_PYTHON=/workspace/.venv-qwen36-cpu/bin/python \
+  bash '/workspace/scratch/qwen t3 with spaces/harness/CPU-checks.sh' \
+  --output '/workspace/scratch/t3 cpu logs with spaces'
+```
+
+Exit0: **892 passed/executed, 0 failed, 3 skipped**;
+`validation/cpu-t3-spaces.json`. No symlink/CWD assumption was used.
+`git diff --check` passed. All tracked Python and normalized shell source passed
+AST/bash syntax review; the new GPU component also passed py_compile.
+The publication scan initially flagged cuDNN's public four-part package version
+as an IPv4 address. Two explicit file/rule allowlist entries document that false
+positive; no credential or site address was substituted or exposed.
+
+## Separate unavailable checks
+
+GPU/model/byte-exact/capture-replay/speed, CUDA compile-only/SASS, private teacher
+fixtures and Windows/WSL release steps: **NOT_RUN**. nvcc, cuobjdump and pwsh are
+absent; there is no owner GPU/model/private runtime. The new GPU test is syntax
+checked, not counted as an executed CPU test. T3 cannot be qualified by profile
+validation. MIGRATION.md is a source/metadata study, not an environment upgrade.
+
+---
+
+## Historical first cloud run (2026-10-14)
 
 Initial checkout: `7c78a4824faf03c0eee6f8b3e6fa9cd4cf7df401`, branch `main`, clean
 status. The selected cloud workspace was initially empty; the public repository

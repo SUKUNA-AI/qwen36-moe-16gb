@@ -1,0 +1,19 @@
+{
+  "scope": "all tracked text sources/configs/docs, automated inventory; not a proof of correctness",
+  "head": "7aab36a897f91274325c523c69f713eeeea2b4ad",
+  "counts": {
+    ".md": 53,
+    ".yml": 10,
+    ".py": 766,
+    ".toml": 2,
+    ".sh": 94,
+    ".cpp": 5,
+    ".cuh": 12,
+    ".h": 5,
+    ".cu": 16,
+    ".json": 203,
+    ".ps1": 16
+  },
+  "syntax_errors": [],
+  "files": 1182
+}
