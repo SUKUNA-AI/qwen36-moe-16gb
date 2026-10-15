@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="600" viewBox="0 0 980 600" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Шаг декода на контексте 16K по ступеням">
+<title>Шаг декода на контексте 16K по ступеням</title>
+<rect x="0.5" y="0.5" width="979" height="599" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+<text x="24.0" y="38.0" font-size="19" fill="#1f2328" text-anchor="start" font-weight="600">Шаг декода на контексте 16K по ступеням</text>
+<text x="24.0" y="61.0" font-size="13" fill="#59636e" text-anchor="start">Nsight Systems, критический путь, мс на шаг. Меньше — лучше.</text>
+<rect x="744.0" y="18.0" width="212.0" height="26.0" rx="6" fill="#cf222e" fill-opacity="0.14" stroke="#cf222e" stroke-width="1"/>
+<text x="850.0" y="36.0" font-size="12" fill="#cf222e" text-anchor="middle" font-weight="700">СИНТЕТИКА · ЧЕРНОВИК</text>
+<text x="24.0" y="124.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L0</text>
+<text x="84.4" y="124.0" font-size="11.5" fill="#59636e" text-anchor="start">f1</text>
+<rect x="150.0" y="110.0" width="129.9" height="24.0" rx="0" fill="#1a7f37"/>
+<text x="214.9" y="126.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">1.7</text>
+<rect x="279.9" y="110.0" width="175.6" height="24.0" rx="0" fill="#0969da"/>
+<text x="367.6" y="126.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">2.2</text>
+<rect x="455.4" y="110.0" width="116.4" height="24.0" rx="0" fill="#cf222e"/>
+<text x="513.6" y="126.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">1.5</text>
+<rect x="571.9" y="110.0" width="46.4" height="24.0" rx="0" fill="#8250df"/>
+<text x="595.1" y="126.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">0.6</text>
+<rect x="618.3" y="110.0" width="23.5" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="641.7" y="110.0" width="77.8" height="24.0" rx="0" fill="#bf3989"/>
+<text x="680.7" y="126.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">1.0</text>
+<rect x="719.6" y="110.0" width="10.7" height="24.0" rx="0" fill="#d1561a"/>
+<rect x="730.3" y="110.0" width="54.3" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="757.5" y="126.0" font-size="10.5" fill="#1f2328" text-anchor="middle" font-weight="600">0.7</text>
+<text x="792.6" y="127.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">8.10 мс/шаг</text>
+<text x="24.0" y="164.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L1</text>
+<text x="84.4" y="164.0" font-size="11.5" fill="#59636e" text-anchor="start">+T1</text>
+<text x="150.0" y="164.0" font-size="12" fill="#8c959f" text-anchor="start">н/д</text>
+<text x="24.0" y="204.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L2</text>
+<text x="84.4" y="204.0" font-size="11.5" fill="#59636e" text-anchor="start">+T2</text>
+<text x="150.0" y="204.0" font-size="12" fill="#8c959f" text-anchor="start">н/д</text>
+<text x="24.0" y="244.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L3</text>
+<text x="84.4" y="244.0" font-size="11.5" fill="#59636e" text-anchor="start">+T3</text>
+<text x="150.0" y="244.0" font-size="12" fill="#8c959f" text-anchor="start">н/д</text>
+<text x="24.0" y="284.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L4</text>
+<text x="84.4" y="284.0" font-size="11.5" fill="#59636e" text-anchor="start">+эмб. на хосте</text>
+<text x="150.0" y="284.0" font-size="12" fill="#8c959f" text-anchor="start">н/д</text>
+<text x="24.0" y="324.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L5</text>
+<text x="84.4" y="324.0" font-size="11.5" fill="#59636e" text-anchor="start">+ratio 0.85</text>
+<text x="150.0" y="324.0" font-size="12" fill="#8c959f" text-anchor="start">н/д</text>
+<text x="24.0" y="364.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L6</text>
+<text x="84.4" y="364.0" font-size="11.5" fill="#59636e" text-anchor="start">+ядра S3</text>
+<text x="150.0" y="364.0" font-size="12" fill="#8c959f" text-anchor="start">н/д</text>
+<text x="24.0" y="404.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L7</text>
+<text x="84.4" y="404.0" font-size="11.5" fill="#59636e" text-anchor="start">+C0</text>
+<text x="150.0" y="404.0" font-size="12" fill="#8c959f" text-anchor="start">н/д</text>
+<text x="24.0" y="444.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L8</text>
+<text x="84.4" y="444.0" font-size="11.5" fill="#59636e" text-anchor="start">+C1</text>
+<text x="150.0" y="444.0" font-size="12" fill="#8c959f" text-anchor="start">н/д</text>
+<line x1="24.0" y1="460.0" x2="956.0" y2="460.0" stroke="#d0d7de" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="24.0" y="484.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">T3only</text>
+<text x="84.4" y="484.0" font-size="11.5" fill="#59636e" text-anchor="start">T3 отдельно</text>
+<text x="150.0" y="484.0" font-size="12" fill="#8c959f" text-anchor="start">н/д</text>
+<rect x="24.0" y="516.0" width="12.0" height="12.0" rx="3" fill="#1a7f37"/>
+<text x="42.0" y="526.0" font-size="12" fill="#59636e" text-anchor="start">Эксперты MoE</text>
+<rect x="144.6" y="516.0" width="12.0" height="12.0" rx="3" fill="#0969da"/>
+<text x="162.6" y="526.0" font-size="12" fill="#59636e" text-anchor="start">Плотные FP8 и o-proj</text>
+<rect x="319.0" y="516.0" width="12.0" height="12.0" rx="3" fill="#cf222e"/>
+<text x="337.0" y="526.0" font-size="12" fill="#59636e" text-anchor="start">Подкачка экспертов (gather)</text>
+<rect x="540.5" y="516.0" width="12.0" height="12.0" rx="3" fill="#8250df"/>
+<text x="558.5" y="526.0" font-size="12" fill="#59636e" text-anchor="start">Attention</text>
+<rect x="24.0" y="538.0" width="12.0" height="12.0" rx="3" fill="#1b7c83"/>
+<text x="42.0" y="548.0" font-size="12" fill="#59636e" text-anchor="start">GDN</text>
+<rect x="84.2" y="538.0" width="12.0" height="12.0" rx="3" fill="#bf3989"/>
+<text x="102.2" y="548.0" font-size="12" fill="#59636e" text-anchor="start">Нормы, lm_head, роутер</text>
+<rect x="272.0" y="538.0" width="12.0" height="12.0" rx="3" fill="#d1561a"/>
+<text x="290.0" y="548.0" font-size="12" fill="#59636e" text-anchor="start">H2D экспертов (не скрыто)</text>
+<rect x="480.0" y="538.0" width="12.0" height="12.0" rx="3" fill="#d0d7de"/>
+<text x="498.0" y="548.0" font-size="12" fill="#59636e" text-anchor="start">Простой GPU</text>
+<text x="24.0" y="586.0" font-size="11" fill="#8c959f" text-anchor="start">Критический путь: перекрытые копии в сумму не входят. Ключи корзин — как в results/nsight/dashboard.json.</text>
+</svg>
