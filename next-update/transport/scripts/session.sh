@@ -15,6 +15,8 @@ cleanup() {
   "$py" -I "$here/make_configs.py" "$repo" "$native/config" --remove
 }
 trap cleanup EXIT INT TERM
+: "${QWEN36_MODEL_DIR:?set QWEN36_MODEL_DIR to the pinned checkpoint directory}"
+export QWEN36_MODEL_DIR
 if systemctl --user is-active --quiet qwen36-inference.service; then echo 'production active; refusing' >&2; exit 73; fi
 if systemctl --user is-active --quiet qwen36-experiment.service; then echo 'an experiment is active under our lock; refusing' >&2; exit 74; fi
 "$py" -I "$here/make_configs.py" "$repo" "$native/config"

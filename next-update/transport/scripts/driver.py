@@ -26,7 +26,7 @@ NATIVE = HOME / 'qwen36-api/optimization'
 HERE = pathlib.Path(__file__).resolve().parent
 OUT = HOME / '.cache/qwen36-cloud-review/s4-results'
 NSYS_OUT = HOME / '.cache/qwen36-cloud-review/s4-nsys'
-MODEL = '/mnt/d/LLM/qwen36-api/model'
+MODEL = os.environ.get('QWEN36_MODEL_DIR', '/path/to/LLM/qwen36-api/model')
 sys.path.insert(0, str(NATIVE))
 os.environ.setdefault('QWEN36_DATA_ROOT', str(NATIVE))
 QUESTION = '\nОбъясни подробно алгоритм поиска аномалий в этих записях. Напиши код на Python и разбор сложности.'
