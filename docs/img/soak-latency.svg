@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="534" viewBox="0 0 1000 534" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Soak 2 часа: задержки и скорость по длине промпта">
+<title>Soak 2 часа: задержки и скорость по длине промпта</title>
+<rect x="0.5" y="0.5" width="999" height="533" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+<text x="24.0" y="38.0" font-size="19" fill="#1f2328" text-anchor="start" font-weight="600">Soak 2 часа: задержки и скорость по длине промпта</text>
+<text x="24.0" y="61.0" font-size="13" fill="#59636e" text-anchor="start">Ответ 256 токенов, последовательные запросы. Столбец — медиана, усы: TTFT — до p99, скорость — от p10.</text>
+<rect x="24.0" y="82.0" width="12.0" height="12.0" rx="3" fill="#4d8c00"/>
+<text x="42.0" y="92.0" font-size="13" fill="#59636e" text-anchor="start">f1 (soak 14.10)</text>
+<rect x="173.2" y="82.0" width="12.0" height="12.0" rx="3" fill="#0b6bcb"/>
+<text x="191.2" y="92.0" font-size="13" fill="#59636e" text-anchor="start">main128 (soak 15–16.10)</text>
+<text x="140.0" y="118.0" font-size="12" fill="#59636e" text-anchor="start" font-weight="600">Время до первого токена, с (меньше — лучше)</text>
+<text x="590.0" y="118.0" font-size="12" fill="#59636e" text-anchor="start" font-weight="600">Скорость генерации, ток/с (больше — лучше)</text>
+<line x1="140.0" y1="124.0" x2="140.0" y2="460.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="140.0" y="476.0" font-size="11" fill="#8c959f" text-anchor="middle">0</text>
+<line x1="222.5" y1="124.0" x2="222.5" y2="460.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="222.5" y="476.0" font-size="11" fill="#8c959f" text-anchor="middle">6</text>
+<line x1="305.0" y1="124.0" x2="305.0" y2="460.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="305.0" y="476.0" font-size="11" fill="#8c959f" text-anchor="middle">12</text>
+<line x1="387.5" y1="124.0" x2="387.5" y2="460.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="387.5" y="476.0" font-size="11" fill="#8c959f" text-anchor="middle">18</text>
+<line x1="470.0" y1="124.0" x2="470.0" y2="460.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="470.0" y="476.0" font-size="11" fill="#8c959f" text-anchor="middle">24</text>
+<line x1="590.0" y1="124.0" x2="590.0" y2="460.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="590.0" y="476.0" font-size="11" fill="#8c959f" text-anchor="middle">0</text>
+<line x1="667.5" y1="124.0" x2="667.5" y2="460.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="667.5" y="476.0" font-size="11" fill="#8c959f" text-anchor="middle">50</text>
+<line x1="745.0" y1="124.0" x2="745.0" y2="460.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="745.0" y="476.0" font-size="11" fill="#8c959f" text-anchor="middle">100</text>
+<line x1="822.5" y1="124.0" x2="822.5" y2="460.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="822.5" y="476.0" font-size="11" fill="#8c959f" text-anchor="middle">150</text>
+<line x1="900.0" y1="124.0" x2="900.0" y2="460.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="900.0" y="476.0" font-size="11" fill="#8c959f" text-anchor="middle">200</text>
+<text x="24.0" y="168.0" font-size="14" fill="#1f2328" text-anchor="start" font-weight="600">93 токена</text>
+<rect x="140.0" y="138.0" width="8.3" height="16.0" rx="3" fill="#4d8c00"/>
+<line x1="148.3" y1="146.0" x2="149.2" y2="146.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="148.3" y1="142.0" x2="148.3" y2="150.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="149.2" y1="142.0" x2="149.2" y2="150.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="156.2" y="151.5" font-size="12" fill="#1f2328" text-anchor="start">0.60</text>
+<rect x="590.0" y="138.0" width="207.3" height="16.0" rx="3" fill="#4d8c00"/>
+<line x1="786.2" y1="146.0" x2="797.3" y2="146.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="786.2" y1="142.0" x2="786.2" y2="150.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="797.3" y1="142.0" x2="797.3" y2="150.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="804.3" y="151.5" font-size="12" fill="#1f2328" text-anchor="start">133.7</text>
+<rect x="140.0" y="162.0" width="3.1" height="16.0" rx="3" fill="#0b6bcb"/>
+<line x1="143.1" y1="170.0" x2="146.4" y2="170.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="143.1" y1="166.0" x2="143.1" y2="174.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="146.4" y1="166.0" x2="146.4" y2="174.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="153.4" y="175.5" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="600">0.22</text>
+<rect x="590.0" y="162.0" width="281.6" height="16.0" rx="3" fill="#0b6bcb"/>
+<line x1="863.0" y1="170.0" x2="871.6" y2="170.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="863.0" y1="166.0" x2="863.0" y2="174.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="871.6" y1="166.0" x2="871.6" y2="174.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="878.6" y="175.5" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="600">181.7</text>
+<rect x="12.0" y="192.0" width="976.0" height="66.0" rx="6" fill="#ffffff" fill-opacity="0.55"/>
+<text x="24.0" y="234.0" font-size="14" fill="#1f2328" text-anchor="start" font-weight="600">4K</text>
+<rect x="140.0" y="204.0" width="8.3" height="16.0" rx="3" fill="#4d8c00"/>
+<line x1="148.3" y1="212.0" x2="148.9" y2="212.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="148.3" y1="208.0" x2="148.3" y2="216.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="148.9" y1="208.0" x2="148.9" y2="216.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="155.9" y="217.5" font-size="12" fill="#1f2328" text-anchor="start">0.61</text>
+<rect x="590.0" y="204.0" width="209.3" height="16.0" rx="3" fill="#4d8c00"/>
+<line x1="787.9" y1="212.0" x2="799.3" y2="212.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="787.9" y1="208.0" x2="787.9" y2="216.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="799.3" y1="208.0" x2="799.3" y2="216.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="806.3" y="217.5" font-size="12" fill="#1f2328" text-anchor="start">135.0</text>
+<rect x="140.0" y="228.0" width="7.0" height="16.0" rx="3" fill="#0b6bcb"/>
+<line x1="147.0" y1="236.0" x2="149.2" y2="236.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="147.0" y1="232.0" x2="147.0" y2="240.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="149.2" y1="232.0" x2="149.2" y2="240.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="156.2" y="241.5" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="600">0.51</text>
+<rect x="590.0" y="228.0" width="278.6" height="16.0" rx="3" fill="#0b6bcb"/>
+<line x1="861.3" y1="236.0" x2="868.6" y2="236.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="861.3" y1="232.0" x2="861.3" y2="240.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="868.6" y1="232.0" x2="868.6" y2="240.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="875.6" y="241.5" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="600">179.7</text>
+<text x="24.0" y="300.0" font-size="14" fill="#1f2328" text-anchor="start" font-weight="600">16K</text>
+<rect x="140.0" y="270.0" width="18.7" height="16.0" rx="3" fill="#4d8c00"/>
+<line x1="158.7" y1="278.0" x2="162.1" y2="278.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="158.7" y1="274.0" x2="158.7" y2="282.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="162.1" y1="274.0" x2="162.1" y2="282.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="169.1" y="283.5" font-size="12" fill="#1f2328" text-anchor="start">1.36</text>
+<rect x="590.0" y="270.0" width="201.2" height="16.0" rx="3" fill="#4d8c00"/>
+<line x1="782.3" y1="278.0" x2="791.2" y2="278.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="782.3" y1="274.0" x2="782.3" y2="282.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="791.2" y1="274.0" x2="791.2" y2="282.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="798.2" y="283.5" font-size="12" fill="#1f2328" text-anchor="start">129.8</text>
+<rect x="140.0" y="294.0" width="18.4" height="16.0" rx="3" fill="#0b6bcb"/>
+<line x1="158.4" y1="302.0" x2="162.5" y2="302.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="158.4" y1="298.0" x2="158.4" y2="306.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="162.5" y1="298.0" x2="162.5" y2="306.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="169.5" y="307.5" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="600">1.33</text>
+<rect x="590.0" y="294.0" width="263.9" height="16.0" rx="3" fill="#0b6bcb"/>
+<line x1="850.1" y1="302.0" x2="853.9" y2="302.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="850.1" y1="298.0" x2="850.1" y2="306.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="853.9" y1="298.0" x2="853.9" y2="306.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="860.9" y="307.5" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="600">170.2</text>
+<rect x="12.0" y="324.0" width="976.0" height="66.0" rx="6" fill="#ffffff" fill-opacity="0.55"/>
+<text x="24.0" y="366.0" font-size="14" fill="#1f2328" text-anchor="start" font-weight="600">64K</text>
+<rect x="140.0" y="336.0" width="111.9" height="16.0" rx="3" fill="#4d8c00"/>
+<line x1="251.9" y1="344.0" x2="267.7" y2="344.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="251.9" y1="340.0" x2="251.9" y2="348.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="267.7" y1="340.0" x2="267.7" y2="348.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="274.7" y="349.5" font-size="12" fill="#1f2328" text-anchor="start">8.14</text>
+<rect x="590.0" y="336.0" width="173.9" height="16.0" rx="3" fill="#4d8c00"/>
+<line x1="756.0" y1="344.0" x2="763.9" y2="344.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="756.0" y1="340.0" x2="756.0" y2="348.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="763.9" y1="340.0" x2="763.9" y2="348.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="770.9" y="349.5" font-size="12" fill="#1f2328" text-anchor="start">112.2</text>
+<rect x="140.0" y="360.0" width="108.9" height="16.0" rx="3" fill="#0b6bcb"/>
+<line x1="248.9" y1="368.0" x2="252.6" y2="368.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="248.9" y1="364.0" x2="248.9" y2="372.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="252.6" y1="364.0" x2="252.6" y2="372.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="259.6" y="373.5" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="600">7.92</text>
+<rect x="590.0" y="360.0" width="217.8" height="16.0" rx="3" fill="#0b6bcb"/>
+<line x1="804.9" y1="368.0" x2="807.8" y2="368.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="804.9" y1="364.0" x2="804.9" y2="372.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="807.8" y1="364.0" x2="807.8" y2="372.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="814.8" y="373.5" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="600">140.5</text>
+<text x="24.0" y="432.0" font-size="14" fill="#1f2328" text-anchor="start" font-weight="600">120K</text>
+<rect x="140.0" y="402.0" width="288.3" height="16.0" rx="3" fill="#4d8c00"/>
+<line x1="428.3" y1="410.0" x2="455.2" y2="410.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="428.3" y1="406.0" x2="428.3" y2="414.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="455.2" y1="406.0" x2="455.2" y2="414.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="462.2" y="415.5" font-size="12" fill="#1f2328" text-anchor="start">20.97</text>
+<rect x="590.0" y="402.0" width="151.1" height="16.0" rx="3" fill="#4d8c00"/>
+<line x1="735.3" y1="410.0" x2="741.1" y2="410.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="735.3" y1="406.0" x2="735.3" y2="414.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="741.1" y1="406.0" x2="741.1" y2="414.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="748.1" y="415.5" font-size="12" fill="#1f2328" text-anchor="start">97.5</text>
+<rect x="140.0" y="426.0" width="280.4" height="16.0" rx="3" fill="#0b6bcb"/>
+<line x1="420.4" y1="434.0" x2="424.7" y2="434.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="420.4" y1="430.0" x2="420.4" y2="438.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="424.7" y1="430.0" x2="424.7" y2="438.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="431.7" y="439.5" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="600">20.39</text>
+<rect x="590.0" y="426.0" width="183.1" height="16.0" rx="3" fill="#0b6bcb"/>
+<line x1="771.4" y1="434.0" x2="773.1" y2="434.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="771.4" y1="430.0" x2="771.4" y2="438.0" stroke="#1f2328" stroke-width="1.6"/>
+<line x1="773.1" y1="430.0" x2="773.1" y2="438.0" stroke="#1f2328" stroke-width="1.6"/>
+<text x="780.1" y="439.5" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="600">118.1</text>
+<text x="24.0" y="498.0" font-size="11" fill="#8c959f" text-anchor="start">TTFT p99: f1 → main128: 0.67 → 0.47 с (93 токена), 0.65 → 0.67 (4K), 1.61 → 1.64 (16K), 9.29 → 8.19 (64K), 22.92 → 20.71 (120K).</text>
+<text x="24.0" y="514.0" font-size="11" fill="#8c959f" text-anchor="start">Нагрузка одинаковая (хеш совпадает). Источник: results/soak/soak-latency-f1-vs-main128.json. 800/800 проверок, 0 ошибок.</text>
+</svg>

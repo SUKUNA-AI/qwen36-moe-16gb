@@ -875,6 +875,231 @@ def prefill_timeline(t):
     return s
 
 
+def _ticks(s, t, x0, x1, vmax, ticks, y_top, y_bot, fmt=lambda v: f"{v:g}"):
+    for v in ticks:
+        x = x0 + (x1 - x0) * v / vmax
+        s.line(x, y_top, x, y_bot, t["grid"])
+        s.text(x, y_bot + 16, fmt(v), 11, t["faint"], anchor="middle")
+
+
+def _bar_with_whisker(s, t, x0, x1, vmax, y, h, value, whisker, colour, label, label_fill, bold=False, xmin=0.0):
+    """Horizontal bar from xmin to value; optional whisker (lo, hi) drawn over it."""
+    sc = (x1 - x0) / (vmax - xmin)
+    w = max(sc * (value - xmin), 1.5)
+    s.rect(x0, y, w, h, colour, rx=3)
+    end = x0 + w
+    if whisker:
+        lo, hi = whisker
+        xa, xb = x0 + sc * (lo - xmin), x0 + sc * (hi - xmin)
+        yc = y + h / 2
+        s.line(xa, yc, xb, yc, t["fg"], 1.6)
+        s.line(xa, yc - 4, xa, yc + 4, t["fg"], 1.6)
+        s.line(xb, yc - 4, xb, yc + 4, t["fg"], 1.6)
+        end = max(end, xb)
+    s.text(end + 7, y + h - 2.5, label, 12, label_fill, weight=600 if bold else None)
+
+
+def release_ab_chart(t):
+    """Release A/B of 5 pairs: how many times main128 is faster than f1L0, 95% interval (compare-ab)."""
+    cmp_ = jload(LADDER, "release-ab-compare.json")
+    rows = {(r["case"], r["length"], r["metric"]): r for r in cmp_["rows"]}
+    cases = [("fresh", 64, "Промпт 64 токена"), ("fresh", 2048, "Свежий 2K"), ("fresh", 4096, "Свежий 4K"),
+             ("fresh", 16384, "Свежий 16K"), ("fresh", 120000, "Свежий 120K"),
+             ("history_continuation", 4096, "Продолжение диалога, 4K"),
+             ("last_message_edit", 16384, "Правка последнего сообщения, 16K"),
+             ("tool_result_edit", 16384, "Правка результата инструмента, 16K")]
+    metrics = [("ttft_content_s", "Время до первого токена", t["h2d"]), ("decode_client_tps", "Скорость генерации", t["moe"]),
+               ("elapsed_s", "Весь запрос", t["m128"])]
+    W, rowh, top = 1000, 62, 118
+    n = len(cases) + 1
+    H = top + rowh * n + 74
+    s = Svg(W, H, t, "Релизный A/B: во сколько раз main128 быстрее f1L0",
+            "5 пар в одной сессии, геометрическое среднее парных отношений и 95% интервал (compare-ab, PASS). Больше — лучше.")
+    s.legend(24, 92, [(c, name) for _, name, c in metrics])
+    x0, x1, vmax, vmin = 290, W - 90, 3.0, 1.0
+    _ticks(s, t, x0, x1, vmax - vmin + 0.0, [0, 0.5, 1.0, 1.5, 2.0], top - 6, top + rowh * n, lambda v: f"×{v + vmin:g}")
+    for i, (case, length, name) in enumerate(cases + [("tool", None, "Цикл вызова инструмента (вся задача)")]):
+        y = top + i * rowh
+        if i % 2 == 1:
+            s.rect(12, y - 4, W - 24, rowh, t["panel"], rx=6, opacity=0.55)
+        s.text(24, y + rowh / 2 + 4, name, 13.5, t["fg"])
+        if case == "tool":
+            tt = cmp_["tool_task"]
+            _bar_with_whisker(s, t, x0, x1, vmax - vmin + vmin, y + 40, 13, tt["geomean"], (tt["lower_975"], tt["upper_975"]),
+                              t["m128"], f"×{tt['geomean']:.2f}", t["m128text"], True, xmin=vmin)
+            continue
+        for k, (metric, _, colour) in enumerate(metrics):
+            r = rows[(case, length, metric)]
+            _bar_with_whisker(s, t, x0, x1, vmax, y + 6 + k * 17, 13, r["geomean"], (r["lower_975"], r["upper_975"]),
+                              colour, f"×{r['geomean']:.2f}", t["m128text"] if k == 2 else t["fg"], k == 2, xmin=vmin)
+    s.text(24, H - 36, "Усы — 95% доверительный интервал. Столбцы начинаются с ×1 (без изменений). Источник: results/ladder/release-ab-compare.json.", 11, t["faint"])
+    s.text(24, H - 20, "f1L0 — настройки f1 на новом коде main128 без рычагов; на свежем 120K выигрыш мал: prefill упирается в тензорные ядра attention.", 11, t["faint"])
+    return s
+
+
+def elapsed_chart(t):
+    """Whole request: how many times faster than the original FreeToken, f1 and main128 (chained)."""
+    rows = release_matrix()[0]
+    W, rowh, top = 1000, 54, 118
+    H = top + rowh * len(rows) + 70
+    s = Svg(W, H, t, "Весь запрос: во сколько раз быстрее исходного FreeToken",
+            "От отправки запроса до последнего токена, ответ 128 токенов. f1 — матрица 13–14.10, main128 — цепочкой через матрицы 16.10. Больше — лучше.")
+    s.legend(24, 92, [(t["f1"], "f1"), (t["m128"], "main128")])
+    x0, x1, vmax = 290, W - 100, 7.0
+    _ticks(s, t, x0, x1, vmax, [0, 1, 2, 3, 4, 5, 6, 7], top - 6, top + rowh * len(rows), lambda v: f"×{v:g}")
+    for i, r in enumerate(rows):
+        y = top + i * rowh
+        if i % 2 == 1:
+            s.rect(12, y - 4, W - 24, rowh, t["panel"], rx=6, opacity=0.55)
+        label = r["label"]
+        ly = y + rowh / 2 - (len(label) - 1) * 8 + 4
+        for j, part in enumerate(label):
+            s.text(24, ly + j * 16, part, 13.5, t["fg"])
+        for k, (v, colour) in enumerate(((r["el_f1_vs_orig"], t["f1"]), (r["el_m_vs_orig"], t["m128"]))):
+            by = y + 8 + k * 19
+            w = (x1 - x0) * v / vmax
+            s.rect(x0, by, w, 14, colour, rx=3)
+            s.text(x0 + w + 7, by + 12, f"×{v:.2f}", 12, t["m128text"] if k else t["fg"], weight=600 if k else None)
+    s.text(24, H - 36, "Значения main128 — оценка цепочкой: множитель «исходный → f1» из матрицы 13–14.10, умноженный на «f1 → main128» из матриц 16.10 (отношение медиан).", 11, t["faint"])
+    s.text(24, H - 20, "Для цикла вызова инструмента цепочки нет: единственное сравнение — релизный A/B против f1L0 (×1.76).", 11, t["faint"])
+    return s
+
+
+def context64_chart(t):
+    """Context 65536, like for like: original FreeToken (FP16 scales), + FP32 scales, f1, main128 (chained)."""
+    rows = sec2_rows()
+    W, rowh, top = 1000, 96, 130
+    H = top + rowh * len(rows) + 74
+    s = Svg(W, H, t, "Контекст 65 536: исходный FreeToken, f1 и main128",
+            "Одна сессия 13–14.10: ответ 192 токена, прогрев 60 с. main128 — цепочкой через матрицы 16.10.")
+    cols = (t["base"], t["faint"], t["f1"], t["m128"])
+    s.legend(24, 92, [(cols[0], "Исходный (FP16-масштабы)"), (cols[1], "+ исправление FP32"), (cols[2], "f1"), (cols[3], "main128")])
+    ax0, ax1, bx0, bx1 = 130, 470, 570, 910
+    s.text(ax0, 118, "Время до первого токена, с (меньше — лучше)", 12, t["muted"], weight=600)
+    s.text(bx0, 118, "Скорость генерации, ток/с (больше — лучше)", 12, t["muted"], weight=600)
+    _ticks(s, t, ax0, ax1, 25, [0, 5, 10, 15, 20, 25], top - 6, top + rowh * len(rows))
+    _ticks(s, t, bx0, bx1, 200, [0, 50, 100, 150, 200], top - 6, top + rowh * len(rows))
+    for i, r in enumerate(rows):
+        y = top + i * rowh
+        if i % 2 == 1:
+            s.rect(12, y - 4, W - 24, rowh, t["panel"], rx=6, opacity=0.55)
+        s.text(24, y + rowh / 2 + 5, r["label"].replace("‡", "‡"), 14, t["fg"], weight=600)
+        series = (r["orig"], r["fp32"], r["f1"], r["m"])
+        for k, (vals, colour) in enumerate(zip(series, cols)):
+            by = y + 6 + k * 21
+            w1 = (ax1 - ax0) * vals[0] / 25
+            s.rect(ax0, by, w1, 15, colour, rx=3)
+            s.text(ax0 + w1 + 6, by + 12, f"{vals[0]:.2f}", 12, t["m128text"] if k == 3 else t["fg"], weight=600 if k == 3 else None)
+            w2 = (bx1 - bx0) * vals[1] / 200
+            s.rect(bx0, by, w2, 15, colour, rx=3)
+            s.text(bx0 + w2 + 6, by + 12, f"{vals[1]:.1f}", 12, t["m128text"] if k == 3 else t["fg"], weight=600 if k == 3 else None)
+    s.text(24, H - 36, "‡ 60K: отношение main128/f1 взято у прямого замера 64K (длина отличается на 6%). Раунды f1 расходятся меньше чем на 0.3%.", 11, t["faint"])
+    s.text(24, H - 20, "Значения main128 — оценка цепочкой: f1 из этой сессии, умноженный на отношение main128/f1 из матриц 16.10.", 11, t["faint"])
+    return s
+
+
+def fresh64_chart(t):
+    """64K fresh, own run: f1 (profile and alias, n = 6), f1L0 and main128 (n = 3 each)."""
+    pts = jload(LADDER, "64k.json")["points"]
+    by = {name.split(" ")[0].split("_")[0]: p for name, p in pts.items()}
+    W, H = 1000, 470
+    s = Svg(W, H, t, "Свежий промпт 65 536 токенов: f1, f1L0 и main128",
+            "Отдельный прогон 16.10, 128 токенов ответа, прогрев 60 с. Столбец — медиана, усы — минимум и максимум.")
+    s.legend(24, 92, [(t["f1"], "f1 (n = 6)"), (t["base"], "f1L0 (n = 3)"), (t["m128"], "main128 (n = 3)")])
+    panels = [("ttft_s", "Время до первого токена, с", 10.0, [0, 2, 4, 6, 8, 10], "{:.2f}"),
+              ("decode_tps", "Скорость генерации, ток/с", 160.0, [0, 40, 80, 120, 160], "{:.1f}"),
+              ("elapsed_s", "Весь запрос, с", 12.0, [0, 3, 6, 9, 12], "{:.2f}"),
+              ("misses_per_token", "Промахов кэша экспертов на токен", 40.0, [0, 10, 20, 30, 40], "{:.1f}")]
+    cols = (("f1", t["f1"]), ("f1L0", t["base"]), ("main128", t["m128"]))
+    pw, ph = 430, 150
+    for idx, (key, title, vmax, ticks, fmt) in enumerate(panels):
+        px = 24 + (idx % 2) * (pw + 92)
+        py = 118 + (idx // 2) * (ph + 30)
+        s.text(px, py, title, 13, t["fg"], weight=600)
+        x0, x1 = px, px + pw - 60
+        _ticks(s, t, x0, x1, vmax, ticks, py + 12, py + 12 + 3 * 28 + 4)
+        for k, (nm, colour) in enumerate(cols):
+            m = by[nm][key]
+            _bar_with_whisker(s, t, x0, x1, vmax, py + 16 + k * 28, 18, m["median"], (m["min"], m["max"]), colour,
+                              fmt.format(m["median"]), t["m128text"] if k == 2 else t["fg"], k == 2)
+    s.text(24, H - 36, "TTFT почти не изменился (7.92 против 8.14 с), скорость генерации выросла на 17%, промахов кэша стало меньше на треть: слотов 4603 вместо 3164.", 11, t["faint"])
+    s.text(24, H - 20, "Источник: results/ladder/64k.json. f1 объединяет профиль main-release и его алиас.", 11, t["faint"])
+    return s
+
+
+def soak_chart(t):
+    """2 h soak: TTFT p50 (line to p99) and decode p50 (line to p10) by prompt length, f1 against main128."""
+    d = jload(ROOT, "results", "soak", "soak-latency-f1-vs-main128.json")["soaks"]
+    lens = [("64", "93 токена"), ("4096", "4K"), ("16384", "16K"), ("65536", "64K"), ("120000", "120K")]
+    W, rowh, top = 1000, 66, 130
+    H = top + rowh * len(lens) + 74
+    s = Svg(W, H, t, "Soak 2 часа: задержки и скорость по длине промпта",
+            "Ответ 256 токенов, последовательные запросы. Столбец — медиана, усы: TTFT — до p99, скорость — от p10.")
+    s.legend(24, 92, [(t["f1"], "f1 (soak 14.10)"), (t["m128"], "main128 (soak 15–16.10)")])
+    ax0, ax1, bx0, bx1 = 140, 470, 590, 900
+    s.text(ax0, 118, "Время до первого токена, с (меньше — лучше)", 12, t["muted"], weight=600)
+    s.text(bx0, 118, "Скорость генерации, ток/с (больше — лучше)", 12, t["muted"], weight=600)
+    _ticks(s, t, ax0, ax1, 24, [0, 6, 12, 18, 24], top - 6, top + rowh * len(lens))
+    _ticks(s, t, bx0, bx1, 200, [0, 50, 100, 150, 200], top - 6, top + rowh * len(lens))
+    for i, (key, name) in enumerate(lens):
+        y = top + i * rowh
+        if i % 2 == 1:
+            s.rect(12, y - 4, W - 24, rowh, t["panel"], rx=6, opacity=0.55)
+        s.text(24, y + rowh / 2 + 5, name, 14, t["fg"], weight=600)
+        for k, (tag, colour) in enumerate((("f1", t["f1"]), ("main128", t["m128"]))):
+            x = d[tag]["fresh_by_length"][key]
+            by = y + 8 + k * 24
+            _bar_with_whisker(s, t, ax0, ax1, 24, by, 16, x["ttft_s"]["p50"], (x["ttft_s"]["p50"], x["ttft_s"]["p99"]), colour,
+                              f"{x['ttft_s']['p50']:.2f}", t["m128text"] if k else t["fg"], k == 1)
+            _bar_with_whisker(s, t, bx0, bx1, 200, by, 16, x["decode_tps"]["p50"], (x["decode_tps"]["p10"], x["decode_tps"]["p50"]), colour,
+                              f"{x['decode_tps']['p50']:.1f}", t["m128text"] if k else t["fg"], k == 1)
+    s.text(24, H - 36, "TTFT p99: f1 → main128: 0.67 → 0.47 с (93 токена), 0.65 → 0.67 (4K), 1.61 → 1.64 (16K), 9.29 → 8.19 (64K), 22.92 → 20.71 (120K).", 11, t["faint"])
+    s.text(24, H - 20, "Нагрузка одинаковая (хеш совпадает). Источник: results/soak/soak-latency-f1-vs-main128.json. 800/800 проверок, 0 ошибок.", 11, t["faint"])
+    return s
+
+
+def prod_chart(t):
+    """Production tests: cold start, whole tool-use run, round and stream latency (median, line to p95)."""
+    d = jload(LADDER, "prod-tests.json")
+    cold = d["cold_start"]
+    tu = d["tool_use"]
+    W, H = 1000, 560
+    s = Svg(W, H, t, "Прод-тесты: холодный старт и цикл вызова инструмента",
+            "f1 и main128, один экземпляр. Столбец — медиана или одно значение, усы латентности — до p95. Меньше — лучше.")
+    s.legend(24, 92, [(t["f1"], "f1"), (t["m128"], "main128")])
+    # top: two single-value panels
+    top_panels = [("Холодный старт до готовности через edge, с", cold["f1_to_edge_ready_s"], cold["main128_to_edge_ready_s"], 150, [0, 50, 100, 150]),
+                  ("Весь прогон 160 запусков, с", tu["f1"]["elapsed_s"], tu["main128"]["elapsed_s"], 700, [0, 200, 400, 600])]
+    for idx, (title, a, b, vmax, ticks) in enumerate(top_panels):
+        px = 24 + idx * 490
+        x0, x1 = px, px + 380
+        s.text(px, 128, title, 13, t["fg"], weight=600)
+        _ticks(s, t, x0, x1, vmax, ticks, 136, 186)
+        for k, (v, colour) in enumerate(((a, t["f1"]), (b, t["m128"]))):
+            _bar_with_whisker(s, t, x0, x1, vmax, 142 + k * 24, 18, v, None, colour, f"{v:.1f}", t["m128text"] if k else t["fg"], k == 1)
+    # bottom: latency rows
+    s.text(24, 232, "Латентность, с (медиана, усы — до p95)", 13, t["fg"], weight=600)
+    rows = [("thinking выкл", "round_total_s", "Раунд целиком"), ("thinking выкл", "stream_ttft_s", "TTFT потока"),
+            ("thinking вкл", "round_total_s", "Раунд целиком"), ("thinking вкл", "stream_ttft_s", "TTFT потока")]
+    x0, x1, vmax = 270, 760, 9.0
+    top, rowh = 252, 62
+    _ticks(s, t, x0, x1, vmax, [0, 2, 4, 6, 8], top - 6, top + rowh * len(rows))
+    keymap = {"thinking выкл": "thinking_off", "thinking вкл": "thinking_on"}
+    for i, (mode, key, name) in enumerate(rows):
+        y = top + i * rowh
+        if i % 2 == 1:
+            s.rect(12, y - 4, W - 24, rowh, t["panel"], rx=6, opacity=0.55)
+        s.text(24, y + 22, name, 14, t["fg"], weight=600)
+        s.text(24, y + 40, mode, 11, t["muted"])
+        for k, (tag, colour) in enumerate((("f1", t["f1"]), ("main128", t["m128"]))):
+            m = tu[tag]["latency_s"][keymap[mode]][key]
+            _bar_with_whisker(s, t, x0, x1, vmax, y + 6 + k * 24, 16, m["median"], (m["median"], m["p95"]), colour,
+                              f"{m['median']:.2f}", t["m128text"] if k else t["fg"], k == 1)
+    s.text(24, H - 36, "Качество одинаковое: 142/160 в целом, 106/120 на задачах с инструментами, итоговый ответ верен 117/120. Сетевая приёмка 59/60 у обоих.", 11, t["faint"])
+    s.text(24, H - 20, "Холодный старт — по одному замеру. Источник: results/ladder/prod-tests.json.", 11, t["faint"])
+    return s
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     written = []
@@ -890,6 +1115,12 @@ def main():
         written.append(prefill_timeline(t).save("prefill-timeline", theme))
         written.append(ladder_waterfall(t, "decode").save("ladder-decode16k", theme))
         written.append(ladder_waterfall(t, "ttft").save("ladder-ttft64", theme))
+        written.append(release_ab_chart(t).save("release-ab", theme))
+        written.append(elapsed_chart(t).save("elapsed-128k", theme))
+        written.append(context64_chart(t).save("context-64k", theme))
+        written.append(fresh64_chart(t).save("fresh-64k", theme))
+        written.append(soak_chart(t).save("soak-latency", theme))
+        written.append(prod_chart(t).save("prod-tests", theme))
     for p in written:
         print(os.path.relpath(p, ROOT))
 
