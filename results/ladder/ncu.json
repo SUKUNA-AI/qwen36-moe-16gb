@@ -62,6 +62,19 @@
    },
    "fix_without_runtime_change": "start the ncu units with larger cgroup limits, e.g. systemd-run --property=MemoryHigh=42G --property=MemoryMax=44G (only for profile-final-*ncu* starts; the VM has ~46 GiB and prod is stopped during the window), 16K scopes only, one short window; gdb is not needed any more",
    "gdb_snapshots": "taken too late to be useful (the process was already terminated by the time the delayed watcher ran): the stall itself prevented them; the memory evidence replaces them"
+  },
+  {
+   "id": 5,
+   "mode": "eager decode, cgroup limits raised at run time (systemctl --user set-property --runtime MemoryHigh=42G MemoryMax=44G), warm_decode targets (3-request plan), first target = expert gather of f1",
+   "result": "stopped after the first capture (rc=124, 9 min): the owner's rule is to stop when the third attempt gives no result",
+   "findings": [
+    "the limits were applied (MemoryHigh 42G, MemoryMax 44G) and the server DID progress: the journal shows the plan requests served (278-token prefill, 3606-token prefill, decode, then the 278-token warm_decode request) - the stall begins at the first profiled kernel, not before",
+    "at that point unit memory was 43.7 GiB (the new cap), memory.events high=267070, memory.pressure full avg10 ~79 %, VM free 0 of 46 GiB: raising the cap only moved the ceiling",
+    "unit host memory under ncu = ~30 GiB normal peak + ~14 GiB, which matches the server's device footprint (nvidia-smi 13.4 GiB): the replay of a profiled kernel needs a save/restore copy of the touched device memory, and with the GPU ~85 % full the copy lands in host memory"
+   ],
+   "hypothesis_not_verified": "ncu kernel replay saves/restores device memory in host RAM because there is no free device memory for the copy",
+   "proposed_fix_in_tools_only": "profile with a small device footprint so ncu can keep its copies on the GPU: ncu variant configs with memory_ratio ~0.45 and context 32768 (config values of the profile-final-*ncu* variants, no runtime change), SpeedOfLight+Occupancy sections only (fewer replay passes), original cgroup limits; kernels, shapes and M are the same, only the expert cache and KV pool are smaller (the gather kernel's miss traffic differs, so its DRAM numbers need a caveat)",
+   "state_after": "production restarted and ready, ptrace_scope back to 1, experiment unit inactive"
   }
  ],
  "wanted": {
