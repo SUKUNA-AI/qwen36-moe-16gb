@@ -75,6 +75,21 @@
    "hypothesis_not_verified": "ncu kernel replay saves/restores device memory in host RAM because there is no free device memory for the copy",
    "proposed_fix_in_tools_only": "profile with a small device footprint so ncu can keep its copies on the GPU: ncu variant configs with memory_ratio ~0.45 and context 32768 (config values of the profile-final-*ncu* variants, no runtime change), SpeedOfLight+Occupancy sections only (fewer replay passes), original cgroup limits; kernels, shapes and M are the same, only the expert cache and KV pool are smaller (the gather kernel's miss traffic differs, so its DRAM numbers need a caveat)",
    "state_after": "production restarted and ready, ptrace_scope back to 1, experiment unit inactive"
+  },
+  {
+   "id": 6,
+   "mode": "WSL memory raised to 55 GiB by the owner (WSL restarted), cgroup limits 50G/52G at run time, warm_decode targets, f1 and main128 in pairs",
+   "result": "f1: 3 kernels captured (MoE decode, o-projection class, decode attention), ~3 min each, unit host memory peak ~49.5-50 GiB; main128 (L9): 3 of 3 attempted captures stalled to the 8 min limit at 51-52 GiB, also after memory_ratio was aligned to 0.75 (fp8 GEMV)",
+   "findings": [
+    "the f1 captures show the host-memory price of ncu replay is ~20 GiB over the normal ~30 GiB peak (fits only with the larger WSL memory)",
+    "main128 stalls where f1 does not, with the same memory_ratio: the difference is not the expert-cache size; main128 adds, in the decode path, the T3 shared-expert overlap on a second stream (and C0 copy priority, host embeddings, S3 kernels, D5 epilogue)",
+    "hypothesis (not verified): ncu serialises kernel execution, and the T3 overlap needs two kernels of different streams to run concurrently, so the serialised replay livelocks"
+   ],
+   "proposed_next": "profile main128 with QWEN36_DECODE_SHARED_OVERLAP=0 in the ncu variant config (tool-side env of the profile variant; the kernels are the same, they just run serially, which is how ncu runs them anyway); one window of ~15 min; if it passes, the overlap is confirmed as the blocker",
+   "operational": [
+    "a hard kill of the capture script left an orphan profile-request.py client that made the next pre-check refuse: kill the client too",
+    "T0 passed in local WSL time made the budget instantly expired once: pass epochs in UTC"
+   ]
   }
  ],
  "wanted": {

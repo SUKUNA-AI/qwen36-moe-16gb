@@ -1,0 +1,96 @@
+{
+ "schema": "ladder-ncu-kernels-1",
+ "date": "2026-10-16",
+ "mode": "eager decode (--cuda-graph-max-bs 0, same kernels), one launch per kernel, sections SpeedOfLight/MemoryWorkloadAnalysis/ComputeWorkloadAnalysis/Occupancy/LaunchStats, cache-control all, clock-control base, WSL memory 55 GiB, cgroup MemoryHigh 50G / MemoryMax 52G set at run time",
+ "caveats": [
+  "f1 only: the main128 captures did not complete (see ncu.json attempt 6)",
+  "tensor_pipe_active_pct_of_elapsed = sm__pipe_tensor_cycles_active.avg / sm__cycles_elapsed.avg, a proxy that was not validated against another counter (the 84 % of the cuBLAS o-projection looks high for a 16 us kernel)",
+  "ncu locks clocks to base: durations are longer than in production"
+ ],
+ "captured": [
+  {
+   "variant": "main-release",
+   "kernel": "moe_decode",
+   "category": "moe_decode_nvfp4",
+   "phase": "decode",
+   "request_scope": "warm_decode",
+   "grid": "(8, 64, 1)",
+   "block": "(128, 1, 1)",
+   "unit_host_memory_peak": "50G memory peak",
+   "metrics": {
+    "duration_ns": 23104.0,
+    "dram_throughput_pct": 48.6,
+    "memory_throughput_pct": 64.49,
+    "sm_throughput_pct": 64.49,
+    "achieved_occupancy_pct": 54.25,
+    "theoretical_occupancy_pct": 100.0,
+    "registers_per_thread": 40.0,
+    "tensor_pipe_active_pct_of_elapsed": 0.0,
+    "tensor_inst_share_pct": 0.0
+   }
+  },
+  {
+   "variant": "main-release",
+   "kernel": "oproj",
+   "category": "other_dense_gemm_gemv_reduction",
+   "phase": "decode",
+   "request_scope": "warm_decode",
+   "grid": "(1, 32, 3)",
+   "block": "(128, 1, 1)",
+   "unit_host_memory_peak": "49.6G memory peak",
+   "metrics": {
+    "duration_ns": 16256.0,
+    "dram_throughput_pct": 59.58,
+    "memory_throughput_pct": 59.58,
+    "sm_throughput_pct": 21.0,
+    "achieved_occupancy_pct": 11.19,
+    "theoretical_occupancy_pct": 25.0,
+    "registers_per_thread": 74.0,
+    "tensor_pipe_active_pct_of_elapsed": 84.01866983989662,
+    "tensor_inst_share_pct": 9.905668673674583
+   }
+  },
+  {
+   "variant": "main-release",
+   "kernel": "attention_decode",
+   "category": "full_attention",
+   "phase": "decode",
+   "request_scope": "warm_decode",
+   "grid": "(3, 1, 2)",
+   "block": "(32, 1, 4)",
+   "unit_host_memory_peak": "49.5G memory peak",
+   "metrics": {
+    "duration_ns": 10368.0,
+    "dram_throughput_pct": 7.85,
+    "memory_throughput_pct": 7.85,
+    "sm_throughput_pct": 1.3,
+    "achieved_occupancy_pct": 8.33,
+    "theoretical_occupancy_pct": 8.33,
+    "registers_per_thread": 248.0,
+    "tensor_pipe_active_pct_of_elapsed": 5.204984465757126,
+    "tensor_inst_share_pct": 3.963052159863427
+   }
+  }
+ ],
+ "not_captured": [
+  {
+   "variant": "main-release-next-d5",
+   "kernels": [
+    "oproj",
+    "fp8_gemv",
+    "attention_decode",
+    "gather",
+    "moe_decode",
+    "moe_prefill_gemm"
+   ]
+  },
+  {
+   "variant": "main-release",
+   "kernels": [
+    "fp8_gemv (config clash, not retried)",
+    "gather",
+    "moe_prefill_gemm"
+   ]
+  }
+ ]
+}
