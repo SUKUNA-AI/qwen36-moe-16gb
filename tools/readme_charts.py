@@ -5,10 +5,13 @@ No third-party packages. Three series are shown: the original FreeToken (bf128),
 (14.10.2026) and the main128 release (16.10.2026).
 
 - The old matrix of 13-14.10 (bf128 and f1) is copied from the README of the f1 release (OLD below).
+- "f1" is the previous release (the installed f1 runtime). "f1L0" is the f1 settings on the new
+  code (profile main-release in the A/B of 16.10); they are different things and are never mixed.
 - main128 is NOT a direct measurement against the original. It is chained: the f1 value of the old
-  matrix times the main128/f1 ratio of the release A/B of 16.10 (results/ladder/ab-release.json,
-  5 pairs, medians). The 64K row has no A/B point; its ratio comes from the 2-hour soaks
-  (results/ladder/gates.json) and is marked with a dagger.
+  matrix times the main128/f1 ratio of two consecutive matrices of one session on 16.10 (f1:
+  results/ladder/ab-f1old.json, main128: results/ladder/ab-f1new.json, 3 pairs each, medians).
+  The 64K row has no point there; its ratio comes from the 2-hour soaks (results/ladder/gates.json)
+  and is marked with a dagger.
 - Nsight Systems numbers of main128 are read from results/ladder/nsys.json (step L9); the Nsight
   Compute charts still show f1, because Nsight Compute could not profile the model
   (results/ladder/ncu.json).
@@ -171,14 +174,15 @@ LONG_OLD = {
 
 
 def _ab_cases():
-    ab = jload(LADDER, "ab-release.json")
-    return ab["steps"][0]["cases"], ab["steps"][1]["cases"]
+    """f1 (installed runtime, matrix s5-f1old), main128 and f1L0 (matrix s5-f1new): consecutive, one session."""
+    old = jload(LADDER, "ab-f1old.json")
+    new = jload(LADDER, "ab-f1new.json")
+    return old["steps"][0]["cases"], new["steps"][1]["cases"], new["steps"][0]["cases"]
 
 
 def release_matrix():
     """Rows of the three-way matrix. All main128 values are chained (see the module docstring)."""
-    f1c, mc = _ab_cases()
-    cmp_new = jload(LADDER, "release-ab-compare.json")
+    f1c, mc, _ = _ab_cases()
     cmp_old = jload(MATRIX_DIR, "final-f1-m-main-release-vs-bf128-comparison.json")
     soak = jload(LADDER, "gates.json")["soak"]["reference_comparison"]["per_length"]["65536"]
 
@@ -194,7 +198,8 @@ def release_matrix():
             t_f1, t_m = f1c[key]["ttft_s"]["median"], mc[key]["ttft_s"]["median"]
             d_f1, d_m = f1c[key]["decode_tps"]["median"], mc[key]["decode_tps"]["median"]
             src = "A/B"
-            e_new = gm(cmp_new, case, length)
+            # whole request: ratio of medians of two consecutive matrices (not paired, no interval)
+            e_new = f1c[key]["elapsed_s"]["median"] / mc[key]["elapsed_s"]["median"]
         else:                                   # 64K: no point in the A/B, take the 2 h soaks
             t_f1, t_m = soak["reference"]["ttft_median"], soak["candidate"]["ttft_median"]
             d_f1, d_m = soak["reference"]["decode_median"], soak["candidate"]["decode_median"]
@@ -212,7 +217,7 @@ def release_matrix():
             el_f1_vs_orig=e_old, el_m_vs_f1=e_new,
             el_m_vs_orig=(e_old * e_new) if (e_old and e_new) else None,
             today=dict(ttft_f1=t_f1, ttft_m=t_m, dec_f1=d_f1, dec_m=d_m)))
-    return out, dict(old=cmp_old["tool_task"], new=cmp_new["tool_task"])
+    return out, dict(old=cmp_old["tool_task"], new=jload(LADDER, "release-ab-compare.json")["tool_task"])
 
 
 def sec2_rows():
@@ -330,7 +335,8 @@ VRAM = [
 
 # Ladder (results/ladder/summary.json): step id in the data, label of the lever for the waterfall charts.
 LADDER_STEPS = [
-    ("L0", "f1"), ("L1", "короткий маршрут prefill"), ("L2", "CUDA-ядра GDN для prefill"),
+    ("F1", "f1 (прошлый выпуск)"), ("L0", "f1L0: f1 на новом коде"),
+    ("L1", "короткий маршрут prefill"), ("L2", "CUDA-ядра GDN для prefill"),
     ("L3", "shared-эксперт параллельно с подкачкой"), ("L4", "эмбеддинги в RAM хоста"),
     ("L5", "больше слотов экспертов"), ("L6", "бит-точные ядра декода"),
     ("L7", "копирование без ожидания GEMM"), ("L8", "короткие куски: только выбранные эксперты"),
@@ -342,7 +348,8 @@ def ladder_medians(kind, length):
     """Medians of the ladder steps L0..L9 (3 pairs each): kind 'ttft_s' or 'decode_tps'."""
     summ = jload(LADDER, "summary.json")
     by = {s["id"]: s for s in summ["steps"]}
-    return [by[i]["ab"]["stats"][kind][str(length)]["median"] for i, _ in LADDER_STEPS]
+    f1 = jload(LADDER, "ab-f1old.json")["steps"][0]["cases"]["fresh_%d" % length][kind]["median"]
+    return [f1 if i == "F1" else by[i]["ab"]["stats"][kind][str(length)]["median"] for i, _ in LADDER_STEPS]
 
 
 def load_nsight():
@@ -386,7 +393,7 @@ def paired_bars(t, kind):
     s = Svg(W, H, t, title, sub)
     x0, x1 = 230, W - 290
     span = x1 - x0
-    s.legend(24, 92, [(t["base"], "Исходный FreeToken (bf128)"), (t["f1"], "f1, 14.10"), (t["m128"], "main128, 16.10")])
+    s.legend(24, 92, [(t["base"], "Исходный FreeToken (bf128)"), (t["f1"], "f1, прошлый выпуск"), (t["m128"], "main128, 16.10")])
     xa, xb = W - 150, W - 24
     s.text(xa, 92, "main128 к исходному", 12, t["muted"], anchor="end")
     s.text(xb, 92, "к f1", 12, t["muted"], anchor="end")
@@ -420,12 +427,12 @@ def paired_bars(t, kind):
             s.text(x0 + w + 6, by + 11, txt, 12, fill, weight=600 if k else None)
         s.text(xa, y + rowh / 2 + 6, b1, 17, t["fg"], anchor="end", weight=700)
         s.text(xb, y + rowh / 2 + 6, b2, 17, t["m128text"], anchor="end", weight=700)
-    s.text(24, H - 40, "main128 здесь не прямой замер против исходного: значение f1 из матрицы 13–14.10 × отношение main128/f1 из релизного A/B 16.10 "
-           "(5 пар, медианы).", 11, t["faint"])
-    s.text(24, H - 24, "Множитель к исходному = (исходный / f1 в матрице) × (f1 / main128 в A/B). † 64K: в A/B такой длины нет, "
-           "отношение взято из 2-часовых soak (разные дни).", 11, t["faint"])
-    s.text(24, H - 8, "Промпт 64 токена: f1 в A/B 16.10 вдвое быстрее, чем в матрице 13.10 (0.39 против 0.79 с), поэтому приведённое значение "
-           "консервативно: прямой замер main128 — 0.199 с.", 11, t["faint"])
+    s.text(24, H - 40, "main128 здесь не прямой замер против исходного: значение f1 из матрицы 13–14.10 × отношение main128/f1 из двух матриц подряд "
+           "16.10 (по 3 пары).", 11, t["faint"])
+    s.text(24, H - 24, "Множитель к исходному = (исходный / f1 в матрице 13–14.10) × (f1 / main128 16.10). † 64K: в матрицах 16.10 такой длины нет, "
+           "отношение из 2-часовых soak.", 11, t["faint"])
+    s.text(24, H - 8, "Промпт 64 токена: f1 16.10 в 1.9 раза быстрее, чем в матрице 13.10 (0.41 против 0.79 с), поэтому приведённое значение "
+           "консервативно: прямой замер main128 — 0.200 с.", 11, t["faint"])
     return s
 
 
@@ -473,7 +480,7 @@ def length_chart(t):
         for j, v in enumerate(vals):
             s.text(x0 + cw * (j + 0.5), ry, f"{v:.2f}" if v < 10 else f"{v:.1f}", 13,
                    t["m128text"] if k == 2 else t["fg"], anchor="middle", weight=600 if k == 2 else None)
-    s.text(24, H - 46, "4K–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × отношение main128/f1 из релизного A/B 16.10. "
+    s.text(24, H - 46, "4K–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × отношение main128/f1 из двух матриц подряд 16.10. "
            "† 64K: отношение из soak.", 11, t["faint"])
     s.text(24, H - 30, "250K: исходная механика — Triton, чанк 4096, замер 13.10; f1 — медиана 11 прогонов; main128 — прямой замер "
            "рычагов main128", 11, t["faint"])
@@ -525,8 +532,8 @@ def decode_length_chart(t):
             s.text(x0 + cw * (j + 0.5), ry, "—" if v is None else f"{v:.1f}", 13,
                    t["m128text"] if k == 2 else (t["faint"] if v is None else t["fg"]), anchor="middle",
                    weight=600 if k == 2 else None)
-    s.text(24, H - 46, "64–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × отношение main128/f1 из A/B 16.10. "
-           "† 64K: отношение из soak. Проценты — main128 к исходному (250K — к f1).", 11, t["faint"])
+    s.text(24, H - 46, "64–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × (main128/f1 из матриц 16.10). "
+           "† 64K: из soak. Проценты — main128 к исходному (250K — к f1).", 11, t["faint"])
     s.text(24, H - 30, "250K: у исходной механики замера скорости генерации нет — точка не нарисована; f1 — медиана 11 прогонов; "
            "main128 — прямой замер", 11, t["faint"])
     s.text(24, H - 14, "рычагов main128 на профиле long256 (медиана 3). Скорость падает с длиной: attention читает растущий KV-кэш.",
@@ -547,7 +554,7 @@ def breakdown_chart(t):
     top, rowh = 104, 62
     H = top + rowh * len(SCENARIOS) + 92
     s = Svg(W, H, t, "Куда уходит время: Nsight Systems, релиз main128",
-            "Доли окна prefill или шага decode, %. Сумма по строке — 100%. В скобках — то же у f1.")
+            "Доли окна prefill или шага decode, %. Сумма по строке — 100%. В скобках — то же у f1L0 (настройки f1 на новом коде).")
     x0, x1 = 24, W - 24
     span = x1 - x0
     for i, (req, phase, name) in enumerate(SCENARIOS):
@@ -555,9 +562,9 @@ def breakdown_chart(t):
         _, total0, _ = nsys_scenario("l0", req, phase)
         y = top + i * rowh
         if phase == "prefill":
-            when = f"{_fmt_ms(total)} (f1: {_fmt_ms(total0)})"
+            when = f"{_fmt_ms(total)} (f1L0: {_fmt_ms(total0)})"
         else:
-            when = f"{total:.2f} мс на токен (f1: {total0:.2f})"
+            when = f"{total:.2f} мс на токен (f1L0: {total0:.2f})"
         s.text(x0, y, name, 14, t["fg"], weight=600)
         s.text(x0 + len(name) * 14 * 0.57 + 10, y, when, 13, t["muted"])
         idle = 100 * b["cpu_gaps_gpu_idle"] / total
@@ -625,7 +632,7 @@ def ladder_waterfall(t, kind):
         note = "Красный — ступень не улучшила метрику (изменения до 0.01 с в пределах разброса 3 пар)."
     labels = [lab for _, lab in LADDER_STEPS] + ["main128"]
     n = len(labels)
-    W, H = 1000, 500
+    W, H = 1000, 520
     s = Svg(W, H, t, title, sub)
     x0, x1, y0, y1 = 70, W - 24, 340, 110
     colw = (x1 - x0) / n
@@ -660,17 +667,21 @@ def ladder_waterfall(t, kind):
         words = lab.split()
         lines, cur = [], ""
         for w_ in words:
-            if cur and len(cur) + 1 + len(w_) > 12:
+            if cur and len(cur) + 1 + len(w_) > 11:
                 lines.append(cur)
                 cur = w_
             else:
                 cur = (cur + " " + w_).strip()
         lines.append(cur)
         for j, ln in enumerate(lines):
-            s.text(cx, y0 + 20 + j * 14, ln, 11.5, t["muted"] if 0 < i < n - 1 else t["fg"], anchor="middle")
-    s.text(24, H - 32, "Источник: results/ladder/summary.json (A/B лесенки, 3 пары). Не вошли в релиз: предвыборка экспертов "
-           "на слой вперёд и прогрев слотов из prefill.", 11, t["faint"])
-    s.text(24, H - 16, note, 11, t["faint"])
+            s.text(cx, y0 + 20 + j * 14, ln, 11, t["muted"] if 0 < i < n - 1 else t["fg"], anchor="middle")
+    foot = ["Источник: results/ladder/summary.json (A/B лесенки, 3 пары); f1 — прошлый выпуск, results/ladder/ab-f1old.json "
+            "(другая матрица той же сессии 16.10).",
+            "f1L0 — настройки f1 на новом коде: вклад общих правок кода без рычагов, сопоставим с разбросом f1 против собственного алиаса.",
+            "Не вошли в релиз: предвыборка экспертов на слой вперёд и прогрев слотов из prefill.",
+            note]
+    for k, ln in enumerate(foot):
+        s.text(24, H - 16 * (len(foot) - k), ln, 11, t["faint"])
     return s
 
 

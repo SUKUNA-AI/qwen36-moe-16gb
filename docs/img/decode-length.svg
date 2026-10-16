@@ -53,15 +53,15 @@
 <circle cx="267.5" cy="222.1" r="5" fill="#4d8c00" stroke="#f6f8fa" stroke-width="2"/>
 <circle cx="423.3" cy="228.6" r="5" fill="#4d8c00" stroke="#f6f8fa" stroke-width="2"/>
 <circle cx="795.3" cy="275.6" r="5" fill="#4d8c00" stroke="#f6f8fa" stroke-width="2"/>
-<polyline points="80.2,157.1 91.7,143.0 126.9,156.3 267.5,187.3 423.3,210.1 795.3,254.4" fill="none" stroke="#0b6bcb" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="80.2" cy="157.1" r="5" fill="#0b6bcb" stroke="#f6f8fa" stroke-width="2"/>
-<circle cx="91.7" cy="143.0" r="5" fill="#0b6bcb" stroke="#f6f8fa" stroke-width="2"/>
-<circle cx="126.9" cy="156.3" r="5" fill="#0b6bcb" stroke="#f6f8fa" stroke-width="2"/>
+<polyline points="80.2,156.0 91.7,144.7 126.9,156.2 267.5,187.3 423.3,206.4 795.3,254.4" fill="none" stroke="#0b6bcb" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="80.2" cy="156.0" r="5" fill="#0b6bcb" stroke="#f6f8fa" stroke-width="2"/>
+<circle cx="91.7" cy="144.7" r="5" fill="#0b6bcb" stroke="#f6f8fa" stroke-width="2"/>
+<circle cx="126.9" cy="156.2" r="5" fill="#0b6bcb" stroke="#f6f8fa" stroke-width="2"/>
 <circle cx="267.5" cy="187.3" r="5" fill="#0b6bcb" stroke="#f6f8fa" stroke-width="2"/>
-<circle cx="423.3" cy="210.1" r="5" fill="#0b6bcb" stroke="#f6f8fa" stroke-width="2"/>
+<circle cx="423.3" cy="206.4" r="5" fill="#0b6bcb" stroke="#f6f8fa" stroke-width="2"/>
 <circle cx="795.3" cy="254.4" r="5" fill="#0b6bcb" stroke="#f6f8fa" stroke-width="2"/>
-<text x="132.9" y="142.3" font-size="15" fill="#1f2328" text-anchor="middle" font-weight="700">+56%</text>
-<text x="429.3" y="196.1" font-size="15" fill="#1f2328" text-anchor="middle" font-weight="700">+34%</text>
+<text x="132.9" y="142.2" font-size="15" fill="#1f2328" text-anchor="middle" font-weight="700">+56%</text>
+<text x="429.3" y="192.4" font-size="15" fill="#1f2328" text-anchor="middle" font-weight="700">+37%</text>
 <text x="781.3" y="240.4" font-size="15" fill="#1f2328" text-anchor="end" font-weight="700">+25% к f1</text>
 <text x="24.0" y="430.0" font-size="12" fill="#59636e" text-anchor="start" font-weight="600">Ток/с</text>
 <text x="142.5" y="430.0" font-size="12" fill="#59636e" text-anchor="middle" font-weight="600">64</text>
@@ -89,13 +89,13 @@
 <text x="767.5" y="484.0" font-size="13" fill="#1f2328" text-anchor="middle">60.8</text>
 <rect x="24.0" y="498.0" width="12.0" height="12.0" rx="3" fill="#0b6bcb"/>
 <text x="42.0" y="508.0" font-size="13" fill="#1f2328" text-anchor="start">main128</text>
-<text x="142.5" y="508.0" font-size="13" fill="#0a58a8" text-anchor="middle" font-weight="600">146.1</text>
-<text x="267.5" y="508.0" font-size="13" fill="#0a58a8" text-anchor="middle" font-weight="600">156.2</text>
+<text x="142.5" y="508.0" font-size="13" fill="#0a58a8" text-anchor="middle" font-weight="600">146.9</text>
+<text x="267.5" y="508.0" font-size="13" fill="#0a58a8" text-anchor="middle" font-weight="600">155.0</text>
 <text x="392.5" y="508.0" font-size="13" fill="#0a58a8" text-anchor="middle" font-weight="600">146.7</text>
 <text x="517.5" y="508.0" font-size="13" fill="#0a58a8" text-anchor="middle" font-weight="600">124.4</text>
-<text x="642.5" y="508.0" font-size="13" fill="#0a58a8" text-anchor="middle" font-weight="600">107.9</text>
+<text x="642.5" y="508.0" font-size="13" fill="#0a58a8" text-anchor="middle" font-weight="600">110.6</text>
 <text x="767.5" y="508.0" font-size="13" fill="#0a58a8" text-anchor="middle" font-weight="600">76.0</text>
-<text x="24.0" y="566.0" font-size="11" fill="#8c959f" text-anchor="start">64–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × отношение main128/f1 из A/B 16.10. † 64K: отношение из soak. Проценты — main128 к исходному (250K — к f1).</text>
+<text x="24.0" y="566.0" font-size="11" fill="#8c959f" text-anchor="start">64–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × (main128/f1 из матриц 16.10). † 64K: из soak. Проценты — main128 к исходному (250K — к f1).</text>
 <text x="24.0" y="582.0" font-size="11" fill="#8c959f" text-anchor="start">250K: у исходной механики замера скорости генерации нет — точка не нарисована; f1 — медиана 11 прогонов; main128 — прямой замер</text>
 <text x="24.0" y="598.0" font-size="11" fill="#8c959f" text-anchor="start">рычагов main128 на профиле long256 (медиана 3). Скорость падает с длиной: attention читает растущий KV-кэш.</text>
 </svg>

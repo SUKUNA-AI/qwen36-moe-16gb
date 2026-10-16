@@ -6,9 +6,9 @@
 <rect x="24.0" y="82.0" width="12.0" height="12.0" rx="3" fill="#4f5864"/>
 <text x="42.0" y="92.0" font-size="13" fill="#9198a1" text-anchor="start">Исходный FreeToken (bf128)</text>
 <rect x="253.3" y="82.0" width="12.0" height="12.0" rx="3" fill="#76b900"/>
-<text x="271.3" y="92.0" font-size="13" fill="#9198a1" text-anchor="start">f1, 14.10</text>
-<rect x="358.8" y="82.0" width="12.0" height="12.0" rx="3" fill="#58a6ff"/>
-<text x="376.8" y="92.0" font-size="13" fill="#9198a1" text-anchor="start">main128, 16.10</text>
+<text x="271.3" y="92.0" font-size="13" fill="#9198a1" text-anchor="start">f1, прошлый выпуск</text>
+<rect x="424.3" y="82.0" width="12.0" height="12.0" rx="3" fill="#58a6ff"/>
+<text x="442.3" y="92.0" font-size="13" fill="#9198a1" text-anchor="start">main128, 16.10</text>
 <text x="850.0" y="92.0" font-size="12" fill="#9198a1" text-anchor="end">main128 к исходному</text>
 <text x="976.0" y="92.0" font-size="12" fill="#9198a1" text-anchor="end">к f1</text>
 <line x1="230.0" y1="118.0" x2="230.0" y2="652.0" stroke="#262c34" stroke-width="1"/>
@@ -35,27 +35,27 @@
 <text x="525.2" y="142.0" font-size="12" fill="#9198a1" text-anchor="start">96.4</text>
 <rect x="230.0" y="148.0" width="368.4" height="13.0" rx="3" fill="#76b900"/>
 <text x="604.4" y="159.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="600">122.8</text>
-<rect x="230.0" y="165.0" width="438.2" height="13.0" rx="3" fill="#58a6ff"/>
-<text x="674.2" y="176.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">146.1</text>
+<rect x="230.0" y="165.0" width="440.7" height="13.0" rx="3" fill="#58a6ff"/>
+<text x="676.7" y="176.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">146.9</text>
 <text x="850.0" y="163.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+52%</text>
-<text x="976.0" y="163.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+19%</text>
+<text x="976.0" y="163.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+20%</text>
 <rect x="12.0" y="186.0" width="976.0" height="66.0" rx="6" fill="#0d1117" fill-opacity="0.55"/>
 <text x="24.0" y="227.0" font-size="14" fill="#e6edf3" text-anchor="start">Свежий промпт 4K</text>
 <rect x="230.0" y="197.0" width="296.7" height="13.0" rx="3" fill="#4f5864"/>
 <text x="532.7" y="208.0" font-size="12" fill="#9198a1" text-anchor="start">98.9</text>
 <rect x="230.0" y="214.0" width="373.5" height="13.0" rx="3" fill="#76b900"/>
 <text x="609.5" y="225.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="600">124.5</text>
-<rect x="230.0" y="231.0" width="468.7" height="13.0" rx="3" fill="#58a6ff"/>
-<text x="704.7" y="242.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">156.2</text>
-<text x="850.0" y="229.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+58%</text>
+<rect x="230.0" y="231.0" width="465.1" height="13.0" rx="3" fill="#58a6ff"/>
+<text x="701.1" y="242.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">155.0</text>
+<text x="850.0" y="229.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+57%</text>
 <text x="976.0" y="229.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+25%</text>
 <text x="24.0" y="293.0" font-size="14" fill="#e6edf3" text-anchor="start">Свежий промпт 16K</text>
 <rect x="230.0" y="263.0" width="282.6" height="13.0" rx="3" fill="#4f5864"/>
 <text x="518.6" y="274.0" font-size="12" fill="#9198a1" text-anchor="start">94.2</text>
 <rect x="230.0" y="280.0" width="357.3" height="13.0" rx="3" fill="#76b900"/>
 <text x="593.3" y="291.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="600">119.1</text>
-<rect x="230.0" y="297.0" width="440.1" height="13.0" rx="3" fill="#58a6ff"/>
-<text x="676.1" y="308.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">146.7</text>
+<rect x="230.0" y="297.0" width="440.2" height="13.0" rx="3" fill="#58a6ff"/>
+<text x="676.2" y="308.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">146.7</text>
 <text x="850.0" y="295.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+56%</text>
 <text x="976.0" y="295.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+23%</text>
 <rect x="12.0" y="318.0" width="976.0" height="66.0" rx="6" fill="#0d1117" fill-opacity="0.55"/>
@@ -73,30 +73,30 @@
 <text x="478.1" y="406.0" font-size="12" fill="#9198a1" text-anchor="start">80.7</text>
 <rect x="230.0" y="412.0" width="283.8" height="13.0" rx="3" fill="#76b900"/>
 <text x="519.8" y="423.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="600">94.6</text>
-<rect x="230.0" y="429.0" width="323.8" height="13.0" rx="3" fill="#58a6ff"/>
-<text x="559.8" y="440.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">107.9</text>
-<text x="850.0" y="427.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+34%</text>
-<text x="976.0" y="427.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+14%</text>
+<rect x="230.0" y="429.0" width="331.8" height="13.0" rx="3" fill="#58a6ff"/>
+<text x="567.8" y="440.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">110.6</text>
+<text x="850.0" y="427.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+37%</text>
+<text x="976.0" y="427.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+17%</text>
 <rect x="12.0" y="450.0" width="976.0" height="66.0" rx="6" fill="#0d1117" fill-opacity="0.55"/>
 <text x="24.0" y="491.0" font-size="14" fill="#e6edf3" text-anchor="start">Продолжение диалога, 4K</text>
 <rect x="230.0" y="461.0" width="319.2" height="13.0" rx="3" fill="#4f5864"/>
 <text x="555.2" y="472.0" font-size="12" fill="#9198a1" text-anchor="start">106.4</text>
 <rect x="230.0" y="478.0" width="380.7" height="13.0" rx="3" fill="#76b900"/>
 <text x="616.7" y="489.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="600">126.9</text>
-<rect x="230.0" y="495.0" width="471.9" height="13.0" rx="3" fill="#58a6ff"/>
-<text x="707.9" y="506.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">157.3</text>
-<text x="850.0" y="493.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+48%</text>
-<text x="976.0" y="493.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+24%</text>
+<rect x="230.0" y="495.0" width="480.1" height="13.0" rx="3" fill="#58a6ff"/>
+<text x="716.1" y="506.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">160.0</text>
+<text x="850.0" y="493.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+50%</text>
+<text x="976.0" y="493.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+26%</text>
 <text x="24.0" y="549.0" font-size="14" fill="#e6edf3" text-anchor="start">Правка последнего</text>
 <text x="24.0" y="565.0" font-size="14" fill="#e6edf3" text-anchor="start">сообщения, 16K</text>
 <rect x="230.0" y="527.0" width="271.2" height="13.0" rx="3" fill="#4f5864"/>
 <text x="507.2" y="538.0" font-size="12" fill="#9198a1" text-anchor="start">90.4</text>
 <rect x="230.0" y="544.0" width="337.2" height="13.0" rx="3" fill="#76b900"/>
 <text x="573.2" y="555.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="600">112.4</text>
-<rect x="230.0" y="561.0" width="417.5" height="13.0" rx="3" fill="#58a6ff"/>
-<text x="653.5" y="572.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">139.2</text>
-<text x="850.0" y="559.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+54%</text>
-<text x="976.0" y="559.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+24%</text>
+<rect x="230.0" y="561.0" width="440.2" height="13.0" rx="3" fill="#58a6ff"/>
+<text x="676.2" y="572.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">146.7</text>
+<text x="850.0" y="559.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+62%</text>
+<text x="976.0" y="559.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+31%</text>
 <rect x="12.0" y="582.0" width="976.0" height="66.0" rx="6" fill="#0d1117" fill-opacity="0.55"/>
 <text x="24.0" y="615.0" font-size="14" fill="#e6edf3" text-anchor="start">Правка результата</text>
 <text x="24.0" y="631.0" font-size="14" fill="#e6edf3" text-anchor="start">инструмента, 16K</text>
@@ -104,11 +104,11 @@
 <text x="520.7" y="604.0" font-size="12" fill="#9198a1" text-anchor="start">94.9</text>
 <rect x="230.0" y="610.0" width="340.2" height="13.0" rx="3" fill="#76b900"/>
 <text x="576.2" y="621.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="600">113.4</text>
-<rect x="230.0" y="627.0" width="431.9" height="13.0" rx="3" fill="#58a6ff"/>
-<text x="667.9" y="638.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">144.0</text>
-<text x="850.0" y="625.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+52%</text>
-<text x="976.0" y="625.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+27%</text>
-<text x="24.0" y="690.0" font-size="11" fill="#6e7681" text-anchor="start">main128 здесь не прямой замер против исходного: значение f1 из матрицы 13–14.10 × отношение main128/f1 из релизного A/B 16.10 (5 пар, медианы).</text>
-<text x="24.0" y="706.0" font-size="11" fill="#6e7681" text-anchor="start">Множитель к исходному = (исходный / f1 в матрице) × (f1 / main128 в A/B). † 64K: в A/B такой длины нет, отношение взято из 2-часовых soak (разные дни).</text>
-<text x="24.0" y="722.0" font-size="11" fill="#6e7681" text-anchor="start">Промпт 64 токена: f1 в A/B 16.10 вдвое быстрее, чем в матрице 13.10 (0.39 против 0.79 с), поэтому приведённое значение консервативно: прямой замер main128 — 0.199 с.</text>
+<rect x="230.0" y="627.0" width="440.9" height="13.0" rx="3" fill="#58a6ff"/>
+<text x="676.9" y="638.0" font-size="12" fill="#79b8ff" text-anchor="start" font-weight="600">147.0</text>
+<text x="850.0" y="625.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">+55%</text>
+<text x="976.0" y="625.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">+30%</text>
+<text x="24.0" y="690.0" font-size="11" fill="#6e7681" text-anchor="start">main128 здесь не прямой замер против исходного: значение f1 из матрицы 13–14.10 × отношение main128/f1 из двух матриц подряд 16.10 (по 3 пары).</text>
+<text x="24.0" y="706.0" font-size="11" fill="#6e7681" text-anchor="start">Множитель к исходному = (исходный / f1 в матрице 13–14.10) × (f1 / main128 16.10). † 64K: в матрицах 16.10 такой длины нет, отношение из 2-часовых soak.</text>
+<text x="24.0" y="722.0" font-size="11" fill="#6e7681" text-anchor="start">Промпт 64 токена: f1 16.10 в 1.9 раза быстрее, чем в матрице 13.10 (0.41 против 0.79 с), поэтому приведённое значение консервативно: прямой замер main128 — 0.200 с.</text>
 </svg>
