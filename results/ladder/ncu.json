@@ -1,6 +1,6 @@
 {
  "schema": "ladder-ncu-1",
- "status": "NOT_RUN",
+ "status": "DONE_DECODE_KERNELS",
  "kernels_profiled": 0,
  "attempts": [
   {
@@ -90,6 +90,13 @@
     "a hard kill of the capture script left an orphan profile-request.py client that made the next pre-check refuse: kill the client too",
     "T0 passed in local WSL time made the budget instantly expired once: pass epochs in UTC"
    ]
+  },
+  {
+   "id": 7,
+   "mode": "owner-approved window: production stopped, main128 profiled with QWEN36_DECODE_SHARED_OVERLAP=0, memory_ratio 0.75, cgroup limits infinity, 55 GiB WSL",
+   "result": "main128: oproj, fp8_gemv, attention_decode, gather, moe_decode captured (3-5 min each, unit host peak 51 GiB); f1: fp8_gemv and gather added to the earlier moe_decode, oproj, attention_decode",
+   "root_cause_confirmed": "with the shared/gather overlap switched off the same main128 build passes under ncu; with it on every capture stalled at the same memory_ratio and with larger limits. The blocker under ncu is the two-stream T3 overlap (ncu serialises kernels), in addition to the ~20 GiB host-memory price of kernel replay",
+   "production": "restarted, edge-ready in 129 s, ptrace_scope 1"
   }
  ],
  "wanted": {

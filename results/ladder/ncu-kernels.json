@@ -1,15 +1,254 @@
 {
- "schema": "ladder-ncu-kernels-1",
+ "schema": "ladder-ncu-kernels-2",
  "date": "2026-10-16",
- "mode": "eager decode (--cuda-graph-max-bs 0, same kernels), one launch per kernel, sections SpeedOfLight/MemoryWorkloadAnalysis/ComputeWorkloadAnalysis/Occupancy/LaunchStats, cache-control all, clock-control base, WSL memory 55 GiB, cgroup MemoryHigh 50G / MemoryMax 52G set at run time",
+ "mode": "eager decode (--cuda-graph-max-bs 0, same kernels), one launch per kernel (warm_decode request), sections SpeedOfLight/MemoryWorkloadAnalysis/ComputeWorkloadAnalysis/Occupancy/LaunchStats, cache-control all, clock-control base, WSL memory 55 GiB, cgroup limits removed at run time (infinity)",
+ "main128_variant": "main-release-next-d5 profiled with QWEN36_DECODE_SHARED_OVERLAP=0 and memory_ratio 0.75 (the kernels are the same; the shared/gather overlap is off because ncu serialises kernels and the two-stream overlap makes the replay stall)",
  "caveats": [
-  "f1 only: the main128 captures did not complete (see ncu.json attempt 6)",
-  "tensor_pipe_active_pct_of_elapsed = sm__pipe_tensor_cycles_active.avg / sm__cycles_elapsed.avg, a proxy that was not validated against another counter (the 84 % of the cuBLAS o-projection looks high for a 16 us kernel)",
-  "ncu locks clocks to base: durations are longer than in production"
+  "ncu locks clocks to base: durations are longer than in production",
+  "tensor_pipe_pct = sm__pipe_tensor_cycles_active.avg / sm__cycles_elapsed.avg, a proxy that was not validated against another counter",
+  "gather DRAM numbers: the miss traffic of main128 at memory_ratio 0.75 differs from the production 0.85",
+  "FP8 GEMV rank: main128 target is the most expensive decode instance, f1 target is its own rank-2 instance; compare the kernel class, not the exact launch"
+ ],
+ "table": [
+  {
+   "kernel": "moe_decode",
+   "variant": "f1",
+   "category": "moe_decode_nvfp4",
+   "duration_us": 23.1,
+   "dram_pct": 48.6,
+   "sm_pct": 64.49,
+   "tensor_pipe_pct": 0.0,
+   "occupancy_achieved_pct": 54.25,
+   "occupancy_theoretical_pct": 100.0,
+   "grid": "(8, 64, 1)",
+   "block": "(128, 1, 1)"
+  },
+  {
+   "kernel": "moe_decode",
+   "variant": "main128",
+   "category": "moe_decode_nvfp4",
+   "duration_us": 17.8,
+   "dram_pct": 64.53,
+   "sm_pct": 18.7,
+   "tensor_pipe_pct": 0.0,
+   "occupancy_achieved_pct": 15.05,
+   "occupancy_theoretical_pct": null,
+   "grid": "(0, 0, 0)",
+   "block": "(0, 0, 0)"
+  },
+  {
+   "kernel": "fp8_gemv",
+   "variant": "f1",
+   "category": "dense_fp8_gemv",
+   "duration_us": 36.4,
+   "dram_pct": 79.37,
+   "sm_pct": 13.63,
+   "tensor_pipe_pct": 54.514603825059574,
+   "occupancy_achieved_pct": 15.65,
+   "occupancy_theoretical_pct": 16.67,
+   "grid": "(192, 1, 1)",
+   "block": "(128, 1, 1)"
+  },
+  {
+   "kernel": "fp8_gemv",
+   "variant": "main128",
+   "category": "dense_fp8_gemv",
+   "duration_us": 36.2,
+   "dram_pct": 79.86,
+   "sm_pct": 13.7,
+   "tensor_pipe_pct": 54.78112042040278,
+   "occupancy_achieved_pct": 15.55,
+   "occupancy_theoretical_pct": null,
+   "grid": "(0, 0, 0)",
+   "block": "(0, 0, 0)"
+  },
+  {
+   "kernel": "oproj",
+   "variant": "f1",
+   "category": "other_dense_gemm_gemv_reduction",
+   "duration_us": 16.3,
+   "dram_pct": 59.58,
+   "sm_pct": 21.0,
+   "tensor_pipe_pct": 84.01866983989662,
+   "occupancy_achieved_pct": 11.19,
+   "occupancy_theoretical_pct": 25.0,
+   "grid": "(1, 32, 3)",
+   "block": "(128, 1, 1)"
+  },
+  {
+   "kernel": "oproj",
+   "variant": "main128",
+   "category": "dense_fp8_oproj_gemv",
+   "duration_us": 14.8,
+   "dram_pct": 65.46,
+   "sm_pct": 11.41,
+   "tensor_pipe_pct": 45.63134657443172,
+   "occupancy_achieved_pct": 11.27,
+   "occupancy_theoretical_pct": null,
+   "grid": "(0, 0, 0)",
+   "block": "(0, 0, 0)"
+  },
+  {
+   "kernel": "attention_decode",
+   "variant": "f1",
+   "category": "full_attention",
+   "duration_us": 10.4,
+   "dram_pct": 7.85,
+   "sm_pct": 1.3,
+   "tensor_pipe_pct": 5.204984465757126,
+   "occupancy_achieved_pct": 8.33,
+   "occupancy_theoretical_pct": 8.33,
+   "grid": "(3, 1, 2)",
+   "block": "(32, 1, 4)"
+  },
+  {
+   "kernel": "attention_decode",
+   "variant": "main128",
+   "category": "full_attention",
+   "duration_us": 10.5,
+   "dram_pct": 6.81,
+   "sm_pct": 1.29,
+   "tensor_pipe_pct": 5.144196258743581,
+   "occupancy_achieved_pct": 8.33,
+   "occupancy_theoretical_pct": null,
+   "grid": "(0, 0, 0)",
+   "block": "(0, 0, 0)"
+  },
+  {
+   "kernel": "gather",
+   "variant": "f1",
+   "category": "expert_mapped_host_gather",
+   "duration_us": 2.5,
+   "dram_pct": 0.54,
+   "sm_pct": 0.04,
+   "tensor_pipe_pct": 0.0,
+   "occupancy_achieved_pct": 2.08,
+   "occupancy_theoretical_pct": 0.0,
+   "grid": "(8, 1, 1)",
+   "block": "(32, 1, 1)"
+  },
+  {
+   "kernel": "gather",
+   "variant": "main128",
+   "category": "expert_mapped_host_gather",
+   "duration_us": 2.5,
+   "dram_pct": 1.34,
+   "sm_pct": 0.04,
+   "tensor_pipe_pct": 0.0,
+   "occupancy_achieved_pct": 2.08,
+   "occupancy_theoretical_pct": null,
+   "grid": "(0, 0, 0)",
+   "block": "(0, 0, 0)"
+  }
  ],
  "captured": [
   {
-   "variant": "main-release",
+   "variant": "main128",
+   "kernel": "oproj",
+   "category": "dense_fp8_oproj_gemv",
+   "phase": "decode",
+   "request_scope": "warm_decode",
+   "grid": "(0, 0, 0)",
+   "block": "(0, 0, 0)",
+   "unit_host_memory_peak": "51.3G memory peak",
+   "metrics": {
+    "duration_ns": 14752.0,
+    "dram_throughput_pct": 65.46,
+    "memory_throughput_pct": 65.46,
+    "sm_throughput_pct": 11.41,
+    "achieved_occupancy_pct": 11.27,
+    "theoretical_occupancy_pct": null,
+    "registers_per_thread": null,
+    "tensor_pipe_active_pct_of_elapsed": 45.63134657443172,
+    "tensor_inst_share_pct": 4.764563558533408
+   }
+  },
+  {
+   "variant": "main128",
+   "kernel": "fp8_gemv",
+   "category": "dense_fp8_gemv",
+   "phase": "decode",
+   "request_scope": "warm_decode",
+   "grid": "(0, 0, 0)",
+   "block": "(0, 0, 0)",
+   "unit_host_memory_peak": "51.1G memory peak",
+   "metrics": {
+    "duration_ns": 36224.0,
+    "dram_throughput_pct": 79.86,
+    "memory_throughput_pct": 79.86,
+    "sm_throughput_pct": 13.7,
+    "achieved_occupancy_pct": 15.55,
+    "theoretical_occupancy_pct": null,
+    "registers_per_thread": null,
+    "tensor_pipe_active_pct_of_elapsed": 54.78112042040278,
+    "tensor_inst_share_pct": 7.314285714285714
+   }
+  },
+  {
+   "variant": "main128",
+   "kernel": "attention_decode",
+   "category": "full_attention",
+   "phase": "decode",
+   "request_scope": "warm_decode",
+   "grid": "(0, 0, 0)",
+   "block": "(0, 0, 0)",
+   "unit_host_memory_peak": "51.1G memory peak",
+   "metrics": {
+    "duration_ns": 10464.0,
+    "dram_throughput_pct": 6.81,
+    "memory_throughput_pct": 6.81,
+    "sm_throughput_pct": 1.29,
+    "achieved_occupancy_pct": 8.33,
+    "theoretical_occupancy_pct": null,
+    "registers_per_thread": null,
+    "tensor_pipe_active_pct_of_elapsed": 5.144196258743581,
+    "tensor_inst_share_pct": 3.963052159863427
+   }
+  },
+  {
+   "variant": "main128",
+   "kernel": "gather",
+   "category": "expert_mapped_host_gather",
+   "phase": "decode",
+   "request_scope": "warm_decode",
+   "grid": "(0, 0, 0)",
+   "block": "(0, 0, 0)",
+   "unit_host_memory_peak": "51.5G memory peak",
+   "metrics": {
+    "duration_ns": 2496.0,
+    "dram_throughput_pct": 1.34,
+    "memory_throughput_pct": 5.18,
+    "sm_throughput_pct": 0.04,
+    "achieved_occupancy_pct": 2.08,
+    "theoretical_occupancy_pct": null,
+    "registers_per_thread": null,
+    "tensor_pipe_active_pct_of_elapsed": 0.0,
+    "tensor_inst_share_pct": 0.0
+   }
+  },
+  {
+   "variant": "main128",
+   "kernel": "moe_decode",
+   "category": "moe_decode_nvfp4",
+   "phase": "decode",
+   "request_scope": "warm_decode",
+   "grid": "(0, 0, 0)",
+   "block": "(0, 0, 0)",
+   "unit_host_memory_peak": "51.2G memory peak",
+   "metrics": {
+    "duration_ns": 17792.0,
+    "dram_throughput_pct": 64.53,
+    "memory_throughput_pct": 64.53,
+    "sm_throughput_pct": 18.7,
+    "achieved_occupancy_pct": 15.05,
+    "theoretical_occupancy_pct": null,
+    "registers_per_thread": null,
+    "tensor_pipe_active_pct_of_elapsed": 0.0,
+    "tensor_inst_share_pct": 0.0
+   }
+  },
+  {
+   "variant": "f1",
    "kernel": "moe_decode",
    "category": "moe_decode_nvfp4",
    "phase": "decode",
@@ -30,7 +269,7 @@
    }
   },
   {
-   "variant": "main-release",
+   "variant": "f1",
    "kernel": "oproj",
    "category": "other_dense_gemm_gemv_reduction",
    "phase": "decode",
@@ -51,7 +290,7 @@
    }
   },
   {
-   "variant": "main-release",
+   "variant": "f1",
    "kernel": "attention_decode",
    "category": "full_attention",
    "phase": "decode",
@@ -70,27 +309,51 @@
     "tensor_pipe_active_pct_of_elapsed": 5.204984465757126,
     "tensor_inst_share_pct": 3.963052159863427
    }
+  },
+  {
+   "variant": "f1",
+   "kernel": "fp8_gemv",
+   "category": "dense_fp8_gemv",
+   "phase": "decode",
+   "request_scope": "warm_decode",
+   "grid": "(192, 1, 1)",
+   "block": "(128, 1, 1)",
+   "unit_host_memory_peak": "49.3G memory peak",
+   "metrics": {
+    "duration_ns": 36448.0,
+    "dram_throughput_pct": 79.37,
+    "memory_throughput_pct": 79.37,
+    "sm_throughput_pct": 13.63,
+    "achieved_occupancy_pct": 15.65,
+    "theoretical_occupancy_pct": 16.67,
+    "registers_per_thread": 64.0,
+    "tensor_pipe_active_pct_of_elapsed": 54.514603825059574,
+    "tensor_inst_share_pct": 7.314285714285714
+   }
+  },
+  {
+   "variant": "f1",
+   "kernel": "gather",
+   "category": "expert_mapped_host_gather",
+   "phase": "decode",
+   "request_scope": "warm_decode",
+   "grid": "(8, 1, 1)",
+   "block": "(32, 1, 1)",
+   "unit_host_memory_peak": "49.3G memory peak",
+   "metrics": {
+    "duration_ns": 2496.0,
+    "dram_throughput_pct": 0.54,
+    "memory_throughput_pct": 5.2,
+    "sm_throughput_pct": 0.04,
+    "achieved_occupancy_pct": 2.08,
+    "theoretical_occupancy_pct": 0.0,
+    "registers_per_thread": 42.0,
+    "tensor_pipe_active_pct_of_elapsed": 0.0,
+    "tensor_inst_share_pct": 0.0
+   }
   }
  ],
  "not_captured": [
-  {
-   "variant": "main-release-next-d5",
-   "kernels": [
-    "oproj",
-    "fp8_gemv",
-    "attention_decode",
-    "gather",
-    "moe_decode",
-    "moe_prefill_gemm"
-   ]
-  },
-  {
-   "variant": "main-release",
-   "kernels": [
-    "fp8_gemv (config clash, not retried)",
-    "gather",
-    "moe_prefill_gemm"
-   ]
-  }
+  "moe_prefill_gemm (both variants)"
  ]
 }
