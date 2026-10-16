@@ -79,7 +79,7 @@
   {
    "id": 6,
    "mode": "WSL memory raised to 55 GiB by the owner (WSL restarted), cgroup limits 50G/52G at run time, warm_decode targets, f1 and main128 in pairs",
-   "result": "f1: 3 kernels captured (MoE decode, o-projection class, decode attention), ~3 min each, unit host memory peak ~49.5-50 GiB; main128 (L9): 3 of 3 attempted captures stalled to the 8 min limit at 51-52 GiB, also after memory_ratio was aligned to 0.75 (fp8 GEMV)",
+   "result": "f1L0 (main-release on the current overlay): 3 kernels captured (MoE decode, o-projection class, decode attention), ~3 min each, unit host memory peak ~49.5-50 GiB; main128 (L9): 3 of 3 attempted captures stalled to the 8 min limit at 51-52 GiB, also after memory_ratio was aligned to 0.75 (fp8 GEMV)",
    "findings": [
     "the f1 captures show the host-memory price of ncu replay is ~20 GiB over the normal ~30 GiB peak (fits only with the larger WSL memory)",
     "main128 stalls where f1 does not, with the same memory_ratio: the difference is not the expert-cache size; main128 adds, in the decode path, the T3 shared-expert overlap on a second stream (and C0 copy priority, host embeddings, S3 kernels, D5 epilogue)",
@@ -125,5 +125,6 @@
   ]
  },
  "available_compute_evidence": "results/nsight/ncu-component-kernels.json (component-level ncu of the kernels, not the model process)",
- "next_step": "one capture window with raised MemoryHigh/MemoryMax (see fix_without_runtime_change); needs the owner to stop production again"
+ "next_step": "one capture window with raised MemoryHigh/MemoryMax (see fix_without_runtime_change); needs the owner to stop production again",
+ "naming": "f1L0 = main-release on the current overlay; f1 = installed f1 runtime (optimization-f1old); main128 = main-release-next-d5 (ncu captures without the shared/gather overlap)"
 }
