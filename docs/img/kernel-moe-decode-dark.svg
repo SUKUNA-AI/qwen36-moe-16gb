@@ -44,8 +44,8 @@
 <rect x="1066" y="124" width="78" height="64" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
 <text x="1105.0" y="153.6" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Выход</text>
 <text x="1105.0" y="167.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">bf16</text>
-<text x="36" y="209.5" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">Сетка: blockIdx.x = маршрут (токен × 8 + k), blockIdx.y = полоса из 64 выходов; слот эксперта берётся из topk_ids (его проставил ensure_experts). Для M ≥ 3 полоса 128 выходов: сетки (M</text>
-<text x="36" y="225.025" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">× 8, 8) и (M × 8, 16).</text>
+<text x="36" y="209.5" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">Сетка: blockIdx.x = маршрут (токен × 8 + k), blockIdx.y = полоса из 64 выходов; слот эксперта берётся из topk_ids (его проставил ensure_experts). Для M ≥ 3 полоса 128 выходов: сетки</text>
+<text x="36" y="225.025" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">(M×8, 8) и (M×8, 16).</text>
 <rect x="36" y="292" width="30" height="30" rx="3" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
 <text x="51.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">0</text>
 <rect x="67" y="292" width="30" height="30" rx="3" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
