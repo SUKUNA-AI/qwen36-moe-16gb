@@ -1,0 +1,427 @@
+{
+ "schema": "ladder-gates-1",
+ "candidate": "main-release-next-d5",
+ "tree": "integration-main128-s8 68605f5",
+ "run": "rg-s5-20261015t2145",
+ "stages": {
+  "A": {
+   "verdict": "PASS",
+   "detail": "provenance=0 cpu=0 evidence=0 refsoak=0"
+  },
+  "B": {
+   "verdict": "PASS",
+   "detail": "quality-rg-s5-20261015t2145-q-main-release-next-d5.json"
+  },
+  "C": {
+   "verdict": "PASS",
+   "detail": "name=rg-s5-20261015t2145-c128"
+  },
+  "D": {
+   "verdict": "PASS",
+   "detail": "EXTERNAL: release A/B s5-rab-20261015t2100, not an own release-gates.sh run",
+   "external": {
+    "name": "s5-rab-20261015t2100",
+    "tree": "68605f5 (runtime identical to 3052011 and 19f8d1f for freetoken/)",
+    "baseline": "main-release",
+    "candidate": "main-release-next-d5",
+    "pairs": 5,
+    "verdict": "PASS",
+    "contract_pass": true,
+    "reasons": [
+     "noninferior_all_gating_cases",
+     "gain_at_least_5pct_bonferroni"
+    ],
+    "manifest_sha256": "1cf6651f394336d54b0158dd7ab1a9e972c61efcd2941c677e722a3e0f7ac0d2",
+    "comparison_sha256": "ba9ad4d06179fdbf9c090dd70271d9ccd060ff12be39bc45924e1c30e1737b06",
+    "matrix_sha256": "5f2b456895051ad20b80120a68c7728dc1dd737f9e5e34344ef64edd7a4dc9f5"
+   }
+  },
+  "E.pilot": {
+   "verdict": "PASS",
+   "detail": "soak_rc=0"
+  },
+  "E.soak": {
+   "verdict": "PASS",
+   "detail": "soak_rc=0"
+  }
+ },
+ "qcheck": {
+  "candidate": "teacher-main-release-next-d5",
+  "baseline": "teacher-bf128",
+  "expected": 125,
+  "observed": 125,
+  "finite_and_complete": true,
+  "max_abs": 0.0,
+  "max_relative_l2": 0.0,
+  "forced_targets_complete": true,
+  "ppl_gate_pass": true,
+  "quality_gate_pass": true,
+  "new_functional_failures": [],
+  "relative_perplexity_growth": 0.0,
+  "evidence_valid": true,
+  "bit_exact_pass": true,
+  "all_byte_equal": true,
+  "pass": true
+ },
+ "context_check_c128": {
+  "name": "rg-s5-20261015t2145-c128",
+  "functional_run": "65d91403fb864b62b2eb95253c826432",
+  "functional_failures": [
+   "executable-code",
+   "long-facts-16384"
+  ],
+  "new_functional_failures": [],
+  "boundary": true,
+  "backend": true,
+  "cancel": true
+ },
+ "soak_check": {
+  "mode": "release",
+  "verdict": "PASS",
+  "pass": true,
+  "failures_excluding_duration": [],
+  "vram_report_only": {
+   "report_threshold_bytes": 858993459,
+   "samples": 720,
+   "min_gpu_free_bytes": 1115467776,
+   "p1_gpu_free_bytes": 1148891136,
+   "p5_gpu_free_bytes": 1148891136,
+   "median_gpu_free_bytes": 1168027648.0,
+   "samples_below_threshold": 0,
+   "share_below_threshold": 0.0,
+   "minutes_below_threshold": 0.0
+  }
+ },
+ "reports_sha256": {
+  "quality-rg-s5-20261015t2145-q-main-release-next-d5": "cf12ad9cccac9842298ebe109686421286e581332642b7f04f1dc8d1fe75f4d4",
+  "rg-s5-20261015t2145-q-main-release-next-d5-teacher": "9dacefcf519906edd7e629b35b50eee45a051c67fd3835920eed4235615ab065",
+  "rg-s5-20261015t2145-q-main-release-next-d5-functional": "3289c176751cf6b9ec5cfbe67162fce3082b958cb1113d873be37880911ff920",
+  "rg-s5-20261015t2145-qrun-teacher": "81afe3633cf7733117c508c98fd674513ef9ece6af3f4bc9f40103aa7e153834",
+  "rg-s5-20261015t2145-qrun-functional": "d5370e98a85d91df75a811bede231b5890aa263634a6c188d9130a5f6f79c88c",
+  "rg-s5-20261015t2145-c128-functional": "5fb085023321b6a54630e98d2dc3736f81152e9cc6766a37bd753fb9644469a5",
+  "rg-s5-20261015t2145-c128-boundary": "4310e18af9ec7318c25517b828961502c3004383a442347baaa153027f5cfd79",
+  "rg-s5-20261015t2145-c128-cancel": "2b82979ed5b1a3654ad86cacdc44d7c5a49191826e7ad45d06e9dbc013eec7bb",
+  "soak-rg-s5-20261015t2145": "a2f795b93dec7b5355286fc0b55f822b3272c71292c36f7cf201309465547375",
+  "soak-rg-s5-20261015t2145-analysis": "b1acdf2019bb7b1e0fe0f2730c95032f5a980f98a81f41bf01052fc4cc9846e0",
+  "soak-rg-s5-20261015t2145-pilot": "639f0f8a5209586aa4305da6f8afe670741912e25966018f455572d2ebc3e035",
+  "rg-s5-20261015t2145-kernel-provenance": "b9e06fe7db06558b529d4644ce93bef6d925d5f2f6b06dae8730566145360319",
+  "s5-ref-20261015t1545": "c2c04f8c27da4c09a69797798dfa1da37b32d5ab265cafab95bc118d9a62efb4",
+  "s5-fb-20261015t1545": "9cae4e49f29d3736ac7b369aaed0c0683d88a21af2814b41ad89f2ffd181c50f"
+ },
+ "soak": {
+  "summary": {
+   "elapsed_s": 7210.089646269,
+   "required_seconds": 7200,
+   "complete": true,
+   "termination_reason": "duration_reached",
+   "status": "finished",
+   "iterations": 549,
+   "harness": {
+    "soak.py": "b4911728cb36e71d4a7634cbcd30df00c897fbe67b75422e0c69cb24091344f3",
+    "soak-analysis.py": "7db9fdadab7dc9b17f69439bc42937a933a3abc6fd67c50b8687ab3d34729262",
+    "bench.py": "fd9615310e24a755a6012985f345577ad58fc15b1fa389eef3edcba96b8aee41",
+    "quality.py": "8bdd21b85d3798b1bd152106bf4a2bc757bfd3389810bc3cd04ddd865963771d",
+    "request_metrics.py": "6aa1620679063856e8966ce0f935ff865bccf0e0c49e1a3206fd89030adbdab7"
+   },
+   "candidate": {
+    "expected_profile": "main-release-next-d5",
+    "expected_identity_sha256": "a728646f2146596c576fc7aaa11337125d6ef60fbc4e934ad827a56c76aaafe7",
+    "run_profile": "main-release-next-d5",
+    "run_identity_sha256": "a728646f2146596c576fc7aaa11337125d6ef60fbc4e934ad827a56c76aaafe7",
+    "runner_candidate": {
+     "profile": "main-release-next-d5",
+     "identity_sha256": "a728646f2146596c576fc7aaa11337125d6ef60fbc4e934ad827a56c76aaafe7",
+     "source": "manifest",
+     "manifest_name": "s5-rab-20261015t2100-manifest.json",
+     "manifest_sha256": "1cf6651f394336d54b0158dd7ab1a9e972c61efcd2941c677e722a3e0f7ac0d2"
+    },
+    "match": true,
+    "run_copy_matches": true
+   },
+   "identity": {
+    "profile": "main-release-next-d5",
+    "run_id": "19cdac4ea8194279800a3bb18a0021ad",
+    "identity_sha256": "a728646f2146596c576fc7aaa11337125d6ef60fbc4e934ad827a56c76aaafe7",
+    "checks": 243,
+    "source_checks": 26,
+    "max_check_gap_s": 30.721939389997715
+   },
+   "rows": {
+    "total": 800,
+    "passed": 800,
+    "iterations": 549
+   },
+   "joins": {
+    "client_requests": 891,
+    "server_rows": 891,
+    "engine_joins": 862,
+    "foreign_generation_rows": 0,
+    "unjoined_engine_rows": 0
+   },
+   "coverage": {
+    "passed": {
+     "fresh@64": 110,
+     "fresh@4096": 110,
+     "fresh@16384": 110,
+     "fresh@65536": 110,
+     "fresh@120000": 109,
+     "prefix": 110,
+     "arithmetic": 79,
+     "tool": 33,
+     "cancel": 29
+    },
+    "floors": {
+     "fresh@64": 12,
+     "fresh@4096": 12,
+     "fresh@16384": 12,
+     "fresh@65536": 12,
+     "fresh@120000": 12,
+     "prefix": 12,
+     "arithmetic": 9,
+     "tool": 4,
+     "cancel": 4
+    }
+   },
+   "state": {
+    "rows": 720,
+    "max_gap_s": 10.091105,
+    "start_edge_s": 8.853997,
+    "end_edge_s": -1.092552,
+    "counter_maxima": {
+     "metrics_dropped": 0,
+     "metrics_failed_writes": 0,
+     "resource_sample_failures": 0
+    },
+    "min_gpu_free_bytes": 1115467776,
+    "max_metrics_queue_depth": 0,
+    "stall_events": 0
+   },
+   "readers": {
+    "requests": {
+     "rotations": 0,
+     "recovered_files": 0,
+     "loss_events": 0,
+     "truncations": 0,
+     "malformed_lines": 0,
+     "read_errors": 0,
+     "lines": 891
+    },
+    "engine": {
+     "rotations": 1,
+     "recovered_files": 0,
+     "loss_events": 0,
+     "truncations": 0,
+     "malformed_lines": 0,
+     "read_errors": 0,
+     "lines": 862
+    },
+    "state": {
+     "rotations": 1,
+     "recovered_files": 0,
+     "loss_events": 0,
+     "truncations": 0,
+     "malformed_lines": 0,
+     "read_errors": 0,
+     "lines": 720
+    }
+   },
+   "monitor": {
+    "polls": 7761,
+    "max_poll_interval_s": 1.0836184740001045
+   },
+   "cases": {
+    "cancel_recovery_s": {
+     "n": 29,
+     "median": 0.4715452700002061,
+     "max": 0.480634233001183
+    },
+    "cancel_recovery_after_disconnect_s": {
+     "n": 29,
+     "median": 0.3665443480022077,
+     "max": 0.3769912940006179
+    },
+    "cancel_followup_attempts_max": 2,
+    "prefix_cache_hits": {
+     "hits": 110,
+     "prefix_requests": 110,
+     "note": "measured, not required (real-answer continuation)"
+    },
+    "fresh_ttft_content_s": {
+     "64": {
+      "n": 110,
+      "median": 0.22447273899888387,
+      "max": 0.9097903110014158
+     },
+     "4096": {
+      "n": 110,
+      "median": 0.5062418260004051,
+      "max": 0.7604896589982673
+     },
+     "16384": {
+      "n": 110,
+      "median": 1.3349353289995634,
+      "max": 1.6453892380013713
+     },
+     "65536": {
+      "n": 110,
+      "median": 7.918742775500505,
+      "max": 8.337466527998913
+     },
+     "120000": {
+      "n": 109,
+      "median": 20.39275739400182,
+      "max": 21.099892431000626
+     }
+    }
+   },
+   "vram": {
+    "report_threshold_bytes": 858993459,
+    "samples": 720,
+    "min_gpu_free_bytes": 1115467776,
+    "p1_gpu_free_bytes": 1148891136,
+    "p5_gpu_free_bytes": 1148891136,
+    "median_gpu_free_bytes": 1168027648.0,
+    "samples_below_threshold": 0,
+    "share_below_threshold": 0.0,
+    "minutes_below_threshold": 0.0
+   }
+  },
+  "reference_comparison": {
+   "reference": {
+    "vram": {
+     "report_threshold_bytes": 858993459,
+     "samples": 721,
+     "min_gpu_free_bytes": 457338880,
+     "p1_gpu_free_bytes": 647036928,
+     "p5_gpu_free_bytes": 730587136,
+     "median_gpu_free_bytes": 1748164608,
+     "samples_below_threshold": 127,
+     "share_below_threshold": 0.1761,
+     "minutes_below_threshold": 21.21
+    },
+    "shared_gpu_median_bytes": null,
+    "fresh": {
+     "64": {
+      "ttft_median": 0.6010202885008766,
+      "decode_median": 133.74488946167827,
+      "n": 102
+     },
+     "4096": {
+      "ttft_median": 0.6062726675008889,
+      "decode_median": 135.04432525989003,
+      "n": 102
+     },
+     "16384": {
+      "ttft_median": 1.3601179864963342,
+      "decode_median": 129.83400711094941,
+      "n": 102
+     },
+     "65536": {
+      "ttft_median": 8.140056708001794,
+      "decode_median": 112.17879847298457,
+      "n": 102
+     },
+     "120000": {
+      "ttft_median": 20.96622769699752,
+      "decode_median": 97.45801620727381,
+      "n": 101
+     }
+    },
+    "analysis": "soak-final-f1-a1-analysis.json",
+    "source": "soak-final-f1-a1.json",
+    "source_sha256": "83fb15d0ba54b49c7a32706b08966c3a5b3085a72fc11bc07b066afc8f7a9965"
+   },
+   "noise": 0.03,
+   "per_length": {
+    "64": {
+     "candidate": {
+      "ttft_median": 0.22447273899888387,
+      "decode_median": 181.6853469087556,
+      "n": 110
+     },
+     "reference": {
+      "ttft_median": 0.6010202885008766,
+      "decode_median": 133.74488946167827,
+      "n": 102
+     }
+    },
+    "4096": {
+     "candidate": {
+      "ttft_median": 0.5062418260004051,
+      "decode_median": 179.7428285945631,
+      "n": 110
+     },
+     "reference": {
+      "ttft_median": 0.6062726675008889,
+      "decode_median": 135.04432525989003,
+      "n": 102
+     }
+    },
+    "16384": {
+     "candidate": {
+      "ttft_median": 1.3349353289995634,
+      "decode_median": 170.2408138362834,
+      "n": 110
+     },
+     "reference": {
+      "ttft_median": 1.3601179864963342,
+      "decode_median": 129.83400711094941,
+      "n": 102
+     }
+    },
+    "65536": {
+     "candidate": {
+      "ttft_median": 7.918742775500505,
+      "decode_median": 140.48630192346306,
+      "n": 110
+     },
+     "reference": {
+      "ttft_median": 8.140056708001794,
+      "decode_median": 112.17879847298457,
+      "n": 102
+     }
+    },
+    "120000": {
+     "candidate": {
+      "ttft_median": 20.39275739400182,
+      "decode_median": 118.13851022969725,
+      "n": 109
+     },
+     "reference": {
+      "ttft_median": 20.96622769699752,
+      "decode_median": 97.45801620727381,
+      "n": 101
+     }
+    }
+   },
+   "p1_gpu_free_mib_report_only": {
+    "candidate": 1095,
+    "reference": 617
+   },
+   "shared_gpu": "not_sampled"
+  },
+  "verdict": "PASS"
+ },
+ "long256_context_gates": {
+  "name": "rg-s5-c256-20261015t2145",
+  "run_context_gates_rc": 0,
+  "context_check_rc": 0,
+  "check": {
+   "name": "rg-s5-c256-20261015t2145",
+   "functional_run": "df762b74d71b44cdb8c610f4dedb3b50",
+   "functional_failures": [
+    "executable-code",
+    "long-facts-16384"
+   ],
+   "new_functional_failures": [],
+   "boundary": true,
+   "backend": true,
+   "cancel": true
+  }
+ },
+ "driver_notes": [
+  "release-gates.sh --dry-run failed on \"overlay harness == checkout\" for qualify.py (sync renders site placeholders into the overlay copy, so a byte compare cannot match)",
+  "--reference-soak needs the .json file name; stages A, B, C, E were run one by one with the commands of --dry-run"
+ ],
+ "all_stages_pass": true
+}

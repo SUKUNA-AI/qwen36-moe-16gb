@@ -1,0 +1,19 @@
+{
+ "schema": "ladder-steps-1",
+ "steps": [
+  {
+   "id": "l0",
+   "config": "main-release",
+   "prev": null,
+   "lever_short": "L0 new tree",
+   "lever": "f1 config on the new tree"
+  },
+  {
+   "id": "l1",
+   "config": "main-release-next-d5",
+   "prev": "l0",
+   "lever_short": "L9",
+   "lever": "candidate"
+  }
+ ]
+}

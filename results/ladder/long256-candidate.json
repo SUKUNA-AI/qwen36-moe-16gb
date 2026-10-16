@@ -1,0 +1,104 @@
+{
+ "schema": "ladder-long256-candidate-1",
+ "profile": "long256-release-next-candidate",
+ "tree": "integration-main128-s8 68605f5",
+ "note": "full candidate (L9) at 262144, memory_ratio 0.73; statistics only, no teacher; 3 repeats, warm-up 60 s",
+ "fresh": {
+  "120000": {
+   "ttft_s": {
+    "median": 20.391456841000036,
+    "mean": 20.375247931666916,
+    "n": 3,
+    "min": 20.33993727000052,
+    "max": 20.39434968400019,
+    "p95": 20.394060399700173,
+    "p99": 20.394291827140187
+   },
+   "decode_tps": {
+    "median": 105.84699156444292,
+    "mean": 104.76097158561906,
+    "n": 3,
+    "min": 102.33690438830781,
+    "max": 106.09901880410641,
+    "p95": 106.07381608014006,
+    "p99": 106.09397825931313
+   },
+   "elapsed_s": {
+    "median": 21.591569017000438,
+    "mean": 21.588224111666324,
+    "n": 3,
+    "min": 21.581360620999476,
+    "max": 21.591742696999063,
+    "p95": 21.5917253289992,
+    "p99": 21.59173922339909
+   },
+   "prompt_tokens": 120068,
+   "prefill_tps_median": 5888.152128423976,
+   "vs_long256_no_levers": {
+    "ttft_s": 20.522849807000284,
+    "decode_tps": 88.99836534979781
+   }
+  },
+  "250000": {
+   "ttft_s": {
+    "median": 72.32228438399943,
+    "mean": 72.31956150633232,
+    "n": 3,
+    "min": 72.29532424199897,
+    "max": 72.34107589299856,
+    "p95": 72.33919674209865,
+    "p99": 72.34070006281858
+   },
+   "decode_tps": {
+    "median": 76.00075218717757,
+    "mean": 76.44519350377986,
+    "n": 3,
+    "min": 75.50442492338688,
+    "max": 77.83040340077511,
+    "p95": 77.64743827941535,
+    "p99": 77.79381037650316
+   },
+   "elapsed_s": {
+    "median": 73.9666623639987,
+    "mean": 73.98146838333317,
+    "n": 3,
+    "min": 73.95434126300097,
+    "max": 74.02340152299985,
+    "p95": 74.01772760709973,
+    "p99": 74.02226673981983
+   },
+   "prompt_tokens": 250068,
+   "prefill_tps_median": 3457.6894539482355,
+   "vs_long256_no_levers": {
+    "ttft_s": 72.68067872250003,
+    "decode_tps": 67.34335525058454
+   }
+  }
+ },
+ "boundary": {
+  "context": 262144,
+  "prompt_tokens": 261468,
+  "completion_tokens": 28,
+  "ttft_s": 78.34454828800153,
+  "decode_tps": 73.61548474576452,
+  "plus_one": {
+   "status": 400,
+   "code": "context_length_exceeded"
+  },
+  "pass": true,
+  "vs_long256_no_levers": {
+   "report": "s5-l256-boundary-20261015t1730.json",
+   "context": 262144,
+   "prompt_tokens": 261468,
+   "completion_tokens": 28,
+   "ttft_s": 78.74373380099996,
+   "decode_tps": 67.52288232320268,
+   "overflow_plus_one": {
+    "status": 400,
+    "code": "context_length_exceeded"
+   },
+   "pass": true,
+   "prefill_tps": 3320.4927856326726
+  }
+ }
+}

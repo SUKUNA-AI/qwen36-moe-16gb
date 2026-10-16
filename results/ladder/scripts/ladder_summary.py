@@ -79,9 +79,9 @@ def nsys_block(entry):
     return out or None
 
 
-def windows_shared(path):
+def windows_shared(path, lo=None, hi=None):
     try:
-        rows = list(csv.DictReader(open(path)))
+        rows = [r for r in csv.DictReader(open(path)) if (lo is None or r['utc'] >= lo) and (hi is None or r['utc'] <= hi)]
     except OSError:
         return None
     if not rows:
@@ -98,6 +98,7 @@ def main():
     p.add_argument('--dir', type=pathlib.Path, required=True)
     p.add_argument('--configs', type=pathlib.Path, required=True)
     p.add_argument('--win-csv', type=pathlib.Path)
+    p.add_argument('--win-from'); p.add_argument('--win-to'); p.add_argument('--ncu-note')
     p.add_argument('--release-ab', type=pathlib.Path)
     p.add_argument('--release-compare', type=pathlib.Path)
     p.add_argument('--ncu-dir', type=pathlib.Path)
@@ -138,7 +139,7 @@ def main():
         out_steps.append(row)
     summary = {'schema': 'qwen36-ladder-summary', 'schema_version': 1, 'synthetic': False, 'generated_utc': a.generated_utc,
                'profile': 'main128', 'lengths': [int(x) for x in LENGTHS], 'output_tokens': 128, 'steps': out_steps,
-               'windows_shared_gpu': windows_shared(a.win_csv) if a.win_csv else None,
+               'windows_shared_gpu': dict(windows_shared(a.win_csv, a.win_from, a.win_to) or {}, window='steady window of the 2 h soak; shared usage includes the pinned expert memory of a loaded unit (≈18.5 GiB) and moves with every unit start/stop, so only a single-load window shows paging') if a.win_csv else None,
                'notes': ['TTFT and decode: raw per-pair values of the A/B screen (3 pairs, rotating order, 60 s sustained warm-up, no profiler); '
                          'keys are document token counts of the fresh cases.',
                          'nsys timings are diagnostic (under the profiler); buckets are critical-chain ms: decode per step, prefill per window.']}
@@ -156,6 +157,8 @@ def main():
                                      'report': r['matrix']}
     if a.ncu_dir and a.ncu_dir.is_dir():
         summary['ncu'] = {p.stem: [json.loads(l) for l in p.read_text().splitlines() if l.strip()] for p in sorted(a.ncu_dir.glob('*.jsonl'))}
+    if 'ncu' not in summary:
+        summary['ncu'] = {'status': 'NOT_RUN', 'reason': a.ncu_note}
     (a.dir / 'summary.json').write_text(json.dumps(summary, indent=1, ensure_ascii=False) + '\n')
     write_readme(a.dir, summary, ab)
     print(json.dumps({'steps': len(out_steps), 'release_ab': 'release_ab' in summary, 'ncu': 'ncu' in summary}))
@@ -173,6 +176,7 @@ def write_readme(d, s, ab):
     lines = ['# Лесенка main128: вклад каждого рычага', '',
              f"Сгенерировано {s['generated_utc']} скриптами `scripts/ladder_*.py` из отчётов GPU-прогона. Бит-точность: teacher 125/125, max_abs 0.",
              'A/B без профайлера: ротирующаяся матрица, 3 пары, прогрев 60 с, вывод 128 токенов. В ячейках: медиана (среднее; min–max; p95, p99; n) по парам; при n=3–5 перцентили — грубая оценка, она стремится к максимуму. Шаги кумулятивные: ступень = предыдущая + один рычаг.', '',
+             *( (d / 'notes.md').read_text(encoding='utf-8').splitlines() + [''] if (d / 'notes.md').exists() else []),
              '## Teacher и память', '', '| Ступень | Рычаг | teacher | max_abs | ratio | слоты | пик VRAM процесса, МиБ | промахов/ток (16K) |', '|---|---|---|---|---|---|---|---|']
     for r in s['steps']:
         t, m = r['teacher'], r.get('memory') or {}
@@ -208,7 +212,9 @@ def write_readme(d, s, ab):
         lines += ['## Релизный A/B (5 пар) и compare-ab', '', f"Кандидат `{ra['candidate']}` против `{ra['reference']}`: вердикт **{ra.get('verdict')}** (contract_pass={ra.get('contract_pass')}).", '']
     w = s.get('windows_shared_gpu')
     if w:
-        lines += ['## Подкачка Windows', '', f"Shared GPU memory за матрицу ({w['samples']} замеров): первая/последняя декады {w['first_decile_median_mib']:.0f}/{w['last_decile_median_mib']:.0f} МиБ, дрейф {w['drift_mib']:+.0f} МиБ, максимум {w['max_mib']:.0f}.", '']
+        lines += ['## Подкачка Windows', '', f"Shared GPU memory за окно soak 2 ч ({w['samples']} замеров): первая/последняя декады {w['first_decile_median_mib']:.0f}/{w['last_decile_median_mib']:.0f} МиБ, дрейф {w['drift_mib']:+.0f} МиБ, максимум {w['max_mib']:.0f}.", '']
+    if s['ncu'].get('status') == 'NOT_RUN':
+        lines += ['## Nsight Compute', '', 'NOT_RUN: ' + str(s['ncu'].get('reason')), '']
     (d / 'README.md').write_text('\n'.join(lines) + '\n', encoding='utf-8', newline='\n')
 
 
