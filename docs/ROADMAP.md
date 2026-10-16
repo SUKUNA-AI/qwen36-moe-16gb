@@ -1,99 +1,92 @@
-# Roadmap
+# План
 
-Every item must stay **bit-exact** against the teacher reference, unless it is explicitly offered as a
-separate, separately qualified profile. Every item goes through the same gates as f1
-([METHODOLOGY.md](METHODOLOGY.md)).
+Каждый пункт обязан оставаться **побитово точным** относительно teacher-эталона, если только он не предлагается как отдельный, отдельно квалифицируемый профиль. Каждый пункт проходит те же гейты, что и выпуски f1 и main128 ([METHODOLOGY.md](METHODOLOGY.md)).
 
-## Next update (owner decision, 2026-10-14)
+Состояние на 16.10.2026: установлен выпуск **main128** (метка установки `main128-s5r1`), прошлый выпуск f1 сохранён для отката (`bash harness/release-main128.sh --rollback --apply --label main128-s5r1`). Цифры — в [RESULTS.md](RESULTS.md).
 
-### 1. Short-prompt route: hit-d2d (patch ready)
+## Сделано в main128 (16.10.2026)
 
-- **Problem.** Prompts with 2048 or fewer uncached tokens take the chunked path. That covers short
-  prompts, prefix hits and edits. The chunked path copies the full 18.25 GB expert bank H2D for every
-  chunk, which sets a TTFT floor of ~0.57 s. A 64-token prompt already touches most of the 256 experts
-  per layer.
-- **Lever.** `--moe-prefill-hit-d2d` copies the ~23% of experts that are already resident in decode
-  slots on the GPU (device to device) instead of over PCIe. Layer-major stays on for prompts of 2049
-  tokens and more.
-- **Measured** with an import-time shim: 10 rounds, 2 sessions, rotated order.
+Решение владельца от 14.10.2026 («следующее обновление») выполнено полностью и дополнено. Все рычаги побитово точны (teacher 125/125, `max_abs` 0), включены профилем `main128` по умолчанию. Замеры лесенки — [RESULTS.md](RESULTS.md) §9.
 
-  | Case | Release | hit-d2d |
-  |---|---|---|
-  | 64-token prompt | 0.565 s | 0.446 s |
-  | prefix hit | 0.585 s | 0.468 s |
-  | 16K edit | 0.596 s | 0.481 s |
-  | 2K-16K fresh | unchanged (ratios 0.998-1.007) | |
+1. **Короткий маршрут prefill: эксперты из VRAM копируются внутри GPU.** Эксперты, уже лежащие в слотах, копируются внутри GPU, а не по PCIe; послойный prefill — от 2049 некэшированных токенов. TTFT промпта в 64 токена на лесенке 0.390 → 0.315 с.
+2. **CUDA-ядра GDN для prefill.** Бывший отложенный «слитый FLA»: −2% TTFT на 16K (1.343 → 1.316 с).
+3. **Shared-эксперт параллельно с подкачкой промахов.** Подкачка идёт на побочном потоке, объединение по событию внутри графа. Декод 16K +5.0 ток/с.
+4. **Эмбеддинги в закреплённой RAM хоста** (0.95 ГиБ) и **больше слотов экспертов** (`memory_ratio` 0.85): слотов 3164 → 4611, декод 16K +5.2 и +5.7 ток/с.
+5. **Бит-точные CUDA-ядра декода: o-проекция и MoE.** Бывшие «ядра MoE decode и o-проекции» из отложенных: декод 16K +10.8 ток/с.
+6. **Копирование экспертов без ожидания GEMM** (приоритет потока копирования и одна инвалидация на эпоху) и **короткие куски везут только выбранных роутером экспертов:** TTFT 64 токена −0.018 и −0.045 с.
+7. **Слитый эпилог MoE-блока:** декод 16K +2.6 ток/с.
 
-  Greedy outputs 200/200 identical; decode unchanged.
-- **Expected matrix effect.**
-  - 64-token TTFT 0.79 -> ~0.67 s, ahead of bf128's 0.75 s.
-  - Edits 0.78 -> ~0.66 s.
-- **Remaining before release:**
-  - the teacher gate (the hit-d2d path itself is not yet qualified);
-  - relaxing the profile-runtime rule that refuses layer-major together with hit-d2d;
-  - a native sync.
-- **Patch.** Touches `engine/layer_major.py`, `moe/offload_cache.py` and `scheduler/layer_major.py`.
-  The env switch is `QWEN36_LAYER_MAJOR_MIN_TOKENS`; unset keeps the current behaviour. 7 new CPU tests
-  pass plus 59 existing ones.
+Итог относительно f1L0 (настройки f1 на новом коде): декод 16K 143.4 → 176.4 ток/с (+23%), 120K 103.1 → 120.5 (+17%), TTFT промпта в 64 токена 0.39 → 0.20 с, правки диалога на 16K 0.40 → 0.15–0.30 с; длинный свежий prefill не изменился. Полный A/B на 5 пар — PASS. Слотов экспертов 4603.
 
-### 2. Hide the decode expert gather (overlap), not a faster copy
+## Что осталось от main128 и что отложено
 
-- **Measured ceiling (2026-10-15).** A byte-checked sweep (728 measurements, 0 mismatches) shows every host-to-GPU path on this WSL2 host tops out at 41-45 GB/s:
-  - copy engine: 40.8 GB/s;
-  - TMA `.shared::cta`: 43.4 GB/s, peak 45.0;
-  - mapped loads: 41-44 GB/s at 4-8 CTAs.
+### 1. Предвыборка экспертов на слой вперёд с приоритетным потоком
 
-  More CTAs, streams or bytes in flight *lower* throughput, which points to a host-side limit. Native Linux is untested.
-- **Today.** The gather already runs at ~42 GB/s inside the model (38.9 / 41.7 / 42.8 GB/s for 1 / 4 / 8 experts). The 30-33 GB/s in the Nsight Compute table is the kernel measured under the profiler. The gather sits serially on the decode critical path: 18% of a 16K decode step, 14% at 120K.
-- **Next.**
-  - Overlap the routed-expert gather with the same layer's shared-expert MLP: side stream plus an explicit event join, captured in the decode graph. Byte-identical by construction. Estimate +3-4% decode tok/s, about 5 h.
-  - Then predicting layer L+1's experts with its router one layer early. This needs a route trace first: previous-token prefetch catches nothing, because those experts are already resident.
-  - Any cross-stream scheme needs the join. The negative control without it produced 14,248 checksum mismatches.
+- **Статус.** Предвыборка в лесенке не окупилась (декод 16K −4%: 169.2 против 176.4 ток/с), в релиз не вошла. Код в дереве, по умолчанию выключен.
+- **Причина.** На микробенче копия спекулятивных экспертов не пряталась: блоки побочной цепочки ждут свободных SM за большим ядром «миксера». Вариант со своим приоритетным потоком (`QWEN36_DECODE_PREGATE_PRIORITY=1`) прячет 44–92% копии; шаг цикла −21…−41% при одноядерном миксере и −17…−32% при шестиядерном (как в GDN). Это верхняя оценка: в бенче нет роутера, GEMM экспертов и attention.
+- **Нужно.** Модельный A/B с приоритетным потоком, затем teacher-гейт.
 
-### 3. Enable fused FLA (`QWEN36_CUDA_GDN_FLA=wu`)
+### 2. Nsight Compute по ядрам main128
 
-- The kernel is already shipped flag-off and is bit-exact 123/123.
-- The nsys structure check confirms the model-level effect:
-  - GDN core time -36% at 16K, i.e. -2..3% TTFT;
-  - -0.9% of the window at 120K.
-- It needs a model-level paired A/B at the production chunk size and an owner decision.
+Профиль модели под ncu снять не удалось (`results/ladder/ncu.json`: с CUDA graphs прогрев не завершается, в eager-режиме запросы не доходят до модели). План — компонентные бенчи ядер декода (o-проекция, MoE GEMV, gather, копирование) с формами и конфигурацией запуска, как в релизе.
 
-## Deferred (measured, not scheduled)
+### 3. `empty_cache` после самопроверок ядер
 
-| Item | Status / reason |
+Самопроверки при финализации весов оставляют ≈14 МиБ scratch в кэше аллокатора, бюджет засчитывает их как веса: 4603 слота вместо 4611. Освобождение кэша после самотестов вернёт 8 слотов.
+
+### 4. Опция `--clean-run` для `extract-run`
+
+Сейчас квитанция описывает только основной запуск; нужна квитанция чистого повторного запуска.
+
+### 5. Рычаги main128 в профиле `long256`
+
+На 250K с рычагами декод 76.0 против 67.3 ток/с (+13%), TTFT без изменений (72.3 против 72.7 с). Мерилось как статистика без teacher при `memory_ratio` 0.73. Нужны teacher-гейт и 2-часовой soak на 256K.
+
+### 6. Клиентский map-reduce для документов длиннее ~100K токенов
+
+Документ делится на части, части обрабатываются независимо, результаты сводятся. Это приём на стороне клиента, не изменение сервера. Стоимость prefill растёт быстрее длины: 20.4 с на 120K против 72.3 с на 250K.
+
+### 7. FlashPrefill
+
+Ускорение prefill на очень длинных промптах за счёт разреженного attention. Метод меняет вычисления, побитовая точность не гарантируется, поэтому в план не входит: только отдельным решением владельца и отдельным профилем.
+
+### 8. Новый стек (torch 2.14, Triton 3.8)
+
+Сначала анализ: что изменится в повторяемых нами ядрах (порядок вычислений Triton-ядер лежит в основе бит-точных копий).
+
+## Отложено (замерено, не запланировано)
+
+| Что | Статус / причина |
 |---|---|
-| FP8 KV cache | Not now: non-bit-exact, TTFT +10-33%; worth it only for long agent sessions. Revisit as an optional `long256-fp8` profile after the FP8 prefill-attention TTFT cost is fixed ([RESULTS.md](RESULTS.md) §7) |
-| Sync-lean (FLA chunk-table cache, FlashInfer plan reuse) | Bit-exact; 0.1-0.4%, below noise; needs a rebase on attention batching |
-| Layer-major slot refill (`restore` policy) | Bit-exact; no gain within noise at 128-token outputs; re-test with decode-heavy long outputs |
-| MoE decode (marlin) / o-proj GEMV kernels | ~+11% decode at 16K estimated (o-proj alone ~+4%); owner: not wanted now |
-| Bit-exact decode-attention replica | Est. -10..15% decode attention (~3-5% decode at 120K-256K) |
-| `(1+w)` RMSNorm FP32 fix | Needs a new reference + PPL / functional / eval re-runs; not scheduled |
-| 2-CTA dedup in fused FLA | <= 0.4%; not worth it |
-| 256K: 2 h soak, `bf256` teacher | NOT_RUN in f1 |
-| MTP / speculative decoding, vision | Off by owner decision; MTP only with new evidence |
+| KV-кэш в FP8 | Пока нет: не побитово точен, TTFT +10…33%; имеет смысл только для длинных агентных сессий. Вернуться как к необязательному профилю `long256-fp8` после исправления цены FP8 prefill-attention ([RESULTS.md](RESULTS.md) §7) |
+| Sync-lean (кэш таблицы чанков FLA, повторное использование плана FlashInfer) | Побитово; 0.1–0.4%, ниже шума; нужна перебазировка на пакетный attention |
+| Пополнение слотов в послойном prefill (политика `restore`) | Побитово; без выигрыша в пределах шума на ответах в 128 токенов; перепроверить на длинных ответах |
+| Прогрев слотов из prefill | Побитово; в лесенке без выигрыша (декод 16K 173.7 против 176.4 ток/с); на микробенче первые 8 токенов быстрее на 0.6–0.9 мс |
+| Копирование через TMA вместо copy engine | Медленнее: TTFT +3…36%; copy engine после перестройки очереди даёт ≈49 ГБ/с против ≈35 ГБ/с у TMA |
+| Побитовая реплика decode-attention | Оценка −10…15% attention в декоде (≈3–5% декода на 120K–256K) |
+| Исправление `(1+w)` RMSNorm на FP32 | Нужен новый эталон и перезапуски PPL, функциональных тестов и eval; не запланировано |
+| Дедупликация 2-CTA в слитом FLA | ≤ 0.4%; не стоит затрат |
+| 256K: 2-часовой soak, teacher `bf256` | NOT_RUN |
+| MTP / спекулятивный декодинг, vision | Выключены решением владельца; MTP — только при новых доказательствах |
 
-Harness and ops findings to fix:
-- `compare-quality` should bind teacher rows to a run id.
-- `teacher.jsonl` rotation at 2 MiB will eventually move the reference rows into `.1`.
-- `profile-request` should wait for `/health`, not `/v1/models`.
-- Add a regression unit test that asserts the scheduler stream waits from the commit/decode race
-  analysis.
-- Run a WSL interop check before release steps that call Windows binaries.
+Находки харнесса и эксплуатации, которые надо исправить:
+- `compare-quality` должен привязывать строки teacher к идентификатору прогона.
+- Ротация `teacher.jsonl` на 2 МиБ рано или поздно утащит строки эталона в `.1`.
+- `profile-request` должен ждать `/health`, а не `/v1/models`.
+- Нужен регрессионный unit-тест на ожидания потока планировщика из анализа гонки commit/decode.
+- Проверять WSL interop перед шагами релиза, вызывающими бинарники Windows.
 
-## Upstream issue drafts (never posted)
+## Черновики issue для upstream (не отправлялись)
 
-The drafts live in [upstream-notes/](upstream-notes/00-INDEX.md). Nothing has been opened, posted or
-submitted; the owner decides. File and line references point to FreeToken `cac247a8`. Paths mentioned
-inside the drafts, such as `work/...` and `outputs/...`, refer to the private project workspace.
+Черновики лежат в [upstream-notes/](upstream-notes/00-INDEX.md). Ничего не открыто, не опубликовано и не отправлено: решает владелец. Ссылки на файлы и строки указывают на FreeToken `cac247a8`. Пути вроде `work/...` и `outputs/...` внутри черновиков относятся к закрытому рабочему каталогу проекта.
 
-| # | Draft | Kind | Ready? |
+| № | Черновик | Вид | Готов? |
 |---|---|---|---|
-| 1 | NVFP4 `weight_scale_2` stored as FP16, 94% subnormal | bug / precision | yes; patch included |
-| 2 | Qwen3.5 `(1+w)` RMSNorm folded into BF16 at load | bug / precision | yes, stating that whole-model PPL of the fix was not run |
-| 3 | Greedy outputs depend on cache history (header dedup re-point, BF16 GDN snapshot); ask for a flush endpoint / deterministic mode | feature / discussion | yes |
-| 4a | MTP / speculative decoding prototype notes | discussion | no |
-| 4b | RAM complement residency (negative result) | negative result | no |
-| 4c | Optional FP8 KV cache | feature request | optional |
+| 1 | NVFP4 `weight_scale_2` хранится как FP16, 94% субнормальные | ошибка / точность | да; патч приложен |
+| 2 | `(1+w)` RMSNorm в Qwen3.5 сворачивается в BF16 при загрузке | ошибка / точность | да, с оговоркой, что PPL всей модели с исправлением не запускался |
+| 3 | Жадный вывод зависит от истории кэша (перенаправление дедупликации заголовка, снимок GDN в BF16); просьба об эндпоинте сброса или детерминированном режиме | запрос функции / обсуждение | да |
+| 4a | Заметки о прототипе MTP / спекулятивного декодинга | обсуждение | нет |
+| 4b | Резидентность комплемента в RAM (отрицательный результат) | отрицательный результат | нет |
+| 4c | Необязательный KV-кэш в FP8 | запрос функции | по желанию |
 
-The sm_120 `.shared::cluster` syscall finding ([ARCHITECTURE.md](ARCHITECTURE.md) §5.3) is not an
-upstream FreeToken issue, because upstream has no bulk copies. It is documented here only.
+Находка про системный вызов `.shared::cluster` на sm_120 ([ARCHITECTURE.md](ARCHITECTURE.md) §5.3) — не проблема upstream FreeToken, потому что в upstream нет bulk-копий. Описана только здесь.

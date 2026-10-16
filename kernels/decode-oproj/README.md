@@ -1,119 +1,89 @@
-# decode-oproj/ — `libqwen_oproj_gemv.so` (decode out/o-projection, ABI 1)
+# decode-oproj/ — `libqwen_oproj_gemv.so` (o-проекция в decode, ABI 1)
 
-Candidate for the next update (D4), not in the released build. Switch: `QWEN36_OPROJ_GEMV=1` +
-`QWEN36_OPROJ_GEMV_LIBRARY=<.so>` (profile key `cuda_oproj_gemv`), default off.
+**Входит в релиз main128 (16.10.2026).** Включена профилем `main128` по умолчанию: ключ профиля `cuda_oproj_gemv`, переменная окружения `QWEN36_OPROJ_GEMV=1` и путь `QWEN36_OPROJ_GEMV_LIBRARY=<.so>`. Библиотека закреплена по sha256 (см. ниже). В профилях `long256` и `baseline64` не включена.
 
-## What it replaces
+## Что заменяет
 
-The tensor-wise FP8 W8A8 GEMM of the 40 decode out-projections (30 GDN `out_proj` + 10 attention
-`o_proj`, N = 2048, K = 4096, one scalar weight scale) for 1 ≤ M ≤ 8:
-`torch._scaled_mm(qa, W.t(), scale_a=0-d, scale_b=0-d, out_dtype=bf16)`. On torch 2.11 / cuBLASLt 13
-that is, for every M in 1..8, a 384-byte memset (split-K semaphores) plus
+Tensor-wise FP8 W8A8 GEMM для 40 выходных проекций в decode (30 `out_proj` слоёв GDN и 10 `o_proj` слоёв attention; N = 2048, K = 4096, один скалярный масштаб весов) при 1 ≤ M ≤ 8:
+`torch._scaled_mm(qa, W.t(), scale_a=0-d, scale_b=0-d, out_dtype=bf16)`. На torch 2.11 и cuBLASLt 13 при любом M от 1 до 8 это memset на 384 байта (семафоры split-K) плюс ядро
 `sm89_xmma_gemm_e4m3bf16_e4m3f32_f32_tn_n_tilesize32x64x64_stage5_warpsize2x2x1_tensor16x8x32`,
-grid (1, 32, 3), split-K = 3 reduced **inside** the kernel (spin on `LDG.STRONG`, `ATOMG.ADD`
-semaphore, serial `FADD`). The release trace (`model-final-main-release` nsys) shows exactly this pair
-per projection: memset 0.67 µs + xmma 13.8–15.5 µs.
+сетка (1, 32, 3), split-K = 3 с редукцией **внутри** ядра (ожидание на `LDG.STRONG`, семафор `ATOMG.ADD`, последовательные `FADD`). В трассе релиза (`model-final-main-release`, nsys) на каждую проекцию именно эта пара: memset 0.67 мкс + xmma 13.8–15.5 мкс.
 
-Correction to `results/nsight/levers.json`: the `cublasLt::splitKreduce_kernel` with grid (1,1,1)
-(5.5 µs, 0.23 ms per step) is **not** the o-projection. It follows the bf16 router GEMV
-(split-K 228) in the trace. The o-projection lever is ≈ 0.62 ms per step (xmma) + 40 memset nodes.
+Поправка к `results/nsight/levers.json`: ядро `cublasLt::splitKreduce_kernel` с сеткой (1,1,1) (5.5 мкс, 0.23 мс на шаг) — **не** o-проекция: в трассе оно идёт после bf16 GEMV роутера (split-K 228). Рычаг o-проекции — ≈0.62 мс на шаг (xmma) плюс 40 узлов memset.
 
-## Identified arithmetic (bit for bit)
+## Установленная арифметика (бит в бит)
 
-`scripts/probe_splitk.py` (absorption probes: ±448·448 and 2⁻¹⁸ terms show which k-tiles share a
-chain and the reduction order), `scripts/identify_splitk.py` (100 % match required over 72 cases:
-uniform e4m3 codes, gaussian codes and real `out_proj`/`o_proj` weights of layers 0/3/13/26/39, every
-M 1..8), `scripts/splitk_determinism.py` (400 eager + graph runs: one distinct output), and the SASS
-of the xmma kernel:
+Установлена пробами (`scripts/probe_splitk.py`: слагаемые ±448·448 и 2⁻¹⁸ показывают, какие k-тайлы делят цепочку и в каком порядке редукция), `scripts/identify_splitk.py` (требуется 100% совпадение на 72 случаях: равномерные коды e4m3, гауссовы коды и реальные веса `out_proj`/`o_proj` слоёв 0/3/13/26/39, все M от 1 до 8), `scripts/splitk_determinism.py` (400 прогонов eager и в графе: один и тот же выход) и SASS ядра xmma:
 
-- K is cut into 64-byte k-tiles, and the tiles are dealt **round-robin** to the splits: split z owns tiles
-  t ≡ z (mod 3), so split 0 has 22 tiles and splits 1 and 2 have 21. The splits are not contiguous ranges.
-  Every contiguous-partition hypothesis fails on 1–7 elements per case.
-- Each split is one `QMMA.16832.F32.E4M3.E4M3` chain from +0 over its tiles in ascending order, two k32
-  MMAs per tile (bytes 0..31, then 32..63). These are the same per-instruction K sets as the CUTLASS
-  kernel reproduced by `libqwen_fp8_gemv`. Within one QMMA, a large product swallows a tiny
-  accumulator even when ±P cancel exactly (alignment to the largest exponent). That is why the K sets and
-  the C operand must match, not just the sum.
-- Partials are combined as `FADD(FADD(p0, p2), p1)` (the serial semaphore order).
-- Epilogue: `alpha = FMUL(scale_a, scale_b)`; `FFMA(acc, alpha, +0)`; clamp (no-op); `F2FP.BF16` RN.
+- K режется на 64-байтные k-тайлы, тайлы раздаются сплитам **по кругу**: сплит z владеет тайлами t ≡ z (mod 3), у сплита 0 — 22 тайла, у сплитов 1 и 2 — по 21. Сплиты — не непрерывные диапазоны; любая гипотеза «непрерывное разбиение» расходится на 1–7 элементах в каждом случае.
+- Каждый сплит — одна цепочка `QMMA.16832.F32.E4M3.E4M3` от +0 по своим тайлам по возрастанию, два MMA по k32 на тайл (байты 0..31, затем 32..63). Это те же наборы K на инструкцию, что у ядра CUTLASS, которое воспроизводит `libqwen_fp8_gemv`. Внутри одного QMMA большое произведение поглощает малый аккумулятор, даже когда ±P точно сокращаются (выравнивание на наибольшую экспоненту). Поэтому должны совпадать наборы K и операнд C, а не только сумма.
+- Части складываются как `FADD(FADD(p0, p2), p1)` (порядок последовательного семафора).
+- Эпилог: `alpha = FMUL(scale_a, scale_b)`; `FFMA(acc, alpha, +0)`; clamp (пустая операция); `F2FP.BF16` с округлением к ближайшему чётному.
 
-The kernel (`src/qwen_oproj_gemv.cu`) computes exactly this per output. One CTA handles a strip of 16
-weight rows. Each of its 3 warps runs one split's chain from its own cp.async ring, and the partials meet
-in shared memory. One launch replaces memset + xmma: no workspace, no semaphore.
+Ядро (`src/qwen_oproj_gemv.cu`) считает ровно это для каждого выхода. Один CTA обрабатывает полосу из 16 строк весов. Каждый из его 3 варпов ведёт цепочку одного сплита из собственного кольца cp.async, части встречаются в разделяемой памяти. Один запуск заменяет memset и xmma: ни рабочего буфера, ни семафора.
 
-## FreeToken side
+## Сторона FreeToken
 
 `python/freetoken/kernel/cuda_oproj_gemv.py`:
-- **Library loading.** The library is dlopen'ed from a sealed memfd only if its sha256 matches
-  `LIBRARY_SHA256` (`kernel/pinned_ctypes.py`). The ABI probe checks `abi_version 1`, `max_m 8`,
-  `splits 3` and the source sha256.
-- **Process self-test** (at `finalize`, eager). Covers every M 1..8 with codes, gaussian codes, edge
-  codes with exact cancellation, −0 activations, bf16 overflow and subnormal scales. Compared bitwise
-  with the production `torch._scaled_mm` call.
-- **Per-layer check.** Real weights are checked for every enabled M.
-- **On mismatch.** That M (or the whole feature) stays on cuBLASLt, and the event is logged.
+- **Загрузка библиотеки.** dlopen из запечатанного memfd только при совпадении sha256 с `LIBRARY_SHA256` (`kernel/pinned_ctypes.py`). Проба ABI проверяет `abi_version 1`, `max_m 8`, `splits 3` и sha256 исходника.
+- **Самопроверка процесса** (при `finalize`, eager). Покрывает каждое M от 1 до 8: коды, гауссовы коды, граничные коды с точным сокращением, активации −0, переполнение bf16 и субнормальные масштабы. Побитово сравнивается с боевым вызовом `torch._scaled_mm`.
+- **Проверка по слоям.** Реальные веса проверяются для каждого включённого M.
+- **При несовпадении.** Это M (или вся функция) остаётся на cuBLASLt, событие пишется в лог.
 
-All call sites use `fp8_pertensor_linear.uniform_scaled_mm`: the generic uniform branch,
-`models/qwen3_5_moe/gdn.py` (CUDA gated-norm quant) and `kernel/cuda_attention_gate.py` (fused gate
-quant). The per-layer flag is set in `layers/quantization/linear/fp8_tensor.py` finalize.
+Все места вызова идут через `fp8_pertensor_linear.uniform_scaled_mm`: общую ветку, `models/qwen3_5_moe/gdn.py` (CUDA gated-norm quant) и `kernel/cuda_attention_gate.py` (слитый gate quant). Флаг по слою ставится в `layers/quantization/linear/fp8_tensor.py` при финализации.
 
-## Build and verification
+## Сборка и проверка
 
 ```bash
-CUDA_HOME=<cuda-13.4> CUDA_CCBIN=g++-15 CUDA_BIN_TOOLS=<dir with cuobjdump> ./build.sh   # CPU only
+CUDA_HOME=<cuda-13.4> CUDA_CCBIN=g++-15 CUDA_BIN_TOOLS=<каталог с cuobjdump> ./build.sh   # только CPU
 python scripts/test_bitexact.py --lib build/libqwen_oproj_gemv.so --model "$QWEN36_MODEL_DIR" --layers all --bench --out r.json
 python scripts/vram_first_launch.py --oproj build/libqwen_oproj_gemv.so --moe ../decode-moe/build/libqwen_moe_decode.so --out v.json
-pytest freetoken/tests/kernels/test_cuda_decode_kernels.py   # integrated path, eager + graph
+pytest freetoken/tests/kernels/test_cuda_decode_kernels.py   # встроенный путь, eager и граф
 ```
 
-`build.sh` refuses a CRLF source, a `CALL.ABS` / `__cuda_syscall` in the SASS, `.shared::cluster` in the
-PTX and register spills. Build of the pinned library: 64 registers, 0 spills.
+`build.sh` отказывается собирать исходник с CRLF, при `CALL.ABS` или `__cuda_syscall` в SASS, при `.shared::cluster` в PTX и при сбросах регистров в память. Закреплённая сборка: 64 регистра, 0 сбросов.
 
 | | |
 |---|---|
-| Library sha256 (pinned) | `fa9302e31cb88a02f9d6b37afc9e19691859f21e92861baf1bef3b2cab6a78a9` |
-| Source sha256 | `ff47a7d57830fa593d633a0482f26adc55724f03727ec3d80725f415146a7431` |
-| Toolchain | nvcc 13.4.59, `-gencode arch=compute_120a,code=sm_120a`, `--cudart=static`, g++-15 |
+| sha256 библиотеки (закреплён) | `fa9302e31cb88a02f9d6b37afc9e19691859f21e92861baf1bef3b2cab6a78a9` |
+| sha256 исходника | `ff47a7d57830fa593d633a0482f26adc55724f03727ec3d80725f415146a7431` |
+| Инструментарий | nvcc 13.4.59, `-gencode arch=compute_120a,code=sm_120a`, `--cudart=static`, g++-15 |
 
-## Results (RTX 5070 Ti, torch 2.11.0+cu130, owner GPU, 2026-10-15)
+## Результаты (RTX 5070 Ti, torch 2.11.0+cu130, GPU владельца, 15.10.2026)
 
-- **Bit-exact:** 832 cases × 6 variants, 0 mismatches. The cases are 96 synthetic and 736 real (all 40
-  layers × M 1..8 × gaussian/heavy-tailed activations), run eager and inside CUDA graphs.
-- **Graph micro-benchmark** (40 projections over distinct weights, median of 5 alternating pairs, µs per
-  projection):
+- **Побитово:** 832 случая × 6 вариантов, 0 расхождений. Случаи: 96 синтетических и 736 реальных (все 40 слоёв × M от 1 до 8 × гауссовы и тяжелохвостые активации), eager и внутри CUDA graph.
+- **Микробенч на графе** (40 проекций над разными весами, медиана 5 чередующихся пар, мкс на проекцию):
 
-| M | cuBLASLt (memset + xmma) | library (variant used) |
+| M | cuBLASLt (memset + xmma) | библиотека (использованный вариант) |
 |---|---|---|
 | 1 | 17.4 | 12.1–12.5 |
 | 2 | 17.4 | 12.2–12.3 |
 | 4 | 17.5 | 12.5–12.6 |
 | 8 | 17.5 | 12.7–12.9 |
 
-  That is ≈ 5 µs × 40 ≈ 0.2 ms per decode step at M = 1. The kernel moves the 8 MiB of weights at ≈ 690 GB/s.
+  Это ≈ 5 мкс × 40 ≈ 0.2 мс на шаг decode при M = 1. Ядро читает 8 МиБ весов на ≈ 690 ГБ/с.
 
-## Model A/B (owner GPU, 2026-10-15, main-release profile + switches, S3 branch tree)
+## Модельный A/B (GPU владельца, 15.10.2026, профиль main-release + переключатели)
 
-Three rounds, alternating arm order. Each arm is a fresh server start: the `main-release` configuration,
-optionally with `QWEN36_OPROJ_GEMV=1` and/or `QWEN36_MOE_DECODE_CUDA=1` and the pinned libraries.
-Workload per arm: greedy, `ignore_eos`, 2 × (64-token prompt, 256 output) and 1 × (16K prompt, 256
-output). The prompts come from a fixed seed, so every arm receives byte-identical requests. No profiler.
-Medians are in `../decode-moe/ab-model-2026-10-15.json`.
+Три раунда, порядок рук чередуется. Каждая рука — свежий запуск сервера: конфигурация `main-release`, при необходимости с `QWEN36_OPROJ_GEMV=1` и/или `QWEN36_MOE_DECODE_CUDA=1` и закреплёнными библиотеками. Нагрузка на руку: жадная генерация, `ignore_eos`, 2 × (промпт 64 токена, ответ 256) и 1 × (промпт 16K, ответ 256). Промпты из фиксированного зерна, поэтому все руки получают побайтно одинаковые запросы. Без профайлера. В таблице — медианы.
 
-| arm | decode tok/s, 64-token prompt | vs base | decode tok/s, 16K prompt | vs base |
+| Рука | декод, ток/с, промпт 64 токена | к базе | декод, ток/с, промпт 16K | к базе |
 |---|---|---|---|---|
-| base (main-release) | 158.4 | | 148.1 | |
-| + o-projection | 161.8 | +2.1 % | 150.7 | +1.7 % |
-| + MoE GEMV | 166.2 | +4.9 % | 154.9 | +4.6 % |
-| + both | 172.1 | +8.6 % | 159.4 | +7.6 % |
+| база (main-release) | 158.4 | | 148.1 | |
+| + o-проекция | 161.8 | +2.1% | 150.7 | +1.7% |
+| + MoE GEMV | 166.2 | +4.9% | 154.9 | +4.6% |
+| + оба | 172.1 | +8.6% | 159.4 | +7.6% |
 
-- **Generated text:** byte-identical in all 12 server starts.
-- **Self-tests:** both libraries loaded their pinned sha256 and passed the self-test for M 1..8 in every
-  run. No mismatch event was logged.
-- **Round 1:** slower for every arm (base 148 tok/s against 159 in rounds 2–3). The paired comparisons
-  of rounds 2–3 alone give o-projection +1.8…+3.0 %, MoE +4.7…+5.0 % and both +8.3…+8.4 %.
-- **TTFT:** unchanged with both switches (0.38 s at 64 tokens, 1.28 s at 16K). The o-projection-only
-  arm showed a higher 64-token TTFT median (0.45 s) that the "both" arm, which also runs the
-  o-projection kernel, does not reproduce. This is not explained; re-check it in the paired release A/B.
-- **VRAM:** the first launch of every kernel variant of both libraries in a fresh process took 0 MiB
-  (`scripts/vram_first_launch.py`).
-- **Not yet done:** the teacher gate (125/125, max_abs 0) is for the coordinator.
+- **Сгенерированный текст:** побайтно одинаков во всех 12 запусках сервера.
+- **Самопроверки:** обе библиотеки загрузились с закреплённым sha256 и прошли самопроверку для M от 1 до 8 в каждом запуске. Ни одного события несовпадения не записано.
+- **Раунд 1:** медленнее у всех рук (база 148 ток/с против 159 в раундах 2–3). Парные сравнения только раундов 2–3 дают o-проекция +1.8…+3.0%, MoE +4.7…+5.0%, оба +8.3…+8.4%.
+- **TTFT:** не изменился при обоих переключателях (0.38 с на 64 токенах, 1.28 с на 16K). Рука «только o-проекция» показала более высокую медиану TTFT на 64 токенах (0.45 с), которую рука «оба», тоже запускающая ядро o-проекции, не воспроизвела. Не объяснено; в парном релизном A/B расхождения нет.
+- **VRAM:** первый запуск каждого варианта обеих библиотек в свежем процессе занял 0 МиБ (`scripts/vram_first_launch.py`).
+
+## В релизе main128 (16.10.2026)
+
+- Teacher-гейт пройден: 125/125, `max_abs` 0 (ступень лесенки «бит-точные ядра декода»; обе библиотеки включены вместе).
+- Лесенка (3 пары): декод 16K 159.5 → 170.3 ток/с (+10.8), 120K 112.1 → 118.4. Шаг decode на 16K по Nsight Systems 6.42 → 5.87 мс: MoE 1.45 → 1.26 мс, плотные слои и o-проекция 2.59 → 2.46 мс.
+- Цена: самопроверки при финализации весов оставляют ≈14 МиБ scratch в кэше аллокатора, бюджет засчитывает их как веса — слотов 4603 вместо 4611 (план: освобождать кэш после самотестов).
+- В логе после старта должна быть строка `QWEN36_OPROJ_GEMV enabled: libqwen_oproj_gemv sha256 fa9302e31cb88a02.. ABI 1, bit-exact self-test passed for M [1, …, 8]`. Любая строка с `disabled` или `mismatch` значит, что соответствующие M остались на cuBLASLt: точность сохраняется, выигрыш пропадает.
+- Nsight Compute по этим ядрам в составе модели не снят (под ncu сервер не обрабатывает запросы); есть только микробенчи выше.

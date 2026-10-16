@@ -1,113 +1,88 @@
-# decode-moe/ — `libqwen_moe_decode.so` (NVFP4 MoE decode GEMV, ABI 1)
+# decode-moe/ — `libqwen_moe_decode.so` (GEMV NVFP4 MoE в decode, ABI 1)
 
-Candidate for the next update (D4), not in the released build. Switch: `QWEN36_MOE_DECODE_CUDA=1` +
-`QWEN36_MOE_DECODE_LIBRARY=<.so>` (profile key `cuda_moe_decode`), default off.
+**Входит в релиз main128 (16.10.2026).** Включена профилем `main128` по умолчанию: ключ профиля `cuda_moe_decode`, переменная окружения `QWEN36_MOE_DECODE_CUDA=1` и путь `QWEN36_MOE_DECODE_LIBRARY=<.so>`. Библиотека закреплена по sha256 (см. ниже). В профилях `long256` и `baseline64` не включена.
 
-## What it replaces
+## Что заменяет
 
-The two routed-expert GEMMs of every decode step (`TritonNvfp4MoEKernel.apply`, decode branch):
-`moe/fused_nvfp4._decode_gemm_marlin` → Triton `_decode_nvfp4_marlin_kernel` (BLOCK_N 16, BLOCK_KW 16,
-4 warps), for gate_up (N 1024, K 2048) and down (N 2048, K 512, router weight in the epilogue).
-In the release trace these are the "moe_decode_nvfp4_marlin" family: 20.2 + 9.8 µs per layer,
-1.24 ms per step at 16K. The name is historical: it is a Triton FP32 CUDA-core GEMV, not vLLM Marlin.
-The gated activation and the top-k sum keep their kernels.
+Два GEMM маршрутизируемых экспертов на каждом шаге decode (`TritonNvfp4MoEKernel.apply`, ветка decode):
+`moe/fused_nvfp4._decode_gemm_marlin` → Triton `_decode_nvfp4_marlin_kernel` (BLOCK_N 16, BLOCK_KW 16, 4 варпа) для gate_up (N 1024, K 2048) и down (N 2048, K 512, вес роутера в эпилоге). В трассе релиза это семейство «moe_decode_nvfp4_marlin»: 20.2 + 9.8 мкс на слой, 1.24 мс на шаг на 16K. Имя историческое: это Triton FP32 GEMV на CUDA-ядрах, а не vLLM Marlin. Gated-активация и сумма по top-k сохраняют свои ядра.
 
-## Identified arithmetic
+## Установленная арифметика
 
-From the TTGIR / PTX / SASS of the pinned Triton 3.6 build (`scripts/dump_triton.py`). Layout
-`blocked<[2,1],[8,4],[1,4]>`: 8 lanes × 2 rows hold the 16 kw partials of one output.
+Получена из TTGIR / PTX / SASS закреплённой сборки Triton 3.6 (`scripts/dump_triton.py`). Раскладка `blocked<[2,1],[8,4],[1,4]>`: 8 линий × 2 строки держат 16 частичных сумм kw одного выхода.
 
-- word w (8 e2m1 codes, k = 8w + j, nibble j) belongs to partial `P[w % 16]`; each partial walks its
-  words in ascending order: `acc = +0; acc += a[8w+j] · lut[code_j]` (j = 0..7; e2m1 × bf16 products are
-  exact in FP32, so the FFMA chain the SASS uses equals FMUL + FADD bit for bit);
-  `P = fma(acc, scale[w >> 1], P)` with the e4m3 scale converted e4m3 → f16 → f32;
-- reduction: `s_i = P[2i] + P[2i+1]`, then `shfl.bfly` 4, 2, 1:
+- Слово w (8 кодов e2m1, k = 8w + j, ниббл j) принадлежит частичной сумме `P[w % 16]`; каждая частичная сумма обходит свои слова по возрастанию: `acc = +0; acc += a[8w+j] · lut[code_j]` (j = 0..7; произведения e2m1 × bf16 точны в FP32, поэтому цепочка FFMA из SASS равна FMUL + FADD бит в бит);
+  `P = fma(acc, scale[w >> 1], P)`, масштаб e4m3 преобразуется e4m3 → f16 → f32;
+- редукция: `s_i = P[2i] + P[2i+1]`, затем `shfl.bfly` 4, 2, 1:
   `v = ((s0 + s4) + (s2 + s6)) + ((s1 + s5) + (s3 + s7))`;
 - `out = bf16_rn(v · global[slot, n])` (gate_up), `bf16_rn((v · global) · topk_w)` (down).
 
-The kernel (`src/qwen_moe_decode.cu`) does the same operations in the same order. Only the data movement
-differs:
-- 16-byte weight loads with a register prefetch ring;
-- four threads per weight row: thread r owns partials 4r..4r+3, i.e. 16-byte chunks c ≡ r (mod 4),
-  in ascending order;
-- the activation is staged once per CTA in FP32;
-- the shuffle tree is xor 2, xor 1, then an in-thread add.
+Ядро (`src/qwen_moe_decode.cu`) выполняет те же операции в том же порядке. Отличается только перемещение данных:
+- 16-байтные загрузки весов с кольцом предвыборки в регистрах;
+- четыре потока на строку весов: поток r владеет частичными суммами 4r..4r+3, то есть 16-байтными кусками c ≡ r (mod 4), по возрастанию;
+- активация раскладывается один раз на CTA в FP32;
+- дерево shuffle — xor 2, xor 1, затем сложение внутри потока.
 
-## FreeToken side
+## Сторона FreeToken
 
-`python/freetoken/kernel/cuda_moe_decode.py`, hooked in `layers/quantization/moe/nvfp4.py` (decode
-branch only; `layers/moe.py` and the offload cache are untouched):
-- **Library loading.** The library is dlopen'ed from a sealed memfd only if its sha256 matches
-  `LIBRARY_SHA256`. The ABI probe checks `abi_version 1` and the source sha256.
-- **Platform pin.** sm_120, torch 2.11, Triton 3.6.
-- **Process self-test.** Synthetic banks: every e2m1 code, every finite e4m3 scale code including
-  negative ones, globals 2⁻⁴⁰..2³⁰. Gaussian, heavy-tailed and edge activations (±0, bf16 subnormals,
-  ±3e38). Both GEMMs, every M 1..8, top_k 8, slots shared between tokens. Compared bitwise with the
-  production Triton call.
-- **Per-layer check on real weights.** It runs on the first eager (non-capturing) decode call of each MoE
-  layer, during warm-up before graph capture. Both GEMMs run on that call's real slot banks, routes and
-  activations for every enabled M. A mismatch keeps the layer on Triton, and the event is logged. A layer
-  whose first decode call is captured stays on Triton until an eager call decides it.
+`python/freetoken/kernel/cuda_moe_decode.py`, подключено в `layers/quantization/moe/nvfp4.py` (только ветка decode; `layers/moe.py` и кэш выгрузки не тронуты):
+- **Загрузка библиотеки.** dlopen из запечатанного memfd только при совпадении sha256 с `LIBRARY_SHA256`. Проба ABI проверяет `abi_version 1` и sha256 исходника.
+- **Закрепление платформы.** sm_120, torch 2.11, Triton 3.6.
+- **Самопроверка процесса.** Синтетические банки: каждый код e2m1, каждый конечный код масштаба e4m3, включая отрицательные, глобальные масштабы 2⁻⁴⁰..2³⁰. Гауссовы, тяжелохвостые и граничные активации (±0, субнормальные bf16, ±3e38). Оба GEMM, каждое M от 1 до 8, top_k 8, слоты общие между токенами. Побитовое сравнение с боевым вызовом Triton.
+- **Проверка на реальных весах по слоям.** Идёт при первом eager-вызове decode (без захвата) каждого MoE-слоя, при прогреве до захвата графа. Оба GEMM запускаются на реальных банках слотов, маршрутах и активациях этого вызова для каждого включённого M. Несовпадение оставляет слой на Triton, событие пишется в лог. Слой, чей первый вызов decode оказался внутри захвата, остаётся на Triton, пока eager-вызов не решит вопрос.
 
-## Build and verification
+## Сборка и проверка
 
 ```bash
-CUDA_HOME=<cuda-13.4> CUDA_CCBIN=g++-15 CUDA_BIN_TOOLS=<dir with cuobjdump> ./build.sh   # CPU only
+CUDA_HOME=<cuda-13.4> CUDA_CCBIN=g++-15 CUDA_BIN_TOOLS=<каталог с cuobjdump> ./build.sh   # только CPU
 python scripts/test_bitexact.py --lib build/libqwen_moe_decode.so --model "$QWEN36_MODEL_DIR" \
     --layers 0,7,13,26,33,39 --bench --out r.json
 pytest freetoken/tests/kernels/test_cuda_decode_kernels.py
 ```
 
-`build.sh` applies the same checks as `decode-oproj/build.sh`: LF source, no `CALL.ABS` /
-`__cuda_syscall`, no `.shared::cluster`, no spills. The pinned build has 0 spills.
+`build.sh` применяет те же проверки, что `decode-oproj/build.sh`: исходник с LF, нет `CALL.ABS` / `__cuda_syscall`, нет `.shared::cluster`, нет сбросов регистров. В закреплённой сборке 0 сбросов.
 
 | | |
 |---|---|
-| Library sha256 (pinned) | `83e90c43cb63ce11b284a37cdadf7eff82f147eb5873e988f358dd7df7d48dd5` |
-| Source sha256 | `088bb27525a60b602d9ebc84d1d6810343747fec116fa9c288b031cc5437c95a` |
-| Toolchain | nvcc 13.4.59, `-gencode arch=compute_120a,code=sm_120a`, `--cudart=static`, g++-15 |
+| sha256 библиотеки (закреплён) | `83e90c43cb63ce11b284a37cdadf7eff82f147eb5873e988f358dd7df7d48dd5` |
+| sha256 исходника | `088bb27525a60b602d9ebc84d1d6810343747fec116fa9c288b031cc5437c95a` |
+| Инструментарий | nvcc 13.4.59, `-gencode arch=compute_120a,code=sm_120a`, `--cudart=static`, g++-15 |
 
-## Results (RTX 5070 Ti, torch 2.11.0+cu130, Triton 3.6.0, owner GPU, 2026-10-15)
+## Результаты (RTX 5070 Ti, torch 2.11.0+cu130, Triton 3.6.0, GPU владельца, 15.10.2026)
 
-- **Bit-exact:** 4284 GEMM comparisons, 0 mismatches. The cases are synthetic banks plus real experts of
-  layers 0/7/13/26/33/39; M 1..8 × top_k 8, plus top_k 4/2/1 at M 1/3/8; gaussian/heavy/edge activations;
-  6 library variants; eager and CUDA graph. The whole decode MoE (gate_up → act → down → sum) with the GEMV
-  swapped is also byte-identical: 21 cases, 0 mismatches.
-- **Graph micro-benchmark** (40 layers over distinct slot banks larger than L2, median of 5 alternating
-  pairs, µs per layer):
+- **Побитово:** 4284 сравнения GEMM, 0 расхождений. Случаи: синтетические банки плюс реальные эксперты слоёв 0/7/13/26/33/39; M от 1 до 8 × top_k 8, а также top_k 4/2/1 при M 1/3/8; гауссовы, тяжелохвостые и граничные активации; 6 вариантов библиотеки; eager и CUDA graph. Весь MoE decode (gate_up → активация → down → сумма) с подменённым GEMV тоже побайтно совпал: 21 случай, 0 расхождений.
+- **Микробенч на графе** (40 слоёв над разными банками слотов больше L2, медиана 5 чередующихся пар, мкс на слой):
 
-| | Triton | library (variant used) |
+| | Triton | библиотека (использованный вариант) |
 |---|---|---|
 | M=1 gate_up | 18.5 | 12.5–12.9 |
 | M=1 down | 9.4 | 7.4–7.8 |
-| M=1 both | 28.4 | 20.5 |
-| M=4 both | 86.1 | 41.4 |
+| M=1 оба | 28.4 | 20.5 |
+| M=4 оба | 86.1 | 41.4 |
 
-  At M = 1 that is ≈ 8 µs × 40 ≈ 0.32 ms per decode step. gate_up runs at ≈ 720 GB/s, down at ≈ 600 GB/s.
+  При M = 1 это ≈ 8 мкс × 40 ≈ 0.32 мс на шаг decode. gate_up идёт на ≈ 720 ГБ/с, down — на ≈ 600 ГБ/с.
 
-## Model A/B (owner GPU, 2026-10-15, main-release profile + switches, S3 branch tree)
+## Модельный A/B (GPU владельца, 15.10.2026, профиль main-release + переключатели)
 
-Three rounds, alternating arm order. Each arm is a fresh server start: the `main-release` configuration,
-optionally with `QWEN36_OPROJ_GEMV=1` and/or `QWEN36_MOE_DECODE_CUDA=1` and the pinned libraries.
-Workload per arm: greedy, `ignore_eos`, 2 × (64-token prompt, 256 output) and 1 × (16K prompt, 256
-output). The prompts come from a fixed seed, so every arm receives byte-identical requests. No profiler.
-Medians are in `ab-model-2026-10-15.json`.
+Три раунда, порядок рук чередуется. Каждая рука — свежий запуск сервера: конфигурация `main-release`, при необходимости с `QWEN36_OPROJ_GEMV=1` и/или `QWEN36_MOE_DECODE_CUDA=1` и закреплёнными библиотеками. Нагрузка на руку: жадная генерация, `ignore_eos`, 2 × (промпт 64 токена, ответ 256) и 1 × (промпт 16K, ответ 256). Промпты из фиксированного зерна, поэтому все руки получают побайтно одинаковые запросы. Без профайлера. В таблице — медианы.
 
-| arm | decode tok/s, 64-token prompt | vs base | decode tok/s, 16K prompt | vs base |
+| Рука | декод, ток/с, промпт 64 токена | к базе | декод, ток/с, промпт 16K | к базе |
 |---|---|---|---|---|
-| base (main-release) | 158.4 | | 148.1 | |
-| + o-projection | 161.8 | +2.1 % | 150.7 | +1.7 % |
-| + MoE GEMV | 166.2 | +4.9 % | 154.9 | +4.6 % |
-| + both | 172.1 | +8.6 % | 159.4 | +7.6 % |
+| база (main-release) | 158.4 | | 148.1 | |
+| + o-проекция | 161.8 | +2.1% | 150.7 | +1.7% |
+| + MoE GEMV | 166.2 | +4.9% | 154.9 | +4.6% |
+| + оба | 172.1 | +8.6% | 159.4 | +7.6% |
 
-- **Generated text:** byte-identical in all 12 server starts.
-- **Self-tests:** both libraries loaded their pinned sha256 and passed the self-test for M 1..8 in every
-  run. No mismatch event was logged.
-- **Round 1:** slower for every arm (base 148 tok/s against 159 in rounds 2–3). The paired comparisons
-  of rounds 2–3 alone give o-projection +1.8…+3.0 %, MoE +4.7…+5.0 % and both +8.3…+8.4 %.
-- **TTFT:** unchanged with both switches (0.38 s at 64 tokens, 1.28 s at 16K). The o-projection-only
-  arm showed a higher 64-token TTFT median (0.45 s) that the "both" arm, which also runs the
-  o-projection kernel, does not reproduce. This is not explained; re-check it in the paired release A/B.
-- **VRAM:** the first launch of every kernel variant of both libraries in a fresh process took 0 MiB
-  (`scripts/vram_first_launch.py`).
-- **Not yet done:** the teacher gate (125/125, max_abs 0) is for the coordinator.
+- **Сгенерированный текст:** побайтно одинаков во всех 12 запусках сервера.
+- **Самопроверки:** обе библиотеки загрузились с закреплённым sha256 и прошли самопроверку для M от 1 до 8 в каждом запуске. Ни одного события несовпадения не записано.
+- **Раунд 1:** медленнее у всех рук (база 148 ток/с против 159 в раундах 2–3). Парные сравнения только раундов 2–3 дают o-проекция +1.8…+3.0%, MoE +4.7…+5.0%, оба +8.3…+8.4%.
+- **TTFT:** не изменился при обоих переключателях (0.38 с на 64 токенах, 1.28 с на 16K). Рука «только o-проекция» показала более высокую медиану TTFT на 64 токенах (0.45 с), которую рука «оба» не воспроизвела. Не объяснено; в парном релизном A/B расхождения нет.
+- **VRAM:** первый запуск каждого варианта обеих библиотек в свежем процессе занял 0 МиБ (`scripts/vram_first_launch.py`).
+
+## В релизе main128 (16.10.2026)
+
+- Teacher-гейт пройден: 125/125, `max_abs` 0 (ступень лесенки «бит-точные ядра декода»; обе библиотеки включены вместе).
+- Лесенка (3 пары): декод 16K 159.5 → 170.3 ток/с (+10.8), 120K 112.1 → 118.4. Шаг decode на 16K по Nsight Systems 6.42 → 5.87 мс: MoE 1.45 → 1.26 мс, плотные слои и o-проекция 2.59 → 2.46 мс.
+- Цена: самопроверки при финализации весов оставляют ≈14 МиБ scratch в кэше аллокатора, бюджет засчитывает их как веса — слотов 4603 вместо 4611 (план: освобождать кэш после самотестов).
+- В логе после старта должна быть строка `QWEN36_MOE_DECODE_CUDA enabled: libqwen_moe_decode sha256 83e90c43cb63ce11.. ABI 1, bit-exact self-test passed for M [...]`. Любая строка с `disabled`, `self-test mismatches keep these ...` или `real-weight check mismatched ...` значит, что соответствующие слои или M остались на Triton: точность сохраняется, выигрыш пропадает.
+- Nsight Compute по этим ядрам в составе модели не снят (под ncu сервер не обрабатывает запросы); есть только микробенчи выше.
