@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only synthetic reproductions of REVIEW.md findings; not a release gate.
+"""Read-only synthetic reproductions of review findings of the 2026-10 cycle (see README «Найденные ошибки»); not a release gate.
 
 True = the defect still reproduces; False = the fixed code refuses the synthetic input.
 """

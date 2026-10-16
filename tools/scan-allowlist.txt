@@ -9,5 +9,4 @@ harness/test-readiness-transport-cpu.py secret-assignment TOKEN = 'SYNTHETIC-NOT
 harness/test-worker-fault-v2-cpu.py bearer-value 'Bearer SYNTHETIC-NOT-A-CREDENTIAL' test fixture
 tools/scan-allowlist.txt * this file quotes the allowlisted synthetic values above
 
-MIGRATION.md routable-ipv4 Public cuDNN package version 9.24.0.43 from Torch 2.14.1 metadata, not a host address
 validation/migration/target-packages.json routable-ipv4 Public PyPI dependency nvidia-cudnn-cu13==9.24.0.43, not a host address

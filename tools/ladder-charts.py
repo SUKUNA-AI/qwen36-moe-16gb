@@ -5,7 +5,7 @@ No third-party packages; the SVG style, themes and helpers come from
 tools/readme_charts.py, so the ladder charts look like the README charts.
 
     python3 tools/ladder-charts.py                      # results/ladder/summary.json -> results/ladder/charts/
-    python3 tools/ladder-charts.py --input results/ladder/fixture-summary.json   # -> charts-draft/
+    python3 tools/ladder-charts.py --input harness/fixtures/ladder-summary-synthetic.json   # -> charts-draft/
 
 Input: schema "qwen36-ladder-summary" v1 (written by the GPU ladder session).
 Every field except schema, schema_version and steps[].id may be missing or null;
@@ -607,7 +607,7 @@ def render(lad, outdir):
             written.append(save(nsys_chart(lad, t, key, title, sub, total_key, unit), outdir, name, theme))
         written.append(save(memory_chart(lad, t), outdir, "memory-steps", theme))
         written.append(save(teacher_chart(lad, t), outdir, "teacher-steps", theme))
-    for lang, name in (("ru", "ladder-table.md"), ("en", "ladder-table.en.md")):
+    for lang, name in (("ru", "ladder-table.md"),):
         path = os.path.join(outdir, name)
         with open(path, "w", encoding="utf-8", newline="\n") as f:
             f.write(tables(lad, lang))

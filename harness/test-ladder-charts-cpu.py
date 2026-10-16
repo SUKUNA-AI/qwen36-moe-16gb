@@ -13,7 +13,7 @@ from pathlib import Path
 from repo_paths import CHECKOUT
 
 TOOL = CHECKOUT / 'tools' / 'ladder-charts.py'
-FIXTURE = CHECKOUT / 'results' / 'ladder' / 'fixture-summary.json'
+FIXTURE = CHECKOUT / 'harness' / 'fixtures' / 'ladder-summary-synthetic.json'
 SVG_NS = '{http://www.w3.org/2000/svg}'
 CHARTS = ['ttft-steps', 'decode-steps', 'waterfall-ttft-short', 'waterfall-decode16k', 'nsys-decode16k',
           'nsys-prefill-short', 'nsys-prefill16k', 'memory-steps', 'teacher-steps']
@@ -68,7 +68,7 @@ class FixtureRender(unittest.TestCase):
         written = render(fixture(), self.out)
         names = sorted(os.path.basename(p) for p in written)
         expected = sorted([f'{c}.svg' for c in CHARTS] + [f'{c}-dark.svg' for c in CHARTS]
-                          + ['ladder-table.md', 'ladder-table.en.md', 'DRAFT.md'])
+                          + ['ladder-table.md', 'DRAFT.md'])
         self.assertEqual(names, expected)
         for c in CHARTS:
             for suffix in ('', '-dark'):
@@ -96,8 +96,6 @@ class FixtureRender(unittest.TestCase):
     def test_tables_mark_draft(self):
         render(fixture(), self.out)
         self.assertTrue((self.out / 'ladder-table.md').read_text(encoding='utf-8').startswith('> **СИНТЕТИКА'))
-        self.assertTrue((self.out / 'ladder-table.en.md').read_text(encoding='utf-8').startswith('> **SYNTHETIC'))
-        self.assertNotIn('н/д', (self.out / 'ladder-table.en.md').read_text(encoding='utf-8'))
 
 
 class Guards(unittest.TestCase):
