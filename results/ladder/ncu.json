@@ -1,0 +1,49 @@
+{
+ "schema": "ladder-ncu-1",
+ "status": "NOT_RUN",
+ "kernels_profiled": 0,
+ "attempts": [
+  {
+   "id": 1,
+   "mode": "CUDA graphs on, --graph-profiling node",
+   "captures": 7,
+   "result": "every capture stopped at the 1200 s readiness wait: /health stayed 'loading' while CUDA graphs were captured under ncu; unit memory reached the 36 GiB cap",
+   "kernel_profiled": false
+  },
+  {
+   "id": 2,
+   "mode": "eager decode (--cuda-graph-max-bs 0, same kernels), --profile-from-start off, window cudaProfilerStart/Stop around the measured requests, kernel filter from the nsys private targets, sections SpeedOfLight/MemoryWorkloadAnalysis/ComputeWorkloadAnalysis/Occupancy/LaunchStats, launch-count 1, 15 min limit per capture",
+   "captures": 1,
+   "result": "stopped after the first capture by design (hang, no new attempts)",
+   "diagnosis": [
+    "server loaded in ~1.5 min and logged 'CUDA graph is disabled' and 'API server is ready' (the graph-capture hang is gone)",
+    "during the remaining 13 minutes the unit's journal shows 0 prefill/decode batches: no request reached the model, so the profile window never opened and ncu reported 'No kernels were profiled'",
+    "profile-request.py run printed neither an error nor a receipt, i.e. the client did not get past its start-up phase (health wait / request build) before the 900 s limit",
+    "unit CPU time 13 min over 15 min wall: the model process stays busy under ncu interception (16 MoE CPU threads, host-side expert/LRU work) while idle",
+    "unverified hypotheses: (a) /health is served through the engine process and does not answer while ncu intercepts its launches; (b) the client blocks in the tokenizer/bench import. A 2-minute dry run of profile-request.py run with strace/py-spy against an ncu-attached server, or starting ncu with --target-processes application-only on the engine worker, would separate them."
+   ]
+  }
+ ],
+ "wanted": {
+  "variants": [
+   "main-release",
+   "main-release-next-d5"
+  ],
+  "targets_per_variant": [
+   "moe_decode",
+   "fp8_gemv",
+   "oproj",
+   "attention_decode",
+   "gather",
+   "moe_prefill_gemm"
+  ],
+  "metrics": [
+   "dram_throughput_pct",
+   "sm_throughput_pct",
+   "tensor_pipe_active_pct_of_elapsed",
+   "achieved_occupancy_pct",
+   "theoretical_occupancy_pct"
+  ]
+ },
+ "available_compute_evidence": "results/nsight/ncu-component-kernels.json (component-level ncu of the kernels, not the model process)"
+}
