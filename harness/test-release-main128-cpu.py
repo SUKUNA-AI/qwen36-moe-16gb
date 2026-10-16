@@ -514,7 +514,7 @@ echo ActiveState=$state
 echo SubState=dead
 """
 RENDER = (('/path/' 'to/qwen36-workspace/outputs/qwen36-api/optimization', None), ('/home/' 'USER/qwen36-api', 'root'),
-          ('/path/' 'to/LLM/qwen36-api/model', 'model'))
+          ('/path/' 'to/LLM/qwen36-api/model', 'model'), ('llm.' 'example.com', 'public'), ('EDGE_SSH' '_HOST', 'edge'))
 SCRIPT_TOOLS = ('release-main128.sh', 'release-main128.py', 'release.py', 'make-qualification.py', 'export-release-evidence.py',
                 'repo_paths.py', 'qwen36.cmd')
 
@@ -530,7 +530,7 @@ class ReleaseScriptSandbox(unittest.TestCase):
         top = pathlib.Path(self.tmp.name)
         self.checkout, self.root, self.model = top / 'checkout', top / 'root', top / 'model'
         self.native = self.root / 'optimization'
-        self.values = {'root': str(self.root), 'model': str(self.model)}
+        self.values = {'root': str(self.root), 'model': str(self.model), 'public': 'public.test', 'edge': 'edge-ssh.test'}
         self.bin = top / 'bin'
         self.bin.mkdir()
         (self.bin / 'systemctl').write_text(FAKE_SYSTEMCTL)
@@ -596,7 +596,8 @@ class ReleaseScriptSandbox(unittest.TestCase):
         # a pre-existing installed state for the first release (its receipt is only read for carry)
         self.put(self.root / 'release/qualification.json', b'{}\n')
         self.put(self.checkout / 'config/local.env',
-                 ('QWEN36_ROOT=%s\nQWEN36_NATIVE=%s\nQWEN36_MODEL_DIR=%s\n' % (self.root, self.native, self.model)).encode())
+                 ('QWEN36_ROOT=%s\nQWEN36_NATIVE=%s\nQWEN36_MODEL_DIR=%s\nQWEN36_PUBLIC_HOST=public.test\nQWEN36_EDGE_SSH_HOST=edge-ssh.test\n'
+                  % (self.root, self.native, self.model)).encode())
 
     def tearDown(self):
         self.tmp.cleanup()
