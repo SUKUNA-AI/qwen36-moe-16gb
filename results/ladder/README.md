@@ -1,6 +1,6 @@
 # Лесенка main128: вклад каждого рычага
 
-Сгенерировано 2026-10-16T03:43:06Z скриптами `scripts/ladder_*.py` из отчётов GPU-прогона. Бит-точность: teacher 125/125, max_abs 0.
+Сгенерировано 2026-10-16T04:32:47Z скриптами `scripts/ladder_*.py` из отчётов GPU-прогона. Бит-точность: teacher 125/125, max_abs 0.
 A/B без профайлера: ротирующаяся матрица, 3 пары, прогрев 60 с, вывод 128 токенов. В ячейках: медиана (среднее; min–max; p95, p99; n) по парам; при n=3–5 перцентили — грубая оценка, она стремится к максимуму. Шаги кумулятивные: ступень = предыдущая + один рычаг.
 
 ## Главное
@@ -162,5 +162,5 @@ Shared GPU memory за окно soak 2 ч (664 замеров): первая/п�
 
 ## Nsight Compute
 
-NOT_RUN: 7 captures of the model process (3 decode targets of fresh_16k and 1 short-prefill target for f1, 3 decode targets for the candidate) did not finish: the unit stays in /health=loading for 1200 s while CUDA graphs are captured under ncu (--graph-profiling node), host memory reaches the 36 GiB unit cap; the same failure was recorded in the earlier f1 Nsight Compute attempts. No kernel was profiled; component-level ncu (results/nsight/ncu-component-kernels.json) remains the only Compute evidence. Follow-up: capture graphs outside the ncu range or profile the kernels from their component benches.
+NOT_RUN: NOT_RUN after two attempts (see ncu.json): with CUDA graphs the unit stays in /health=loading while graphs are captured under ncu; in eager decode the server comes up in 1.5 min but no request reaches the model within 15 min (0 batches in the journal, no kernel profiled). No Compute data of the model process; component-level ncu in results/nsight/ncu-component-kernels.json is the only Compute evidence.
 
