@@ -91,6 +91,7 @@ site_value() {  # KEY -> value in $env_file (KEY=v | 'v' | "v"; a trailing ' # c
 site_path_ok() { [[ $1 =~ ^/[A-Za-z0-9._/+-]+$ ]] && [[ $1 != *'/home/''USER'* ]] && [[ $1 != *'/path/''to/'* ]]; }
 root=$(site_value QWEN36_ROOT); native=$(site_value QWEN36_NATIVE); archive=$(site_value QWEN36_ARCHIVE)
 model=$(site_value QWEN36_MODEL_DIR); model=${model:-${QWEN36_MODEL_DIR:-}}; model=${model%/}
+public_host=$(site_value QWEN36_PUBLIC_HOST); edge_host=$(site_value QWEN36_EDGE_SSH_HOST)
 site_path_ok "$root" && site_path_ok "$native" && site_path_ok "$model" \
   || die 2 "set QWEN36_ROOT, QWEN36_NATIVE and QWEN36_MODEL_DIR (absolute site paths) in $env_file or the environment"
 [ "$native" = "$root/optimization" ] || die 2 "QWEN36_NATIVE must be QWEN36_ROOT/optimization (release.EVIDENCE_ROOT)"
@@ -104,9 +105,10 @@ work=$staging_root/$label
 for tool in sha256sum tar cmp sed systemctl git; do command -v "$tool" >/dev/null 2>&1 || die 66 "required tool missing: $tool"; done
 
 # Placeholder -> site value, longest first (identical to sync-v5.sh render()).
+# readiness.py carries the public name and the edge SSH alias (serving/README.md: QWEN36_PUBLIC_HOST, QWEN36_EDGE_SSH_HOST).
 RENDER_FROM=('/path/''to/qwen36-workspace/outputs/qwen36-api/optimization' '/path/''to/qwen36-workspace'
-  '/home/''USER/qwen36-api' '/path/''to/LLM/qwen36-api/model')
-RENDER_TO=("$native/config" "$archive" "$root" "$model")
+  '/home/''USER/qwen36-api' '/path/''to/LLM/qwen36-api/model' 'llm.''example.com' 'EDGE_SSH''_HOST')
+RENDER_TO=("$native/config" "$archive" "$root" "$model" "$public_host" "$edge_host")
 render() {
   local i; local -a args=()
   for i in "${!RENDER_FROM[@]}"; do [ -z "${RENDER_TO[$i]}" ] || args+=(-e "s|${RENDER_FROM[$i]}|${RENDER_TO[$i]}|g"); done
@@ -185,7 +187,7 @@ for f in "${FILES[@]}"; do
 done
 [ "${#drift[@]}" -eq 0 ] || die 65 "run-bound service files differ from the overlay (rendered): ${drift[*]}; release the tree the S5 runs used"
 for f in "${FILES[@]}"; do
-  if render "$checkout/serving/$f" | grep -qE '/home/''USER|/path/''to/'; then die 65 "unrendered placeholder left in serving/$f"; fi
+  if render "$checkout/serving/$f" | grep -qE '/home/''USER|/path/''to/|EDGE_SSH''_HOST|llm\.''example\.com'; then die 65 "unrendered placeholder left in serving/$f"; fi
 done
 say "release label=$label mode=$mode"
 say "  checkout=$checkout"
