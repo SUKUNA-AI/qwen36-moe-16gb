@@ -61,7 +61,7 @@
 <text x="24.0" y="430.0" font-size="12" fill="#9198a1" text-anchor="start" font-weight="600">Секунды</text>
 <text x="155.0" y="430.0" font-size="12" fill="#9198a1" text-anchor="middle" font-weight="600">4K</text>
 <text x="305.0" y="430.0" font-size="12" fill="#9198a1" text-anchor="middle" font-weight="600">16K</text>
-<text x="455.0" y="430.0" font-size="12" fill="#9198a1" text-anchor="middle" font-weight="600">64K†</text>
+<text x="455.0" y="430.0" font-size="12" fill="#9198a1" text-anchor="middle" font-weight="600">64K</text>
 <text x="605.0" y="430.0" font-size="12" fill="#9198a1" text-anchor="middle" font-weight="600">120K</text>
 <text x="755.0" y="430.0" font-size="12" fill="#9198a1" text-anchor="middle" font-weight="600">250K</text>
 <line x1="24.0" y1="438.0" x2="830.0" y2="438.0" stroke="#30363d" stroke-width="1"/>
@@ -86,7 +86,7 @@
 <text x="455.0" y="508.0" font-size="13" fill="#79b8ff" text-anchor="middle" font-weight="600">8.89</text>
 <text x="605.0" y="508.0" font-size="13" fill="#79b8ff" text-anchor="middle" font-weight="600">21.9</text>
 <text x="755.0" y="508.0" font-size="13" fill="#79b8ff" text-anchor="middle" font-weight="600">72.3</text>
-<text x="24.0" y="566.0" font-size="11" fill="#6e7681" text-anchor="start">4K–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × отношение main128/f1 из двух матриц подряд 16.10. † 64K: отношение из soak.</text>
+<text x="24.0" y="566.0" font-size="11" fill="#6e7681" text-anchor="start">4K–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × отношение main128/f1 16.10 (двух матриц подряд; 64K — отдельный замер, 3 пары).</text>
 <text x="24.0" y="582.0" font-size="11" fill="#6e7681" text-anchor="start">250K: исходная механика — Triton, чанк 4096, замер 13.10; f1 — медиана 11 прогонов; main128 — прямой замер рычагов main128</text>
 <text x="24.0" y="598.0" font-size="11" fill="#6e7681" text-anchor="start">на профиле long256 (медиана 3). Рост нелинейный: attention квадратичен по длине.</text>
 </svg>

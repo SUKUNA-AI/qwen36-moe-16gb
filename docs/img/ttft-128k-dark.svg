@@ -55,7 +55,7 @@
 <text x="850.0" y="295.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">×4.4</text>
 <text x="976.0" y="295.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">×1.03</text>
 <rect x="12.0" y="318.0" width="976.0" height="66.0" rx="6" fill="#0d1117" fill-opacity="0.55"/>
-<text x="24.0" y="359.0" font-size="14" fill="#e6edf3" text-anchor="start">Свежий промпт 64K†</text>
+<text x="24.0" y="359.0" font-size="14" fill="#e6edf3" text-anchor="start">Свежий промпт 64K</text>
 <rect x="230.0" y="329.0" width="227.7" height="13.0" rx="3" fill="#4f5864"/>
 <text x="463.7" y="340.0" font-size="12" fill="#9198a1" text-anchor="start">28.46</text>
 <rect x="230.0" y="346.0" width="73.1" height="13.0" rx="3" fill="#76b900"/>
@@ -105,6 +105,6 @@
 <text x="850.0" y="625.0" font-size="17" fill="#e6edf3" text-anchor="end" font-weight="700">×26</text>
 <text x="976.0" y="625.0" font-size="17" fill="#79b8ff" text-anchor="end" font-weight="700">×2.8</text>
 <text x="24.0" y="690.0" font-size="11" fill="#6e7681" text-anchor="start">main128 здесь не прямой замер против исходного: значение f1 из матрицы 13–14.10 × отношение main128/f1 из двух матриц подряд 16.10 (по 3 пары).</text>
-<text x="24.0" y="706.0" font-size="11" fill="#6e7681" text-anchor="start">Множитель к исходному = (исходный / f1 в матрице 13–14.10) × (f1 / main128 16.10). † 64K: в матрицах 16.10 такой длины нет, отношение из 2-часовых soak.</text>
+<text x="24.0" y="706.0" font-size="11" fill="#6e7681" text-anchor="start">Множитель к исходному = (исходный / f1 в матрице 13–14.10) × (f1 / main128 16.10). 64K — отдельный прямой замер 16.10 (f1, f1L0, main128, 3 пары).</text>
 <text x="24.0" y="722.0" font-size="11" fill="#6e7681" text-anchor="start">Короткие случаи: в матрице 13.10 не было прогрева 60 с, f1 там медленнее (64 токена: 0.79 против 0.41 с), поэтому приведённые значения — оценка; прямой замер main128 после прогрева — 0.200 с.</text>
 </svg>

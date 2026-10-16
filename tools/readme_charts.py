@@ -10,8 +10,8 @@ No third-party packages. Three series are shown: the original FreeToken (bf128),
 - main128 is NOT a direct measurement against the original. It is chained: the f1 value of the old
   matrix times the main128/f1 ratio of two consecutive matrices of one session on 16.10 (f1:
   results/ladder/ab-f1old.json, main128: results/ladder/ab-f1new.json, 3 pairs each, medians).
-  The 64K row has no point there; its ratio comes from the 2-hour soaks (results/ladder/gates.json)
-  and is marked with a dagger.
+  The 64K row is a direct three-point measurement of its own (results/ladder/64k.json: f1, f1L0 and
+  main128, 3 pairs, fresh 65536); the f1 point there pools the profile and its alias (n = 6).
 - Nsight Systems numbers of main128 are read from results/ladder/nsys.json (step L9); the Nsight
   Compute charts still show f1, because Nsight Compute could not profile the model
   (results/ladder/ncu.json).
@@ -148,7 +148,7 @@ OLD = [
     ("fresh_64", ["Промпт 64 токена"], "fresh", 64, 0.75, 0.79, 96.4, 122.8),
     ("fresh_4096", ["Свежий промпт 4K"], "fresh", 4096, 2.24, 0.77, 98.9, 124.5),
     ("fresh_16384", ["Свежий промпт 16K"], "fresh", 16384, 6.78, 1.59, 94.2, 119.1),
-    ("fresh_65536", ["Свежий промпт 64K†"], "fresh", 65536, 28.46, 9.14, 84.4, 99.3),
+    ("fresh_65536", ["Свежий промпт 64K"], "fresh", 65536, 28.46, 9.14, 84.4, 99.3),
     ("fresh_120000", ["Свежий промпт 120K"], "fresh", 120000, 54.77, 22.07, 80.7, 94.6),
     ("history_continuation_4096", ["Продолжение диалога, 4K"], "history_continuation", 4096, 2.20, 0.78, 106.4, 126.9),
     ("last_message_edit_16384", ["Правка последнего", "сообщения, 16K"], "last_message_edit", 16384, 6.85, 0.78, 90.4, 112.4),
@@ -160,7 +160,7 @@ OLD = [
 SEC2 = [
     ("4K", "fresh_4096", (1.93, 116.0), (1.85, 118.1), (0.58, 142.4)),
     ("16K", "fresh_16384", (6.04, 111.3), (5.86, 115.7), (1.49, 138.0)),
-    ("60K†", "fresh_65536", (22.86, 101.3), (22.43, 107.6), (7.50, 122.2)),
+    ("60K‡", "fresh_65536", (22.86, 101.3), (22.43, 107.6), (7.50, 122.2)),
 ]
 
 # README section 3 (long256): original mechanics (13.10, Triton, chunk 4096) and f1 (14.10).
@@ -184,7 +184,8 @@ def release_matrix():
     """Rows of the three-way matrix. All main128 values are chained (see the module docstring)."""
     f1c, mc, _ = _ab_cases()
     cmp_old = jload(MATRIX_DIR, "final-f1-m-main-release-vs-bf128-comparison.json")
-    soak = jload(LADDER, "gates.json")["soak"]["reference_comparison"]["per_length"]["65536"]
+    k64 = jload(LADDER, "64k.json")["points"]
+    p64 = {name.split(" ")[0].split("_")[0]: pt for name, pt in k64.items()}   # f1, f1L0, main128
 
     def gm(cmp, case, length):
         for r in cmp["rows"]:
@@ -200,11 +201,12 @@ def release_matrix():
             src = "A/B"
             # whole request: ratio of medians of two consecutive matrices (not paired, no interval)
             e_new = f1c[key]["elapsed_s"]["median"] / mc[key]["elapsed_s"]["median"]
-        else:                                   # 64K: no point in the A/B, take the 2 h soaks
-            t_f1, t_m = soak["reference"]["ttft_median"], soak["candidate"]["ttft_median"]
-            d_f1, d_m = soak["reference"]["decode_median"], soak["candidate"]["decode_median"]
-            src = "soak"
-            e_new = None
+        else:                                   # 64K: its own measurement, three points, 3 pairs
+            a, b = p64["f1"], p64["main128"]
+            t_f1, t_m = a["ttft_s"]["median"], b["ttft_s"]["median"]
+            d_f1, d_m = a["decode_tps"]["median"], b["decode_tps"]["median"]
+            src = "64K"
+            e_new = a["elapsed_s"]["median"] / b["elapsed_s"]["median"]
         e_old = gm(cmp_old, case, length)
         mt = ft * t_m / t_f1                    # main128 TTFT, chained
         md = fd * d_m / d_f1
@@ -249,7 +251,7 @@ def long_rows():
 def length_series():
     """x, original, f1, main128 for the TTFT-by-length chart.
 
-    4K-120K: the old matrix and the chained main128 (64K with a dagger: from the soaks).
+    4K-120K: the old matrix and the chained main128 (64K from its own three-point measurement).
     250K: the original mechanics (13.10), f1 (median of 11) and a DIRECT measurement of the
     full main128 levers on the long256 geometry (results/ladder/long256-candidate.json)."""
     rows = {r["key"]: r for r in release_matrix()[0]}
@@ -264,7 +266,7 @@ def length_series():
 def decode_length_series():
     """x, original, f1, main128 decode (tok/s) for the decode-by-length chart; None = no real data.
 
-    64-120K: the old matrix and the chained main128 (64K with a dagger: from the soaks).
+    64-120K: the old matrix and the chained main128 (64K from its own three-point measurement).
     250K: f1 (median of 11) and a DIRECT measurement of the full main128 levers on the long256
     geometry (results/ladder/long256-candidate.json). The original mechanics have no decode
     measurement at 250K, the point is not drawn."""
@@ -429,8 +431,8 @@ def paired_bars(t, kind):
         s.text(xb, y + rowh / 2 + 6, b2, 17, t["m128text"], anchor="end", weight=700)
     s.text(24, H - 40, "main128 здесь не прямой замер против исходного: значение f1 из матрицы 13–14.10 × отношение main128/f1 из двух матриц подряд "
            "16.10 (по 3 пары).", 11, t["faint"])
-    s.text(24, H - 24, "Множитель к исходному = (исходный / f1 в матрице 13–14.10) × (f1 / main128 16.10). † 64K: в матрицах 16.10 такой длины нет, "
-           "отношение из 2-часовых soak.", 11, t["faint"])
+    s.text(24, H - 24, "Множитель к исходному = (исходный / f1 в матрице 13–14.10) × (f1 / main128 16.10). 64K — отдельный прямой замер 16.10 "
+           "(f1, f1L0, main128, 3 пары).", 11, t["faint"])
     s.text(24, H - 8, "Короткие случаи: в матрице 13.10 не было прогрева 60 с, f1 там медленнее (64 токена: 0.79 против 0.41 с), поэтому приведённые "
            "значения — оценка; прямой замер main128 после прогрева — 0.200 с.", 11, t["faint"])
     return s
@@ -468,7 +470,7 @@ def length_chart(t):
     # value strip under the plot
     sy = y0 + 70
     cw = (x1 - x0) / len(x_)
-    heads = ["4K", "16K", "64K†", "120K", "250K"]
+    heads = ["4K", "16K", "64K", "120K", "250K"]
     s.text(24, sy, "Секунды", 12, t["muted"], weight=600)
     for j, h in enumerate(heads):
         s.text(x0 + cw * (j + 0.5), sy, h, 12, t["muted"], anchor="middle", weight=600)
@@ -480,8 +482,8 @@ def length_chart(t):
         for j, v in enumerate(vals):
             s.text(x0 + cw * (j + 0.5), ry, f"{v:.2f}" if v < 10 else f"{v:.1f}", 13,
                    t["m128text"] if k == 2 else t["fg"], anchor="middle", weight=600 if k == 2 else None)
-    s.text(24, H - 46, "4K–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × отношение main128/f1 из двух матриц подряд 16.10. "
-           "† 64K: отношение из soak.", 11, t["faint"])
+    s.text(24, H - 46, "4K–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × отношение main128/f1 16.10 (двух матриц подряд; "
+           "64K — отдельный замер, 3 пары).", 11, t["faint"])
     s.text(24, H - 30, "250K: исходная механика — Triton, чанк 4096, замер 13.10; f1 — медиана 11 прогонов; main128 — прямой замер "
            "рычагов main128", 11, t["faint"])
     s.text(24, H - 14, "на профиле long256 (медиана 3). Рост нелинейный: attention квадратичен по длине.", 11, t["faint"])
@@ -519,7 +521,7 @@ def decode_length_chart(t):
     # value strip under the plot
     sy = y0 + 70
     cw = (x1 - x0) / len(x_)
-    heads = ["64", "4K", "16K", "64K†", "120K", "250K"]
+    heads = ["64", "4K", "16K", "64K", "120K", "250K"]
     s.text(24, sy, "Ток/с", 12, t["muted"], weight=600)
     for j, h in enumerate(heads):
         s.text(x0 + cw * (j + 0.5), sy, h, 12, t["muted"], anchor="middle", weight=600)
@@ -533,7 +535,7 @@ def decode_length_chart(t):
                    t["m128text"] if k == 2 else (t["faint"] if v is None else t["fg"]), anchor="middle",
                    weight=600 if k == 2 else None)
     s.text(24, H - 46, "64–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × (main128/f1 из матриц 16.10). "
-           "† 64K: из soak. Проценты — main128 к исходному (250K — к f1).", 11, t["faint"])
+           "Проценты — main128 к исходному (250K — к f1).", 11, t["faint"])
     s.text(24, H - 30, "250K: у исходной механики замера скорости генерации нет — точка не нарисована; f1 — медиана 11 прогонов; "
            "main128 — прямой замер", 11, t["faint"])
     s.text(24, H - 14, "рычагов main128 на профиле long256 (медиана 3). Скорость падает с длиной: attention читает растущий KV-кэш.",
