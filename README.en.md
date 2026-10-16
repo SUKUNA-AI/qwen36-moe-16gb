@@ -131,7 +131,7 @@ The release is f1 plus the levers below. Each lever has its own switch and is of
 | C1 | `prefill_selected: 160` → `QWEN36_PREFILL_SELECTED=160` (needs `decode_gather`) | a chunk under 160 tokens moves only the experts its router selected |
 | D5 | `decode_shared_epilogue` → `QWEN36_DECODE_SHARED_EPILOGUE=1` | the MoE block epilogue (σ(gate)·shared + routed) in one kernel, with torch's roundings |
 
-Tested and left out: D3b (one-layer-ahead prefetch, decode −4%), D6 (warming slots from prefill, no gain), C2 (TMA instead of the copy engine, slower).
+Tested and left out: D3b (one-layer-ahead prefetch, decode −4%), D6 (warming slots from prefill, no gain), C2 (TMA instead of the copy engine, slower). D3b also has a variant with its own high-priority stream (`QWEN36_DECODE_PREGATE_PRIORITY=1`, off by default): in the microbenchmark it hides 44–92% of the copy, on the model it is not measured yet — a next-cycle candidate ([report](next-update/next-candidate/REPORT.md)). Nsight Compute on the model is not captured: under ncu the server does not process requests ([diagnosis](results/ladder/ncu.json)); kernel profiles come next from the component benchmarks.
 
 Modules and switches: [`freetoken/MODIFICATIONS.md`](freetoken/MODIFICATIONS.md).
 

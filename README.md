@@ -349,7 +349,7 @@ flowchart LR
 | C1 | `prefill_selected: 160` → `QWEN36_PREFILL_SELECTED=160` (нужен `decode_gather`) | чанк короче 160 токенов везёт только выбранных роутером экспертов |
 | D5 | `decode_shared_epilogue` → `QWEN36_DECODE_SHARED_EPILOGUE=1` | эпилог MoE-блока (σ(gate)·shared + routed) одним ядром с теми же округлениями, что у torch |
 
-Проверены и не вошли: D3b (предвыборка слоя вперёд, декод −4 %), D6 (прогрев слотов из prefill, без выигрыша), C2 (TMA вместо copy engine, медленнее).
+Проверены и не вошли: D3b (предвыборка слоя вперёд, декод −4 %), D6 (прогрев слотов из prefill, без выигрыша), C2 (TMA вместо copy engine, медленнее). Для D3b в коде есть вариант со своим приоритетным потоком (`QWEN36_DECODE_PREGATE_PRIORITY=1`, по умолчанию выключен): на микробенче он прячет 44–92 % копии, на модели ещё не мерился — кандидат следующего цикла ([отчёт](next-update/next-candidate/REPORT.md)). Nsight Compute по модели не снят: под ncu сервер не обрабатывает запросы ([диагноз](results/ladder/ncu.json)); профиль ядер — следующий шаг через компонентные бенчи.
 
 Полный список модулей и флагов — в [`freetoken/MODIFICATIONS.md`](freetoken/MODIFICATIONS.md).
 
