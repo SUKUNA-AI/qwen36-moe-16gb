@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="738" viewBox="0 0 980 738" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Скорость декода по ступеням лесенки">
+<title>Скорость декода по ступеням лесенки</title>
+<rect x="0.5" y="0.5" width="979" height="737" rx="12" fill="#161b22" stroke="#30363d"/>
+<text x="24.0" y="38.0" font-size="19" fill="#e6edf3" text-anchor="start" font-weight="600">Скорость декода по ступеням лесенки</text>
+<text x="24.0" y="61.0" font-size="13" fill="#9198a1" text-anchor="start">Токенов в секунду, медианы A/B. Больше — лучше. У каждой строки свой масштаб.</text>
+<rect x="24.0" y="78.0" width="12.0" height="12.0" rx="3" fill="#4f5864"/>
+<text x="42.0" y="88.0" font-size="12" fill="#9198a1" text-anchor="start">L0 = f1</text>
+<rect x="107.0" y="78.0" width="12.0" height="12.0" rx="3" fill="#4493f8"/>
+<text x="125.0" y="88.0" font-size="12" fill="#9198a1" text-anchor="start">накопительные ступени</text>
+<rect x="284.2" y="78.0" width="12.0" height="12.0" rx="3" fill="#76b900"/>
+<text x="302.2" y="88.0" font-size="12" fill="#9198a1" text-anchor="start">кандидат</text>
+<rect x="373.9" y="78.0" width="12.0" height="12.0" rx="3" fill="#a371f7"/>
+<text x="391.9" y="88.0" font-size="12" fill="#9198a1" text-anchor="start">отдельные руки</text>
+<text x="956.0" y="88.0" font-size="12" fill="#9198a1" text-anchor="end">кандидат к L0</text>
+<text x="24.0" y="150.0" font-size="18" fill="#e6edf3" text-anchor="start" font-weight="700">64</text>
+<text x="24.0" y="168.0" font-size="11" fill="#9198a1" text-anchor="start">токенов</text>
+<line x1="112.0" y1="200.0" x2="854.0" y2="200.0" stroke="#30363d" stroke-width="1"/>
+<rect x="129.3" y="151.9" width="36.1" height="48.1" rx="3" fill="#4f5864"/>
+<text x="147.4" y="146.9" font-size="11" fill="#e6edf3" text-anchor="middle">151.8</text>
+<rect x="184.1" y="151.5" width="36.1" height="48.5" rx="3" fill="#4493f8"/>
+<text x="202.2" y="146.5" font-size="11" fill="#e6edf3" text-anchor="middle">153.3</text>
+<rect x="238.8" y="152.0" width="36.1" height="48.0" rx="3" fill="#4493f8"/>
+<text x="256.9" y="147.0" font-size="11" fill="#e6edf3" text-anchor="middle">151.5</text>
+<rect x="293.6" y="149.7" width="36.1" height="50.3" rx="3" fill="#4493f8"/>
+<text x="311.7" y="144.7" font-size="11" fill="#e6edf3" text-anchor="middle">158.8</text>
+<rect x="348.4" y="148.9" width="36.1" height="51.1" rx="3" fill="#4493f8"/>
+<text x="366.5" y="143.9" font-size="11" fill="#e6edf3" text-anchor="middle">161.4</text>
+<rect x="403.2" y="146.6" width="36.1" height="53.4" rx="3" fill="#4493f8"/>
+<text x="421.2" y="141.6" font-size="11" fill="#e6edf3" text-anchor="middle">168.7</text>
+<rect x="457.9" y="144.4" width="36.1" height="55.6" rx="3" fill="#4493f8"/>
+<text x="476.0" y="139.4" font-size="11" fill="#e6edf3" text-anchor="middle">175.6</text>
+<rect x="512.7" y="143.7" width="36.1" height="56.3" rx="3" fill="#4493f8"/>
+<text x="530.8" y="138.7" font-size="11" fill="#e6edf3" text-anchor="middle">177.9</text>
+<rect x="567.5" y="143.0" width="36.1" height="57.0" rx="3" fill="#4493f8"/>
+<text x="585.5" y="138.0" font-size="11" fill="#e6edf3" text-anchor="middle">179.9</text>
+<rect x="622.2" y="142.4" width="36.1" height="57.6" rx="3" fill="#4493f8"/>
+<text x="640.3" y="137.4" font-size="11" fill="#e6edf3" text-anchor="middle">181.9</text>
+<rect x="677.0" y="143.5" width="36.1" height="56.5" rx="3" fill="#4493f8"/>
+<text x="695.1" y="138.5" font-size="11" fill="#e6edf3" text-anchor="middle">178.3</text>
+<rect x="731.8" y="142.6" width="36.1" height="57.4" rx="3" fill="#76b900"/>
+<text x="749.8" y="137.6" font-size="11" fill="#e6edf3" text-anchor="middle">181.2</text>
+<rect x="804.5" y="152.5" width="36.1" height="47.5" rx="3" fill="#a371f7"/>
+<text x="822.6" y="147.5" font-size="11" fill="#e6edf3" text-anchor="middle">149.8</text>
+<text x="956.0" y="154.0" font-size="17" fill="#3fb950" text-anchor="end" font-weight="700">+19.0 %</text>
+<text x="956.0" y="170.0" font-size="10.5" fill="#6e7681" text-anchor="end">релиз, 5 пар</text>
+<rect x="12.0" y="214.0" width="956.0" height="112.0" rx="6" fill="#0d1117" fill-opacity="0.55"/>
+<text x="24.0" y="262.0" font-size="18" fill="#e6edf3" text-anchor="start" font-weight="700">2K</text>
+<text x="24.0" y="280.0" font-size="11" fill="#9198a1" text-anchor="start">токенов</text>
+<line x1="112.0" y1="312.0" x2="854.0" y2="312.0" stroke="#30363d" stroke-width="1"/>
+<rect x="129.3" y="267.0" width="36.1" height="45.0" rx="3" fill="#4f5864"/>
+<text x="147.4" y="262.0" font-size="11" fill="#e6edf3" text-anchor="middle">149.2</text>
+<rect x="184.1" y="266.7" width="36.1" height="45.3" rx="3" fill="#4493f8"/>
+<text x="202.2" y="261.7" font-size="11" fill="#e6edf3" text-anchor="middle">150.1</text>
+<rect x="238.8" y="266.8" width="36.1" height="45.2" rx="3" fill="#4493f8"/>
+<text x="256.9" y="261.8" font-size="11" fill="#e6edf3" text-anchor="middle">150.0</text>
+<rect x="293.6" y="265.1" width="36.1" height="46.9" rx="3" fill="#4493f8"/>
+<text x="311.7" y="260.1" font-size="11" fill="#e6edf3" text-anchor="middle">155.6</text>
+<rect x="348.4" y="262.5" width="36.1" height="49.5" rx="3" fill="#4493f8"/>
+<text x="366.5" y="257.5" font-size="11" fill="#e6edf3" text-anchor="middle">164.2</text>
+<rect x="403.2" y="260.1" width="36.1" height="51.9" rx="3" fill="#4493f8"/>
+<text x="421.2" y="255.1" font-size="11" fill="#e6edf3" text-anchor="middle">172.1</text>
+<rect x="457.9" y="257.1" width="36.1" height="54.9" rx="3" fill="#4493f8"/>
+<text x="476.0" y="252.1" font-size="11" fill="#e6edf3" text-anchor="middle">181.9</text>
+<rect x="512.7" y="255.2" width="36.1" height="56.8" rx="3" fill="#4493f8"/>
+<text x="530.8" y="250.2" font-size="11" fill="#e6edf3" text-anchor="middle">188.4</text>
+<rect x="567.5" y="255.7" width="36.1" height="56.3" rx="3" fill="#4493f8"/>
+<text x="585.5" y="250.7" font-size="11" fill="#e6edf3" text-anchor="middle">186.8</text>
+<rect x="622.2" y="254.4" width="36.1" height="57.6" rx="3" fill="#4493f8"/>
+<text x="640.3" y="249.4" font-size="11" fill="#e6edf3" text-anchor="middle">191.1</text>
+<rect x="677.0" y="255.7" width="36.1" height="56.3" rx="3" fill="#4493f8"/>
+<text x="695.1" y="250.7" font-size="11" fill="#e6edf3" text-anchor="middle">186.6</text>
+<rect x="731.8" y="255.3" width="36.1" height="56.7" rx="3" fill="#76b900"/>
+<text x="749.8" y="250.3" font-size="11" fill="#e6edf3" text-anchor="middle">187.9</text>
+<rect x="804.5" y="265.6" width="36.1" height="46.4" rx="3" fill="#a371f7"/>
+<text x="822.6" y="260.6" font-size="11" fill="#e6edf3" text-anchor="middle">153.7</text>
+<text x="956.0" y="266.0" font-size="17" fill="#3fb950" text-anchor="end" font-weight="700">+26.7 %</text>
+<text x="956.0" y="282.0" font-size="10.5" fill="#6e7681" text-anchor="end">релиз, 5 пар</text>
+<text x="24.0" y="374.0" font-size="18" fill="#e6edf3" text-anchor="start" font-weight="700">4K</text>
+<text x="24.0" y="392.0" font-size="11" fill="#9198a1" text-anchor="start">токенов</text>
+<line x1="112.0" y1="424.0" x2="854.0" y2="424.0" stroke="#30363d" stroke-width="1"/>
+<rect x="129.3" y="377.8" width="36.1" height="46.2" rx="3" fill="#4f5864"/>
+<text x="147.4" y="372.8" font-size="11" fill="#e6edf3" text-anchor="middle">152.4</text>
+<rect x="184.1" y="377.7" width="36.1" height="46.3" rx="3" fill="#4493f8"/>
+<text x="202.2" y="372.7" font-size="11" fill="#e6edf3" text-anchor="middle">152.8</text>
+<rect x="238.8" y="378.3" width="36.1" height="45.7" rx="3" fill="#4493f8"/>
+<text x="256.9" y="373.3" font-size="11" fill="#e6edf3" text-anchor="middle">150.9</text>
+<rect x="293.6" y="376.3" width="36.1" height="47.7" rx="3" fill="#4493f8"/>
+<text x="311.7" y="371.3" font-size="11" fill="#e6edf3" text-anchor="middle">157.5</text>
+<rect x="348.4" y="375.0" width="36.1" height="49.0" rx="3" fill="#4493f8"/>
+<text x="366.5" y="370.0" font-size="11" fill="#e6edf3" text-anchor="middle">161.9</text>
+<rect x="403.2" y="372.4" width="36.1" height="51.6" rx="3" fill="#4493f8"/>
+<text x="421.2" y="367.4" font-size="11" fill="#e6edf3" text-anchor="middle">170.3</text>
+<rect x="457.9" y="369.8" width="36.1" height="54.2" rx="3" fill="#4493f8"/>
+<text x="476.0" y="364.8" font-size="11" fill="#e6edf3" text-anchor="middle">179.1</text>
+<rect x="512.7" y="368.0" width="36.1" height="56.0" rx="3" fill="#4493f8"/>
+<text x="530.8" y="363.0" font-size="11" fill="#e6edf3" text-anchor="middle">184.8</text>
+<rect x="567.5" y="367.4" width="36.1" height="56.6" rx="3" fill="#4493f8"/>
+<text x="585.5" y="362.4" font-size="11" fill="#e6edf3" text-anchor="middle">186.7</text>
+<rect x="622.2" y="366.4" width="36.1" height="57.6" rx="3" fill="#4493f8"/>
+<text x="640.3" y="361.4" font-size="11" fill="#e6edf3" text-anchor="middle">190.3</text>
+<rect x="677.0" y="369.4" width="36.1" height="54.6" rx="3" fill="#4493f8"/>
+<text x="695.1" y="364.4" font-size="11" fill="#e6edf3" text-anchor="middle">180.3</text>
+<rect x="731.8" y="367.4" width="36.1" height="56.6" rx="3" fill="#76b900"/>
+<text x="749.8" y="362.4" font-size="11" fill="#e6edf3" text-anchor="middle">186.8</text>
+<rect x="804.5" y="378.8" width="36.1" height="45.2" rx="3" fill="#a371f7"/>
+<text x="822.6" y="373.8" font-size="11" fill="#e6edf3" text-anchor="middle">149.2</text>
+<text x="956.0" y="378.0" font-size="17" fill="#3fb950" text-anchor="end" font-weight="700">+25.5 %</text>
+<text x="956.0" y="394.0" font-size="10.5" fill="#6e7681" text-anchor="end">релиз, 5 пар</text>
+<rect x="12.0" y="438.0" width="956.0" height="112.0" rx="6" fill="#0d1117" fill-opacity="0.55"/>
+<text x="24.0" y="486.0" font-size="18" fill="#e6edf3" text-anchor="start" font-weight="700">16K</text>
+<text x="24.0" y="504.0" font-size="11" fill="#9198a1" text-anchor="start">токенов</text>
+<line x1="112.0" y1="536.0" x2="854.0" y2="536.0" stroke="#30363d" stroke-width="1"/>
+<rect x="129.3" y="489.1" width="36.1" height="46.9" rx="3" fill="#4f5864"/>
+<text x="147.4" y="484.1" font-size="11" fill="#e6edf3" text-anchor="middle">143.4</text>
+<rect x="184.1" y="489.0" width="36.1" height="47.0" rx="3" fill="#4493f8"/>
+<text x="202.2" y="484.0" font-size="11" fill="#e6edf3" text-anchor="middle">143.9</text>
+<rect x="238.8" y="489.1" width="36.1" height="46.9" rx="3" fill="#4493f8"/>
+<text x="256.9" y="484.1" font-size="11" fill="#e6edf3" text-anchor="middle">143.6</text>
+<rect x="293.6" y="487.4" width="36.1" height="48.6" rx="3" fill="#4493f8"/>
+<text x="311.7" y="482.4" font-size="11" fill="#e6edf3" text-anchor="middle">148.6</text>
+<rect x="348.4" y="485.8" width="36.1" height="50.2" rx="3" fill="#4493f8"/>
+<text x="366.5" y="480.8" font-size="11" fill="#e6edf3" text-anchor="middle">153.8</text>
+<rect x="403.2" y="483.9" width="36.1" height="52.1" rx="3" fill="#4493f8"/>
+<text x="421.2" y="478.9" font-size="11" fill="#e6edf3" text-anchor="middle">159.5</text>
+<rect x="457.9" y="480.3" width="36.1" height="55.7" rx="3" fill="#4493f8"/>
+<text x="476.0" y="475.3" font-size="11" fill="#e6edf3" text-anchor="middle">170.3</text>
+<rect x="512.7" y="479.9" width="36.1" height="56.1" rx="3" fill="#4493f8"/>
+<text x="530.8" y="474.9" font-size="11" fill="#e6edf3" text-anchor="middle">171.7</text>
+<rect x="567.5" y="479.2" width="36.1" height="56.8" rx="3" fill="#4493f8"/>
+<text x="585.5" y="474.2" font-size="11" fill="#e6edf3" text-anchor="middle">173.8</text>
+<rect x="622.2" y="478.4" width="36.1" height="57.6" rx="3" fill="#4493f8"/>
+<text x="640.3" y="473.4" font-size="11" fill="#e6edf3" text-anchor="middle">176.4</text>
+<rect x="677.0" y="480.7" width="36.1" height="55.3" rx="3" fill="#4493f8"/>
+<text x="695.1" y="475.7" font-size="11" fill="#e6edf3" text-anchor="middle">169.2</text>
+<rect x="731.8" y="479.2" width="36.1" height="56.8" rx="3" fill="#76b900"/>
+<text x="749.8" y="474.2" font-size="11" fill="#e6edf3" text-anchor="middle">173.7</text>
+<rect x="804.5" y="489.6" width="36.1" height="46.4" rx="3" fill="#a371f7"/>
+<text x="822.6" y="484.6" font-size="11" fill="#e6edf3" text-anchor="middle">142.1</text>
+<text x="956.0" y="490.0" font-size="17" fill="#3fb950" text-anchor="end" font-weight="700">+24.0 %</text>
+<text x="956.0" y="506.0" font-size="10.5" fill="#6e7681" text-anchor="end">релиз, 5 пар</text>
+<text x="24.0" y="598.0" font-size="18" fill="#e6edf3" text-anchor="start" font-weight="700">120K</text>
+<text x="24.0" y="616.0" font-size="11" fill="#9198a1" text-anchor="start">токенов</text>
+<line x1="112.0" y1="648.0" x2="854.0" y2="648.0" stroke="#30363d" stroke-width="1"/>
+<rect x="129.3" y="598.7" width="36.1" height="49.3" rx="3" fill="#4f5864"/>
+<text x="147.4" y="593.7" font-size="11" fill="#e6edf3" text-anchor="middle">103.1</text>
+<rect x="184.1" y="598.5" width="36.1" height="49.5" rx="3" fill="#4493f8"/>
+<text x="202.2" y="593.5" font-size="11" fill="#e6edf3" text-anchor="middle">103.5</text>
+<rect x="238.8" y="598.6" width="36.1" height="49.4" rx="3" fill="#4493f8"/>
+<text x="256.9" y="593.6" font-size="11" fill="#e6edf3" text-anchor="middle">103.4</text>
+<rect x="293.6" y="597.3" width="36.1" height="50.7" rx="3" fill="#4493f8"/>
+<text x="311.7" y="592.3" font-size="11" fill="#e6edf3" text-anchor="middle">106.1</text>
+<rect x="348.4" y="595.9" width="36.1" height="52.1" rx="3" fill="#4493f8"/>
+<text x="366.5" y="590.9" font-size="11" fill="#e6edf3" text-anchor="middle">108.9</text>
+<rect x="403.2" y="594.4" width="36.1" height="53.6" rx="3" fill="#4493f8"/>
+<text x="421.2" y="589.4" font-size="11" fill="#e6edf3" text-anchor="middle">112.1</text>
+<rect x="457.9" y="591.4" width="36.1" height="56.6" rx="3" fill="#4493f8"/>
+<text x="476.0" y="586.4" font-size="11" fill="#e6edf3" text-anchor="middle">118.4</text>
+<rect x="512.7" y="591.4" width="36.1" height="56.6" rx="3" fill="#4493f8"/>
+<text x="530.8" y="586.4" font-size="11" fill="#e6edf3" text-anchor="middle">118.4</text>
+<rect x="567.5" y="590.9" width="36.1" height="57.1" rx="3" fill="#4493f8"/>
+<text x="585.5" y="585.9" font-size="11" fill="#e6edf3" text-anchor="middle">119.5</text>
+<rect x="622.2" y="590.4" width="36.1" height="57.6" rx="3" fill="#4493f8"/>
+<text x="640.3" y="585.4" font-size="11" fill="#e6edf3" text-anchor="middle">120.5</text>
+<rect x="677.0" y="591.5" width="36.1" height="56.5" rx="3" fill="#4493f8"/>
+<text x="695.1" y="586.5" font-size="11" fill="#e6edf3" text-anchor="middle">118.2</text>
+<rect x="731.8" y="591.2" width="36.1" height="56.8" rx="3" fill="#76b900"/>
+<text x="749.8" y="586.2" font-size="11" fill="#e6edf3" text-anchor="middle">118.7</text>
+<rect x="804.5" y="597.7" width="36.1" height="50.3" rx="3" fill="#a371f7"/>
+<text x="822.6" y="592.7" font-size="11" fill="#e6edf3" text-anchor="middle">105.2</text>
+<text x="956.0" y="602.0" font-size="17" fill="#3fb950" text-anchor="end" font-weight="700">+14.3 %</text>
+<text x="956.0" y="618.0" font-size="10.5" fill="#6e7681" text-anchor="end">релиз, 5 пар</text>
+<text x="147.4" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L0</text>
+<text x="147.4" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">f1</text>
+<text x="202.2" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L1</text>
+<text x="202.2" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">+T1</text>
+<text x="256.9" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L2</text>
+<text x="256.9" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">+T2</text>
+<text x="311.7" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L3</text>
+<text x="311.7" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">+T3</text>
+<text x="366.5" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L4</text>
+<text x="366.5" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">+эмб. на хосте</text>
+<text x="421.2" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L5</text>
+<text x="421.2" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">+ratio 0.85</text>
+<text x="476.0" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L6</text>
+<text x="476.0" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">+ядра S3</text>
+<text x="530.8" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L7</text>
+<text x="530.8" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">+C0</text>
+<text x="585.5" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L8</text>
+<text x="585.5" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">+C1</text>
+<text x="640.3" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L9</text>
+<text x="640.3" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">D5 shared-expert decode epilogue</text>
+<text x="695.1" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L10</text>
+<text x="695.1" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">D3b decode pre-gate prefetch (limits 1/2)</text>
+<text x="749.8" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">L11</text>
+<text x="749.8" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">D6 warm decode after prefill (8)</text>
+<text x="822.6" y="682.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">T3only</text>
+<text x="822.6" y="697.0" font-size="10.5" fill="#9198a1" text-anchor="middle">T3 отдельно</text>
+</svg>

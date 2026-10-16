@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="720" viewBox="0 0 980 720" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Prefill короткого промпта по ступеням">
+<title>Prefill короткого промпта по ступеням</title>
+<rect x="0.5" y="0.5" width="979" height="719" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+<text x="24.0" y="38.0" font-size="19" fill="#1f2328" text-anchor="start" font-weight="600">Prefill короткого промпта по ступеням</text>
+<text x="24.0" y="61.0" font-size="13" fill="#59636e" text-anchor="start">Nsight Systems, окно prefill на GPU, мс. Под профайлером абсолютные цифры завышены.</text>
+<text x="24.0" y="124.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L0</text>
+<text x="84.4" y="124.0" font-size="11.5" fill="#59636e" text-anchor="start">f1</text>
+<rect x="150.0" y="110.0" width="111.3" height="24.0" rx="0" fill="#1a7f37"/>
+<text x="205.6" y="126.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">74</text>
+<rect x="261.3" y="110.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="262.1" y="110.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="262.2" y="110.0" width="0.4" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="262.7" y="110.0" width="451.9" height="24.0" rx="0" fill="#d1561a"/>
+<text x="488.6" y="126.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">302</text>
+<rect x="714.6" y="110.0" width="6.4" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="729.0" y="127.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">382 мс</text>
+<text x="956.0" y="127.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 31 %</text>
+<text x="24.0" y="164.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L1</text>
+<text x="84.4" y="164.0" font-size="11.5" fill="#59636e" text-anchor="start">+T1</text>
+<rect x="150.0" y="150.0" width="111.3" height="24.0" rx="0" fill="#1a7f37"/>
+<text x="205.6" y="166.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">74</text>
+<rect x="261.3" y="150.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="262.1" y="150.0" width="0.6" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="262.7" y="150.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="262.8" y="150.0" width="0.4" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="263.3" y="150.0" width="356.4" height="24.0" rx="0" fill="#d1561a"/>
+<text x="441.5" y="166.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">238</text>
+<rect x="619.7" y="150.0" width="7.1" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="634.8" y="167.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">319 мс</text>
+<text x="956.0" y="167.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 40 %</text>
+<text x="24.0" y="204.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L2</text>
+<text x="84.4" y="204.0" font-size="11.5" fill="#59636e" text-anchor="start">+T2</text>
+<rect x="150.0" y="190.0" width="111.4" height="24.0" rx="0" fill="#1a7f37"/>
+<text x="205.7" y="206.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">74</text>
+<rect x="261.4" y="190.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="262.2" y="190.0" width="0.6" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="262.9" y="190.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="263.0" y="190.0" width="0.4" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="263.4" y="190.0" width="359.6" height="24.0" rx="0" fill="#d1561a"/>
+<text x="443.2" y="206.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">240</text>
+<rect x="623.0" y="190.0" width="7.2" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="638.2" y="207.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">321 мс</text>
+<text x="956.0" y="207.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 40 %</text>
+<text x="24.0" y="244.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L3</text>
+<text x="84.4" y="244.0" font-size="11.5" fill="#59636e" text-anchor="start">+T3</text>
+<rect x="150.0" y="230.0" width="111.4" height="24.0" rx="0" fill="#1a7f37"/>
+<text x="205.7" y="246.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">74</text>
+<rect x="261.4" y="230.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="262.2" y="230.0" width="0.6" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="262.8" y="230.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="262.9" y="230.0" width="0.4" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="263.3" y="230.0" width="353.4" height="24.0" rx="0" fill="#d1561a"/>
+<text x="440.0" y="246.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">236</text>
+<rect x="616.7" y="230.0" width="6.6" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="631.3" y="247.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">316 мс</text>
+<text x="956.0" y="247.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 40 %</text>
+<text x="24.0" y="284.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L4</text>
+<text x="84.4" y="284.0" font-size="11.5" fill="#59636e" text-anchor="start">+эмб. на хосте</text>
+<rect x="150.0" y="270.0" width="111.3" height="24.0" rx="0" fill="#1a7f37"/>
+<text x="205.7" y="286.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">74</text>
+<rect x="261.3" y="270.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="262.2" y="270.0" width="0.6" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="262.8" y="270.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="262.9" y="270.0" width="0.6" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="263.5" y="270.0" width="380.4" height="24.0" rx="0" fill="#d1561a"/>
+<text x="453.7" y="286.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">254</text>
+<rect x="643.9" y="270.0" width="7.1" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="659.0" y="287.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">335 мс</text>
+<text x="956.0" y="287.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 38 %</text>
+<text x="24.0" y="324.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L5</text>
+<text x="84.4" y="324.0" font-size="11.5" fill="#59636e" text-anchor="start">+ratio 0.85</text>
+<rect x="150.0" y="310.0" width="112.0" height="24.0" rx="0" fill="#1a7f37"/>
+<text x="206.0" y="326.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">75</text>
+<rect x="262.0" y="310.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="262.9" y="310.0" width="0.6" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="263.5" y="310.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="263.6" y="310.0" width="0.6" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="264.2" y="310.0" width="371.7" height="24.0" rx="0" fill="#d1561a"/>
+<text x="450.0" y="326.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">249</text>
+<rect x="635.9" y="310.0" width="7.4" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="651.3" y="327.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">330 мс</text>
+<text x="956.0" y="327.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 38 %</text>
+<text x="24.0" y="364.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L6</text>
+<text x="84.4" y="364.0" font-size="11.5" fill="#59636e" text-anchor="start">+ядра S3</text>
+<rect x="150.0" y="350.0" width="112.5" height="24.0" rx="0" fill="#1a7f37"/>
+<text x="206.2" y="366.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">75</text>
+<rect x="262.5" y="350.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="263.3" y="350.0" width="0.6" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="263.9" y="350.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="264.1" y="350.0" width="0.6" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="264.6" y="350.0" width="378.9" height="24.0" rx="0" fill="#d1561a"/>
+<text x="454.1" y="366.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">253</text>
+<rect x="643.5" y="350.0" width="8.1" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="659.6" y="367.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">335 мс</text>
+<text x="956.0" y="367.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 36 %</text>
+<text x="24.0" y="404.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L7</text>
+<text x="84.4" y="404.0" font-size="11.5" fill="#59636e" text-anchor="start">+C0</text>
+<rect x="150.0" y="390.0" width="3.8" height="24.0" rx="0" fill="#1a7f37"/>
+<rect x="153.8" y="390.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="154.7" y="390.0" width="0.6" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="155.3" y="390.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="155.4" y="390.0" width="0.3" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="155.8" y="390.0" width="470.5" height="24.0" rx="0" fill="#d1561a"/>
+<text x="391.0" y="406.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">315</text>
+<rect x="626.2" y="390.0" width="3.1" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="637.3" y="407.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">320 мс</text>
+<text x="956.0" y="407.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 40 %</text>
+<text x="24.0" y="444.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L8</text>
+<text x="84.4" y="444.0" font-size="11.5" fill="#59636e" text-anchor="start">+C1</text>
+<rect x="150.0" y="430.0" width="3.8" height="24.0" rx="0" fill="#1a7f37"/>
+<rect x="153.8" y="430.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="154.7" y="430.0" width="0.6" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="155.3" y="430.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="155.4" y="430.0" width="0.3" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="155.8" y="430.0" width="485.8" height="24.0" rx="0" fill="#d1561a"/>
+<text x="398.7" y="446.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">325</text>
+<rect x="641.6" y="430.0" width="3.2" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="652.8" y="447.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">331 мс</text>
+<text x="956.0" y="447.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 39 %</text>
+<text x="24.0" y="484.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L9</text>
+<text x="84.4" y="484.0" font-size="11.5" fill="#59636e" text-anchor="start">D5 shared-expert decode epilogue</text>
+<rect x="150.0" y="470.0" width="3.8" height="24.0" rx="0" fill="#1a7f37"/>
+<rect x="153.8" y="470.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="154.7" y="470.0" width="0.6" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="155.3" y="470.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="155.4" y="470.0" width="0.4" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="155.8" y="470.0" width="495.9" height="24.0" rx="0" fill="#d1561a"/>
+<text x="403.7" y="486.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">332</text>
+<rect x="651.7" y="470.0" width="3.0" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="662.7" y="487.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">337 мс</text>
+<text x="956.0" y="487.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 38 %</text>
+<text x="24.0" y="524.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L10</text>
+<text x="84.4" y="524.0" font-size="11.5" fill="#59636e" text-anchor="start">D3b decode pre-gate prefetch (limits 1/2)</text>
+<rect x="150.0" y="510.0" width="3.8" height="24.0" rx="0" fill="#1a7f37"/>
+<rect x="153.8" y="510.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="154.7" y="510.0" width="0.6" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="155.3" y="510.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="155.4" y="510.0" width="0.4" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="155.8" y="510.0" width="480.7" height="24.0" rx="0" fill="#d1561a"/>
+<text x="396.2" y="526.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">321</text>
+<rect x="636.5" y="510.0" width="10.6" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="655.2" y="527.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">332 мс</text>
+<text x="956.0" y="527.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 39 %</text>
+<text x="24.0" y="564.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">L11</text>
+<text x="84.4" y="564.0" font-size="11.5" fill="#59636e" text-anchor="start">D6 warm decode after prefill (8)</text>
+<rect x="150.0" y="550.0" width="3.9" height="24.0" rx="0" fill="#1a7f37"/>
+<rect x="153.9" y="550.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="154.7" y="550.0" width="0.7" height="24.0" rx="0" fill="#cf222e"/>
+<rect x="155.4" y="550.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="155.5" y="550.0" width="0.4" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="155.9" y="550.0" width="457.3" height="24.0" rx="0" fill="#d1561a"/>
+<text x="384.6" y="566.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">306</text>
+<rect x="613.2" y="550.0" width="3.4" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="624.7" y="567.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">312 мс</text>
+<text x="956.0" y="567.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 42 %</text>
+<line x1="24.0" y1="580.0" x2="956.0" y2="580.0" stroke="#d0d7de" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="24.0" y="604.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">T3only</text>
+<text x="84.4" y="604.0" font-size="11.5" fill="#59636e" text-anchor="start">T3 отдельно</text>
+<rect x="150.0" y="590.0" width="111.3" height="24.0" rx="0" fill="#1a7f37"/>
+<text x="205.6" y="606.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">74</text>
+<rect x="261.3" y="590.0" width="0.8" height="24.0" rx="0" fill="#0969da"/>
+<rect x="262.1" y="590.0" width="0.1" height="24.0" rx="0" fill="#1b7c83"/>
+<rect x="262.2" y="590.0" width="0.4" height="24.0" rx="0" fill="#bf3989"/>
+<rect x="262.6" y="590.0" width="514.9" height="24.0" rx="0" fill="#d1561a"/>
+<text x="520.1" y="606.0" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="600">344</text>
+<rect x="777.5" y="590.0" width="7.1" height="24.0" rx="0" fill="#d0d7de"/>
+<text x="792.6" y="607.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">424 мс</text>
+<text x="956.0" y="607.0" font-size="11" fill="#59636e" text-anchor="end">H2D скрыто 28 %</text>
+<rect x="24.0" y="636.0" width="12.0" height="12.0" rx="3" fill="#1a7f37"/>
+<text x="42.0" y="646.0" font-size="12" fill="#59636e" text-anchor="start">Эксперты MoE</text>
+<rect x="144.6" y="636.0" width="12.0" height="12.0" rx="3" fill="#0969da"/>
+<text x="162.6" y="646.0" font-size="12" fill="#59636e" text-anchor="start">Плотные FP8 и o-proj</text>
+<rect x="319.0" y="636.0" width="12.0" height="12.0" rx="3" fill="#cf222e"/>
+<text x="337.0" y="646.0" font-size="12" fill="#59636e" text-anchor="start">Подкачка экспертов (gather)</text>
+<rect x="540.5" y="636.0" width="12.0" height="12.0" rx="3" fill="#8250df"/>
+<text x="558.5" y="646.0" font-size="12" fill="#59636e" text-anchor="start">Attention</text>
+<rect x="24.0" y="658.0" width="12.0" height="12.0" rx="3" fill="#1b7c83"/>
+<text x="42.0" y="668.0" font-size="12" fill="#59636e" text-anchor="start">GDN</text>
+<rect x="84.2" y="658.0" width="12.0" height="12.0" rx="3" fill="#bf3989"/>
+<text x="102.2" y="668.0" font-size="12" fill="#59636e" text-anchor="start">Нормы, lm_head, роутер</text>
+<rect x="272.0" y="658.0" width="12.0" height="12.0" rx="3" fill="#d1561a"/>
+<text x="290.0" y="668.0" font-size="12" fill="#59636e" text-anchor="start">H2D экспертов (не скрыто)</text>
+<rect x="480.0" y="658.0" width="12.0" height="12.0" rx="3" fill="#d0d7de"/>
+<text x="498.0" y="668.0" font-size="12" fill="#59636e" text-anchor="start">Простой GPU</text>
+<text x="24.0" y="706.0" font-size="11" fill="#8c959f" text-anchor="start">Критический путь: перекрытые копии в сумму не входят. Ключи корзин — как в results/nsight/dashboard.json.</text>
+</svg>
