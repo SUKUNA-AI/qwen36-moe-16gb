@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="614" viewBox="0 0 1000 614" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Загрузка блоков GPU по ядрам: Nsight Compute">
-<title>Загрузка блоков GPU по ядрам: Nsight Compute</title>
-<rect x="0.5" y="0.5" width="999" height="613" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
-<text x="24.0" y="38.0" font-size="19" fill="#1f2328" text-anchor="start" font-weight="600">Загрузка блоков GPU по ядрам: Nsight Compute</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="630" viewBox="0 0 1000 630" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Загрузка блоков GPU по ядрам: Nsight Compute, выпуск f1">
+<title>Загрузка блоков GPU по ядрам: Nsight Compute, выпуск f1</title>
+<rect x="0.5" y="0.5" width="999" height="629" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+<text x="24.0" y="38.0" font-size="19" fill="#1f2328" text-anchor="start" font-weight="600">Загрузка блоков GPU по ядрам: Nsight Compute, выпуск f1</text>
 <text x="24.0" y="61.0" font-size="13" fill="#59636e" text-anchor="start">% от пика блока. Доля времени: prefill 120K / 16K и decode 16K / 120K.</text>
 <text x="252.0" y="106.0" font-size="12" fill="#59636e" text-anchor="start" font-weight="600">Доля времени</text>
 <text x="392.0" y="106.0" font-size="12" fill="#59636e" text-anchor="middle" font-weight="600">SM</text>
@@ -120,4 +120,5 @@
 <text x="24.0" y="550.0" font-size="11" fill="#8c959f" text-anchor="start">¹ HMMA, % от пика инструкций; у attention и MoE в prefill главный stall — math_pipe_throttle (конвейер тензорных ядер занят).</text>
 <text x="24.0" y="566.0" font-size="11" fill="#8c959f" text-anchor="start">² максимум по L1/TEX, L2 и DRAM.  ³ marlin ncu не снимался: байты/время из nsys.  PCIe: gather в модели ~42 ГБ/с при потолке канала 41–45 ГБ/с в WSL2.</text>
 <text x="24.0" y="582.0" font-size="11" fill="#8c959f" text-anchor="start">Ncu снят на компонентах с теми же формами и конфигурацией запуска, что в выпуске. Источник: results/nsight/ncu-component-kernels.json.</text>
+<text x="24.0" y="598.0" font-size="11" fill="#8c959f" text-anchor="start">Это выпуск f1. Ядра декода main128 (o-proj GEMV, MoE GEMV) в Nsight Compute не снимались: под ncu сервер не обрабатывает запросы (results/ladder/ncu.json).</text>
 </svg>

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Вклад рычагов: TTFT промпта в 64 токена">
+<title>Вклад рычагов: TTFT промпта в 64 токена</title>
+<rect x="0.5" y="0.5" width="999" height="499" rx="12" fill="#161b22" stroke="#30363d"/>
+<text x="24.0" y="38.0" font-size="19" fill="#e6edf3" text-anchor="start" font-weight="600">Вклад рычагов: TTFT промпта в 64 токена</text>
+<text x="24.0" y="61.0" font-size="13" fill="#9198a1" text-anchor="start">Каждая ступень — предыдущая плюс один рычаг, медианы 3 пар, секунды. Меньше — лучше.</text>
+<line x1="70.0" y1="340.0" x2="976.0" y2="340.0" stroke="#262c34" stroke-width="1"/>
+<text x="62.0" y="344.0" font-size="12" fill="#6e7681" text-anchor="end">0.0</text>
+<line x1="70.0" y1="288.9" x2="976.0" y2="288.9" stroke="#262c34" stroke-width="1"/>
+<text x="62.0" y="292.9" font-size="12" fill="#6e7681" text-anchor="end">0.1</text>
+<line x1="70.0" y1="237.8" x2="976.0" y2="237.8" stroke="#262c34" stroke-width="1"/>
+<text x="62.0" y="241.8" font-size="12" fill="#6e7681" text-anchor="end">0.2</text>
+<line x1="70.0" y1="186.7" x2="976.0" y2="186.7" stroke="#262c34" stroke-width="1"/>
+<text x="62.0" y="190.7" font-size="12" fill="#6e7681" text-anchor="end">0.3</text>
+<line x1="70.0" y1="135.6" x2="976.0" y2="135.6" stroke="#262c34" stroke-width="1"/>
+<text x="62.0" y="139.6" font-size="12" fill="#6e7681" text-anchor="end">0.4</text>
+<text x="62.0" y="96.0" font-size="12" fill="#6e7681" text-anchor="end">с</text>
+<rect x="88.1" y="140.6" width="46.1" height="199.4" rx="3" fill="#76b900"/>
+<text x="111.2" y="132.6" font-size="13" fill="#e6edf3" text-anchor="middle" font-weight="700">0.390</text>
+<text x="111.2" y="360.0" font-size="11.5" fill="#e6edf3" text-anchor="middle">f1</text>
+<rect x="170.5" y="140.6" width="46.1" height="38.4" rx="2" fill="#3fb950"/>
+<line x1="134.2" y1="140.6" x2="170.5" y2="140.6" stroke="#6e7681" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="193.5" y="132.6" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">−0.075</text>
+<text x="193.5" y="360.0" font-size="11.5" fill="#9198a1" text-anchor="middle">короткий</text>
+<text x="193.5" y="374.0" font-size="11.5" fill="#9198a1" text-anchor="middle">маршрут</text>
+<text x="193.5" y="388.0" font-size="11.5" fill="#9198a1" text-anchor="middle">prefill</text>
+<rect x="252.8" y="178.0" width="46.1" height="1.5" rx="2" fill="#ff6a69"/>
+<line x1="216.6" y1="179.0" x2="252.8" y2="179.0" stroke="#6e7681" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="275.9" y="170.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">+0.002</text>
+<text x="275.9" y="360.0" font-size="11.5" fill="#9198a1" text-anchor="middle">CUDA-ядра</text>
+<text x="275.9" y="374.0" font-size="11.5" fill="#9198a1" text-anchor="middle">GDN для</text>
+<text x="275.9" y="388.0" font-size="11.5" fill="#9198a1" text-anchor="middle">prefill</text>
+<rect x="335.2" y="178.0" width="46.1" height="6.5" rx="2" fill="#3fb950"/>
+<line x1="299.0" y1="178.0" x2="335.2" y2="178.0" stroke="#6e7681" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="358.3" y="170.0" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">−0.013</text>
+<text x="358.3" y="360.0" font-size="11.5" fill="#9198a1" text-anchor="middle">shared-эксперт</text>
+<text x="358.3" y="374.0" font-size="11.5" fill="#9198a1" text-anchor="middle">параллельно</text>
+<text x="358.3" y="388.0" font-size="11.5" fill="#9198a1" text-anchor="middle">с подкачкой</text>
+<rect x="417.6" y="179.3" width="46.1" height="5.2" rx="2" fill="#ff6a69"/>
+<line x1="381.3" y1="184.5" x2="417.6" y2="184.5" stroke="#6e7681" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="440.6" y="171.3" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">+0.010</text>
+<text x="440.6" y="360.0" font-size="11.5" fill="#9198a1" text-anchor="middle">эмбеддинги в</text>
+<text x="440.6" y="374.0" font-size="11.5" fill="#9198a1" text-anchor="middle">RAM хоста</text>
+<rect x="499.9" y="179.3" width="46.1" height="28.3" rx="2" fill="#3fb950"/>
+<line x1="463.7" y1="179.3" x2="499.9" y2="179.3" stroke="#6e7681" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="523.0" y="171.3" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">−0.055</text>
+<text x="523.0" y="360.0" font-size="11.5" fill="#9198a1" text-anchor="middle">больше</text>
+<text x="523.0" y="374.0" font-size="11.5" fill="#9198a1" text-anchor="middle">слотов</text>
+<text x="523.0" y="388.0" font-size="11.5" fill="#9198a1" text-anchor="middle">экспертов</text>
+<rect x="582.3" y="202.1" width="46.1" height="5.5" rx="2" fill="#ff6a69"/>
+<line x1="546.1" y1="207.6" x2="582.3" y2="207.6" stroke="#6e7681" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="605.4" y="194.1" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">+0.011</text>
+<text x="605.4" y="360.0" font-size="11.5" fill="#9198a1" text-anchor="middle">бит-точные</text>
+<text x="605.4" y="374.0" font-size="11.5" fill="#9198a1" text-anchor="middle">ядра декода</text>
+<rect x="664.7" y="202.1" width="46.1" height="9.1" rx="2" fill="#3fb950"/>
+<line x1="628.4" y1="202.1" x2="664.7" y2="202.1" stroke="#6e7681" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="687.7" y="194.1" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">−0.018</text>
+<text x="687.7" y="360.0" font-size="11.5" fill="#9198a1" text-anchor="middle">копирование</text>
+<text x="687.7" y="374.0" font-size="11.5" fill="#9198a1" text-anchor="middle">без ожидания</text>
+<text x="687.7" y="388.0" font-size="11.5" fill="#9198a1" text-anchor="middle">GEMM</text>
+<rect x="747.0" y="211.2" width="46.1" height="23.0" rx="2" fill="#3fb950"/>
+<line x1="710.8" y1="211.2" x2="747.0" y2="211.2" stroke="#6e7681" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="770.1" y="203.2" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">−0.045</text>
+<text x="770.1" y="360.0" font-size="11.5" fill="#9198a1" text-anchor="middle">короткие</text>
+<text x="770.1" y="374.0" font-size="11.5" fill="#9198a1" text-anchor="middle">куски:</text>
+<text x="770.1" y="388.0" font-size="11.5" fill="#9198a1" text-anchor="middle">только</text>
+<text x="770.1" y="402.0" font-size="11.5" fill="#9198a1" text-anchor="middle">выбранные</text>
+<text x="770.1" y="416.0" font-size="11.5" fill="#9198a1" text-anchor="middle">эксперты</text>
+<rect x="829.4" y="234.1" width="46.1" height="3.3" rx="2" fill="#3fb950"/>
+<line x1="793.2" y1="234.1" x2="829.4" y2="234.1" stroke="#6e7681" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="852.5" y="226.1" font-size="12" fill="#e6edf3" text-anchor="middle" font-weight="600">−0.006</text>
+<text x="852.5" y="360.0" font-size="11.5" fill="#9198a1" text-anchor="middle">слитый</text>
+<text x="852.5" y="374.0" font-size="11.5" fill="#9198a1" text-anchor="middle">эпилог</text>
+<text x="852.5" y="388.0" font-size="11.5" fill="#9198a1" text-anchor="middle">MoE-блока</text>
+<rect x="911.8" y="237.4" width="46.1" height="102.6" rx="3" fill="#58a6ff"/>
+<text x="934.8" y="229.4" font-size="13" fill="#79b8ff" text-anchor="middle" font-weight="700">0.201</text>
+<text x="934.8" y="360.0" font-size="11.5" fill="#e6edf3" text-anchor="middle">main128</text>
+<text x="24.0" y="468.0" font-size="11" fill="#6e7681" text-anchor="start">Источник: results/ladder/summary.json (A/B лесенки, 3 пары). Не вошли в релиз: предвыборка экспертов на слой вперёд и прогрев слотов из prefill.</text>
+<text x="24.0" y="484.0" font-size="11" fill="#6e7681" text-anchor="start">Красный — ступень не улучшила метрику (изменения до 0.01 с в пределах разброса 3 пар).</text>
+</svg>

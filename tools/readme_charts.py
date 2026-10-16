@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 """Generate the README charts as light and dark SVG files in docs/img/.
 
-No third-party packages. Nsight numbers are read from results/nsight/*.json;
-matrix, long-context and memory numbers are copied from the README tables
-(sources noted next to each block).
+No third-party packages. Three series are shown: the original FreeToken (bf128), the f1 release
+(14.10.2026) and the main128 release (16.10.2026).
 
-    python3 tools/readme_charts.py
+- The old matrix of 13-14.10 (bf128 and f1) is copied from the README of the f1 release (OLD below).
+- main128 is NOT a direct measurement against the original. It is chained: the f1 value of the old
+  matrix times the main128/f1 ratio of the release A/B of 16.10 (results/ladder/ab-release.json,
+  5 pairs, medians). The 64K row has no A/B point; its ratio comes from the 2-hour soaks
+  (results/ladder/gates.json) and is marked with a dagger.
+- Nsight Systems numbers of main128 are read from results/ladder/nsys.json (step L9); the Nsight
+  Compute charts still show f1, because Nsight Compute could not profile the model
+  (results/ladder/ncu.json).
+
+    python tools/readme_charts.py
 """
 import json
 import os
@@ -13,6 +21,8 @@ import os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs", "img")
 NSIGHT = os.path.join(ROOT, "results", "nsight")
+LADDER = os.path.join(ROOT, "results", "ladder")
+MATRIX_DIR = os.path.join(ROOT, "results", "matrix")
 
 FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif"
 
@@ -21,6 +31,7 @@ THEMES = {
         "bg": "#ffffff", "card": "#f6f8fa", "border": "#d0d7de", "fg": "#1f2328",
         "muted": "#59636e", "faint": "#8c959f", "grid": "#e1e6eb", "panel": "#ffffff",
         "base": "#a8b1ba", "f1": "#4d8c00", "f1text": "#3d7000",
+        "m128": "#0b6bcb", "m128text": "#0a58a8",
         "attn": "#8250df", "moe": "#1a7f37", "fp8": "#0969da", "gdn": "#1b7c83",
         "norms": "#bf3989", "h2d": "#d1561a", "gather": "#cf222e", "idle": "#d0d7de",
         "host": "#eaeef2", "heat": ["#f2f5f8", "#fde9b6", "#f9b46a", "#ec6a2c", "#c5221f"],
@@ -30,6 +41,7 @@ THEMES = {
         "bg": "#0d1117", "card": "#161b22", "border": "#30363d", "fg": "#e6edf3",
         "muted": "#9198a1", "faint": "#6e7681", "grid": "#262c34", "panel": "#0d1117",
         "base": "#4f5864", "f1": "#76b900", "f1text": "#8fd400",
+        "m128": "#58a6ff", "m128text": "#79b8ff",
         "attn": "#a371f7", "moe": "#3fb950", "fp8": "#4493f8", "gdn": "#39c5cf",
         "norms": "#db61a2", "h2d": "#f0883e", "gather": "#ff6a69", "idle": "#3d444d",
         "host": "#21262d", "heat": ["#1c2128", "#4a3b14", "#8a4b12", "#d2560f", "#f2453d"],
@@ -121,26 +133,144 @@ class Svg:
 
 # ---------------------------------------------------------------- data
 
-# results/matrix/final-f1-m-main-release-vs-bf128-comparison.json (medians, README §1)
-MATRIX = [
-    # label lines, TTFT bf128, TTFT f1, TTFT ratio label, decode bf128, decode f1
-    (["Промпт 64 токена"], 0.75, 0.79, "×0.94", 96.4, 122.8),
-    (["Свежий промпт 4K"], 2.24, 0.77, "×2.9", 98.9, 124.5),
-    (["Свежий промпт 16K"], 6.78, 1.59, "×4.3", 94.2, 119.1),
-    (["Свежий промпт 64K"], 28.46, 9.14, "×3.1", 84.4, 99.3),
-    (["Свежий промпт 120K"], 54.77, 22.07, "×2.5", 80.7, 94.6),
-    (["Продолжение диалога, 4K"], 2.20, 0.78, "×2.9", 106.4, 126.9),
-    (["Правка последнего", "сообщения, 16K"], 6.85, 0.78, "×8.8", 90.4, 112.4),
-    (["Правка результата", "инструмента, 16K"], 7.11, 0.76, "×9.4", 94.9, 113.4),
+def jload(*parts):
+    with open(os.path.join(*parts), encoding="utf-8") as f:
+        return json.load(f)
+
+
+# The old matrix of the f1 release (13-14.10.2026): medians of 5 paired rounds, 128 output tokens,
+# one session (results/matrix/final-f1-m-main-release-vs-bf128-comparison.json).
+# (key of the A/B case, label lines, case, length, TTFT bf128, TTFT f1, decode bf128, decode f1)
+OLD = [
+    ("fresh_64", ["Промпт 64 токена"], "fresh", 64, 0.75, 0.79, 96.4, 122.8),
+    ("fresh_4096", ["Свежий промпт 4K"], "fresh", 4096, 2.24, 0.77, 98.9, 124.5),
+    ("fresh_16384", ["Свежий промпт 16K"], "fresh", 16384, 6.78, 1.59, 94.2, 119.1),
+    ("fresh_65536", ["Свежий промпт 64K†"], "fresh", 65536, 28.46, 9.14, 84.4, 99.3),
+    ("fresh_120000", ["Свежий промпт 120K"], "fresh", 120000, 54.77, 22.07, 80.7, 94.6),
+    ("history_continuation_4096", ["Продолжение диалога, 4K"], "history_continuation", 4096, 2.20, 0.78, 106.4, 126.9),
+    ("last_message_edit_16384", ["Правка последнего", "сообщения, 16K"], "last_message_edit", 16384, 6.85, 0.78, 90.4, 112.4),
+    ("tool_result_edit_16384", ["Правка результата", "инструмента, 16K"], "tool_result_edit", 16384, 7.11, 0.76, 94.9, 113.4),
 ]
 
-# README §1 (matrix) for 4K-120K; README §3 for 250K (f1: long256, median of 11;
-# base: original FreeToken mechanics, Triton, chunk 4096, measured 13.10).
-LENGTH = {
-    "x": [4096, 16384, 65536, 120000, 250000],
-    "base": [2.24, 6.78, 28.46, 54.77, 126.5],
-    "f1": [0.77, 1.59, 9.14, 22.07, 77.4],
+# Section 2 of the README: one session at context 65536, 192 output tokens, 2 rounds (13-14.10).
+# (label, key of the main128/f1 ratio, original TTFT/decode, +FP32 TTFT/decode, f1 TTFT/decode)
+SEC2 = [
+    ("4K", "fresh_4096", (1.93, 116.0), (1.85, 118.1), (0.58, 142.4)),
+    ("16K", "fresh_16384", (6.04, 111.3), (5.86, 115.7), (1.49, 138.0)),
+    ("60K†", "fresh_65536", (22.86, 101.3), (22.43, 107.6), (7.50, 122.2)),
+]
+
+# README section 3 (long256): original mechanics (13.10, Triton, chunk 4096) and f1 (14.10).
+# (original, f1)
+LONG_OLD = {
+    "ttft250": (126.5, 77.4),       # original single run; f1 median of 11
+    "dec250": (None, 60.8),
+    "ttft261": (139.5, 91.3),       # original median of 5; f1 single run
+    "dec261": (52.5, 52.5),
 }
+
+
+def _ab_cases():
+    ab = jload(LADDER, "ab-release.json")
+    return ab["steps"][0]["cases"], ab["steps"][1]["cases"]
+
+
+def release_matrix():
+    """Rows of the three-way matrix. All main128 values are chained (see the module docstring)."""
+    f1c, mc = _ab_cases()
+    cmp_new = jload(LADDER, "release-ab-compare.json")
+    cmp_old = jload(MATRIX_DIR, "final-f1-m-main-release-vs-bf128-comparison.json")
+    soak = jload(LADDER, "gates.json")["soak"]["reference_comparison"]["per_length"]["65536"]
+
+    def gm(cmp, case, length):
+        for r in cmp["rows"]:
+            if r["case"] == case and r["length"] == length and r["metric"] == "elapsed_s":
+                return r["geomean"]
+        return None
+
+    out = []
+    for key, label, case, length, bt, ft, bd, fd in OLD:
+        if key in f1c:
+            t_f1, t_m = f1c[key]["ttft_s"]["median"], mc[key]["ttft_s"]["median"]
+            d_f1, d_m = f1c[key]["decode_tps"]["median"], mc[key]["decode_tps"]["median"]
+            src = "A/B"
+            e_new = gm(cmp_new, case, length)
+        else:                                   # 64K: no point in the A/B, take the 2 h soaks
+            t_f1, t_m = soak["reference"]["ttft_median"], soak["candidate"]["ttft_median"]
+            d_f1, d_m = soak["reference"]["decode_median"], soak["candidate"]["decode_median"]
+            src = "soak"
+            e_new = None
+        e_old = gm(cmp_old, case, length)
+        mt = ft * t_m / t_f1                    # main128 TTFT, chained
+        md = fd * d_m / d_f1
+        out.append(dict(
+            key=key, label=label, src=src, case=case, length=length,
+            ttft_orig=bt, ttft_f1=ft, ttft_m=mt,
+            dec_orig=bd, dec_f1=fd, dec_m=md,
+            ttft_x_f1=t_f1 / t_m, ttft_x_orig=bt / mt,
+            dec_x_f1=d_m / d_f1, dec_x_orig=md / bd,
+            el_f1_vs_orig=e_old, el_m_vs_f1=e_new,
+            el_m_vs_orig=(e_old * e_new) if (e_old and e_new) else None,
+            today=dict(ttft_f1=t_f1, ttft_m=t_m, dec_f1=d_f1, dec_m=d_m)))
+    return out, dict(old=cmp_old["tool_task"], new=cmp_new["tool_task"])
+
+
+def sec2_rows():
+    by = {r["key"]: r for r in release_matrix()[0]}
+    rows = []
+    for label, key, orig, fp32, f1 in SEC2:
+        r = by[key]
+        t_ratio = r["today"]["ttft_m"] / r["today"]["ttft_f1"]
+        d_ratio = r["today"]["dec_m"] / r["today"]["dec_f1"]
+        m = (f1[0] * t_ratio, f1[1] * d_ratio)
+        rows.append(dict(label=label, orig=orig, fp32=fp32, f1=f1, m=m,
+                         ttft_x_f1=1 / t_ratio, dec_x_f1=d_ratio,
+                         ttft_x_orig=orig[0] / m[0], dec_x_orig=m[1] / orig[1]))
+    return rows
+
+
+def long_rows():
+    c = jload(LADDER, "long256-candidate.json")
+    l = jload(LADDER, "long256.json")
+    return dict(
+        ttft250_m=c["fresh"]["250000"]["ttft_s"]["median"], dec250_m=c["fresh"]["250000"]["decode_tps"]["median"],
+        ttft250_l=l["screen"]["fresh"]["250000"]["ttft_s_median"], dec250_l=l["screen"]["fresh"]["250000"]["decode_tps_median"],
+        ttft261_m=c["boundary"]["ttft_s"], dec261_m=c["boundary"]["decode_tps"],
+        ttft261_l=l["boundary"]["ttft_s"], dec261_l=l["boundary"]["decode_tps"],
+        ttft120_m=c["fresh"]["120000"]["ttft_s"]["median"], dec120_m=c["fresh"]["120000"]["decode_tps"]["median"],
+        ttft120_l=l["screen"]["fresh"]["120000"]["ttft_s_median"], dec120_l=l["screen"]["fresh"]["120000"]["decode_tps_median"])
+
+
+def length_series():
+    """x, original, f1, main128 for the TTFT-by-length chart.
+
+    4K-120K: the old matrix and the chained main128 (64K with a dagger: from the soaks).
+    250K: the original mechanics (13.10), f1 (median of 11) and a DIRECT measurement of the
+    full main128 levers on the long256 geometry (results/ladder/long256-candidate.json)."""
+    rows = {r["key"]: r for r in release_matrix()[0]}
+    keys = ["fresh_4096", "fresh_16384", "fresh_65536", "fresh_120000"]
+    x = [4096, 16384, 65536, 120000, 250000]
+    base = [rows[k]["ttft_orig"] for k in keys] + [LONG_OLD["ttft250"][0]]
+    f1 = [rows[k]["ttft_f1"] for k in keys] + [LONG_OLD["ttft250"][1]]
+    m = [rows[k]["ttft_m"] for k in keys] + [long_rows()["ttft250_m"]]
+    return x, base, f1, m
+
+
+def decode_length_series():
+    """x, original, f1, main128 decode (tok/s) for the decode-by-length chart; None = no real data.
+
+    64-120K: the old matrix and the chained main128 (64K with a dagger: from the soaks).
+    250K: f1 (median of 11) and a DIRECT measurement of the full main128 levers on the long256
+    geometry (results/ladder/long256-candidate.json). The original mechanics have no decode
+    measurement at 250K, the point is not drawn."""
+    rows = {r["key"]: r for r in release_matrix()[0]}
+    keys = ["fresh_64", "fresh_4096", "fresh_16384", "fresh_65536", "fresh_120000"]
+    x = [64, 4096, 16384, 65536, 120000, 250000]
+    base = [rows[k]["dec_orig"] for k in keys] + [LONG_OLD["dec250"][0]]
+    f1 = [rows[k]["dec_f1"] for k in keys] + [LONG_OLD["dec250"][1]]
+    m = [rows[k]["dec_m"] for k in keys] + [long_rows()["dec250_m"]]
+    return x, base, f1, m
+
 
 CATS = [
     ("full_attention", "attn", "Attention"),
@@ -153,24 +283,66 @@ CATS = [
     ("cpu_gaps_gpu_idle", "idle", "Простой GPU"),
 ]
 
+# results/ladder/nsys.json bucket -> chart category (copies_other joins the "norms and misc" bucket)
+NSYS_MAP = {
+    "attention": "full_attention", "moe": "moe_experts", "fp8_dense_oproj": "fp8_gemv_gemm", "gdn": "gdn",
+    "norm_sampling_misc": "norms_misc", "copies_other": "norms_misc", "h2d_exposed": "expert_h2d",
+    "gather": "decode_gather", "idle": "cpu_gaps_gpu_idle",
+}
+
+# (request in nsys.json, phase, title)
 SCENARIOS = [
-    ("short_prompt_prefill_278tok", "Короткий промпт, 278 токенов", "prefill 0.60 с"),
-    ("prefill_16k", "Prefill 16K", "1.53 с"),
-    ("prefill_120k", "Prefill 120K", "21.9 с"),
-    ("decode_16k", "Decode на контексте 16K", "8.1 мс на токен"),
-    ("decode_120k", "Decode на контексте 120K", "11.4 мс на токен"),
+    ("warm_decode", "prefill", "Короткий промпт, 278 токенов"),
+    ("fresh_16k", "prefill", "Prefill 16K"),
+    ("fresh_120k", "prefill", "Prefill 120K"),
+    ("fresh_16k", "decode", "Decode на контексте 16K"),
+    ("fresh_120k", "decode", "Decode на контексте 120K"),
 ]
 
-# README «Память и KV-кэш» (soak median, main128)
+
+def nsys_scenario(step_id, request, phase):
+    """Bucket milliseconds mapped to CATS keys, the critical total (ms) and the transport block."""
+    nsys = jload(LADDER, "nsys.json")
+    step = next(s for s in nsys["steps"] if s["id"] == step_id)
+    r = step["requests"][request]
+    if phase == "prefill":
+        raw, total = r["prefill_buckets_ms"], r["prefill_critical_ms"]
+    else:
+        raw, total = r["decode_buckets_ms_per_step"], r["decode_step_critical_ms"]
+    b = {}
+    for k, v in raw.items():
+        b[NSYS_MAP[k]] = b.get(NSYS_MAP[k], 0.0) + v
+    return b, total, r["transport"][phase]
+
+
+# README «Память и KV-кэш»: soak of main128 (telemetry of the 2 h soak), GiB.
+# Slots: 4603 x 1.782 MB. Dense: without the embedding table (0.95 GiB moved to host RAM).
+# "CUDA, cuBLAS, desktop" is the remainder of the 15.92 GiB card; free is the soak median.
 VRAM = [
-    ("moe", "Кэш экспертов, 3164 слота", 5.25),
-    ("fp8", "Плотные веса и масштабы", 2.52),
+    ("moe", "Кэш экспертов, 4603 слота", 7.64),
+    ("fp8", "Плотные веса и масштабы", 1.57),
     ("attn", "KV-кэш BF16, 131K токенов", 2.50),
     ("gdn", "Состояния GDN", 0.54),
-    ("norms", "Прочее PyTorch", 0.60),
-    ("base", "CUDA, cuBLAS, рабочий стол", 2.90),
-    ("idle", "Свободно (медиана)", 1.63),
+    ("norms", "Прочее PyTorch", 0.56),
+    ("base", "CUDA, cuBLAS, рабочий стол", 2.02),
+    ("idle", "Свободно (медиана)", 1.09),
 ]
+
+# Ladder (results/ladder/summary.json): step id in the data, label of the lever for the waterfall charts.
+LADDER_STEPS = [
+    ("L0", "f1"), ("L1", "короткий маршрут prefill"), ("L2", "CUDA-ядра GDN для prefill"),
+    ("L3", "shared-эксперт параллельно с подкачкой"), ("L4", "эмбеддинги в RAM хоста"),
+    ("L5", "больше слотов экспертов"), ("L6", "бит-точные ядра декода"),
+    ("L7", "копирование без ожидания GEMM"), ("L8", "короткие куски: только выбранные эксперты"),
+    ("L9", "слитый эпилог MoE-блока"),
+]
+
+
+def ladder_medians(kind, length):
+    """Medians of the ladder steps L0..L9 (3 pairs each): kind 'ttft_s' or 'decode_tps'."""
+    summ = jload(LADDER, "summary.json")
+    by = {s["id"]: s for s in summ["steps"]}
+    return [by[i]["ab"]["stats"][kind][str(length)]["median"] for i, _ in LADDER_STEPS]
 
 
 def load_nsight():
@@ -190,59 +362,79 @@ def ncu_find(ncu, prefix):
 
 # ---------------------------------------------------------------- charts
 
+def fmt_x(v):
+    if v >= 10:
+        return f"×{v:.0f}"
+    if v >= 2:
+        return f"×{v:.1f}"
+    return f"×{v:.2f}"
+
+
 def paired_bars(t, kind):
-    """Horizontal paired bars: original FreeToken vs f1 (TTFT or decode)."""
-    W, rowh, top = 980, 50, 112
-    H = top + rowh * len(MATRIX) + 58
+    """Horizontal bars, three series per case: original FreeToken, f1, main128 (TTFT or decode)."""
+    rows = release_matrix()[0]
+    W, rowh, top = 1000, 66, 124
+    H = top + rowh * len(rows) + 78
     if kind == "ttft":
-        title = "Время до первого токена: исходный FreeToken против f1"
-        sub = "Парная матрица, контекст 128K, медианы 5 раундов, секунды. Меньше — лучше."
+        title = "Время до первого токена: исходный FreeToken, f1 и main128"
+        sub = "Матрица 128K, медианы, секунды. Меньше — лучше. main128 — приведённые значения (см. примечание)."
         vmax, ticks, unit = 60, [0, 10, 20, 30, 40, 50, 60], "с"
     else:
-        title = "Скорость генерации: исходный FreeToken против f1"
-        sub = "Та же матрица, ответ 128 токенов, токенов в секунду. Больше — лучше."
-        vmax, ticks, unit = 140, [0, 20, 40, 60, 80, 100, 120, 140], "ток/с"
+        title = "Скорость генерации: исходный FreeToken, f1 и main128"
+        sub = "Та же матрица, ответ 128 токенов, токенов в секунду. Больше — лучше. main128 — приведённые значения."
+        vmax, ticks, unit = 160, [0, 20, 40, 60, 80, 100, 120, 140, 160], "ток/с"
     s = Svg(W, H, t, title, sub)
-    x0, x1 = 250, W - 120
+    x0, x1 = 230, W - 290
     span = x1 - x0
-    s.legend(24, 92, [(t["base"], "Исходный FreeToken (bf128)"), (t["f1"], "Выпуск f1")])
-    s.text(W - 24, 92, "f1 против исходного", 12, t["muted"], anchor="end")
+    s.legend(24, 92, [(t["base"], "Исходный FreeToken (bf128)"), (t["f1"], "f1, 14.10"), (t["m128"], "main128, 16.10")])
+    xa, xb = W - 150, W - 24
+    s.text(xa, 92, "main128 к исходному", 12, t["muted"], anchor="end")
+    s.text(xb, 92, "к f1", 12, t["muted"], anchor="end")
+    bottom = top + rowh * len(rows)
     for v in ticks:
         x = x0 + span * v / vmax
-        s.line(x, top - 6, x, top + rowh * len(MATRIX), t["grid"])
-        s.text(x, top + rowh * len(MATRIX) + 18, f"{v}", 12, t["faint"], anchor="middle")
-    s.text(x1, top + rowh * len(MATRIX) + 38, unit, 12, t["faint"], anchor="end")
-    for i, (label, tb, tf, tr, db, df) in enumerate(MATRIX):
+        s.line(x, top - 6, x, bottom, t["grid"])
+        s.text(x, bottom + 18, f"{v}", 12, t["faint"], anchor="middle")
+    s.text(x1 + 12, bottom + 18, unit, 12, t["faint"])
+    for i, r in enumerate(rows):
         y = top + i * rowh
         if i % 2 == 1:
             s.rect(12, y - 4, W - 24, rowh, t["panel"], rx=6, opacity=0.55)
-        base, f1 = (tb, tf) if kind == "ttft" else (db, df)
+        label = r["label"]
         ly = y + rowh / 2 - (len(label) - 1) * 8 + 4
         for j, part in enumerate(label):
             s.text(24, ly + j * 16, part, 14, t["fg"])
-        for k, (v, colour) in enumerate(((base, t["base"]), (f1, t["f1"]))):
-            by = y + 7 + k * 19
-            w = span * v / vmax
-            s.rect(x0, by, w, 14, colour, rx=3)
-            txt = f"{v:.2f}" if kind == "ttft" else f"{v:.1f}"
-            s.text(x0 + w + 6, by + 11.5, txt, 12, t["fg"] if k else t["muted"], weight=600 if k else None)
         if kind == "ttft":
-            badge = tr
-            good = tf < tb
+            vals = (r["ttft_orig"], r["ttft_f1"], r["ttft_m"])
+            b1, b2 = fmt_x(r["ttft_x_orig"]), fmt_x(r["ttft_x_f1"])
         else:
-            badge = f"+{(df / db - 1) * 100:.0f}%"
-            good = True
-        s.text(W - 24, y + rowh / 2 + 5, badge, 17, t["f1text"] if good else t["muted"], anchor="end", weight=700)
-        if kind == "ttft" and not good:
-            s.text(W - 24, y + rowh / 2 + 19, "вне гейта", 10, t["faint"], anchor="end")
+            vals = (r["dec_orig"], r["dec_f1"], r["dec_m"])
+            b1, b2 = f"+{(r['dec_x_orig'] - 1) * 100:.0f}%", f"+{(r['dec_x_f1'] - 1) * 100:.0f}%"
+        cols = (t["base"], t["f1"], t["m128"])
+        for k, (v, colour) in enumerate(zip(vals, cols)):
+            by = y + 7 + k * 17
+            w = span * v / vmax
+            s.rect(x0, by, w, 13, colour, rx=3)
+            txt = f"{v:.2f}" if kind == "ttft" else f"{v:.1f}"
+            fill = (t["muted"], t["fg"], t["m128text"])[k]
+            s.text(x0 + w + 6, by + 11, txt, 12, fill, weight=600 if k else None)
+        s.text(xa, y + rowh / 2 + 6, b1, 17, t["fg"], anchor="end", weight=700)
+        s.text(xb, y + rowh / 2 + 6, b2, 17, t["m128text"], anchor="end", weight=700)
+    s.text(24, H - 40, "main128 здесь не прямой замер против исходного: значение f1 из матрицы 13–14.10 × отношение main128/f1 из релизного A/B 16.10 "
+           "(5 пар, медианы).", 11, t["faint"])
+    s.text(24, H - 24, "Множитель к исходному = (исходный / f1 в матрице) × (f1 / main128 в A/B). † 64K: в A/B такой длины нет, "
+           "отношение взято из 2-часовых soak (разные дни).", 11, t["faint"])
+    s.text(24, H - 8, "Промпт 64 токена: f1 в A/B 16.10 вдвое быстрее, чем в матрице 13.10 (0.39 против 0.79 с), поэтому приведённое значение "
+           "консервативно: прямой замер main128 — 0.199 с.", 11, t["faint"])
     return s
 
 
 def length_chart(t):
-    W, H = 980, 490
+    x_, base, f1, m = length_series()
+    W, H = 980, 612
     s = Svg(W, H, t, "TTFT по длине свежего промпта",
-            "Секунды до первого токена. До 120K — парная матрица main128, 250K — профиль long256.")
-    x0, x1, y0, y1 = 80, W - 150, 400, 110
+            "Секунды до первого токена. 4K–120K — матрица 128K (main128 приведён), 250K — профиль long256.")
+    x0, x1, y0, y1 = 80, W - 150, 360, 110
     xmax, ymax = 262144, 140
     X = lambda v: x0 + (x1 - x0) * v / xmax
     Y = lambda v: y0 - (y0 - y1) * v / ymax
@@ -252,44 +444,127 @@ def length_chart(t):
     for v, lab in [(0, "0"), (65536, "64K"), (131072, "128K"), (196608, "192K"), (262144, "256K")]:
         s.line(X(v), y0, X(v), y0 + 5, t["faint"])
         s.text(X(v), y0 + 22, lab, 12, t["faint"], anchor="middle")
-    s.text((x0 + x1) / 2, y0 + 44, "токенов в промпте", 12, t["faint"], anchor="middle")
-    s.legend(x0, 92, [(t["base"], "Механика исходного FreeToken"), (t["f1"], "Выпуск f1")])
-    for key, colour, w in (("base", t["base"], 3), ("f1", t["f1"], 3.5)):
-        pts = " ".join(f"{X(x):.1f},{Y(v):.1f}" for x, v in zip(LENGTH["x"], LENGTH[key]))
+    s.text((x0 + x1) / 2, y0 + 42, "токенов в промпте", 12, t["faint"], anchor="middle")
+    s.legend(x0, 92, [(t["base"], "Механика исходного FreeToken"), (t["f1"], "f1"), (t["m128"], "main128")])
+    series = (("base", base, t["base"], 3), ("f1", f1, t["f1"], 3), ("m128", m, t["m128"], 3.5))
+    for _, vals, colour, w in series:
+        pts = " ".join(f"{X(x):.1f},{Y(v):.1f}" for x, v in zip(x_, vals))
         s.add(f'<polyline points="{pts}" fill="none" stroke="{colour}" stroke-width="{w}" '
               f'stroke-linejoin="round" stroke-linecap="round"/>')
-        for x, v in zip(LENGTH["x"], LENGTH[key]):
+        for x, v in zip(x_, vals):
             s.add(f'<circle cx="{X(x):.1f}" cy="{Y(v):.1f}" r="5" fill="{colour}" stroke="{t["card"]}" stroke-width="2"/>')
-    for i in (2, 3, 4):
-        x = LENGTH["x"][i]
-        b, f = LENGTH["base"][i], LENGTH["f1"][i]
-        s.text(X(x) - 10, Y(b) - 10, f"{b:g} с", 13, t["muted"], anchor="end")
-        s.text(X(x) + 10, Y(f) + 18, f"{f:g} с", 13, t["f1text"], weight=600)
-        s.text(X(x) + 10, (Y(b) + Y(f)) / 2 + 5, f"×{b / f:.1f}", 15, t["fg"], weight=700)
-    s.text(x0, H - 14, "250K: f1 — медиана 11 прогонов; исходная механика — Triton, чанк 4096, замер 13.10. "
-           "Рост нелинейный: attention квадратичен по длине.", 11, t["faint"])
+    # multiplier of main128 against the original at the right end of the curves
+    for i in (3, 4):
+        x = x_[i]
+        s.text(X(x) - 10, Y(base[i]) - 10, f"{base[i]:g} с", 13, t["muted"], anchor="end")
+        s.text(X(x) + 12, (Y(base[i]) + Y(m[i])) / 2 + 5, fmt_x(base[i] / m[i]), 15, t["fg"], weight=700)
+    # value strip under the plot
+    sy = y0 + 70
+    cw = (x1 - x0) / len(x_)
+    heads = ["4K", "16K", "64K†", "120K", "250K"]
+    s.text(24, sy, "Секунды", 12, t["muted"], weight=600)
+    for j, h in enumerate(heads):
+        s.text(x0 + cw * (j + 0.5), sy, h, 12, t["muted"], anchor="middle", weight=600)
+    s.line(24, sy + 8, x1, sy + 8, t["border"])
+    for k, (name, vals, colour) in enumerate((("Исходный", base, t["base"]), ("f1", f1, t["f1"]), ("main128", m, t["m128"]))):
+        ry = sy + 30 + k * 24
+        s.rect(24, ry - 10, 12, 12, colour, rx=3)
+        s.text(42, ry, name, 13, t["fg"])
+        for j, v in enumerate(vals):
+            s.text(x0 + cw * (j + 0.5), ry, f"{v:.2f}" if v < 10 else f"{v:.1f}", 13,
+                   t["m128text"] if k == 2 else t["fg"], anchor="middle", weight=600 if k == 2 else None)
+    s.text(24, H - 46, "4K–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × отношение main128/f1 из релизного A/B 16.10. "
+           "† 64K: отношение из soak.", 11, t["faint"])
+    s.text(24, H - 30, "250K: исходная механика — Triton, чанк 4096, замер 13.10; f1 — медиана 11 прогонов; main128 — прямой замер "
+           "рычагов main128", 11, t["faint"])
+    s.text(24, H - 14, "на профиле long256 (медиана 3). Рост нелинейный: attention квадратичен по длине.", 11, t["faint"])
     return s
 
 
-def breakdown_chart(t, dash):
+def decode_length_chart(t):
+    x_, base, f1, m = decode_length_series()
+    W, H = 980, 612
+    s = Svg(W, H, t, "Скорость генерации по длине свежего промпта",
+            "Токенов в секунду. 64–120K — матрица 128K (main128 приведён), 250K — профиль long256. Больше — лучше.")
+    x0, x1, y0, y1 = 80, W - 150, 360, 110
+    xmax, ymax = 262144, 180
+    X = lambda v: x0 + (x1 - x0) * v / xmax
+    Y = lambda v: y0 - (y0 - y1) * v / ymax
+    for v in range(0, 181, 20):
+        s.line(x0, Y(v), x1, Y(v), t["grid"])
+        s.text(x0 - 10, Y(v) + 4, f"{v}", 12, t["faint"], anchor="end")
+    for v, lab in [(0, "0"), (65536, "64K"), (131072, "128K"), (196608, "192K"), (262144, "256K")]:
+        s.line(X(v), y0, X(v), y0 + 5, t["faint"])
+        s.text(X(v), y0 + 22, lab, 12, t["faint"], anchor="middle")
+    s.text((x0 + x1) / 2, y0 + 42, "токенов в промпте", 12, t["faint"], anchor="middle")
+    s.legend(x0, 92, [(t["base"], "Механика исходного FreeToken"), (t["f1"], "f1"), (t["m128"], "main128")])
+    series = ((base, t["base"], 3), (f1, t["f1"], 3), (m, t["m128"], 3.5))
+    for vals, colour, w in series:
+        pts = [(X(x), Y(v)) for x, v in zip(x_, vals) if v is not None]     # points without data are not drawn
+        s.add(f'<polyline points="{" ".join(f"{a:.1f},{b:.1f}" for a, b in pts)}" fill="none" stroke="{colour}" '
+              f'stroke-width="{w}" stroke-linejoin="round" stroke-linecap="round"/>')
+        for a, b in pts:
+            s.add(f'<circle cx="{a:.1f}" cy="{b:.1f}" r="5" fill="{colour}" stroke="{t["card"]}" stroke-width="2"/>')
+    # multipliers at the key points: main128 against the original, at 250K against f1 (no original there)
+    for i in (2, 4):
+        s.text(X(x_[i]) + 6, Y(m[i]) - 14, f"+{(m[i] / base[i] - 1) * 100:.0f}%", 15, t["fg"], anchor="middle", weight=700)
+    s.text(X(x_[5]) - 14, Y(m[5]) - 14, f"+{(m[5] / f1[5] - 1) * 100:.0f}% к f1", 15, t["fg"], anchor="end", weight=700)
+    # value strip under the plot
+    sy = y0 + 70
+    cw = (x1 - x0) / len(x_)
+    heads = ["64", "4K", "16K", "64K†", "120K", "250K"]
+    s.text(24, sy, "Ток/с", 12, t["muted"], weight=600)
+    for j, h in enumerate(heads):
+        s.text(x0 + cw * (j + 0.5), sy, h, 12, t["muted"], anchor="middle", weight=600)
+    s.line(24, sy + 8, x1, sy + 8, t["border"])
+    for k, (name, vals, colour) in enumerate((("Исходный", base, t["base"]), ("f1", f1, t["f1"]), ("main128", m, t["m128"]))):
+        ry = sy + 30 + k * 24
+        s.rect(24, ry - 10, 12, 12, colour, rx=3)
+        s.text(42, ry, name, 13, t["fg"])
+        for j, v in enumerate(vals):
+            s.text(x0 + cw * (j + 0.5), ry, "—" if v is None else f"{v:.1f}", 13,
+                   t["m128text"] if k == 2 else (t["faint"] if v is None else t["fg"]), anchor="middle",
+                   weight=600 if k == 2 else None)
+    s.text(24, H - 46, "64–120K: f1 и исходный — матрица 13–14.10; main128 = f1 × отношение main128/f1 из A/B 16.10. "
+           "† 64K: отношение из soak. Проценты — main128 к исходному (250K — к f1).", 11, t["faint"])
+    s.text(24, H - 30, "250K: у исходной механики замера скорости генерации нет — точка не нарисована; f1 — медиана 11 прогонов; "
+           "main128 — прямой замер", 11, t["faint"])
+    s.text(24, H - 14, "рычагов main128 на профиле long256 (медиана 3). Скорость падает с длиной: attention читает растущий KV-кэш.",
+           11, t["faint"])
+    return s
+
+
+def _fmt_ms(v):
+    if v >= 10000:
+        return f"{v / 1000:.1f} с"
+    if v >= 1000:
+        return f"{v / 1000:.2f} с"
+    return f"{v:.0f} мс"
+
+
+def breakdown_chart(t):
     W = 980
     top, rowh = 104, 62
     H = top + rowh * len(SCENARIOS) + 92
-    s = Svg(W, H, t, "Куда уходит время: Nsight Systems по выпускной сборке",
-            "Доли окна prefill или шага decode, %. Сумма по строке — 100%.")
+    s = Svg(W, H, t, "Куда уходит время: Nsight Systems, релиз main128",
+            "Доли окна prefill или шага decode, %. Сумма по строке — 100%. В скобках — то же у f1.")
     x0, x1 = 24, W - 24
     span = x1 - x0
-    for i, (key, name, when) in enumerate(SCENARIOS):
-        sc = dash["scenarios"][key]
-        b = sc["buckets_requested"]
+    for i, (req, phase, name) in enumerate(SCENARIOS):
+        b, total, _ = nsys_scenario("l9", req, phase)
+        _, total0, _ = nsys_scenario("l0", req, phase)
         y = top + i * rowh
+        if phase == "prefill":
+            when = f"{_fmt_ms(total)} (f1: {_fmt_ms(total0)})"
+        else:
+            when = f"{total:.2f} мс на токен (f1: {total0:.2f})"
         s.text(x0, y, name, 14, t["fg"], weight=600)
         s.text(x0 + len(name) * 14 * 0.57 + 10, y, when, 13, t["muted"])
-        busy = sc["gpu"]["busy_pct"]
-        s.text(x1, y, f"GPU занят {busy:.1f}%", 12, t["muted"], anchor="end")
+        idle = 100 * b["cpu_gaps_gpu_idle"] / total
+        s.text(x1, y, f"простой GPU {idle:.1f}%", 12, t["muted"], anchor="end")
         x = x0
         for bucket, ck, _ in CATS:
-            pct = b[bucket]["share_pct"]
+            pct = 100 * b.get(bucket, 0.0) / total
             w = span * pct / 100
             if w <= 0:
                 continue
@@ -302,16 +577,16 @@ def breakdown_chart(t, dash):
     ly = top + rowh * len(SCENARIOS) + 6
     s.legend(x0, ly, [(t[c], lab) for _, c, lab in CATS[:4]], gap=26)
     s.legend(x0, ly + 24, [(t[c], lab) for _, c, lab in CATS[4:]], gap=26)
-    s.text(x0, H - 16, "Источник: results/nsight/dashboard.json (критический путь; перекрытое копирование "
-           "в долю не входит, длительности не суммируются).", 11, t["faint"])
+    s.text(x0, H - 16, "Источник: results/ladder/nsys.json, релиз main128 (критический путь; перекрытое копирование "
+           "в долю не входит). Под профайлером времена завышены: смотрим структуру.", 11, t["faint"])
     return s
 
 
 def memory_chart(t):
-    W, H = 980, 250
+    W, H = 980, 262
     total = sum(v for _, _, v in VRAM)
     s = Svg(W, H, t, f"Видеопамять: {total:.1f} ГиБ на профиле main128",
-            "Медиана в soak. Эксперты, которые не влезли в слоты, лежат в закреплённой ОЗУ (банк 18.25 ГБ).")
+            "Медиана в soak. Таблица эмбеддингов (0.95 ГиБ) и банк экспертов (18.25 ГБ) лежат в закреплённой ОЗУ; Windows остаётся ≥ 1 ГиБ.")
     x0, x1, y = 24, W - 24, 88
     span = x1 - x0
     x = x0
@@ -332,10 +607,77 @@ def memory_chart(t):
     return s
 
 
+def ladder_waterfall(t, kind):
+    """Waterfall of the ladder L0..L9 (3 pairs, medians): decode at 16K or TTFT of a 64-token prompt."""
+    if kind == "decode":
+        vals = ladder_medians("decode_tps", 16384)
+        title, sub = "Вклад рычагов: декод на контексте 16K", "Каждая ступень — предыдущая плюс один рычаг, медианы 3 пар, токенов в секунду. Больше — лучше. Ось обрезана."
+        lo, hi, ticks, up_good, unit = 130, 180, [130, 140, 150, 160, 170, 180], True, "ток/с"
+        fmt, dfmt = (lambda v: f"{v:.1f}"), (lambda d: f"{d:+.1f}".replace("-", "−"))
+        rd = lambda v: round(v, 1)
+        note = "Красный — ступень не улучшила метрику (CUDA-ядра GDN для prefill на декод не влияют: разница — шум)."
+    else:
+        vals = ladder_medians("ttft_s", 64)
+        title, sub = "Вклад рычагов: TTFT промпта в 64 токена", "Каждая ступень — предыдущая плюс один рычаг, медианы 3 пар, секунды. Меньше — лучше."
+        lo, hi, ticks, up_good, unit = 0.0, 0.45, [0.0, 0.1, 0.2, 0.3, 0.4], False, "с"
+        fmt, dfmt = (lambda v: f"{v:.3f}"), (lambda d: f"{d:+.3f}".replace("-", "−"))
+        rd = lambda v: round(v, 3)
+        note = "Красный — ступень не улучшила метрику (изменения до 0.01 с в пределах разброса 3 пар)."
+    labels = [lab for _, lab in LADDER_STEPS] + ["main128"]
+    n = len(labels)
+    W, H = 1000, 500
+    s = Svg(W, H, t, title, sub)
+    x0, x1, y0, y1 = 70, W - 24, 340, 110
+    colw = (x1 - x0) / n
+    Y = lambda v: y0 - (y0 - y1) * (v - lo) / (hi - lo)
+    for v in ticks:
+        s.line(x0, Y(v), x1, Y(v), t["grid"])
+        s.text(x0 - 8, Y(v) + 4, (f"{v:g}" if kind == "decode" else f"{v:.1f}"), 12, t["faint"], anchor="end")
+    s.text(x0 - 8, y1 - 14, unit, 12, t["faint"], anchor="end")
+    bw = colw * 0.56
+    prev = None
+    for i, lab in enumerate(labels):
+        cx = x0 + colw * (i + 0.5)
+        if i == 0:
+            v = vals[0]
+            s.rect(cx - bw / 2, Y(v), bw, Y(lo) - Y(v), t["f1"], rx=3)
+            s.text(cx, Y(v) - 8, fmt(v), 13, t["fg"], anchor="middle", weight=700)
+            prev = v
+        elif i < n - 1:
+            v = vals[i]
+            d = rd(v) - rd(prev)
+            good = (d > 0) == up_good
+            colour = t["moe"] if good else t["gather"]
+            ya, yb = Y(prev), Y(v)
+            s.rect(cx - bw / 2, min(ya, yb), bw, max(abs(ya - yb), 1.5), colour, rx=2)
+            s.line(cx - colw + bw / 2, ya, cx - bw / 2, ya, t["faint"], sw=1, dash="3 3")
+            s.text(cx, min(ya, yb) - 8, dfmt(d), 12, t["fg"], anchor="middle", weight=600)
+            prev = v
+        else:
+            v = vals[-1]
+            s.rect(cx - bw / 2, Y(v), bw, Y(lo) - Y(v), t["m128"], rx=3)
+            s.text(cx, Y(v) - 8, fmt(v), 13, t["m128text"], anchor="middle", weight=700)
+        words = lab.split()
+        lines, cur = [], ""
+        for w_ in words:
+            if cur and len(cur) + 1 + len(w_) > 12:
+                lines.append(cur)
+                cur = w_
+            else:
+                cur = (cur + " " + w_).strip()
+        lines.append(cur)
+        for j, ln in enumerate(lines):
+            s.text(cx, y0 + 20 + j * 14, ln, 11.5, t["muted"] if 0 < i < n - 1 else t["fg"], anchor="middle")
+    s.text(24, H - 32, "Источник: results/ladder/summary.json (A/B лесенки, 3 пары). Не вошли в релиз: предвыборка экспертов "
+           "на слой вперёд и прогрев слотов из prefill.", 11, t["faint"])
+    s.text(24, H - 16, note, 11, t["faint"])
+    return s
+
+
 def gpu_floorplan(t, dash, ncu):
     """Three phases, the same GPU block diagram, units coloured by load."""
     W, H = 1000, 660
-    s = Svg(W, H, t, "Как загружены блоки GPU изнутри",
+    s = Svg(W, H, t, "Как загружены блоки GPU изнутри: выпуск f1",
             "RTX 5070 Ti: 70 SM (8960 CUDA-ядер, 280 тензорных), L2 48 МБ, GDDR7 16 ГБ / 896 ГБ/с, PCIe 5.0 x16.")
     sc = dash["scenarios"]
     sp = sc["short_prompt_prefill_278tok"]
@@ -462,7 +804,7 @@ def gpu_floorplan(t, dash, ncu):
     s.text(gx + 246, ly + 30, "100%", 10, t["faint"], anchor="end")
     s.text(400, ly + 6, "Оценка: доли времени из Nsight Systems × загрузка блоков по Nsight Compute", 11, t["faint"])
     s.text(400, ly + 22, "(компоненты с теми же формами). FP8 GEMM в prefill, нормы и marlin ncu не снимались;", 11, t["faint"])
-    s.text(400, ly + 38, "для marlin — байты/время из nsys.", 11, t["faint"])
+    s.text(400, ly + 38, "для marlin — байты/время из nsys. Это f1; для main128 Nsight Compute не снят (results/ladder/ncu.json).", 11, t["faint"])
     return s
 
 
@@ -483,8 +825,8 @@ def kernel_heatmap(t, ncu):
             ("Память, max²", "memory_throughput_pct"), ("GDDR7", "dram_throughput_pct")]
     W = 1000
     rowh, top = 40, 128
-    H = top + rowh * len(rows) + 86
-    s = Svg(W, H, t, "Загрузка блоков GPU по ядрам: Nsight Compute",
+    H = top + rowh * len(rows) + 102
+    s = Svg(W, H, t, "Загрузка блоков GPU по ядрам: Nsight Compute, выпуск f1",
             "% от пика блока. Доля времени: prefill 120K / 16K и decode 16K / 120K.")
     lx, sx = 24, 252
     mx = 344
@@ -543,25 +885,26 @@ def kernel_heatmap(t, ncu):
            "PCIe: gather в модели ~42 ГБ/с при потолке канала 41–45 ГБ/с в WSL2.", 11, t["faint"])
     s.text(24, fy + 32, "Ncu снят на компонентах с теми же формами и конфигурацией запуска, что в выпуске. "
            "Источник: results/nsight/ncu-component-kernels.json.", 11, t["faint"])
+    s.text(24, fy + 48, "Это выпуск f1. Ядра декода main128 (o-proj GEMV, MoE GEMV) в Nsight Compute не снимались: под ncu сервер не "
+           "обрабатывает запросы (results/ladder/ncu.json).", 11, t["faint"])
     return s
 
 
-def prefill_timeline(t, dash):
-    """Per-layer copy vs compute lanes for three prompt sizes (mean durations)."""
-    sc = dash["scenarios"]
+def prefill_timeline(t):
+    """Per-layer copy vs compute lanes for three prompt sizes (main128, Nsight Systems, mean per layer)."""
     W = 980
     blocks = []
-    for key, name in (("short_prompt_prefill_278tok", "Короткий промпт, 278 токенов: путь по чанкам"),
-                      ("prefill_16k", "Свежий промпт 16K: послойный prefill"),
-                      ("prefill_120k", "Свежий промпт 120K: послойный prefill")):
-        s_ = sc[key]
-        copy = s_["pcie_h2d"]["copy_busy_ms"] / 40
-        period = s_["gpu"]["window_ms"] / 40
-        comp = s_["gpu"]["window_ms"] * s_["gpu"]["kernel_busy_pct"] / 100 / 40
-        blocks.append((name, copy, period, comp, s_["pcie_h2d"]["copy_overlapped_with_kernels_pct"]))
+    for req, title in (("warm_decode", "Короткий промпт, 278 токенов: путь по чанкам"),
+                       ("fresh_16k", "Свежий промпт 16K: послойный prefill"),
+                       ("fresh_120k", "Свежий промпт 120K: послойный prefill")):
+        _, total, tr = nsys_scenario("l9", req, "prefill")
+        copy = tr["h2d"]["union_ms"] / 40
+        period = total / 40
+        comp = tr["kernel_union_ms"] / 40
+        blocks.append((title, copy, period, comp, tr["h2d"]["overlap_percent"]))
     bh = 108
     H = 104 + bh * len(blocks) + 40
-    s = Svg(W, H, t, "Копирование экспертов и вычисления, слой за слоем",
+    s = Svg(W, H, t, "Копирование экспертов и вычисления, слой за слоем (main128)",
             "Средние длительности на слой из таймлайна Nsight Systems, первые 3 из 40 слоёв, каждая строка в своём масштабе.")
     s.legend(24, 92, [(t["h2d"], "PCIe: эксперты слоя (~456 МБ)"), (t["moe"], "GPU: вычисления слоя")])
     x0, x1 = 150, W - 40
@@ -604,8 +947,8 @@ def prefill_timeline(t, dash):
                 elif X(b) - X(a) > 24:
                     s.text((X(a) + X(b)) / 2, ly + 16, f"{L + 1}", 11, on(t, fill), anchor="middle", weight=600)
         s.text(x1, y + 88, f"0 … {tmax:.0f} мс", 11, t["faint"], anchor="end")
-    s.text(24, H - 16, "Короткие промпты ждут PCIe: копия слоя (~13 мс) дольше его счёта. "
-           "В следующем обновлении эксперты из VRAM будут копироваться внутри GPU (hit-d2d).", 11, t["faint"])
+    s.text(24, H - 16, "Короткий промпт ждёт PCIe: копия слоя (~8 мс) дольше его счёта (~3 мс). Куски короче 160 токенов везут только выбранных "
+           "роутером экспертов; уже лежащие в VRAM эксперты копируются внутри GPU.", 11, t["faint"])
     return s
 
 
@@ -617,11 +960,14 @@ def main():
         written.append(paired_bars(t, "ttft").save("ttft-128k", theme))
         written.append(paired_bars(t, "decode").save("decode-128k", theme))
         written.append(length_chart(t).save("ttft-length", theme))
-        written.append(breakdown_chart(t, dash).save("time-breakdown", theme))
+        written.append(decode_length_chart(t).save("decode-length", theme))
+        written.append(breakdown_chart(t).save("time-breakdown", theme))
         written.append(memory_chart(t).save("vram", theme))
         written.append(gpu_floorplan(t, dash, ncu).save("gpu-load", theme))
         written.append(kernel_heatmap(t, ncu).save("gpu-kernels", theme))
-        written.append(prefill_timeline(t, dash).save("prefill-timeline", theme))
+        written.append(prefill_timeline(t).save("prefill-timeline", theme))
+        written.append(ladder_waterfall(t, "decode").save("ladder-decode16k", theme))
+        written.append(ladder_waterfall(t, "ttft").save("ladder-ttft64", theme))
     for p in written:
         print(os.path.relpath(p, ROOT))
 
