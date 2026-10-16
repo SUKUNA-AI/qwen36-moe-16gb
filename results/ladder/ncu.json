@@ -35,6 +35,33 @@
    ],
    "conclusion": "cause not established; the remaining hypothesis is that ncu serialises kernel execution and the model has kernels that wait for concurrent work (copy stream, mapped-host gather, decode overlap), so the run livelocks; this needs ptrace-level tools (py-spy/strace/gdb as root) that this user session does not have (ptrace_scope=1, py-spy and strace not installed)",
    "recommendation": "component-level ncu of the kernels (kernels/*/bench scripts, as in results/nsight/ncu-component-kernels.json) for L0 vs L9 equivalents; no further model-level attempts without root-level tracing"
+  },
+  {
+   "id": 4,
+   "mode": "pre-checks, then eager ncu server with independent native-fs watchers; ptrace_scope was 0 only for this window and is back to 1",
+   "prechecks": {
+    "gdb_attach": "works (ptrace_scope 0)",
+    "ncu_single_kernel": "works: compute capability 12.0 (SM120) supported, no ERR_NVGPUCTRPERM, DRAM %, SM %, theoretical and achieved occupancy captured",
+    "verdict": "no counter-permission or SM120 blocker"
+   },
+   "root_cause": {
+    "statement": "the experiment unit runs under MemoryHigh=32G / MemoryMax=36G (start-experiment.sh); under ncu its host memory reaches the 36 GiB cap, the cgroup throttles it (direct reclaim, 9p page-cache refills: main thread in p9_client_rpc / D state, 760-820 % CPU without progress) and the whole WSL VM slows down, so no request completes",
+    "evidence": [
+     "every ncu run of the experiment unit today ended at 'memory peak 36G' and used its full time limit (20 min x7 graph captures, 15 min x1 eager, 5.7 min and 11.7 min diagnostic runs)",
+     "every normal run of the same unit today (qualify, matrix, nsys; ~60 starts) peaked at 27.7-30.2G and finished in 1.6-3 min",
+     "the model loads normally under ncu (/health 'ok' at ~90 s), the stall starts when the first request is served; the sampler, ps and the gdb watcher themselves were delayed by minutes, i.e. a host-wide stall",
+     "the VM has ~46 GiB; ncu adds several GiB over the 29.8G startup peak, which crosses MemoryHigh=32G"
+    ],
+    "not_the_cause": [
+     "/health (answers in 2 ms)",
+     "client start-up (it sends the request and waits for the response)",
+     "ncu launch interception overhead (50 us per launch, ~25 s for the whole plan)",
+     "CUDA graph capture (disabled in the eager runs; the earlier graph runs hit the same cap)",
+     "counter permission or SM120 support (pre-checks pass)"
+    ]
+   },
+   "fix_without_runtime_change": "start the ncu units with larger cgroup limits, e.g. systemd-run --property=MemoryHigh=42G --property=MemoryMax=44G (only for profile-final-*ncu* starts; the VM has ~46 GiB and prod is stopped during the window), 16K scopes only, one short window; gdb is not needed any more",
+   "gdb_snapshots": "taken too late to be useful (the process was already terminated by the time the delayed watcher ran): the stall itself prevented them; the memory evidence replaces them"
   }
  ],
  "wanted": {
@@ -58,5 +85,6 @@
    "theoretical_occupancy_pct"
   ]
  },
- "available_compute_evidence": "results/nsight/ncu-component-kernels.json (component-level ncu of the kernels, not the model process)"
+ "available_compute_evidence": "results/nsight/ncu-component-kernels.json (component-level ncu of the kernels, not the model process)",
+ "next_step": "one capture window with raised MemoryHigh/MemoryMax (see fix_without_runtime_change); needs the owner to stop production again"
 }
