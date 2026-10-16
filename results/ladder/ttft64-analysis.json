@@ -1,0 +1,78 @@
+{
+ "schema": "ladder-ttft64-1",
+ "question": "TTFT of the 64-token fresh case: 0.79 s in the 13-14.10 f1 matrix vs 0.39-0.42 s in the 16.10 runs",
+ "same": {
+  "prompt_tokens": 128,
+  "completion_tokens": 128,
+  "cached_prompt_tokens": 0,
+  "prefill_h2d_gb": 18.25,
+  "harness_version": 6,
+  "bench_fixture_version": 5,
+  "output_tokens": 128
+ },
+ "different": {
+  "sustained_warmup": "old matrix: none (one 22-token warm-up request only); 16.10 runs: QWEN36_BENCH_WARMUP_S=60 = 26-27 repeated 16K prefills with 128 forced tokens before the measured cases",
+  "lengths": "old [64,4096,16384,65536,120000]; 16.10 [64,2048,4096,16384,120000] (2048 added; fresh_64 is the first measured case in both)",
+  "bench_source_sha256": "differs (harness changed between the runs: sustained warm-up and the compare-ab fixes)"
+ },
+ "measured": {
+  "old_matrix_f1_5_arms": {
+   "ttft_s": {
+    "median": 0.792,
+    "mean": 0.744,
+    "min": 0.588,
+    "max": 0.827,
+    "n": 5
+   },
+   "engine_prefill_gpu_s": {
+    "median": 0.784,
+    "min": 0.58,
+    "max": 0.818,
+    "n": 5
+   }
+  },
+  "old_matrix_bf128_5_arms": {
+   "ttft_s": {
+    "median": 0.748,
+    "mean": 0.703,
+    "min": 0.521,
+    "max": 0.825,
+    "n": 5
+   },
+   "engine_prefill_gpu_s": {
+    "median": 0.74,
+    "n": 5
+   }
+  },
+  "f1_old_16_10_6_arms": {
+   "ttft_s": {
+    "median": 0.417,
+    "mean": 0.422,
+    "min": 0.389,
+    "max": 0.477,
+    "n": 6
+   },
+   "engine_prefill_gpu_s": {
+    "median": 0.411,
+    "min": 0.383,
+    "max": 0.471,
+    "n": 6
+   }
+  },
+  "l0_new_tree_16_10_3_arms": {
+   "ttft_s": {
+    "median": 0.39,
+    "mean": 0.399,
+    "min": 0.387,
+    "max": 0.419,
+    "n": 3
+   },
+   "engine_prefill_gpu_s": {
+    "median": 0.384,
+    "n": 3
+   }
+  }
+ },
+ "cause": "Protocol, not code: the 13-14.10 matrix measured fresh_64 as the first heavy request of a freshly started server without the sustained warm-up, and the same 128 tokens / 18.25 GB of expert H2D took 0.78 s of engine prefill GPU time instead of 0.41 s once 26 repeated 16K prefills had warmed the GPU and the PCIe/expert path; stock bf128 in the old matrix shows the same effect (0.75 s), the installed f1 runtime and the new-tree L0 agree in 16.10 (0.42 vs 0.39 s).",
+ "caveat": "The data proves the protocol difference and that the extra time is engine prefill GPU time (not client or queue time); that the mechanism is GPU clock/PCIe warm-up is the consistent explanation but was not isolated by a clock trace."
+}
