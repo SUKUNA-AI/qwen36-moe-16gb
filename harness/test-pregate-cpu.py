@@ -33,8 +33,9 @@ class FakeCuda:
         self.main = self.Stream(name='main')
         self.current = self.main
 
-    def Stream(self, device=None, name='side'):
+    def Stream(self, device=None, name='side', **kw):
         trace = self.trace
+        self.made = getattr(self, 'made', []) + [kw]
 
         class Stream:
             def wait_event(self, event):
@@ -99,12 +100,28 @@ class Flags(unittest.TestCase):
                 with patch.dict(os.environ, {name: bad}, clear=True), self.assertRaises(ValueError):
                     P.caps()
 
+    def test_priority_flag_and_stream_choice(self):
+        for raw, want in ((None, False), ('', False), ('0', False), ('1', True)):
+            with patch.dict(os.environ, {} if raw is None else {P.PRIORITY_ENV: raw}, clear=True):
+                self.assertEqual(P.priority(), want)
+        with patch.dict(os.environ, {P.PRIORITY_ENV: 'yes'}, clear=True), self.assertRaises(ValueError):
+            P.priority()
+        cache = S(num_experts=16, num_layers=4)
+        t3 = S(name='t3', wait_event=lambda e: None)
+        cuda = FakeCuda()
+        self.assertIs(P.DecodePregate(cache, cuda, 'cpu', 1, 2, stream=t3).stream, t3, 'shares T3 by default')
+        cuda = FakeCuda()
+        own = P.DecodePregate(cache, cuda, 'cpu', 1, 2, stream=t3, high_priority=True)
+        self.assertIsNot(own.stream, t3)
+        self.assertEqual(cuda.made[-1], {'priority': -1})
+
     def test_cache_wiring_is_default_off_and_excludes_refill_and_trace(self):
         text = CACHE.read_text(encoding='utf-8')
         body = text[text.index('pregate_caps = caps()'):text.index('def begin_layer_major_prefill')]
         for cond in ('any(pregate_caps)', 'not refill_enabled()', 'self.route_trace is None',
                      'self.device.type == "cuda"', 'self.decode_target == "gpu"',
-                     'self.decode_shared_overlap.stream if self.decode_shared_overlap else None'):
+                     'self.decode_shared_overlap.stream if self.decode_shared_overlap else None',
+                     'high_priority=priority()'):
             self.assertIn(cond, body)
 
 

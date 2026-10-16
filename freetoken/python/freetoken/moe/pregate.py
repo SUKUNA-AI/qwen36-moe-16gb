@@ -8,7 +8,8 @@ applied to post_attention_layernorm(L+1) of the residual stream that leaves laye
 predictor (coverage 0.75 under exact LRU replay). Its top-k, in score order, is checked against the
 slot map and the first n predicted misses go through the unchanged flashlib ``lru_ensure`` into
 the shared copy plan; the unchanged gather then copies them from the host banks. All of it runs on
-a side stream (T3's when present) while the compute stream runs the mixer:
+a side stream (T3's when present; its own at the highest priority with
+``QWEN36_DECODE_PREGATE_PRIORITY=1``) while the compute stream runs the mixer:
 
   compute: input_norm(L+1) -> fork -> mixer(L+1) -> wait(read) -> post_norm(L+1) -> router ->
            top-k -> wait(done) -> ensure_experts(L+1) -> copy_missing / T3 -> routed GEMM
@@ -43,6 +44,9 @@ import triton.language as tl
 
 ENV = "QWEN36_DECODE_PREGATE"
 ATTN_ENV = "QWEN36_DECODE_PREGATE_ATTN"
+# Own side stream at the highest priority instead of T3's: CTAs of equal-priority grids are dispatched
+# in launch order, so without it the speculative chain waits behind the mixer kernel's last wave.
+PRIORITY_ENV = "QWEN36_DECODE_PREGATE_PRIORITY"
 MAX_CAP = 8
 
 
@@ -54,6 +58,13 @@ def _cap(name: str, default: int) -> int:
     if not raw.isdigit() or int(raw) > MAX_CAP:
         raise ValueError(f"{name}={raw!r}: expected unset or an integer 0..{MAX_CAP}")
     return int(raw)
+
+
+def priority() -> bool:
+    raw = os.environ.get(PRIORITY_ENV, "0")
+    if raw not in ("", "0", "1"):
+        raise ValueError(f"{PRIORITY_ENV}={raw!r}: expected unset, 0 or 1")
+    return raw == "1"
 
 
 def caps() -> tuple[int, int]:
@@ -109,7 +120,7 @@ def _pregate_select_kernel(logits_ptr, slot_row_ptr, query_ptr, cap, E,
 class DecodePregate:
     """Owns the side-stream fork/join of the speculative plan; one instance per cache."""
 
-    def __init__(self, cache, cuda, device, linear_cap: int, attn_cap: int, stream=None):
+    def __init__(self, cache, cuda, device, linear_cap: int, attn_cap: int, stream=None, high_priority=False):
         self.cache = cache
         self.cuda = cuda
         self.device = device
@@ -117,7 +128,10 @@ class DecodePregate:
         self.attn_cap = attn_cap
         # fixed query width: duplicates collapse in lru_ensure, so padding never adds a copy
         self.width = max(2, linear_cap, attn_cap)
-        self.stream = stream if stream is not None else cuda.Stream(device=device)
+        if high_priority:
+            self.stream = cuda.Stream(device=device, priority=-1)
+        else:
+            self.stream = stream if stream is not None else cuda.Stream(device=device)
         self.fork = cuda.Event()
         self.read = cuda.Event()
         self.done = cuda.Event()

@@ -382,14 +382,15 @@ class OffloadMoeCache:
 
         # D3a trace hook (QWEN36_ROUTE_TRACE=1): experimental, eager decode only
         self.route_trace = route_trace.install(self) if route_trace.enabled() else None
-        from freetoken.moe.pregate import DecodePregate, caps
+        from freetoken.moe.pregate import DecodePregate, caps, priority
 
         # D3b speculative one-layer-ahead prefetch (QWEN36_DECODE_PREGATE): same exclusions as T3,
         # plus the eager-only trace (it reads slot maps the side stream would be rewriting)
         pregate_caps = caps()
         self.decode_pregate = (
             DecodePregate(self, torch.cuda, self.device, *pregate_caps,
-                          stream=self.decode_shared_overlap.stream if self.decode_shared_overlap else None)
+                          stream=self.decode_shared_overlap.stream if self.decode_shared_overlap else None,
+                          high_priority=priority())
             if any(pregate_caps) and not refill_enabled() and self.route_trace is None
             and self.device.type == "cuda" and self.decode_target == "gpu"
             else None
