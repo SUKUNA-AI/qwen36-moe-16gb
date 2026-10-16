@@ -1,0 +1,307 @@
+{
+ "schema": "ladder-prod-tests-1",
+ "release": "main128-s5r2 (candidate L9)",
+ "instance": "d0dd6be6-3f6",
+ "cold_start": {
+  "main128_to_edge_ready_s": 107.7,
+  "f1_to_edge_ready_s": 132,
+  "f1_restart_s": 125,
+  "n": {
+   "main128": 1,
+   "f1": 1
+  },
+  "note": "main128: qwen36 start -> readiness.py --edge ready (profile, tunnel, https verified); f1: results/metrics (final-install readiness); restart was not re-measured for main128"
+ },
+ "network_acceptance": {
+  "main128": {
+   "pass": 59,
+   "n": 60,
+   "failed": [
+    "auto-tool-cycle"
+   ],
+   "tls_verified": true,
+   "same_instance": true,
+   "external_e2e": "NOT_RUN"
+  },
+  "f1": {
+   "pass": 59,
+   "n": 60,
+   "failed": [
+    "near-tie of the model (see README limitations)"
+   ]
+  },
+  "note": "run from a copy of network-acceptance.py with edge/public/forge host names rendered; the unrendered file in the overlay fails on placeholders (sync-v5 does not render them)"
+ },
+ "tool_use": {
+  "main128": {
+   "overall_all_cases": {
+    "k": 142,
+    "n": 160,
+    "rate": 0.8875,
+    "wilson95": [
+     0.8292,
+     0.9276
+    ]
+   },
+   "overall_tool_tasks": {
+    "k": 106,
+    "n": 120,
+    "rate": 0.8833,
+    "wilson95": [
+     0.8137,
+     0.9292
+    ]
+   },
+   "overall_tool_tasks_excl_fixture_add_ru": {
+    "k": 101,
+    "n": 110,
+    "rate": 0.9182,
+    "wilson95": [
+     0.8518,
+     0.9564
+    ]
+   },
+   "answer_correct_tool_tasks": {
+    "k": 117,
+    "n": 120,
+    "rate": 0.975,
+    "wilson95": [
+     0.9291,
+     0.9915
+    ]
+   },
+   "by_category": {
+    "chain": [
+     30,
+     30
+    ],
+    "choose": [
+     10,
+     10
+    ],
+    "long": [
+     15,
+     20
+    ],
+    "no_tool": [
+     10,
+     10
+    ],
+    "none": [
+     26,
+     30
+    ],
+    "parallel": [
+     19,
+     20
+    ],
+    "single": [
+     32,
+     40
+    ]
+   },
+   "runs": 160,
+   "elapsed_s": 468.8,
+   "same_instance": true,
+   "unsupported_400": {
+    "n": 14,
+    "all_400": true
+   },
+   "latency_s": {
+    "thinking_off": {
+     "run_wall_s": {
+      "median": 1.255,
+      "mean": 1.663,
+      "p95": 3.999,
+      "p99": 6.195,
+      "min": 0.148,
+      "max": 6.364,
+      "n": 80
+     },
+     "round_total_s": {
+      "median": 0.431,
+      "mean": 0.481,
+      "p95": 0.898,
+      "p99": 2.275,
+      "min": 0.148,
+      "max": 2.322,
+      "n": 176
+     },
+     "stream_ttft_s": {
+      "median": 0.244,
+      "mean": 0.28,
+      "p95": 0.358,
+      "p99": 1.387,
+      "min": 0.12,
+      "max": 1.397,
+      "n": 72
+     }
+    },
+    "thinking_on": {
+     "run_wall_s": {
+      "median": 2.549,
+      "mean": 4.155,
+      "p95": 9.714,
+      "p99": 13.547,
+      "min": 0.945,
+      "max": 23.95,
+      "n": 80
+     },
+     "round_total_s": {
+      "median": 1.077,
+      "mean": 1.825,
+      "p95": 5.702,
+      "p99": 8.887,
+      "min": 0.297,
+      "max": 22.031,
+      "n": 181
+     },
+     "stream_ttft_s": {
+      "median": 0.299,
+      "mean": 0.341,
+      "p95": 0.382,
+      "p99": 1.573,
+      "min": 0.117,
+      "max": 1.575,
+      "n": 109
+     }
+    }
+   }
+  },
+  "f1": {
+   "overall_all_cases": {
+    "k": 142,
+    "n": 160,
+    "rate": 0.8875,
+    "wilson95": [
+     0.8292,
+     0.9276
+    ]
+   },
+   "overall_tool_tasks": {
+    "k": 106,
+    "n": 120,
+    "rate": 0.8833,
+    "wilson95": [
+     0.8137,
+     0.9292
+    ]
+   },
+   "overall_tool_tasks_excl_fixture_add_ru": {
+    "k": 101,
+    "n": 110,
+    "rate": 0.9182,
+    "wilson95": [
+     0.8518,
+     0.9564
+    ]
+   },
+   "answer_correct_tool_tasks": {
+    "k": 117,
+    "n": 120,
+    "rate": 0.975,
+    "wilson95": [
+     0.9291,
+     0.9915
+    ]
+   },
+   "by_category": {
+    "chain": [
+     30,
+     30
+    ],
+    "choose": [
+     10,
+     10
+    ],
+    "long": [
+     15,
+     20
+    ],
+    "no_tool": [
+     10,
+     10
+    ],
+    "none": [
+     26,
+     30
+    ],
+    "parallel": [
+     19,
+     20
+    ],
+    "single": [
+     32,
+     40
+    ]
+   },
+   "runs": 160,
+   "elapsed_s": 623.5,
+   "same_instance": true,
+   "unsupported_400": {
+    "n": 14,
+    "all_400": true
+   },
+   "latency_s": {
+    "thinking_off": {
+     "run_wall_s": {
+      "median": 1.523,
+      "mean": 1.887,
+      "p95": 4.494,
+      "p99": 4.591,
+      "min": 0.517,
+      "max": 4.703,
+      "n": 80
+     },
+     "round_total_s": {
+      "median": 0.786,
+      "mean": 0.857,
+      "p95": 1.422,
+      "p99": 2.576,
+      "min": 0.517,
+      "max": 2.678,
+      "n": 176
+     },
+     "stream_ttft_s": {
+      "median": 0.574,
+      "mean": 0.588,
+      "p95": 0.62,
+      "p99": 1.433,
+      "min": 0.487,
+      "max": 1.437,
+      "n": 72
+     }
+    },
+    "thinking_on": {
+     "run_wall_s": {
+      "median": 3.704,
+      "mean": 5.849,
+      "p95": 13.396,
+      "p99": 18.363,
+      "min": 1.486,
+      "max": 31.996,
+      "n": 80
+     },
+     "round_total_s": {
+      "median": 1.603,
+      "mean": 2.585,
+      "p95": 8.013,
+      "p99": 12.215,
+      "min": 0.6,
+      "max": 29.185,
+      "n": 181
+     },
+     "stream_ttft_s": {
+      "median": 0.546,
+      "mean": 0.577,
+      "p95": 0.677,
+      "p99": 1.598,
+      "min": 0.492,
+      "max": 1.618,
+      "n": 109
+     }
+    }
+   }
+  }
+ }
+}
