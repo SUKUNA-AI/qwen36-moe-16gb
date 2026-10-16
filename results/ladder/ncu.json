@@ -22,6 +22,19 @@
     "unit CPU time 13 min over 15 min wall: the model process stays busy under ncu interception (16 MoE CPU threads, host-side expert/LRU work) while idle",
     "unverified hypotheses: (a) /health is served through the engine process and does not answer while ncu intercepts its launches; (b) the client blocks in the tokenizer/bench import. A 2-minute dry run of profile-request.py run with strace/py-spy against an ncu-attached server, or starting ncu with --target-processes application-only on the engine worker, would separate them."
    ]
+  },
+  {
+   "id": 3,
+   "mode": "observation only (no kernel capture): eager decode under ncu with the real client wrapped in faulthandler, /health sampled every 10 s, thread CPU sampled, plus an ncu launch-overhead microbench",
+   "findings": [
+    "/health answers in 2-3 ms throughout: 'loading' for ~100 s after the unit start (model load under ncu), then 'ok'; it is not the blocker",
+    "profile-request.py run is not stuck at start-up: faulthandler dumps taken at 45 s intervals show it first in wait_health, later in the blocking read of the chunked HTTP response of the first request, i.e. the request was sent and no response arrives",
+    "the server process stays at ~760-790 % CPU (R state) and ncu at ~90 % of one core for the whole 5.5 min; no batch completes",
+    "ncu per-launch cost, measured with the capture's flags and a filter that matches nothing: 50-57 us per kernel launch vs 6 us without ncu (3000 launches); the plan has ~490k kernel launches, so interception overhead alone is ~25 s, not the 15 min seen",
+    "the earlier 'No kernels were profiled' is consistent with the launch-skip ordinals (7k-14k launches of the target kernel) never being reached"
+   ],
+   "conclusion": "cause not established; the remaining hypothesis is that ncu serialises kernel execution and the model has kernels that wait for concurrent work (copy stream, mapped-host gather, decode overlap), so the run livelocks; this needs ptrace-level tools (py-spy/strace/gdb as root) that this user session does not have (ptrace_scope=1, py-spy and strace not installed)",
+   "recommendation": "component-level ncu of the kernels (kernels/*/bench scripts, as in results/nsight/ncu-component-kernels.json) for L0 vs L9 equivalents; no further model-level attempts without root-level tracing"
   }
  ],
  "wanted": {
