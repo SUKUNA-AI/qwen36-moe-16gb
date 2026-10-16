@@ -1,0 +1,19 @@
+{
+ "schema": "ladder-steps-1",
+ "steps": [
+  {
+   "id": "l0",
+   "config": "main-release",
+   "prev": null,
+   "lever_short": "f1 (installed runtime)",
+   "lever": "installed f1"
+  },
+  {
+   "id": "l1",
+   "config": "main-release-b",
+   "prev": "l0",
+   "lever_short": "f1 alias",
+   "lever": "same config under another name"
+  }
+ ]
+}
