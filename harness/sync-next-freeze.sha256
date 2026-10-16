@@ -1,4 +1,4 @@
-# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-15T20:57:21Z
+# sync-v5 freeze candidate; paths relative to the checkout; utc=2026-10-16T05:31:49Z
 # rendered with site values digest=895052024cbcd577 (py/sh/config/profile bytes as written to native)
 # options: skip_runtime=0 extra_config=- (pass the same options to --dry-run/--apply)
 095e182f33349d2b2e7ea32694b3de3ca403ceed972342f3cab7d2dd0419e1ee  freetoken/python/freetoken/__init__.py
@@ -421,9 +421,9 @@ b95fb3f2bbb1fb55181d040c71c47db60c53d90d6d37d26f16f886461e6fec03  freetoken/pyth
 03f1bf8bbf960f0bffcbaffbff009890495045141b0a3b1588c589290baf104f  freetoken/python/freetoken/moe/host_banks.py
 9e08bd5ebcdd2c913ca01a233b909e8a56e79c0c5fffe49a0c1c3c5debe1f367  freetoken/python/freetoken/moe/layer_major.py
 4a521319942f0154d88660285fd70a66d398f82ae0a06e365ef939dd0709304c  freetoken/python/freetoken/moe/legacy_format.py
-71385845edd47ca36d80c59e1f9cfdb4d4ba42e4c9ec23b0095d4f8b9c3bf1c4  freetoken/python/freetoken/moe/offload_cache.py
+2ae91277d2557972d7b8c6e4374d750419610d9dae824e236e83cdfc47350bb2  freetoken/python/freetoken/moe/offload_cache.py
 3cbbc8fb366b98dbedee34b32bb1e5b37ebd8c112f67a5162953030bbfc7121a  freetoken/python/freetoken/moe/offload_kernels.py
-f6a5f3c6e81990d1081d2b3cb84440804bc4a48a8a6bdc7ddb5f239fdae82b66  freetoken/python/freetoken/moe/pregate.py
+305f1f335217635d4c2b70ff53663594d88129feceb97341aa581510edd6392f  freetoken/python/freetoken/moe/pregate.py
 ed2ce80f7c3b495066a8640ea943ca08a88a8fa76db9ec3ba84ad2f4e757f600  freetoken/python/freetoken/moe/route_trace.py
 fdf069b7a99afe77a185b1e833f2cb693f2a225559ad2b4e92f2f5f40cd62e8b  freetoken/python/freetoken/moe/shared_epilogue.py
 c7a3e4fad2e67458c865cdd1f455b1dc38a853bc9d554c292e4fedfff01b482d  freetoken/python/freetoken/moe/slot_refill.py
