@@ -119,11 +119,12 @@
 <text x="880.0" y="449.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">3. Частичная сумма</text>
 <text x="880.0" y="464.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">P[4r + q] = fma(acc, масштаб блока, P[4r + q]), q = 0…3: 16 частичных сумм P на строку</text>
 <rect x="616" y="494" width="528" height="124" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
-<text x="880.0" y="533.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Что было узким местом и что стало</text>
-<text x="880.0" y="547.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">Triton-ядро в f1 (Nsight Compute, базовые частоты): сетка (8, 64, 1) × 128 потоков, 23.1 мкс,</text>
-<text x="880.0" y="561.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">DRAM 48.6 %, заполнение 54 %, 40 регистров.</text>
-<text x="880.0" y="574.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">Микробенч на графе, M = 1: gate_up 18.5 → 12.5–12.9 мкс, down 9.4 → 7.4–7.8 мкс (~720 и ~600</text>
-<text x="880.0" y="588.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">ГБ/с).</text>
+<text x="880.0" y="526.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Что было узким местом и что стало</text>
+<text x="880.0" y="540.5" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">Triton-ядро в f1 (Nsight Compute, базовые частоты, один запуск): сетка (8, 64, 1) × 128</text>
+<text x="880.0" y="554.1" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">потоков, 23.0 мкс, DRAM 47.6 %, SM 64.0 %, заполнение 53.5 %, 40 регистров: SM загружены</text>
+<text x="880.0" y="567.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">сильнее памяти. Наше ядро (main128): 17.8 мкс, DRAM 64.5 %, SM 18.7 %, заполнение 15.1 %:</text>
+<text x="880.0" y="581.4" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">память загружена сильнее SM.</text>
+<text x="880.0" y="595.1" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">Микробенч на графе, M = 1: gate_up 18.5 → 12.5–12.9 мкс, down 9.4 → 7.4–7.8 мкс.</text>
 <rect x="36" y="678" width="150" height="44" rx="6" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
 <text x="111.0" y="697.5" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">поток r0</text>
 <text x="111.0" y="711.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">P[0] … P[3]</text>

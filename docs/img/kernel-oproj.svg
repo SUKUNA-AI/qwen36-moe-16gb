@@ -133,9 +133,10 @@
 <text x="303.0" y="644.2" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">4. эпилог</text>
 <text x="303.0" y="659.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">alpha = sa·sb; FFMA(acc, alpha, 0); BF16 с округлением к чётному</text>
 <rect x="36" y="684" width="534" height="96" rx="6" fill="#f1f3f6" stroke="#b5bfcb" stroke-width="1.2"/>
-<text x="303.0" y="722.1" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Что показал замер</text>
-<text x="303.0" y="736.8" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">Nsight Compute (f1, частоты зафиксированы на базовых): 16.3 мкс, DRAM 59.6 %, SM 21 %,</text>
-<text x="303.0" y="751.1" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">заполнение 11 %, 74 регистра на поток. На CUDA-графе вместе с memset: 17.4 мкс.</text>
+<text x="303.0" y="714.9" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Что показал замер</text>
+<text x="303.0" y="729.7" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">Nsight Compute (f1, базовые частоты, один запуск): 16.4 мкс, DRAM 58.1 %, SM 20.8 %,</text>
+<text x="303.0" y="744.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">заполнение 11.2 %, 74 регистра на поток. Микробенч на CUDA-графе вместе с memset: 17.4</text>
+<text x="303.0" y="758.3" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">мкс.</text>
 <rect x="611" y="262" width="533" height="62" rx="6" fill="#e3f0f5" stroke="#1f6f8b" stroke-width="2"/>
 <text x="877.5" y="283.1" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Сетка: полоса = 16 строк весов</text>
 <text x="877.5" y="297.8" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">128 полос (2048 / 16). M = 1…3: 128 CTA × 96 потоков; M = 4…8: 64 CTA × 192 потока, по две</text>
@@ -183,9 +184,9 @@
 <text x="877.5" y="641.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">out = BF16(FFMA((p0 + p2) + p1, sa·sb, 0)) → Y[m, n0…n0+15]</text>
 <rect x="611" y="668" width="533" height="112" rx="6" fill="#e5f3ea" stroke="#1d7a46" stroke-width="2"/>
 <text x="877.5" y="706.9" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Результат</text>
-<text x="877.5" y="721.7" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">нет memset, семафора и рабочего буфера. Микробенч на графе, M = 1: 17.4 → 12.1–12.5 мкс на</text>
-<text x="877.5" y="736.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">проекцию (≈ 0.2 мс на шаг). Ядро читает 8 МиБ весов ≈ 690 ГБ/с. Арифметика совпадает с</text>
-<text x="877.5" y="750.3" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">cuBLASLt бит в бит.</text>
+<text x="877.5" y="721.7" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">нет memset, семафора и рабочего буфера. Nsight Compute (main128, те же условия): 16.4 →</text>
+<text x="877.5" y="736.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">14.8 мкс, DRAM 58 → 66 %, SM 20.8 → 11.4 %. Микробенч на графе, M = 1: 17.4 → 12.1–12.5 мкс на</text>
+<text x="877.5" y="750.3" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">проекцию (≈ 0.2 мс на шаг). Арифметика совпадает с cuBLASLt бит в бит.</text>
 <rect x="36" y="838" width="208" height="94" rx="6" fill="#ffffff" stroke="#9aa6b4" stroke-width="1.2"/>
 <text x="140.0" y="862.1" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Выведено пробами</text>
 <text x="140.0" y="876.3" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">probe_splitk.py: слагаемые</text>

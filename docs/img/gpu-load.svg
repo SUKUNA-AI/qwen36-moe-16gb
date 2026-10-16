@@ -1,356 +1,161 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="660" viewBox="0 0 1000 660" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Как загружены блоки GPU изнутри: выпуск f1">
-<title>Как загружены блоки GPU изнутри: выпуск f1</title>
-<rect x="0.5" y="0.5" width="999" height="659" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
-<text x="24.0" y="38.0" font-size="19" fill="#1f2328" text-anchor="start" font-weight="600">Как загружены блоки GPU изнутри: выпуск f1</text>
-<text x="24.0" y="61.0" font-size="13" fill="#59636e" text-anchor="start">RTX 5070 Ti: 70 SM (8960 CUDA-ядер, 280 тензорных), L2 48 МБ, GDDR7 16 ГБ / 896 ГБ/с, PCIe 5.0 x16.</text>
-<rect x="24.0" y="84.0" width="304.0" height="518.0" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
-<text x="40.0" y="112.0" font-size="16" fill="#1f2328" text-anchor="start" font-weight="700">Короткий промпт</text>
-<text x="312.0" y="112.0" font-size="12" fill="#59636e" text-anchor="end">278 токенов, 0.60 с</text>
-<rect x="40.0" y="128.0" width="272.0" height="40.0" rx="6" fill="#eaeef2" stroke="#d0d7de" stroke-width="1"/>
-<text x="176.0" y="146.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">ОЗУ хоста (pinned)</text>
-<text x="176.0" y="161.0" font-size="11" fill="#59636e" text-anchor="middle">банк экспертов NVFP4, 18.25 ГБ</text>
-<rect x="70.0" y="168.0" width="18.0" height="34.0" rx="0" fill="#db4a26"/>
-<text x="98.0" y="182.0" font-size="11" fill="#59636e" text-anchor="start">PCIe 5.0 x16</text>
-<text x="98.0" y="196.0" font-size="11" fill="#1f2328" text-anchor="start" font-weight="600">занят 86% окна, ~35 ГБ/с</text>
-<rect x="36.0" y="208.0" width="280.0" height="334.0" rx="8" fill="none" stroke="#8c959f" stroke-width="1" stroke-dasharray="4 3"/>
-<text x="46.0" y="224.0" font-size="10" fill="#8c959f" text-anchor="start" font-weight="700">GPU</text>
-<rect x="52.0" y="232.0" width="248.0" height="34.0" rx="6" fill="#db4a26" stroke="#d0d7de" stroke-width="1"/>
-<text x="176.0" y="247.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">Copy engine / TMA</text>
-<text x="176.0" y="261.0" font-size="11" fill="#ffffff" text-anchor="middle">копирует весь банк, 18.25 ГБ</text>
-<rect x="51.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="69.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="87.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="105.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="123.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="141.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="159.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="177.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="195.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="213.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="231.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="249.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="267.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="285.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="51.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="69.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="87.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="105.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="123.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="141.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="159.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="177.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="195.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="213.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="231.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="249.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="267.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="285.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="51.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="69.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="87.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="105.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="123.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="141.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="159.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="177.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="195.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="213.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="231.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="249.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="267.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="285.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="51.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="69.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="87.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="105.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="123.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="141.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="159.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="177.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="195.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="213.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="231.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="249.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="267.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="285.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="51.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="69.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="87.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="105.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="123.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="141.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="159.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="177.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="195.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="213.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="231.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="249.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="267.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="285.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#fceabb" stroke="#d0d7de" stroke-width="0.6"/>
-<text x="176.0" y="382.0" font-size="11" fill="#59636e" text-anchor="middle">70 SM: CUDA-ядра + тензорные ядра</text>
-<text x="176.0" y="398.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">ядра работают 23% окна</text>
-<rect x="52.0" y="410.0" width="248.0" height="34.0" rx="6" fill="#eaeef2" stroke="#d0d7de" stroke-width="1"/>
-<text x="176.0" y="425.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">L2-кэш 48 МБ</text>
-<text x="176.0" y="439.0" font-size="11" fill="#59636e" text-anchor="middle">MoE на Triton: упор в L1/TEX</text>
-<rect x="52.0" y="460.0" width="25.8" height="30.0" rx="4" fill="#f4f3eb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="83.8" y="460.0" width="25.8" height="30.0" rx="4" fill="#f4f3eb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="115.5" y="460.0" width="25.8" height="30.0" rx="4" fill="#f4f3eb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="147.2" y="460.0" width="25.8" height="30.0" rx="4" fill="#f4f3eb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="179.0" y="460.0" width="25.8" height="30.0" rx="4" fill="#f4f3eb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="210.8" y="460.0" width="25.8" height="30.0" rx="4" fill="#f4f3eb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="242.5" y="460.0" width="25.8" height="30.0" rx="4" fill="#f4f3eb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="274.2" y="460.0" width="25.8" height="30.0" rx="4" fill="#f4f3eb" stroke="#d0d7de" stroke-width="1"/>
-<text x="176.0" y="508.0" font-size="11" fill="#59636e" text-anchor="middle">GDDR7 16 ГБ, 896 ГБ/с</text>
-<text x="176.0" y="524.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">видеопамять ≈5%</text>
-<rect x="36.0" y="554.0" width="280.0" height="34.0" rx="6" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
-<text x="176.0" y="576.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="700">Упор: PCIe, 75% времени ждём копию</text>
-<rect x="352.0" y="84.0" width="304.0" height="518.0" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
-<text x="368.0" y="112.0" font-size="16" fill="#1f2328" text-anchor="start" font-weight="700">Prefill 120K</text>
-<text x="640.0" y="112.0" font-size="12" fill="#59636e" text-anchor="end">21.9 с</text>
-<rect x="368.0" y="128.0" width="272.0" height="40.0" rx="6" fill="#eaeef2" stroke="#d0d7de" stroke-width="1"/>
-<text x="504.0" y="146.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">ОЗУ хоста (pinned)</text>
-<text x="504.0" y="161.0" font-size="11" fill="#59636e" text-anchor="middle">банк экспертов NVFP4, 18.25 ГБ</text>
-<rect x="398.0" y="168.0" width="18.0" height="34.0" rx="0" fill="#f3f4f2"/>
-<text x="426.0" y="182.0" font-size="11" fill="#59636e" text-anchor="start">PCIe 5.0 x16</text>
-<text x="426.0" y="196.0" font-size="11" fill="#1f2328" text-anchor="start" font-weight="600">занят 2.4% окна, 34 ГБ/с</text>
-<rect x="364.0" y="208.0" width="280.0" height="334.0" rx="8" fill="none" stroke="#8c959f" stroke-width="1" stroke-dasharray="4 3"/>
-<text x="374.0" y="224.0" font-size="10" fill="#8c959f" text-anchor="start" font-weight="700">GPU</text>
-<rect x="380.0" y="232.0" width="248.0" height="34.0" rx="6" fill="#f3f4f2" stroke="#d0d7de" stroke-width="1"/>
-<text x="504.0" y="247.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">Copy engine / TMA</text>
-<text x="504.0" y="261.0" font-size="11" fill="#1f2328" text-anchor="middle">85% копий скрыто за счётом</text>
-<rect x="379.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="397.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="415.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="433.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="451.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="469.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="487.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="505.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="523.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="541.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="559.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="577.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="595.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="613.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="379.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="397.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="415.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="433.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="451.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="469.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="487.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="505.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="523.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="541.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="559.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="577.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="595.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="613.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="379.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="397.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="415.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="433.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="451.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="469.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="487.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="505.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="523.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="541.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="559.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="577.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="595.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="613.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="379.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="397.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="415.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="433.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="451.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="469.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="487.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="505.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="523.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="541.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="559.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="577.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="595.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="613.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="379.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="397.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="415.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="433.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="451.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="469.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="487.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="505.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="523.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="541.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="559.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="577.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="595.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="613.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#e45b29" stroke="#d0d7de" stroke-width="0.6"/>
-<text x="504.0" y="382.0" font-size="11" fill="#59636e" text-anchor="middle">70 SM: CUDA-ядра + тензорные ядра</text>
-<text x="504.0" y="398.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">SM ≈80%, тензорные ядра на пределе</text>
-<rect x="380.0" y="410.0" width="248.0" height="34.0" rx="6" fill="#eaeef2" stroke="#d0d7de" stroke-width="1"/>
-<text x="504.0" y="425.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">L2-кэш 48 МБ</text>
-<text x="504.0" y="439.0" font-size="11" fill="#59636e" text-anchor="middle">попадания в L2 95% (attention)</text>
-<rect x="380.0" y="460.0" width="25.8" height="30.0" rx="4" fill="#f9edcb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="411.8" y="460.0" width="25.8" height="30.0" rx="4" fill="#f9edcb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="443.5" y="460.0" width="25.8" height="30.0" rx="4" fill="#f9edcb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="475.2" y="460.0" width="25.8" height="30.0" rx="4" fill="#f9edcb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="507.0" y="460.0" width="25.8" height="30.0" rx="4" fill="#f9edcb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="538.8" y="460.0" width="25.8" height="30.0" rx="4" fill="#f9edcb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="570.5" y="460.0" width="25.8" height="30.0" rx="4" fill="#f9edcb" stroke="#d0d7de" stroke-width="1"/>
-<rect x="602.2" y="460.0" width="25.8" height="30.0" rx="4" fill="#f9edcb" stroke="#d0d7de" stroke-width="1"/>
-<text x="504.0" y="508.0" font-size="11" fill="#59636e" text-anchor="middle">GDDR7 16 ГБ, 896 ГБ/с</text>
-<text x="504.0" y="524.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">видеопамять ≈17%</text>
-<rect x="364.0" y="554.0" width="280.0" height="34.0" rx="6" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
-<text x="504.0" y="576.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="700">Упор: тензорные ядра (attention 65%)</text>
-<rect x="680.0" y="84.0" width="304.0" height="518.0" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
-<text x="696.0" y="112.0" font-size="16" fill="#1f2328" text-anchor="start" font-weight="700">Decode, контекст 16K</text>
-<text x="968.0" y="112.0" font-size="12" fill="#59636e" text-anchor="end">8.1 мс на токен</text>
-<rect x="696.0" y="128.0" width="272.0" height="40.0" rx="6" fill="#eaeef2" stroke="#d0d7de" stroke-width="1"/>
-<text x="832.0" y="146.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">ОЗУ хоста (pinned)</text>
-<text x="832.0" y="161.0" font-size="11" fill="#59636e" text-anchor="middle">банк экспертов NVFP4, 18.25 ГБ</text>
-<rect x="726.0" y="168.0" width="18.0" height="34.0" rx="0" fill="#faecc8"/>
-<text x="754.0" y="182.0" font-size="11" fill="#59636e" text-anchor="start">PCIe 5.0 x16</text>
-<text x="754.0" y="196.0" font-size="11" fill="#1f2328" text-anchor="start" font-weight="600">18% шага на ~42 ГБ/с (потолок)</text>
-<rect x="692.0" y="208.0" width="280.0" height="334.0" rx="8" fill="none" stroke="#8c959f" stroke-width="1" stroke-dasharray="4 3"/>
-<text x="702.0" y="224.0" font-size="10" fill="#8c959f" text-anchor="start" font-weight="700">GPU</text>
-<rect x="708.0" y="232.0" width="248.0" height="34.0" rx="6" fill="#faecc8" stroke="#d0d7de" stroke-width="1"/>
-<text x="832.0" y="247.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">Copy engine / TMA</text>
-<text x="832.0" y="261.0" font-size="11" fill="#1f2328" text-anchor="middle">TMA gather промахов кэша</text>
-<rect x="707.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="725.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="743.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="761.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="779.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="797.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="815.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="833.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="851.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="869.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="887.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="905.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="923.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="941.5" y="278.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="707.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="725.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="743.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="761.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="779.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="797.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="815.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="833.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="851.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="869.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="887.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="905.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="923.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="941.5" y="296.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="707.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="725.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="743.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="761.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="779.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="797.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="815.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="833.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="851.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="869.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="887.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="905.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="923.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="941.5" y="314.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="707.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="725.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="743.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="761.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="779.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="797.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="815.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="833.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="851.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="869.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="887.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="905.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="923.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="941.5" y="332.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="707.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="725.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="743.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="761.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="779.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="797.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="815.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="833.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="851.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="869.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="887.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="905.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="923.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<rect x="941.5" y="350.0" width="15.0" height="15.0" rx="2" fill="#f7f0dc" stroke="#d0d7de" stroke-width="0.6"/>
-<text x="832.0" y="382.0" font-size="11" fill="#59636e" text-anchor="middle">70 SM: CUDA-ядра + тензорные ядра</text>
-<text x="832.0" y="398.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">SM ≈11%: ядра ждут память</text>
-<rect x="708.0" y="410.0" width="248.0" height="34.0" rx="6" fill="#eaeef2" stroke="#d0d7de" stroke-width="1"/>
-<text x="832.0" y="425.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">L2-кэш 48 МБ</text>
-<text x="832.0" y="439.0" font-size="11" fill="#59636e" text-anchor="middle">L2 почти не помогает: веса читаются потоком</text>
-<rect x="708.0" y="460.0" width="25.8" height="30.0" rx="4" fill="#ee7636" stroke="#d0d7de" stroke-width="1"/>
-<rect x="739.8" y="460.0" width="25.8" height="30.0" rx="4" fill="#ee7636" stroke="#d0d7de" stroke-width="1"/>
-<rect x="771.5" y="460.0" width="25.8" height="30.0" rx="4" fill="#ee7636" stroke="#d0d7de" stroke-width="1"/>
-<rect x="803.2" y="460.0" width="25.8" height="30.0" rx="4" fill="#ee7636" stroke="#d0d7de" stroke-width="1"/>
-<rect x="835.0" y="460.0" width="25.8" height="30.0" rx="4" fill="#ee7636" stroke="#d0d7de" stroke-width="1"/>
-<rect x="866.8" y="460.0" width="25.8" height="30.0" rx="4" fill="#ee7636" stroke="#d0d7de" stroke-width="1"/>
-<rect x="898.5" y="460.0" width="25.8" height="30.0" rx="4" fill="#ee7636" stroke="#d0d7de" stroke-width="1"/>
-<rect x="930.2" y="460.0" width="25.8" height="30.0" rx="4" fill="#ee7636" stroke="#d0d7de" stroke-width="1"/>
-<text x="832.0" y="508.0" font-size="11" fill="#59636e" text-anchor="middle">GDDR7 16 ГБ, 896 ГБ/с</text>
-<text x="832.0" y="524.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">видеопамять ≈71% пока идут ядра</text>
-<rect x="692.0" y="554.0" width="280.0" height="34.0" rx="6" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
-<text x="832.0" y="576.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="700">Упор: видеопамять и PCIe</text>
-<text x="24.0" y="630.0" font-size="12" fill="#59636e" text-anchor="start">Загрузка блока:</text>
-<rect x="140.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f2f5f8"/>
-<rect x="146.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f3f4f1"/>
-<rect x="152.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f4f3eb"/>
-<rect x="158.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f5f1e4"/>
-<rect x="164.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f6f0de"/>
-<rect x="170.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f8efd7"/>
-<rect x="176.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f9eed0"/>
-<rect x="182.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#faedca"/>
-<rect x="188.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fbebc3"/>
-<rect x="194.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fceabd"/>
-<rect x="200.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fde9b6"/>
-<rect x="206.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fde4ae"/>
-<rect x="212.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fcdea7"/>
-<rect x="218.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fcd99f"/>
-<rect x="224.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fbd498"/>
-<rect x="230.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fbce90"/>
-<rect x="236.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fbc988"/>
-<rect x="242.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fac481"/>
-<rect x="248.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#fabf79"/>
-<rect x="254.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f9b972"/>
-<rect x="260.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f9b46a"/>
-<rect x="266.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f8ad64"/>
-<rect x="272.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f6a55e"/>
-<rect x="278.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f59e57"/>
-<rect x="284.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f49651"/>
-<rect x="290.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f28f4b"/>
-<rect x="296.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f18845"/>
-<rect x="302.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#f0803f"/>
-<rect x="308.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#ef7938"/>
-<rect x="314.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#ed7132"/>
-<rect x="320.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#ec6a2c"/>
-<rect x="326.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#e8632b"/>
-<rect x="332.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#e45c29"/>
-<rect x="338.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#e05428"/>
-<rect x="344.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#dc4d27"/>
-<rect x="350.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#d84626"/>
-<rect x="356.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#d53f24"/>
-<rect x="362.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#d13823"/>
-<rect x="368.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#cd3022"/>
-<rect x="374.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#c92920"/>
-<rect x="380.0" y="618.0" width="6.0" height="16.0" rx="0" fill="#c5221f"/>
-<text x="138.0" y="648.0" font-size="10" fill="#8c959f" text-anchor="start">0%</text>
-<text x="386.0" y="648.0" font-size="10" fill="#8c959f" text-anchor="end">100%</text>
-<text x="400.0" y="624.0" font-size="11" fill="#8c959f" text-anchor="start">Оценка: доли времени из Nsight Systems × загрузка блоков по Nsight Compute</text>
-<text x="400.0" y="640.0" font-size="11" fill="#8c959f" text-anchor="start">(компоненты с теми же формами). FP8 GEMM в prefill, нормы и marlin ncu не снимались;</text>
-<text x="400.0" y="656.0" font-size="11" fill="#8c959f" text-anchor="start">для marlin — байты/время из nsys. Это f1; для main128 Nsight Compute не снят (results/ladder/ncu.json).</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="690" viewBox="0 0 1000 690" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" role="img" aria-label="Как загружены блоки GPU: SM, видеопамять, заполнение">
+<title>Как загружены блоки GPU: SM, видеопамять, заполнение</title>
+<rect x="0.5" y="0.5" width="999" height="689" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+<text x="24.0" y="38.0" font-size="19" fill="#1f2328" text-anchor="start" font-weight="600">Как загружены блоки GPU: SM, видеопамять, заполнение</text>
+<text x="24.0" y="61.0" font-size="13" fill="#59636e" text-anchor="start">Nsight Compute, % от пика блока. Decode: f1 и main128 (один запуск ядра, базовые частоты). Prefill: только f1, компонентные замеры.</text>
+<text x="485.0" y="128.0" font-size="12" fill="#59636e" text-anchor="middle" font-weight="600">SM</text>
+<text x="655.0" y="128.0" font-size="12" fill="#59636e" text-anchor="middle" font-weight="600">Видеопамять (DRAM)</text>
+<text x="825.0" y="128.0" font-size="12" fill="#59636e" text-anchor="middle" font-weight="600">Заполнение SM</text>
+<line x1="24.0" y1="138.0" x2="976.0" y2="138.0" stroke="#d0d7de" stroke-width="1"/>
+<text x="24.0" y="168.0" font-size="12" fill="#8c959f" text-anchor="start" font-weight="700">Decode (main128 и f1, один запуск каждого ядра)</text>
+<text x="32.0" y="200.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">MoE decode</text>
+<text x="300.0" y="200.0" font-size="12" fill="#3d7000" text-anchor="start" font-weight="600">f1</text>
+<rect x="404.0" y="183.0" width="162.0" height="24.0" rx="5" fill="#f28b47"/>
+<text x="485.0" y="200.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">64.0%</text>
+<rect x="574.0" y="183.0" width="162.0" height="24.0" rx="5" fill="#f9b971"/>
+<text x="655.0" y="200.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">47.6%</text>
+<rect x="744.0" y="183.0" width="162.0" height="24.0" rx="5" fill="#f7aa61"/>
+<text x="825.0" y="200.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">53.5%</text>
+<text x="300.0" y="230.0" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="700">main128</text>
+<rect x="404.0" y="213.0" width="162.0" height="24.0" rx="5" fill="#faecc7"/>
+<text x="485.0" y="230.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">18.7%</text>
+<rect x="574.0" y="213.0" width="162.0" height="24.0" rx="5" fill="#f18946"/>
+<text x="655.0" y="230.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">64.5%</text>
+<rect x="744.0" y="213.0" width="162.0" height="24.0" rx="5" fill="#f9eed0"/>
+<text x="825.0" y="230.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">15.1%</text>
+<line x1="24.0" y1="240.0" x2="976.0" y2="240.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="32.0" y="260.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">FP8 GEMV</text>
+<text x="300.0" y="260.0" font-size="12" fill="#3d7000" text-anchor="start" font-weight="600">f1</text>
+<rect x="404.0" y="243.0" width="162.0" height="24.0" rx="5" fill="#f8eed4"/>
+<text x="485.0" y="260.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">13.8%</text>
+<rect x="574.0" y="243.0" width="162.0" height="24.0" rx="5" fill="#e55d2a"/>
+<text x="655.0" y="260.0" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">79.5%</text>
+<rect x="744.0" y="243.0" width="162.0" height="24.0" rx="5" fill="#f9edce"/>
+<text x="825.0" y="260.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">15.8%</text>
+<text x="300.0" y="290.0" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="700">main128</text>
+<rect x="404.0" y="273.0" width="162.0" height="24.0" rx="5" fill="#f8eed4"/>
+<text x="485.0" y="290.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">13.7%</text>
+<rect x="574.0" y="273.0" width="162.0" height="24.0" rx="5" fill="#e45c29"/>
+<text x="655.0" y="290.0" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">79.9%</text>
+<rect x="744.0" y="273.0" width="162.0" height="24.0" rx="5" fill="#f9eecf"/>
+<text x="825.0" y="290.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">15.6%</text>
+<line x1="24.0" y1="300.0" x2="976.0" y2="300.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="32.0" y="320.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">o-проекция</text>
+<text x="300.0" y="320.0" font-size="12" fill="#3d7000" text-anchor="start" font-weight="600">f1</text>
+<rect x="404.0" y="303.0" width="162.0" height="24.0" rx="5" fill="#fbebc1"/>
+<text x="485.0" y="320.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">20.8%</text>
+<rect x="574.0" y="303.0" width="162.0" height="24.0" rx="5" fill="#f59c56"/>
+<text x="655.0" y="320.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">58.1%</text>
+<rect x="744.0" y="303.0" width="162.0" height="24.0" rx="5" fill="#f7f0da"/>
+<text x="825.0" y="320.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">11.2%</text>
+<text x="300.0" y="350.0" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="700">main128</text>
+<rect x="404.0" y="333.0" width="162.0" height="24.0" rx="5" fill="#f7f0da"/>
+<text x="485.0" y="350.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">11.4%</text>
+<rect x="574.0" y="333.0" width="162.0" height="24.0" rx="5" fill="#f18644"/>
+<text x="655.0" y="350.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">65.5%</text>
+<rect x="744.0" y="333.0" width="162.0" height="24.0" rx="5" fill="#f7f0da"/>
+<text x="825.0" y="350.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">11.3%</text>
+<line x1="24.0" y1="360.0" x2="976.0" y2="360.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="32.0" y="380.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">Attention decode</text>
+<text x="300.0" y="380.0" font-size="12" fill="#3d7000" text-anchor="start" font-weight="600">f1</text>
+<rect x="404.0" y="363.0" width="162.0" height="24.0" rx="5" fill="#f3f4f5"/>
+<text x="485.0" y="380.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">1.3%</text>
+<rect x="574.0" y="363.0" width="162.0" height="24.0" rx="5" fill="#f5f2e6"/>
+<text x="655.0" y="380.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">6.9%</text>
+<rect x="744.0" y="363.0" width="162.0" height="24.0" rx="5" fill="#f6f1e2"/>
+<text x="825.0" y="380.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">8.3%</text>
+<text x="300.0" y="410.0" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="700">main128</text>
+<rect x="404.0" y="393.0" width="162.0" height="24.0" rx="5" fill="#f3f4f5"/>
+<text x="485.0" y="410.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">1.3%</text>
+<rect x="574.0" y="393.0" width="162.0" height="24.0" rx="5" fill="#f5f2e6"/>
+<text x="655.0" y="410.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">6.8%</text>
+<rect x="744.0" y="393.0" width="162.0" height="24.0" rx="5" fill="#f6f1e2"/>
+<text x="825.0" y="410.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">8.3%</text>
+<line x1="24.0" y1="420.0" x2="976.0" y2="420.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="32.0" y="440.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">Подкачка промахов</text>
+<text x="300.0" y="440.0" font-size="12" fill="#3d7000" text-anchor="start" font-weight="600">f1</text>
+<rect x="404.0" y="423.0" width="162.0" height="24.0" rx="5" fill="#f2f5f8"/>
+<text x="485.0" y="440.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">0.0%</text>
+<rect x="574.0" y="423.0" width="162.0" height="24.0" rx="5" fill="#f3f4f5"/>
+<text x="655.0" y="440.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">1.3%</text>
+<rect x="744.0" y="423.0" width="162.0" height="24.0" rx="5" fill="#f3f4f3"/>
+<text x="825.0" y="440.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">2.1%</text>
+<text x="300.0" y="470.0" font-size="12" fill="#0a58a8" text-anchor="start" font-weight="700">main128</text>
+<rect x="404.0" y="453.0" width="162.0" height="24.0" rx="5" fill="#f2f5f8"/>
+<text x="485.0" y="470.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">0.0%</text>
+<rect x="574.0" y="453.0" width="162.0" height="24.0" rx="5" fill="#f3f4f4"/>
+<text x="655.0" y="470.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">1.3%</text>
+<rect x="744.0" y="453.0" width="162.0" height="24.0" rx="5" fill="#f3f4f3"/>
+<text x="825.0" y="470.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">2.1%</text>
+<line x1="24.0" y1="480.0" x2="976.0" y2="480.0" stroke="#e1e6eb" stroke-width="1"/>
+<text x="24.0" y="504.0" font-size="12" fill="#8c959f" text-anchor="start" font-weight="700">Prefill (только f1, компонентные замеры тех же форм; main128 не снимался)</text>
+<text x="32.0" y="536.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">Prefill attention (KV 120K)</text>
+<text x="300.0" y="536.0" font-size="12" fill="#3d7000" text-anchor="start" font-weight="600">f1</text>
+<rect x="404.0" y="519.0" width="162.0" height="24.0" rx="5" fill="#e15528"/>
+<text x="485.0" y="536.0" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">82.4%</text>
+<rect x="574.0" y="519.0" width="162.0" height="24.0" rx="5" fill="#f5f2e7"/>
+<text x="655.0" y="536.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">6.6%</text>
+<rect x="744.0" y="519.0" width="162.0" height="24.0" rx="5" fill="#eaeef2"/>
+<text x="825.0" y="536.0" font-size="12.5" fill="#8c959f" text-anchor="middle">—</text>
+<text x="32.0" y="566.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">MoE prefill GEMM (gate_up)</text>
+<text x="300.0" y="566.0" font-size="12" fill="#3d7000" text-anchor="start" font-weight="600">f1</text>
+<rect x="404.0" y="549.0" width="162.0" height="24.0" rx="5" fill="#e05328"/>
+<text x="485.0" y="566.0" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">82.9%</text>
+<rect x="574.0" y="549.0" width="162.0" height="24.0" rx="5" fill="#fbcc8c"/>
+<text x="655.0" y="566.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">38.7%</text>
+<rect x="744.0" y="549.0" width="162.0" height="24.0" rx="5" fill="#eaeef2"/>
+<text x="825.0" y="566.0" font-size="12.5" fill="#8c959f" text-anchor="middle">—</text>
+<text x="32.0" y="596.0" font-size="13" fill="#1f2328" text-anchor="start" font-weight="600">GDN chunk_h</text>
+<text x="300.0" y="596.0" font-size="12" fill="#3d7000" text-anchor="start" font-weight="600">f1</text>
+<rect x="404.0" y="579.0" width="162.0" height="24.0" rx="5" fill="#fac07b"/>
+<text x="485.0" y="596.0" font-size="12.5" fill="#1f2328" text-anchor="middle" font-weight="600">44.3%</text>
+<rect x="574.0" y="579.0" width="162.0" height="24.0" rx="5" fill="#de5027"/>
+<text x="655.0" y="596.0" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">84.2%</text>
+<rect x="744.0" y="579.0" width="162.0" height="24.0" rx="5" fill="#eaeef2"/>
+<text x="825.0" y="596.0" font-size="12.5" fill="#8c959f" text-anchor="middle">—</text>
+<text x="24.0" y="632.0" font-size="12" fill="#59636e" text-anchor="start">Загрузка блока:</text>
+<rect x="140.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f2f5f8"/>
+<rect x="146.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f3f4f1"/>
+<rect x="152.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f4f3eb"/>
+<rect x="158.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f5f1e4"/>
+<rect x="164.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f6f0de"/>
+<rect x="170.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f8efd7"/>
+<rect x="176.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f9eed0"/>
+<rect x="182.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#faedca"/>
+<rect x="188.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fbebc3"/>
+<rect x="194.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fceabd"/>
+<rect x="200.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fde9b6"/>
+<rect x="206.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fde4ae"/>
+<rect x="212.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fcdea7"/>
+<rect x="218.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fcd99f"/>
+<rect x="224.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fbd498"/>
+<rect x="230.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fbce90"/>
+<rect x="236.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fbc988"/>
+<rect x="242.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fac481"/>
+<rect x="248.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#fabf79"/>
+<rect x="254.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f9b972"/>
+<rect x="260.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f9b46a"/>
+<rect x="266.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f8ad64"/>
+<rect x="272.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f6a55e"/>
+<rect x="278.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f59e57"/>
+<rect x="284.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f49651"/>
+<rect x="290.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f28f4b"/>
+<rect x="296.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f18845"/>
+<rect x="302.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#f0803f"/>
+<rect x="308.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#ef7938"/>
+<rect x="314.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#ed7132"/>
+<rect x="320.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#ec6a2c"/>
+<rect x="326.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#e8632b"/>
+<rect x="332.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#e45c29"/>
+<rect x="338.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#e05428"/>
+<rect x="344.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#dc4d27"/>
+<rect x="350.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#d84626"/>
+<rect x="356.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#d53f24"/>
+<rect x="362.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#d13823"/>
+<rect x="368.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#cd3022"/>
+<rect x="374.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#c92920"/>
+<rect x="380.0" y="620.0" width="6.0" height="16.0" rx="0" fill="#c5221f"/>
+<text x="138.0" y="650.0" font-size="10" fill="#8c959f" text-anchor="start">0%</text>
+<text x="386.0" y="650.0" font-size="10" fill="#8c959f" text-anchor="end">100%</text>
+<text x="24.0" y="666.0" font-size="11" fill="#8c959f" text-anchor="start">Источники: results/ladder/ncu-kernels.json (decode), results/nsight/ncu-component-kernels.json (prefill, f1). Метрика тензорных ядер не показана: её прокси не проверялся.</text>
 </svg>

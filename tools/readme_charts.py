@@ -13,8 +13,8 @@ No third-party packages. Three series are shown: the original FreeToken (bf128),
   The 64K row is a direct three-point measurement of its own (results/ladder/64k.json: f1, f1L0 and
   main128, 3 pairs, fresh 65536); the f1 point there pools the profile and its alias (n = 6).
 - Nsight Systems numbers of main128 are read from results/ladder/nsys.json (step L9); the Nsight
-  Compute charts still show f1, because Nsight Compute could not profile the model
-  (results/ladder/ncu.json).
+  Compute charts of the decode kernels (f1, f1L0, main128) from results/ladder/ncu-kernels.json, the
+  prefill rows from results/nsight/ncu-component-kernels.json (f1 only).
 
     python tools/readme_charts.py
 """
@@ -354,21 +354,6 @@ def ladder_medians(kind, length):
     return [f1 if i == "F1" else by[i]["ab"]["stats"][kind][str(length)]["median"] for i, _ in LADDER_STEPS]
 
 
-def load_nsight():
-    with open(os.path.join(NSIGHT, "dashboard.json"), encoding="utf-8") as f:
-        dash = json.load(f)
-    with open(os.path.join(NSIGHT, "ncu-component-kernels.json"), encoding="utf-8") as f:
-        ncu = json.load(f)["kernels"]
-    return dash, ncu
-
-
-def ncu_find(ncu, prefix):
-    for k in ncu:
-        if k["label"].startswith(prefix):
-            return k
-    raise KeyError(prefix)
-
-
 # ---------------------------------------------------------------- charts
 
 def fmt_x(v):
@@ -687,219 +672,144 @@ def ladder_waterfall(t, kind):
     return s
 
 
-def gpu_floorplan(t, dash, ncu):
-    """Three phases, the same GPU block diagram, units coloured by load."""
-    W, H = 1000, 660
-    s = Svg(W, H, t, "Как загружены блоки GPU изнутри: выпуск f1",
-            "RTX 5070 Ti: 70 SM (8960 CUDA-ядер, 280 тензорных), L2 48 МБ, GDDR7 16 ГБ / 896 ГБ/с, PCIe 5.0 x16.")
-    sc = dash["scenarios"]
-    sp = sc["short_prompt_prefill_278tok"]
-    p120 = sc["prefill_120k"]
-    d16 = sc["decode_16k"]
+NCU_KERNELS = [
+    ("moe_decode", "MoE decode", "GEMV экспертов (gate_up)"),
+    ("fp8_gemv", "FP8 GEMV", "плотные слои, M = 1"),
+    ("oproj", "o-проекция", "split-K cuBLASLt → наше ядро"),
+    ("attention_decode", "Attention decode", "FlashInfer, короткий контекст"),
+    ("gather", "Подкачка промахов", "TMA gather, 1 эксперт"),
+]
 
-    def wavg(pairs):
-        tot = sum(w for w, _ in pairs)
-        return sum(w * v for w, v in pairs) / tot
 
-    attn_p = ncu_find(ncu, "FlashInfer paged prefill attention, q=2048 chunk, KV 120000")
-    moe_gu = ncu_find(ncu, "CUDA NVFP4 MoE expert GEMM gate_up")
-    moe_dn = ncu_find(ncu, "CUDA NVFP4 MoE expert GEMM down")
-    gdn = [k for k in ncu if k["label"].startswith("GDN ") and not k["label"].startswith("GDN decode")]
-    gdn_sm = wavg([(k["duration_us"], k["sm_throughput_pct"]) for k in gdn])
-    gdn_dram = wavg([(k["duration_us"], k["dram_throughput_pct"]) for k in gdn])
-    moe_sm = wavg([(moe_gu["duration_us"], moe_gu["sm_throughput_pct"]), (moe_dn["duration_us"], moe_dn["sm_throughput_pct"])])
-    moe_dram = wavg([(moe_gu["duration_us"], moe_gu["dram_throughput_pct"]), (moe_dn["duration_us"], moe_dn["dram_throughput_pct"])])
-    b = {k: v["share_pct"] for k, v in p120["buckets_requested"].items()}
-    p_sm = wavg([(b["full_attention"], attn_p["sm_throughput_pct"]), (b["moe_experts"], moe_sm), (b["gdn"], gdn_sm)])
-    p_dram = wavg([(b["full_attention"], attn_p["dram_throughput_pct"]), (b["moe_experts"], moe_dram), (b["gdn"], gdn_dram)])
-    p_copy = p120["pcie_h2d"]["copy_busy_ms"] / p120["gpu"]["window_ms"] * 100
+def ncu_points():
+    """results/ladder/ncu-kernels.json: {kernel: {variant: row}} for f1, f1L0 and main128."""
+    d = jload(LADDER, "ncu-kernels.json")
+    out = {}
+    for r in d["table"]:
+        out.setdefault(r["kernel"], {})[r["variant"]] = r
+    return out
 
-    attn_d = ncu_find(ncu, "FlashInfer decode attention (tensor-core path), KV 65536")
-    fp8a = ncu_find(ncu, "FP8 GEMV QMMA 12288x2048")
-    fp8b = ncu_find(ncu, "FP8 GEMV QMMA 9216x2048")
-    gdn_d = ncu_find(ncu, "GDN decode")
-    with open(os.path.join(NSIGHT, "levers.json"), encoding="utf-8") as f:
-        marlin_gbps = json.load(f)["ranked_top3"][2]["evidence"]["marlin_effective_gbps"]
-    db = {k: v["share_pct"] for k, v in d16["buckets_requested"].items()}
-    fp8_dram = (fp8a["dram_throughput_pct"] + fp8b["dram_throughput_pct"]) / 2
-    fp8_sm = (fp8a["sm_throughput_pct"] + fp8b["sm_throughput_pct"]) / 2
-    d_dram = wavg([(db["fp8_gemv_gemm"], fp8_dram), (db["moe_experts"], marlin_gbps / 896 * 100),
-                   (db["full_attention"], attn_d["dram_throughput_pct"]), (db["gdn"], gdn_d["dram_throughput_pct"])])
-    d_sm = wavg([(db["fp8_gemv_gemm"], fp8_sm), (db["full_attention"], attn_d["sm_throughput_pct"]),
-                 (db["gdn"], gdn_d["sm_throughput_pct"])])
 
-    sp_copy = sp["pcie_h2d"]["copy_busy_ms"] / sp["gpu"]["window_ms"] * 100
-    sp_kern = sp["gpu"]["kernel_busy_pct"]
-    sp_exposed = sp["buckets_requested"]["expert_h2d"]["share_pct"]
-
-    panels = [
-        ("Короткий промпт", "278 токенов, 0.60 с",
-         dict(pcie=sp_copy / 100, pcie_l=f"занят {sp_copy:.0f}% окна, ~35 ГБ/с",
-              ce="копирует весь банк, 18.25 ГБ",
-              sm=sp_kern / 100, sm_l=f"ядра работают {sp_kern:.0f}% окна",
-              l2="MoE на Triton: упор в L1/TEX",
-              dram=0.05, dram_l="≈5%",
-              verdict=f"Упор: PCIe, {sp_exposed:.0f}% времени ждём копию")),
-        ("Prefill 120K", "21.9 с",
-         dict(pcie=p_copy / 100, pcie_l=f"занят {p_copy:.1f}% окна, 34 ГБ/с",
-              ce="85% копий скрыто за счётом",
-              sm=p_sm / 100, sm_l=f"SM ≈{p_sm:.0f}%, тензорные ядра на пределе",
-              l2=f"попадания в L2 {attn_p['l2_hit_rate_pct']:.0f}% (attention)",
-              dram=p_dram / 100, dram_l=f"≈{p_dram:.0f}%",
-              verdict="Упор: тензорные ядра (attention 65%)")),
-        ("Decode, контекст 16K", "8.1 мс на токен",
-         dict(pcie=db["decode_gather"] / 100, pcie_l=f"{db['decode_gather']:.0f}% шага на ~42 ГБ/с (потолок)",
-              ce="TMA gather промахов кэша",
-              sm=d_sm / 100, sm_l=f"SM ≈{d_sm:.0f}%: ядра ждут память",
-              l2="L2 почти не помогает: веса читаются потоком",
-              dram=d_dram / 100, dram_l=f"≈{d_dram:.0f}% пока идут ядра",
-              verdict="Упор: видеопамять и PCIe")),
-    ]
-    pw, gap, px0, py0 = 304, 24, 24, 84
-    for i, (name, when, v) in enumerate(panels):
-        x = px0 + i * (pw + gap)
-        y = py0
-        s.rect(x, y, pw, 518, t["panel"], rx=10, stroke=t["border"])
-        s.text(x + 16, y + 28, name, 16, t["fg"], weight=700)
-        s.text(x + pw - 16, y + 28, when, 12, t["muted"], anchor="end")
-        # host RAM
-        s.rect(x + 16, y + 44, pw - 32, 40, t["host"], rx=6, stroke=t["border"])
-        s.text(x + pw / 2, y + 62, "ОЗУ хоста (pinned)", 12, t["fg"], anchor="middle", weight=600)
-        s.text(x + pw / 2, y + 77, "банк экспертов NVFP4, 18.25 ГБ", 11, t["muted"], anchor="middle")
-        # PCIe link
-        lc = heat(t, v["pcie"])
-        s.rect(x + 46, y + 84, 18, 34, lc)
-        s.text(x + 74, y + 98, "PCIe 5.0 x16", 11, t["muted"])
-        s.text(x + 74, y + 112, v["pcie_l"], 11, t["fg"], weight=600)
-        # GPU outline
-        gy = y + 124
-        s.rect(x + 12, gy, pw - 24, 334, "none", rx=8, stroke=t["faint"], dash="4 3")
-        s.text(x + 22, gy + 16, "GPU", 10, t["faint"], weight=700)
-        # copy engine
-        s.rect(x + 28, gy + 24, pw - 56, 34, lc, rx=6, stroke=t["border"])
-        s.text(x + pw / 2, gy + 39, "Copy engine / TMA", 12, on(t, lc), anchor="middle", weight=600)
-        s.text(x + pw / 2, gy + 53, v["ce"], 11, on(t, lc), anchor="middle")
-        # SM array: 70 tiles, 14 x 5
-        sc_ = heat(t, v["sm"])
-        tile, tg = 15, 3
-        cols, rows = 14, 5
-        aw = cols * tile + (cols - 1) * tg
-        ax = x + (pw - aw) / 2
-        ay = gy + 70
-        for r in range(rows):
-            for c in range(cols):
-                s.rect(ax + c * (tile + tg), ay + r * (tile + tg), tile, tile, sc_, rx=2, stroke=t["border"], sw=0.6)
-        s.text(x + pw / 2, ay + rows * (tile + tg) + 14, "70 SM: CUDA-ядра + тензорные ядра", 11, t["muted"], anchor="middle")
-        s.text(x + pw / 2, ay + rows * (tile + tg) + 30, v["sm_l"], 12, t["fg"], anchor="middle", weight=600)
-        # L2
-        l2y = ay + rows * (tile + tg) + 42
-        s.rect(x + 28, l2y, pw - 56, 34, t["host"], rx=6, stroke=t["border"])
-        s.text(x + pw / 2, l2y + 15, "L2-кэш 48 МБ", 12, t["fg"], anchor="middle", weight=600)
-        s.text(x + pw / 2, l2y + 29, v["l2"], 11, t["muted"], anchor="middle")
-        # GDDR7: 8 chips of 2 GB on a 256-bit bus
-        dc = heat(t, v["dram"])
-        my = l2y + 50
-        cw = (pw - 56 - 7 * 6) / 8
-        for c in range(8):
-            s.rect(x + 28 + c * (cw + 6), my, cw, 30, dc, rx=4, stroke=t["border"])
-        s.text(x + pw / 2, my + 48, "GDDR7 16 ГБ, 896 ГБ/с", 11, t["muted"], anchor="middle")
-        s.text(x + pw / 2, my + 64, f"видеопамять {v['dram_l']}", 12, t["fg"], anchor="middle", weight=600)
-        # verdict
-        s.rect(x + 12, y + 470, pw - 24, 34, t["card"], rx=6, stroke=t["border"])
-        s.text(x + pw / 2, y + 492, v["verdict"], 12, t["fg"], anchor="middle", weight=700)
-    # heat legend
-    ly = H - 42
-    s.text(24, ly + 12, "Загрузка блока:", 12, t["muted"])
-    gx = 140
-    for k in range(41):
-        s.rect(gx + k * 6, ly, 6, 16, heat(t, k / 40))
-    s.text(gx - 2, ly + 30, "0%", 10, t["faint"])
-    s.text(gx + 246, ly + 30, "100%", 10, t["faint"], anchor="end")
-    s.text(400, ly + 6, "Оценка: доли времени из Nsight Systems × загрузка блоков по Nsight Compute", 11, t["faint"])
-    s.text(400, ly + 22, "(компоненты с теми же формами). FP8 GEMM в prefill, нормы и marlin ncu не снимались;", 11, t["faint"])
-    s.text(400, ly + 38, "для marlin — байты/время из nsys. Это f1; для main128 Nsight Compute не снят (results/ladder/ncu.json).", 11, t["faint"])
+def ncu_kernels_chart(t):
+    """Decode kernels under Nsight Compute: duration and DRAM load, f1 against main128."""
+    pts = ncu_points()
+    W, rowh, top = 1000, 62, 138
+    H = top + rowh * len(NCU_KERNELS) + 92
+    s = Svg(W, H, t, "Ядра decode под Nsight Compute: время и загрузка видеопамяти",
+            "Один запуск ядра в eager-режиме, частоты зафиксированы на базовых. f1 (прошлый выпуск) и main128; f1L0 совпадает с f1.")
+    s.legend(24, 92, [(t["f1"], "f1"), (t["m128"], "main128")])
+    ax0, ax1 = 250, 520          # duration panel
+    bx0, bx1 = 640, 900          # DRAM panel
+    tmax = 40.0
+    s.text(ax0, 120, "Время ядра, мкс (меньше — лучше)", 12, t["muted"], weight=600)
+    s.text(bx0, 120, "Загрузка видеопамяти (DRAM), % пика", 12, t["muted"], weight=600)
+    for v in (0, 10, 20, 30, 40):
+        x = ax0 + (ax1 - ax0) * v / tmax
+        s.line(x, top - 8, x, top + rowh * len(NCU_KERNELS), t["grid"])
+        s.text(x, top + rowh * len(NCU_KERNELS) + 16, f"{v}", 11, t["faint"], anchor="middle")
+    for v in (0, 25, 50, 75, 100):
+        x = bx0 + (bx1 - bx0) * v / 100
+        s.line(x, top - 8, x, top + rowh * len(NCU_KERNELS), t["grid"])
+        s.text(x, top + rowh * len(NCU_KERNELS) + 16, f"{v}", 11, t["faint"], anchor="middle")
+    for i, (key, name, sub) in enumerate(NCU_KERNELS):
+        y = top + i * rowh
+        if i % 2 == 1:
+            s.rect(12, y - 4, W - 24, rowh, t["panel"], rx=6, opacity=0.55)
+        s.text(24, y + 22, name, 14, t["fg"], weight=600)
+        s.text(24, y + 40, sub, 11, t["muted"])
+        a, b = pts[key]["f1"], pts[key]["main128"]
+        for k, (r, colour) in enumerate(((a, t["f1"]), (b, t["m128"]))):
+            by = y + 8 + k * 20
+            w1 = (ax1 - ax0) * r["duration_us"] / tmax
+            s.rect(ax0, by, w1, 15, colour, rx=3)
+            s.text(ax0 + w1 + 6, by + 12, f"{r['duration_us']:.1f}", 12, t["fg"] if k == 0 else t["m128text"],
+                   weight=600 if k else None)
+            w2 = (bx1 - bx0) * r["dram_pct"] / 100
+            s.rect(bx0, by, w2, 15, colour, rx=3)
+            s.text(bx0 + w2 + 6, by + 12, f"{r['dram_pct']:.1f}", 12, t["fg"] if k == 0 else t["m128text"],
+                   weight=600 if k else None)
+        dd = (b["duration_us"] / a["duration_us"] - 1) * 100
+        dm = b["dram_pct"] - a["dram_pct"]
+        s.text(W - 24, y + 22, "без изменений" if abs(dd) < 2 else f"{dd:+.0f}% времени".replace("-", "−"), 13,
+               t["muted"] if abs(dd) < 2 else t["m128text"], anchor="end", weight=700 if abs(dd) >= 2 else None)
+        if abs(dm) >= 2:
+            s.text(W - 24, y + 40, f"DRAM {dm:+.0f} п.п.".replace("-", "−"), 11, t["muted"], anchor="end")
+    s.text(24, H - 56, "Источник: results/ladder/ncu-kernels.json. ncu фиксирует базовые частоты, поэтому длительности больше, чем в работе.", 11, t["faint"])
+    s.text(24, H - 40, "main128 снят без перекрытия shared-эксперта и подкачки (под ncu ядра исполняются по очереди): ядра те же, перекрытие отключено, "
+           "memory_ratio 0.75.", 11, t["faint"])
+    s.text(24, H - 24, "FP8 GEMV: у f1 и main128 ядро одного класса (разные экземпляры запуска); DRAM подкачки зависит от memory_ratio. "
+           "Prefill-ядра по модели не снимались.", 11, t["faint"])
     return s
 
 
-def kernel_heatmap(t, ncu):
-    rows = [
-        ("Prefill", None),
-        ("Attention, FlashInfer", "FlashInfer paged prefill attention, q=2048 chunk, KV 120000", "65% / 19%", "тензорные ядра", None),
-        ("MoE NVFP4, наше CUDA-ядро", "CUDA NVFP4 MoE expert GEMM gate_up", "18% / 40%", "тензорные ядра", None),
-        ("MoE NVFP4, Triton (было)", "Triton NVFP4 MoE prefill gate_up", "заменено", "кэш L1/TEX", None),
-        ("GDN chunk_h, наше", "GDN chunk_h state recurrence", "4% / 8%", "видеопамять", None),
-        ("Decode", None),
-        ("Attention, FlashInfer", "FlashInfer decode attention (tensor-core path), KV 131072", "7% / 31%", "видеопамять", None),
-        ("FP8 GEMV, наше QMMA-ядро", "FP8 GEMV QMMA 12288x2048", "28% / 20%", "видеопамять", None),
-        ("MoE decode, marlin", None, "20% / 15%", "видеопамять", "marlin"),
-        ("Подкачка экспертов, наш TMA", "decode gather TMA, 4 missing", "18% / 14%", "PCIe", "gather"),
+def ncu_load_chart(t):
+    """Load of the GPU blocks by kernel: SM, video memory, occupancy (decode, f1 against main128) plus f1 prefill components."""
+    pts = ncu_points()
+    comp = jload(NSIGHT, "ncu-component-kernels.json")["kernels"]
+
+    def comp_find(prefix):
+        for k in comp:
+            if k["label"].startswith(prefix):
+                return k
+        raise KeyError(prefix)
+    prefill = [
+        ("Prefill attention (KV 120K)", comp_find("FlashInfer paged prefill attention, q=2048 chunk, KV 120000")),
+        ("MoE prefill GEMM (gate_up)", comp_find("CUDA NVFP4 MoE expert GEMM gate_up")),
+        ("GDN chunk_h", comp_find("GDN chunk_h state recurrence")),
     ]
-    cols = [("SM", "sm_throughput_pct"), ("Тензорные ядра¹", "tensor_inst_hmma_pct_peak_active"),
-            ("Память, max²", "memory_throughput_pct"), ("GDDR7", "dram_throughput_pct")]
+    rowh, top = 30, 150
+    n_rows = len(NCU_KERNELS) * 2 + len(prefill)
     W = 1000
-    rowh, top = 40, 128
-    H = top + rowh * len(rows) + 102
-    s = Svg(W, H, t, "Загрузка блоков GPU по ядрам: Nsight Compute, выпуск f1",
-            "% от пика блока. Доля времени: prefill 120K / 16K и decode 16K / 120K.")
-    lx, sx = 24, 252
-    mx = 344
-    cw = 100
-    px = mx + cw * len(cols)
-    vx = px + 120
-    hy = top - 22
-    s.text(sx, hy, "Доля времени", 12, t["muted"], weight=600)
+    H = top + n_rows * rowh + 24 + 56 + 70
+    s = Svg(W, H, t, "Как загружены блоки GPU: SM, видеопамять, заполнение",
+            "Nsight Compute, % от пика блока. Decode: f1 и main128 (один запуск ядра, базовые частоты). Prefill: только f1, компонентные замеры.")
+    cols = [("SM", "sm_pct"), ("Видеопамять (DRAM)", "dram_pct"), ("Заполнение SM", "occupancy_achieved_pct")]
+    kx, vx, cx0, cw = 24, 300, 400, 170
     for j, (name, _) in enumerate(cols):
-        s.text(mx + j * cw + cw / 2 - 2, hy, name, 12, t["muted"], anchor="middle", weight=600)
-    s.text(px + cw / 2, hy, "PCIe", 12, t["muted"], anchor="middle", weight=600)
-    s.text(vx, hy, "Упор в", 12, t["muted"], weight=600)
+        s.text(cx0 + j * cw + cw / 2, top - 22, name, 12, t["muted"], anchor="middle", weight=600)
     s.line(24, top - 12, W - 24, top - 12, t["border"])
     y = top
-    for row in rows:
-        if row[1] is None and len(row) == 2:
-            s.text(lx, y + 24, row[0], 13, t["faint"], weight=700)
-            y += rowh
-            continue
-        label, prefix, share, verdict, special = row
-        k = ncu_find(ncu, prefix) if prefix else None
-        s.text(lx + 12, y + 24, label, 13, t["fg"], weight=600 if "наш" in label else None)
-        s.text(sx, y + 24, share, 13, t["muted"])
-        for j, (_, key) in enumerate(cols):
-            cx = mx + j * cw
-            v = k.get(key) if k else None
-            txt, fill = None, t["na"]
-            if special == "marlin" and key == "dram_throughput_pct":
-                with open(os.path.join(NSIGHT, "levers.json"), encoding="utf-8") as f:
-                    g = json.load(f)["ranked_top3"][2]["evidence"]["marlin_effective_gbps"]
-                v = g / 896 * 100
-                txt = f"≈{v:.0f}%³"
-            elif special == "gather" and key not in ("sm_throughput_pct", "dram_throughput_pct"):
-                v = None
-            if v is not None:
+    s.text(kx, y + 18, "Decode (main128 и f1, один запуск каждого ядра)", 12, t["faint"], weight=700)
+    y += rowh
+    for key, name, sub in NCU_KERNELS:
+        for variant, label in (("f1", "f1"), ("main128", "main128")):
+            r = pts[key][variant]
+            if variant == "f1":
+                s.text(kx + 8, y + 20, name, 13, t["fg"], weight=600)
+            s.text(vx, y + 20, label, 12, t["f1text"] if variant == "f1" else t["m128text"], weight=700 if variant == "main128" else 600)
+            for j, (_, field) in enumerate(cols):
+                v = r[field]
                 fill = heat(t, v / 100)
-                if txt is None:
-                    txt = f"{v:.0f}%" if v >= 1 else "<1%"
-                if key == "dram_throughput_pct" and k and k.get("dram_gbps"):
-                    txt += f" · {k['dram_gbps']:.0f} ГБ/с"
-            else:
-                txt = "н/д" if special == "marlin" else "—"
-            s.rect(cx + 2, y + 4, cw - 4, rowh - 8, fill, rx=5)
-            s.text(cx + cw / 2, y + 25, txt, 12 if "ГБ/с" in txt else 13, on(t, fill) if v is not None else t["faint"],
-                   anchor="middle", weight=600 if v is not None else None)
-        pc = heat(t, 42 / 45) if special == "gather" else t["na"]
-        s.rect(px + 2, y + 4, cw - 4, rowh - 8, pc, rx=5)
-        s.text(px + cw / 2, y + 25, "~42 ГБ/с" if special == "gather" else "—", 13,
-               on(t, pc) if special == "gather" else t["faint"], anchor="middle", weight=600 if special else None)
-        s.text(vx, y + 25, verdict, 13, t["fg"], weight=600)
+                s.rect(cx0 + j * cw + 4, y + 3, cw - 8, rowh - 6, fill, rx=5)
+                s.text(cx0 + j * cw + cw / 2, y + 20, f"{v:.1f}%", 12.5, on(t, fill), anchor="middle", weight=600)
+            y += rowh
+        s.line(24, y, W - 24, y, t["grid"])
+    y += 6
+    s.text(kx, y + 18, "Prefill (только f1, компонентные замеры тех же форм; main128 не снимался)", 12, t["faint"], weight=700)
+    y += rowh
+    for label, k in prefill:
+        s.text(kx + 8, y + 20, label, 13, t["fg"], weight=600)
+        s.text(vx, y + 20, "f1", 12, t["f1text"], weight=600)
+        for j, (_, field) in enumerate(cols):
+            fkey = {"sm_pct": "sm_throughput_pct", "dram_pct": "dram_throughput_pct"}.get(field)
+            v = k.get(fkey) if fkey else None
+            if v is None:
+                s.rect(cx0 + j * cw + 4, y + 3, cw - 8, rowh - 6, t["na"], rx=5)
+                s.text(cx0 + j * cw + cw / 2, y + 20, "—", 12.5, t["faint"], anchor="middle")
+                continue
+            fill = heat(t, v / 100)
+            s.rect(cx0 + j * cw + 4, y + 3, cw - 8, rowh - 6, fill, rx=5)
+            s.text(cx0 + j * cw + cw / 2, y + 20, f"{v:.1f}%", 12.5, on(t, fill), anchor="middle", weight=600)
         y += rowh
-    fy = y + 22
-    s.text(24, fy, "¹ HMMA, % от пика инструкций; у attention и MoE в prefill главный stall — math_pipe_throttle (конвейер "
-           "тензорных ядер занят).", 11, t["faint"])
-    s.text(24, fy + 16, "² максимум по L1/TEX, L2 и DRAM.  ³ marlin ncu не снимался: байты/время из nsys.  "
-           "PCIe: gather в модели ~42 ГБ/с при потолке канала 41–45 ГБ/с в WSL2.", 11, t["faint"])
-    s.text(24, fy + 32, "Ncu снят на компонентах с теми же формами и конфигурацией запуска, что в выпуске. "
-           "Источник: results/nsight/ncu-component-kernels.json.", 11, t["faint"])
-    s.text(24, fy + 48, "Это выпуск f1. Ядра декода main128 (o-proj GEMV, MoE GEMV) в Nsight Compute не снимались: под ncu сервер не "
-           "обрабатывает запросы (results/ladder/ncu.json).", 11, t["faint"])
+    ly = H - 70
+    s.text(24, ly + 12, "Загрузка блока:", 12, t["muted"])
+    gx = 140
+    for k_ in range(41):
+        s.rect(gx + k_ * 6, ly, 6, 16, heat(t, k_ / 40))
+    s.text(gx - 2, ly + 30, "0%", 10, t["faint"])
+    s.text(gx + 246, ly + 30, "100%", 10, t["faint"], anchor="end")
+    s.text(24, H - 24, "Источники: results/ladder/ncu-kernels.json (decode), results/nsight/ncu-component-kernels.json (prefill, f1). "
+           "Метрика тензорных ядер не показана: её прокси не проверялся.", 11, t["faint"])
     return s
 
 
@@ -967,7 +877,6 @@ def prefill_timeline(t):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    dash, ncu = load_nsight()
     written = []
     for theme, t in THEMES.items():
         written.append(paired_bars(t, "ttft").save("ttft-128k", theme))
@@ -976,8 +885,8 @@ def main():
         written.append(decode_length_chart(t).save("decode-length", theme))
         written.append(breakdown_chart(t).save("time-breakdown", theme))
         written.append(memory_chart(t).save("vram", theme))
-        written.append(gpu_floorplan(t, dash, ncu).save("gpu-load", theme))
-        written.append(kernel_heatmap(t, ncu).save("gpu-kernels", theme))
+        written.append(ncu_load_chart(t).save("gpu-load", theme))
+        written.append(ncu_kernels_chart(t).save("gpu-kernels", theme))
         written.append(prefill_timeline(t).save("prefill-timeline", theme))
         written.append(ladder_waterfall(t, "decode").save("ladder-decode16k", theme))
         written.append(ladder_waterfall(t, "ttft").save("ladder-ttft64", theme))
