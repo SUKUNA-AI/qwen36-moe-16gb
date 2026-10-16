@@ -1,0 +1,2870 @@
+{
+ "schema": "ladder-nsys-1",
+ "bucket_order": [
+  "moe",
+  "fp8_dense_oproj",
+  "gather",
+  "attention",
+  "gdn",
+  "h2d_exposed",
+  "copies_other",
+  "norm_sampling_misc",
+  "idle"
+ ],
+ "buckets": {
+  "moe": [
+   "moe_prefill_nvfp4",
+   "moe_decode_nvfp4",
+   "moe_router_alignment_reduction",
+   "swiglu",
+   "expert_lru_metadata"
+  ],
+  "fp8_dense_oproj": [
+   "dense_sm120_fp8_gemm",
+   "dense_fp8_gemv",
+   "dense_fp8_oproj_gemv",
+   "static_fp8_activation_quantize",
+   "attention_gate_fp8_fused",
+   "other_dense_gemm_gemv_reduction",
+   "nvfp4_linear_gemv"
+  ],
+  "gather": [
+   "expert_mapped_host_gather"
+  ],
+  "attention": [
+   "full_attention",
+   "qk_rope_kv_store"
+  ],
+  "gdn": [
+   "gdn_recurrence_conv_chunk",
+   "gdn_output_gated_norm"
+  ],
+  "h2d_exposed": [
+   "memcpy_h2d"
+  ],
+  "copies_other": [
+   "memcpy_d2d",
+   "memcpy_d2h",
+   "memset",
+   "tensor_layout_dtype_copy"
+  ],
+  "norm_sampling_misc": [
+   "rmsnorm",
+   "sampling",
+   "embedding_host_rows",
+   "other_elementwise_index",
+   "other"
+  ]
+ },
+ "method": "analyze-model-nsys.py critical chain per forward; buckets sum to the request phase critical total; decode buckets are ms per decode step; timings under Nsight are diagnostic only",
+ "steps": [
+  {
+   "id": "l0",
+   "config": "main-release",
+   "lever_short": "f1",
+   "status": "OK",
+   "input_sha256": "d5e0628f572f3e2cfb4c7a577cf52b3214af3ae16f533c90ef26c55434453f77",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 381.779978,
+     "prefill_buckets_ms": {
+      "moe": 74.412019,
+      "fp8_dense_oproj": 0.558042,
+      "gather": 0.0,
+      "attention": 0.0,
+      "gdn": 0.075743,
+      "h2d_exposed": 302.143764,
+      "copies_other": 0.010912,
+      "norm_sampling_misc": 0.28009000000000006,
+      "idle": 4.299408
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 6.488516,
+     "decode_step_critical_ms": 6.895510920634921,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.6073047698412697,
+      "fp8_dense_oproj": 2.595597015873016,
+      "gather": 1.3526542936507935,
+      "attention": 0.11916549206349206,
+      "gdn": 0.2835095396825397,
+      "h2d_exposed": 0.003912865079365079,
+      "copies_other": 0.057048722222222216,
+      "norm_sampling_misc": 0.28342020634920634,
+      "idle": 0.5928980158730159
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 121.199892,
+       "h2d": {
+        "count": 247,
+        "bytes": 18245224582,
+        "union_ms": 371.980928,
+        "overlapped_with_kernels_ms": 115.705306,
+        "overlap_percent": 31.10517160707766
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.033216,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 796.202036,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.496637,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.520472,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1294.273355,
+     "prefill_buckets_ms": {
+      "moe": 388.73541400000005,
+      "fp8_dense_oproj": 196.019765,
+      "gather": 0.0,
+      "attention": 232.970491,
+      "gdn": 67.022713,
+      "h2d_exposed": 334.793165,
+      "copies_other": 8.798808,
+      "norm_sampling_misc": 21.475976,
+      "idle": 44.457023
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 6.792289,
+     "decode_step_critical_ms": 7.067842870967742,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.6014566451612904,
+      "fp8_dense_oproj": 2.619262548387097,
+      "gather": 1.0802824516129033,
+      "attention": 0.5444433387096774,
+      "gdn": 0.28282637096774194,
+      "h2d_exposed": 0.003798677419354839,
+      "copies_other": 0.05693620967741935,
+      "norm_sampling_misc": 0.28645858064516133,
+      "idle": 0.5923780483870968
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1195.086214,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 376.267462,
+        "overlapped_with_kernels_ms": 325.239733,
+        "overlap_percent": 86.43844229081918
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.902323,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 405.917896,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.23923,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.257628,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20339.624182,
+     "prefill_buckets_ms": {
+      "moe": 3569.084125,
+      "fp8_dense_oproj": 1847.1517749999998,
+      "gather": 0.0,
+      "attention": 13278.411414,
+      "gdn": 716.558816,
+      "h2d_exposed": 337.716369,
+      "copies_other": 95.66612,
+      "norm_sampling_misc": 218.240676,
+      "idle": 276.794887
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 9.343948,
+     "decode_step_critical_ms": 9.617719064516129,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.6021484999999998,
+      "fp8_dense_oproj": 2.6094336129032256,
+      "gather": 1.143029887096774,
+      "attention": 3.0884933548387097,
+      "gdn": 0.28303262903225807,
+      "h2d_exposed": 0.004010258064516129,
+      "copies_other": 0.05744141935483871,
+      "norm_sampling_misc": 0.28851895161290325,
+      "idle": 0.5416104516129032
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19971.362897,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 380.506738,
+        "overlapped_with_kernels_ms": 328.717924,
+        "overlap_percent": 86.389514605652
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 41.831191,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 570.365756,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.252316,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.280256,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l1",
+   "config": "main-release-shortroute",
+   "lever_short": "+T1",
+   "status": "OK",
+   "input_sha256": "2192dce867cc327d400a2837ce33a005a9f61e135b0e5b340e4e874dedc30a45",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 318.81231,
+     "prefill_buckets_ms": {
+      "moe": 74.41009599999998,
+      "fp8_dense_oproj": 0.5598029999999999,
+      "gather": 0.407515,
+      "attention": 0.0,
+      "gdn": 0.075296,
+      "h2d_exposed": 238.320238,
+      "copies_other": 0.012736,
+      "norm_sampling_misc": 0.271229,
+      "idle": 4.755397
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 6.496673,
+     "decode_step_critical_ms": 6.8766088015873015,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.6081261507936508,
+      "fp8_dense_oproj": 2.5947958412698418,
+      "gather": 1.3311200952380953,
+      "attention": 0.11946490476190477,
+      "gdn": 0.2831781984126984,
+      "h2d_exposed": 0.0038420000000000004,
+      "copies_other": 0.05718376984126984,
+      "norm_sampling_misc": 0.2832562301587302,
+      "idle": 0.5956416111111111
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 129.131029,
+       "h2d": {
+        "count": 47,
+        "bytes": 15399913606,
+        "union_ms": 306.351851,
+        "overlapped_with_kernels_ms": 121.432527,
+        "overlap_percent": 39.63825470732997
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.034656,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 793.464712,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.487804,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.519255,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1284.200292,
+     "prefill_buckets_ms": {
+      "moe": 382.49595800000003,
+      "fp8_dense_oproj": 195.794858,
+      "gather": 0.0,
+      "attention": 236.92291600000001,
+      "gdn": 66.83074400000001,
+      "h2d_exposed": 330.058038,
+      "copies_other": 8.806555,
+      "norm_sampling_misc": 21.237174,
+      "idle": 42.054049
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 6.765839,
+     "decode_step_critical_ms": 7.038244,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.604752677419355,
+      "fp8_dense_oproj": 2.6172384354838707,
+      "gather": 1.0571362096774193,
+      "attention": 0.5448540161290323,
+      "gdn": 0.2835365,
+      "h2d_exposed": 0.0038507580645161287,
+      "copies_other": 0.05690445161290322,
+      "norm_sampling_misc": 0.2860871612903226,
+      "idle": 0.5838837903225806
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1195.208553,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 366.459094,
+        "overlapped_with_kernels_ms": 323.156117,
+        "overlap_percent": 88.18340772299132
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.901921,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 404.587473,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.242491,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.257916,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20314.810532,
+     "prefill_buckets_ms": {
+      "moe": 3570.845835,
+      "fp8_dense_oproj": 1849.3350279999997,
+      "gather": 0.0,
+      "attention": 13275.182712,
+      "gdn": 718.055353,
+      "h2d_exposed": 321.883342,
+      "copies_other": 95.634809,
+      "norm_sampling_misc": 218.475369,
+      "idle": 265.398084
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 9.3276095,
+     "decode_step_critical_ms": 9.597812322580644,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.6029070645161292,
+      "fp8_dense_oproj": 2.6112574032258067,
+      "gather": 1.1207239516129033,
+      "attention": 3.087481419354839,
+      "gdn": 0.28366679032258063,
+      "h2d_exposed": 0.003998370967741935,
+      "copies_other": 0.05729391935483871,
+      "norm_sampling_misc": 0.2882937096774193,
+      "idle": 0.5421896935483871
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19964.208372,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 366.804266,
+        "overlapped_with_kernels_ms": 321.225868,
+        "overlap_percent": 87.5741908628729
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 41.797108,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 569.078121,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.251675,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.279614,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l2",
+   "config": "main-release-shortroute-fla-wu",
+   "lever_short": "+T2",
+   "status": "OK",
+   "input_sha256": "1be0b27050674ccb9eb8062d6cc0539d7dbb277dc45229f849f5c799cd19f375",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 321.045382,
+     "prefill_buckets_ms": {
+      "moe": 74.48551099999999,
+      "fp8_dense_oproj": 0.5605060000000001,
+      "gather": 0.410171,
+      "attention": 0.0,
+      "gdn": 0.071456,
+      "h2d_exposed": 240.44663,
+      "copies_other": 0.012416,
+      "norm_sampling_misc": 0.27215900000000004,
+      "idle": 4.786533
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 6.4888215,
+     "decode_step_critical_ms": 6.868479611111112,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.6087307142857143,
+      "fp8_dense_oproj": 2.595758285714286,
+      "gather": 1.3241146984126984,
+      "attention": 0.11942473809523808,
+      "gdn": 0.28316560317460315,
+      "h2d_exposed": 0.0038356428571428573,
+      "copies_other": 0.05711809523809524,
+      "norm_sampling_misc": 0.28308485714285714,
+      "idle": 0.5932469761904763
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 129.111638,
+       "h2d": {
+        "count": 47,
+        "bytes": 15399913606,
+        "union_ms": 310.682266,
+        "overlapped_with_kernels_ms": 123.541423,
+        "overlap_percent": 39.764555792186734
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.034336,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 792.757112,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.486939,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.518298,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1270.852768,
+     "prefill_buckets_ms": {
+      "moe": 374.844246,
+      "fp8_dense_oproj": 189.578897,
+      "gather": 0.0,
+      "attention": 236.849181,
+      "gdn": 50.524244,
+      "h2d_exposed": 336.813894,
+      "copies_other": 8.76127,
+      "norm_sampling_misc": 20.239576,
+      "idle": 53.24146
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 6.763571,
+     "decode_step_critical_ms": 7.015970193548387,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.6008751935483871,
+      "fp8_dense_oproj": 2.6176863387096776,
+      "gather": 1.053884064516129,
+      "attention": 0.5448053548387096,
+      "gdn": 0.28337888709677417,
+      "h2d_exposed": 0.0039844516129032255,
+      "copies_other": 0.05702650000000001,
+      "norm_sampling_misc": 0.28594638709677417,
+      "idle": 0.5683830161290323
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1167.04938,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 365.23043,
+        "overlapped_with_kernels_ms": 318.259812,
+        "overlap_percent": 87.1394565890909
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.906582,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 404.147598,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.25078,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.259743,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20114.319597,
+     "prefill_buckets_ms": {
+      "moe": 3553.3857579999994,
+      "fp8_dense_oproj": 1839.3668,
+      "gather": 0.0,
+      "attention": 13271.246624000001,
+      "gdn": 543.904941,
+      "h2d_exposed": 346.607165,
+      "copies_other": 95.50707599999998,
+      "norm_sampling_misc": 210.774858,
+      "idle": 253.526375
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 9.3302715,
+     "decode_step_critical_ms": 9.592042935483871,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.602156693548387,
+      "fp8_dense_oproj": 2.6089412258064515,
+      "gather": 1.1214612903225807,
+      "attention": 3.0870977903225802,
+      "gdn": 0.28644588709677415,
+      "h2d_exposed": 0.0038518387096774195,
+      "copies_other": 0.057521112903225806,
+      "norm_sampling_misc": 0.28809945161290323,
+      "idle": 0.5364676451612903
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19769.776556,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 371.595242,
+        "overlapped_with_kernels_ms": 320.13038,
+        "overlap_percent": 86.15029037427772
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 41.810144,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 569.057747,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.242558,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.279071,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l3",
+   "config": "main-release-shortroute-fla-wu-overlap",
+   "lever_short": "+T3",
+   "status": "OK",
+   "input_sha256": "ab02aae97d4674f1dc66214e7b5a9077e6ae83e70bf5bc246b63331da26f3d1c",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 316.443607,
+     "prefill_buckets_ms": {
+      "moe": 74.452097,
+      "fp8_dense_oproj": 0.5615929999999999,
+      "gather": 0.407419,
+      "attention": 0.0,
+      "gdn": 0.07145499999999999,
+      "h2d_exposed": 236.282396,
+      "copies_other": 0.012127000000000002,
+      "norm_sampling_misc": 0.26297400000000004,
+      "idle": 4.393546
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 6.286648,
+     "decode_step_critical_ms": 6.629917944444444,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.4427666428571428,
+      "fp8_dense_oproj": 2.541395841269841,
+      "gather": 1.3684807063492064,
+      "attention": 0.11936575396825397,
+      "gdn": 0.2829486507936508,
+      "h2d_exposed": 0.0038196349206349204,
+      "copies_other": 0.057203873015873014,
+      "norm_sampling_misc": 0.2708277936507936,
+      "idle": 0.5431090476190477
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 129.074011,
+       "h2d": {
+        "count": 47,
+        "bytes": 15399913606,
+        "union_ms": 304.360006,
+        "overlapped_with_kernels_ms": 121.390356,
+        "overlap_percent": 39.883806547171645
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.027456,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 768.819725,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.48489,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.512315,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1268.080972,
+     "prefill_buckets_ms": {
+      "moe": 376.812697,
+      "fp8_dense_oproj": 189.42463199999997,
+      "gather": 0.0,
+      "attention": 237.281757,
+      "gdn": 50.445334,
+      "h2d_exposed": 330.999009,
+      "copies_other": 8.496571000000001,
+      "norm_sampling_misc": 20.630016,
+      "idle": 53.990956
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 6.594053,
+     "decode_step_critical_ms": 6.824834983870968,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.4455684677419354,
+      "fp8_dense_oproj": 2.569194451612903,
+      "gather": 1.1002269516129033,
+      "attention": 0.5445014032258064,
+      "gdn": 0.2836254354838709,
+      "h2d_exposed": 0.003876064516129032,
+      "copies_other": 0.05691556451612904,
+      "norm_sampling_misc": 0.27964174193548386,
+      "idle": 0.5412849032258065
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1167.437599,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 366.002295,
+        "overlapped_with_kernels_ms": 322.99345,
+        "overlap_percent": 88.249023137956
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.890332,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 393.826935,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.244604,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.255709,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20098.057372,
+     "prefill_buckets_ms": {
+      "moe": 3551.903065,
+      "fp8_dense_oproj": 1841.5288519999997,
+      "gather": 0.0,
+      "attention": 13275.156981,
+      "gdn": 543.914867,
+      "h2d_exposed": 335.633462,
+      "copies_other": 95.834713,
+      "norm_sampling_misc": 210.95032700000002,
+      "idle": 243.135105
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 9.113714,
+     "decode_step_critical_ms": 9.365306677419355,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.4463715,
+      "fp8_dense_oproj": 2.556489322580645,
+      "gather": 1.1644530161290323,
+      "attention": 3.0874385161290316,
+      "gdn": 0.28335093548387097,
+      "h2d_exposed": 0.003808451612903226,
+      "copies_other": 0.05733496774193548,
+      "norm_sampling_misc": 0.27839675806451614,
+      "idle": 0.48766320967741933
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19770.302025,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 365.755853,
+        "overlapped_with_kernels_ms": 320.825734,
+        "overlap_percent": 87.71581681291646
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 41.905916,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 557.776508,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.239996,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.279486,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l4",
+   "config": "main-release-next-he",
+   "lever_short": "+host emb",
+   "status": "OK",
+   "input_sha256": "15ce3e3ab2ab64ca4d5f7de9eb2f85a6e1a1a82241a5cca7094dc70bd7efa8e2",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 334.961241,
+     "prefill_buckets_ms": {
+      "moe": 74.436939,
+      "fp8_dense_oproj": 0.561306,
+      "gather": 0.411771,
+      "attention": 0.0,
+      "gdn": 0.071711,
+      "h2d_exposed": 254.364027,
+      "copies_other": 0.011423,
+      "norm_sampling_misc": 0.37813899999999995,
+      "idle": 4.725925
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 6.116405,
+     "decode_step_critical_ms": 6.424351111111111,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.4501444444444445,
+      "fp8_dense_oproj": 2.579407619047619,
+      "gather": 1.1285906428571428,
+      "attention": 0.11897392857142856,
+      "gdn": 0.2808096746031746,
+      "h2d_exposed": 0.0037490079365079363,
+      "copies_other": 0.05687375396825397,
+      "norm_sampling_misc": 0.2759159603174603,
+      "idle": 0.5298860793650794
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 129.111046,
+       "h2d": {
+        "count": 47,
+        "bytes": 15399913606,
+        "union_ms": 324.510331,
+        "overlapped_with_kernels_ms": 123.391788,
+        "overlap_percent": 38.02399375691987
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.033408,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 743.948754,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.476023,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.519804,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1272.710941,
+     "prefill_buckets_ms": {
+      "moe": 371.00733799999995,
+      "fp8_dense_oproj": 187.57070000000002,
+      "gather": 0.0,
+      "attention": 236.25055700000001,
+      "gdn": 49.443681,
+      "h2d_exposed": 341.967885,
+      "copies_other": 8.66567,
+      "norm_sampling_misc": 23.432452,
+      "idle": 54.372658
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 6.3895865,
+     "decode_step_critical_ms": 6.5979979032258065,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.4565595322580647,
+      "fp8_dense_oproj": 2.5962533870967746,
+      "gather": 0.8747328870967741,
+      "attention": 0.543860370967742,
+      "gdn": 0.2811485161290323,
+      "h2d_exposed": 0.003903935483870968,
+      "copies_other": 0.056426032258064515,
+      "norm_sampling_misc": 0.2836837258064516,
+      "idle": 0.5014295161290323
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1171.01625,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 378.312979,
+        "overlapped_with_kernels_ms": 334.60977,
+        "overlap_percent": 88.44786950859542
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.919237,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 382.13961,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.245724,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.25379,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20161.031988,
+     "prefill_buckets_ms": {
+      "moe": 3553.176575,
+      "fp8_dense_oproj": 1840.045501,
+      "gather": 0.0,
+      "attention": 13270.212335,
+      "gdn": 544.668888,
+      "h2d_exposed": 343.007458,
+      "copies_other": 97.50505100000001,
+      "norm_sampling_misc": 240.709755,
+      "idle": 271.706425
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 8.92563,
+     "decode_step_critical_ms": 9.117728758064516,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.4585301129032258,
+      "fp8_dense_oproj": 2.596044725806452,
+      "gather": 0.8605147258064517,
+      "attention": 3.086867919354839,
+      "gdn": 0.2812422741935484,
+      "h2d_exposed": 0.003992709677419355,
+      "copies_other": 0.05684137096774193,
+      "norm_sampling_misc": 0.28499483870967746,
+      "idle": 0.4887000806451613
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19797.287627,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 378.541477,
+        "overlapped_with_kernels_ms": 326.319771,
+        "overlap_percent": 86.20449563047487
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 42.002314,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 541.264344,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.251356,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.278622,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l5",
+   "config": "main-release-next-he-r085",
+   "lever_short": "+r0.85",
+   "status": "OK",
+   "input_sha256": "ca6bbaf1c2afa5d8c16141c27001a47a361b021028ab0c3613c6f7157c219335",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 329.809497,
+     "prefill_buckets_ms": {
+      "moe": 74.90555499999999,
+      "fp8_dense_oproj": 0.56236,
+      "gather": 0.409915,
+      "attention": 0.0,
+      "gdn": 0.071552,
+      "h2d_exposed": 248.553136,
+      "copies_other": 0.01296,
+      "norm_sampling_misc": 0.37305,
+      "idle": 4.920969
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 5.905468,
+     "decode_step_critical_ms": 6.210884428571428,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.436094134920635,
+      "fp8_dense_oproj": 2.559244976190476,
+      "gather": 0.9388406428571429,
+      "attention": 0.11895185714285715,
+      "gdn": 0.28035514285714286,
+      "h2d_exposed": 0.0038231666666666666,
+      "copies_other": 0.056564468253968256,
+      "norm_sampling_misc": 0.2790221904761905,
+      "idle": 0.5379878492063492
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 129.597794,
+       "h2d": {
+        "count": 47,
+        "bytes": 15399913606,
+        "union_ms": 314.959211,
+        "overlapped_with_kernels_ms": 119.675613,
+        "overlap_percent": 37.997178307638066
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.033151,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 715.692101,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.485655,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.509466,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1269.090142,
+     "prefill_buckets_ms": {
+      "moe": 368.544744,
+      "fp8_dense_oproj": 186.71154799999996,
+      "gather": 0.0,
+      "attention": 233.731604,
+      "gdn": 50.03165,
+      "h2d_exposed": 347.861011,
+      "copies_other": 8.799613,
+      "norm_sampling_misc": 23.085161,
+      "idle": 50.324811
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 6.2192565,
+     "decode_step_critical_ms": 6.419623661290323,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.4481401129032259,
+      "fp8_dense_oproj": 2.589738161290323,
+      "gather": 0.6617369838709677,
+      "attention": 0.5442858709677418,
+      "gdn": 0.28072196774193553,
+      "h2d_exposed": 0.0038064516129032258,
+      "copies_other": 0.056183,
+      "norm_sampling_misc": 0.28828529032258066,
+      "idle": 0.5467258225806452
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1170.908949,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 371.752963,
+        "overlapped_with_kernels_ms": 327.499074,
+        "overlap_percent": 88.09588802120724
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.938947,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 367.687015,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.239744,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.256828,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20142.650617,
+     "prefill_buckets_ms": {
+      "moe": 3547.5893079999996,
+      "fp8_dense_oproj": 1841.0985380000002,
+      "gather": 0.0,
+      "attention": 13269.244674000001,
+      "gdn": 547.5318579999999,
+      "h2d_exposed": 348.407925,
+      "copies_other": 97.68959600000001,
+      "norm_sampling_misc": 238.293811,
+      "idle": 252.794907
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 8.69271,
+     "decode_step_critical_ms": 8.897888177419356,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.4527147419354836,
+      "fp8_dense_oproj": 2.593459822580645,
+      "gather": 0.6557309677419355,
+      "attention": 3.0764690161290327,
+      "gdn": 0.2804696612903226,
+      "h2d_exposed": 0.003842048387096774,
+      "copies_other": 0.056672048387096774,
+      "norm_sampling_misc": 0.28895833870967746,
+      "idle": 0.48957153225806455
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19803.979347,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 375.198228,
+        "overlapped_with_kernels_ms": 329.161561,
+        "overlap_percent": 87.73004146490798
+       },
+       "d2d": {
+        "count": 3736,
+        "bytes": 39632266751,
+        "union_ms": 42.107828,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 527.441252,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.241983,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.278143,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l6",
+   "config": "main-release-next-k",
+   "lever_short": "+S3 kernels",
+   "status": "OK",
+   "input_sha256": "5d7b65a1087772201eaa7ebe7f02aa152a77c9b4ef6832d7415cece8f75cc275",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 335.382615,
+     "prefill_buckets_ms": {
+      "moe": 75.219585,
+      "fp8_dense_oproj": 0.558233,
+      "gather": 0.408123,
+      "attention": 0.0,
+      "gdn": 0.071487,
+      "h2d_exposed": 253.336074,
+      "copies_other": 0.012032000000000001,
+      "norm_sampling_misc": 0.36380599999999996,
+      "idle": 5.413275
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 5.360638,
+     "decode_step_critical_ms": 5.670322793650794,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2474029126984127,
+      "fp8_dense_oproj": 2.437045373015873,
+      "gather": 0.9130899682539683,
+      "attention": 0.11784197619047619,
+      "gdn": 0.2680671507936508,
+      "h2d_exposed": 0.003898111111111111,
+      "copies_other": 0.031362769841269844,
+      "norm_sampling_misc": 0.27222836507936504,
+      "idle": 0.37938616666666664
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 130.562077,
+       "h2d": {
+        "count": 47,
+        "bytes": 15399913606,
+        "union_ms": 309.864209,
+        "overlapped_with_kernels_ms": 110.462898,
+        "overlap_percent": 35.64880834623917
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.032671,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 670.35384,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.494746,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.507801,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1270.362602,
+     "prefill_buckets_ms": {
+      "moe": 377.39594900000003,
+      "fp8_dense_oproj": 189.45413499999998,
+      "gather": 0.0,
+      "attention": 235.44667900000002,
+      "gdn": 50.981359999999995,
+      "h2d_exposed": 334.755578,
+      "copies_other": 8.927543,
+      "norm_sampling_misc": 23.655805,
+      "idle": 49.745553
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 5.689403,
+     "decode_step_critical_ms": 5.874447338709677,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2619402096774193,
+      "fp8_dense_oproj": 2.459524096774193,
+      "gather": 0.6399726774193548,
+      "attention": 0.5431471774193548,
+      "gdn": 0.26790404838709675,
+      "h2d_exposed": 0.003714516129032258,
+      "copies_other": 0.03147693548387096,
+      "norm_sampling_misc": 0.2825221290322581,
+      "idle": 0.3842455483870968
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1173.104422,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 368.252472,
+        "overlapped_with_kernels_ms": 324.410078,
+        "overlap_percent": 88.09447394558156
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.920732,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 345.126563,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.234332,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.257567,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20146.143113,
+     "prefill_buckets_ms": {
+      "moe": 3555.6102389999996,
+      "fp8_dense_oproj": 1841.029054,
+      "gather": 0.0,
+      "attention": 13271.62552,
+      "gdn": 551.774572,
+      "h2d_exposed": 341.327785,
+      "copies_other": 97.59915699999999,
+      "norm_sampling_misc": 239.31922700000004,
+      "idle": 247.857559
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 8.211957,
+     "decode_step_critical_ms": 8.42205120967742,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2659497258064516,
+      "fp8_dense_oproj": 2.45770464516129,
+      "gather": 0.6420002419354839,
+      "attention": 3.07895329032258,
+      "gdn": 0.2684023870967742,
+      "h2d_exposed": 0.0037955967741935487,
+      "copies_other": 0.03186088709677419,
+      "norm_sampling_misc": 0.28320106451612903,
+      "idle": 0.39018337096774197
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19808.504771,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 375.116357,
+        "overlapped_with_kernels_ms": 325.102241,
+        "overlap_percent": 86.66703942211723
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 41.961933,
+        "overlapped_with_kernels_ms": 0.000992,
+        "overlap_percent": 0.0023640474331818795
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 505.263115,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.239103,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.278335,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l7",
+   "config": "main-release-next-kc0",
+   "lever_short": "+C0",
+   "status": "OK",
+   "input_sha256": "cef504c4564b7fa895af997ec88cedabb7769355a8f85c7ed368509de52267eb",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 320.496741,
+     "prefill_buckets_ms": {
+      "moe": 2.568803,
+      "fp8_dense_oproj": 0.5608569999999999,
+      "gather": 0.421723,
+      "attention": 0.0,
+      "gdn": 0.071519,
+      "h2d_exposed": 314.569736,
+      "copies_other": 0.011456000000000001,
+      "norm_sampling_misc": 0.22201500000000002,
+      "idle": 2.070632
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 5.392563,
+     "decode_step_critical_ms": 5.683934396825397,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2460068968253968,
+      "fp8_dense_oproj": 2.4375899841269844,
+      "gather": 0.9025746507936508,
+      "attention": 0.11790969047619047,
+      "gdn": 0.2682275873015873,
+      "h2d_exposed": 0.003811515873015873,
+      "copies_other": 0.03169286507936508,
+      "norm_sampling_misc": 0.2740036428571428,
+      "idle": 0.40211756349206346
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 128.973446,
+       "h2d": {
+        "count": 47,
+        "bytes": 15399913606,
+        "union_ms": 314.749766,
+        "overlapped_with_kernels_ms": 125.302735,
+        "overlap_percent": 39.81027105831113
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.032447,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 669.214892,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.486427,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.509369,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1276.728556,
+     "prefill_buckets_ms": {
+      "moe": 379.28217299999994,
+      "fp8_dense_oproj": 180.5451,
+      "gather": 0.0,
+      "attention": 237.306163,
+      "gdn": 51.207319000000005,
+      "h2d_exposed": 342.249821,
+      "copies_other": 8.654677,
+      "norm_sampling_misc": 24.148940999999997,
+      "idle": 53.334362
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 5.697728,
+     "decode_step_critical_ms": 5.863209693548387,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2635067903225807,
+      "fp8_dense_oproj": 2.457513935483871,
+      "gather": 0.6319344516129032,
+      "attention": 0.5434053870967742,
+      "gdn": 0.26839604838709674,
+      "h2d_exposed": 0.003813129032258065,
+      "copies_other": 0.03179064516129032,
+      "norm_sampling_misc": 0.2837097580645161,
+      "idle": 0.37913954838709674
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1172.466378,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 379.931094,
+        "overlapped_with_kernels_ms": 332.682297,
+        "overlap_percent": 87.56385098609486
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.88731,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 344.753987,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.240062,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.257792,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20166.838637,
+     "prefill_buckets_ms": {
+      "moe": 3558.2415349999997,
+      "fp8_dense_oproj": 1830.9129790000002,
+      "gather": 0.0,
+      "attention": 13273.673396,
+      "gdn": 551.312443,
+      "h2d_exposed": 345.618629,
+      "copies_other": 97.343558,
+      "norm_sampling_misc": 239.26472400000003,
+      "idle": 270.471373
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 8.238043,
+     "decode_step_critical_ms": 8.418793951612903,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2666503225806451,
+      "fp8_dense_oproj": 2.453551451612903,
+      "gather": 0.6386663548387096,
+      "attention": 3.0826363064516134,
+      "gdn": 0.2694610806451613,
+      "h2d_exposed": 0.004221387096774194,
+      "copies_other": 0.03218706451612903,
+      "norm_sampling_misc": 0.28486777419354836,
+      "idle": 0.3865522096774193
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19809.803185,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 384.123593,
+        "overlapped_with_kernels_ms": 337.307807,
+        "overlap_percent": 87.81231175248327
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 41.920015,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 505.272578,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.265886,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.279291,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l8",
+   "config": "main-release-next-candidate",
+   "lever_short": "+C1",
+   "status": "OK",
+   "input_sha256": "9e8b07667639d0bcbcc6f14c0a56598524eccaa9179c9317d94ee25aede08804",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 330.840379,
+     "prefill_buckets_ms": {
+      "moe": 2.5702420000000004,
+      "fp8_dense_oproj": 0.558745,
+      "gather": 0.420827,
+      "attention": 0.0,
+      "gdn": 0.071935,
+      "h2d_exposed": 324.819138,
+      "copies_other": 0.011616000000000001,
+      "norm_sampling_misc": 0.220926,
+      "idle": 2.16695
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 5.4051855,
+     "decode_step_critical_ms": 5.715624833333333,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.249821222222222,
+      "fp8_dense_oproj": 2.4387488174603176,
+      "gather": 0.9145472063492063,
+      "attention": 0.11877965873015872,
+      "gdn": 0.26871006349206344,
+      "h2d_exposed": 0.0037942698412698414,
+      "copies_other": 0.031657031746031745,
+      "norm_sampling_misc": 0.2728704285714286,
+      "idle": 0.41669613492063495
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 128.966675,
+       "h2d": {
+        "count": 47,
+        "bytes": 15399913606,
+        "union_ms": 324.984864,
+        "overlapped_with_kernels_ms": 125.283902,
+        "overlap_percent": 38.550688317595004
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.033792,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 671.380973,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.481694,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.504923,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1276.422733,
+     "prefill_buckets_ms": {
+      "moe": 379.59932499999996,
+      "fp8_dense_oproj": 176.539068,
+      "gather": 0.0,
+      "attention": 237.077679,
+      "gdn": 50.679725999999995,
+      "h2d_exposed": 347.477742,
+      "copies_other": 8.722954999999999,
+      "norm_sampling_misc": 24.228732,
+      "idle": 52.097506
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 5.701727,
+     "decode_step_critical_ms": 5.880625387096774,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2647635000000002,
+      "fp8_dense_oproj": 2.4618432741935483,
+      "gather": 0.6358827096774193,
+      "attention": 0.5443328225806452,
+      "gdn": 0.268441,
+      "h2d_exposed": 0.0038017741935483873,
+      "copies_other": 0.03179214516129032,
+      "norm_sampling_misc": 0.2824896774193548,
+      "idle": 0.38727848387096775
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1172.470846,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 382.739094,
+        "overlapped_with_kernels_ms": 334.580359,
+        "overlap_percent": 87.41734624056983
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.904001,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 345.317084,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.239325,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.257853,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20154.491865,
+     "prefill_buckets_ms": {
+      "moe": 3558.0503049999998,
+      "fp8_dense_oproj": 1828.393941,
+      "gather": 0.0,
+      "attention": 13274.164867,
+      "gdn": 551.233891,
+      "h2d_exposed": 348.667838,
+      "copies_other": 97.35081100000001,
+      "norm_sampling_misc": 238.946011,
+      "idle": 257.684201
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 8.227227,
+     "decode_step_critical_ms": 8.420097322580645,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2674879516129034,
+      "fp8_dense_oproj": 2.460469419354838,
+      "gather": 0.6386530806451612,
+      "attention": 3.0816443387096775,
+      "gdn": 0.2687510806451613,
+      "h2d_exposed": 0.004009225806451613,
+      "copies_other": 0.032108064516129034,
+      "norm_sampling_misc": 0.2830346935483871,
+      "idle": 0.38393946774193544
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19810.99225,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 385.809478,
+        "overlapped_with_kernels_ms": 339.85466,
+        "overlap_percent": 88.08872756620043
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 42.018751,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 505.521101,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.25238,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.27776,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l9",
+   "config": "main-release-next-d5",
+   "lever_short": "+D5",
+   "status": "OK",
+   "input_sha256": "4089b97f2d84cd50bafb330c24ec75903188587b2dcf30bb958702cb4321f8a0",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 337.466812,
+     "prefill_buckets_ms": {
+      "moe": 2.569571,
+      "fp8_dense_oproj": 0.560632,
+      "gather": 0.423931,
+      "attention": 0.0,
+      "gdn": 0.071838,
+      "h2d_exposed": 331.591615,
+      "copies_other": 0.011807999999999999,
+      "norm_sampling_misc": 0.22873200000000002,
+      "idle": 2.008685
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 5.263828,
+     "decode_step_critical_ms": 5.5888337380952375,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.249896365079365,
+      "fp8_dense_oproj": 2.4365915873015873,
+      "gather": 0.9055022063492063,
+      "attention": 0.11795062698412699,
+      "gdn": 0.2699907063492063,
+      "h2d_exposed": 0.003874222222222222,
+      "copies_other": 0.031816253968253966,
+      "norm_sampling_misc": 0.2106200396825397,
+      "idle": 0.36259173015873014
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 128.996013,
+       "h2d": {
+        "count": 47,
+        "bytes": 15399913606,
+        "union_ms": 331.761085,
+        "overlapped_with_kernels_ms": 125.304923,
+        "overlap_percent": 37.76962659740518
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.032544,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 662.137555,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.491992,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.514459,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1289.037652,
+     "prefill_buckets_ms": {
+      "moe": 382.65927400000004,
+      "fp8_dense_oproj": 180.155752,
+      "gather": 0.0,
+      "attention": 237.973611,
+      "gdn": 51.216732,
+      "h2d_exposed": 344.775683,
+      "copies_other": 8.688886,
+      "norm_sampling_misc": 24.522133,
+      "idle": 59.045581
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 5.593617,
+     "decode_step_critical_ms": 5.78303264516129,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2631969516129031,
+      "fp8_dense_oproj": 2.459656419354839,
+      "gather": 0.6354068870967742,
+      "attention": 0.5442911129032258,
+      "gdn": 0.2680733064516129,
+      "h2d_exposed": 0.0037960806451612906,
+      "copies_other": 0.03180420967741935,
+      "norm_sampling_misc": 0.21218020967741935,
+      "idle": 0.3646274677419355
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1172.351095,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 381.440574,
+        "overlapped_with_kernels_ms": 327.508158,
+        "overlap_percent": 85.86086020308893
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.893781,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 340.597673,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.239133,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.254942,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20171.217664,
+     "prefill_buckets_ms": {
+      "moe": 3565.815047,
+      "fp8_dense_oproj": 1827.538158,
+      "gather": 0.0,
+      "attention": 13273.166484000001,
+      "gdn": 552.058535,
+      "h2d_exposed": 344.880117,
+      "copies_other": 97.36326100000001,
+      "norm_sampling_misc": 240.507956,
+      "idle": 269.888106
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 8.118108,
+     "decode_step_critical_ms": 8.322118838709677,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2655978870967741,
+      "fp8_dense_oproj": 2.456575467741936,
+      "gather": 0.6361764516129033,
+      "attention": 3.0780340322580644,
+      "gdn": 0.26881429032258064,
+      "h2d_exposed": 0.0038388870967741937,
+      "copies_other": 0.03218708064516129,
+      "norm_sampling_misc": 0.21329327419354835,
+      "idle": 0.36760146774193553
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19809.926391,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 381.12421,
+        "overlapped_with_kernels_ms": 329.525633,
+        "overlap_percent": 86.46148010382232
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 41.896726,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 500.401928,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.241915,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.278619,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l10",
+   "config": "main-release-next-d5-d3b",
+   "lever_short": "+D3b",
+   "status": "OK",
+   "input_sha256": "f744e4f2bb3f263acca9f85a03a7544c5882e20efaa427c7f3d1a7e6404b5244",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 332.417554,
+     "prefill_buckets_ms": {
+      "moe": 2.570338,
+      "fp8_dense_oproj": 0.558106,
+      "gather": 0.413979,
+      "attention": 0.0,
+      "gdn": 0.071552,
+      "h2d_exposed": 321.420883,
+      "copies_other": 0.012542999999999999,
+      "norm_sampling_misc": 0.25155099999999997,
+      "idle": 7.118602
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 5.308817,
+     "decode_step_critical_ms": 5.600869103174603,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.2866628095238093,
+      "fp8_dense_oproj": 2.2020089047619047,
+      "gather": 1.0602606746031746,
+      "attention": 0.08225189682539681,
+      "gdn": 0.17756814285714284,
+      "h2d_exposed": 0.003814277777777778,
+      "copies_other": 0.03881866666666667,
+      "norm_sampling_misc": 0.4588489682539683,
+      "idle": 0.2906347619047619
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 129.845955,
+       "h2d": {
+        "count": 47,
+        "bytes": 15072757894,
+        "union_ms": 321.502546,
+        "overlapped_with_kernels_ms": 126.055821,
+        "overlap_percent": 39.208343003293045
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.03184,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 672.853154,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.484183,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.511837,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1272.1883,
+     "prefill_buckets_ms": {
+      "moe": 372.951217,
+      "fp8_dense_oproj": 176.22302899999997,
+      "gather": 0.0,
+      "attention": 237.562281,
+      "gdn": 49.367487,
+      "h2d_exposed": 352.111639,
+      "copies_other": 8.640971,
+      "norm_sampling_misc": 23.841119999999997,
+      "idle": 51.490556
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 5.686734,
+     "decode_step_critical_ms": 5.880413580645161,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.3023592258064514,
+      "fp8_dense_oproj": 2.260058274193549,
+      "gather": 0.8376213870967743,
+      "attention": 0.4883277258064516,
+      "gdn": 0.19593895161290323,
+      "h2d_exposed": 0.003828048387096774,
+      "copies_other": 0.03932038709677419,
+      "norm_sampling_misc": 0.4586059032258064,
+      "idle": 0.29435367741935486
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1172.887682,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 387.362763,
+        "overlapped_with_kernels_ms": 343.210633,
+        "overlap_percent": 88.60186517205321
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.904585,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 351.248995,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.241019,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.254463,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20160.366184,
+     "prefill_buckets_ms": {
+      "moe": 3555.905308,
+      "fp8_dense_oproj": 1825.441537,
+      "gather": 0.0,
+      "attention": 13274.570319,
+      "gdn": 550.449716,
+      "h2d_exposed": 352.568727,
+      "copies_other": 97.36117299999998,
+      "norm_sampling_misc": 241.91020899999998,
+      "idle": 262.159195
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 8.1544255,
+     "decode_step_critical_ms": 8.366161516129031,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.3006554516129032,
+      "fp8_dense_oproj": 2.2591323064516127,
+      "gather": 0.7640620806451612,
+      "attention": 3.032805774193548,
+      "gdn": 0.20643643548387097,
+      "h2d_exposed": 0.0038347580645161287,
+      "copies_other": 0.03930575806451613,
+      "norm_sampling_misc": 0.4587703387096774,
+      "idle": 0.3011586129032258
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19811.446556,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 388.941388,
+        "overlapped_with_kernels_ms": 341.943425,
+        "overlap_percent": 87.91644076716258
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 41.919531,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 507.533812,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.241787,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.275934,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "l11",
+   "config": "main-release-next-all",
+   "lever_short": "+D6",
+   "status": "OK",
+   "input_sha256": "720c5102d201e76ac1877af0d445906a40f1e3d7c61d4312ba642bb8023c1a7e",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 312.022432,
+     "prefill_buckets_ms": {
+      "moe": 2.596707,
+      "fp8_dense_oproj": 0.561818,
+      "gather": 0.436858,
+      "attention": 0.0,
+      "gdn": 0.07123199999999999,
+      "h2d_exposed": 305.781927,
+      "copies_other": 0.01504,
+      "norm_sampling_misc": 0.274108,
+      "idle": 2.284742
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 5.318371,
+     "decode_step_critical_ms": 5.552044928571429,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.287841126984127,
+      "fp8_dense_oproj": 2.2065027539682545,
+      "gather": 1.003070246031746,
+      "attention": 0.08290265079365079,
+      "gdn": 0.1775679365079365,
+      "h2d_exposed": 0.00393315873015873,
+      "copies_other": 0.03809738888888888,
+      "norm_sampling_misc": 0.46068430158730156,
+      "idle": 0.2914453650793651
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 132.30685,
+       "h2d": {
+        "count": 47,
+        "bytes": 15072757894,
+        "union_ms": 305.918437,
+        "overlapped_with_kernels_ms": 128.493645,
+        "overlap_percent": 42.00258286492226
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.026143,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 666.631654,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.499258,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.512474,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1279.546461,
+     "prefill_buckets_ms": {
+      "moe": 383.812276,
+      "fp8_dense_oproj": 176.18497000000002,
+      "gather": 0.0,
+      "attention": 237.600525,
+      "gdn": 50.974272,
+      "h2d_exposed": 339.623994,
+      "copies_other": 8.691225000000001,
+      "norm_sampling_misc": 23.775982,
+      "idle": 58.883217
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 5.693535,
+     "decode_step_critical_ms": 5.875445064516129,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.302831677419355,
+      "fp8_dense_oproj": 2.2599216935483875,
+      "gather": 0.8229109516129033,
+      "attention": 0.4897205483870967,
+      "gdn": 0.19644320967741938,
+      "h2d_exposed": 0.004780822580645161,
+      "copies_other": 0.03993412903225807,
+      "norm_sampling_misc": 0.46077229032258066,
+      "idle": 0.29812974193548386
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1171.742098,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 375.239626,
+        "overlapped_with_kernels_ms": 330.020647,
+        "overlap_percent": 87.94930602558483
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.903867,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 350.620496,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.300059,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.255039,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20151.774034,
+     "prefill_buckets_ms": {
+      "moe": 3563.3839689999995,
+      "fp8_dense_oproj": 1827.883742,
+      "gather": 0.0,
+      "attention": 13274.869176999999,
+      "gdn": 551.963244,
+      "h2d_exposed": 344.109851,
+      "copies_other": 97.406201,
+      "norm_sampling_misc": 240.577822,
+      "idle": 251.580028
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 8.164204,
+     "decode_step_critical_ms": 8.365194903225806,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.3007580322580645,
+      "fp8_dense_oproj": 2.2591216129032263,
+      "gather": 0.7610678387096774,
+      "attention": 3.033829241935484,
+      "gdn": 0.2065077741935484,
+      "h2d_exposed": 0.0038058870967741937,
+      "copies_other": 0.03974619354838709,
+      "norm_sampling_misc": 0.45862495161290323,
+      "idle": 0.30173337096774194
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19808.899576,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 378.763217,
+        "overlapped_with_kernels_ms": 327.29952,
+        "overlap_percent": 86.41269936198688
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 41.946226,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 507.385989,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.239677,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.278303,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "t3",
+   "config": "main-release-overlap",
+   "lever_short": "f1+T3",
+   "status": "OK",
+   "input_sha256": "786b840674a05534173ce4406417e6e9943051e6d68b2754fe4f0a5a9791a6c2",
+   "requests": {
+    "warm_decode": {
+     "capture_complete": true,
+     "prefill_critical_ms": 424.321814,
+     "prefill_buckets_ms": {
+      "moe": 74.397333,
+      "fp8_dense_oproj": 0.5580719999999999,
+      "gather": 0.0,
+      "attention": 0.0,
+      "gdn": 0.076253,
+      "h2d_exposed": 344.249737,
+      "copies_other": 0.011007999999999999,
+      "norm_sampling_misc": 0.27599399999999996,
+      "idle": 4.753417
+     },
+     "decode_steps_in_chain": 126,
+     "decode_step_period_ms_p50": 6.311459,
+     "decode_step_critical_ms": 6.683791206349206,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.4444614365079365,
+      "fp8_dense_oproj": 2.538738166666666,
+      "gather": 1.4445195,
+      "attention": 0.11914659523809523,
+      "gdn": 0.2827010317460318,
+      "h2d_exposed": 0.0037450079365079366,
+      "copies_other": 0.05691496825396826,
+      "norm_sampling_misc": 0.26934569047619045,
+      "idle": 0.5242188095238095
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 121.137272,
+       "h2d": {
+        "count": 247,
+        "bytes": 18245224582,
+        "union_ms": 414.109239,
+        "overlapped_with_kernels_ms": 115.683298,
+        "overlap_percent": 27.93545449006512
+       },
+       "d2d": {
+        "count": 42,
+        "bytes": 43397,
+        "union_ms": 0.033824,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 778.067997,
+       "h2d": {
+        "count": 381,
+        "bytes": 126238,
+        "union_ms": 0.475582,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 762,
+        "bytes": 176276,
+        "union_ms": 0.51823,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_16k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 1289.532993,
+     "prefill_buckets_ms": {
+      "moe": 367.39041299999997,
+      "fp8_dense_oproj": 184.95638000000002,
+      "gather": 0.0,
+      "attention": 234.176066,
+      "gdn": 62.866385,
+      "h2d_exposed": 370.050506,
+      "copies_other": 8.654298999999998,
+      "norm_sampling_misc": 20.440113999999998,
+      "idle": 40.99883
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 6.603968,
+     "decode_step_critical_ms": 6.852638451612903,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.446379129032258,
+      "fp8_dense_oproj": 2.5694282741935477,
+      "gather": 1.1634627258064516,
+      "attention": 0.5435771129032259,
+      "gdn": 0.2829123387096774,
+      "h2d_exposed": 0.003816193548387097,
+      "copies_other": 0.05679216129032259,
+      "norm_sampling_misc": 0.27725245161290324,
+      "idle": 0.5090180645161291
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 1194.112972,
+       "h2d": {
+        "count": 693,
+        "bytes": 18245969602,
+        "union_ms": 416.556084,
+        "overlapped_with_kernels_ms": 365.735747,
+        "overlap_percent": 87.7998812279981
+       },
+       "d2d": {
+        "count": 586,
+        "bytes": 5439700269,
+        "union_ms": 5.891283,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 397.59974,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.240316,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 4143384,
+        "union_ms": 0.255673,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    },
+    "fresh_120k": {
+     "capture_complete": true,
+     "prefill_critical_ms": 20328.798719,
+     "prefill_buckets_ms": {
+      "moe": 3555.480331,
+      "fp8_dense_oproj": 1832.1143569999997,
+      "gather": 0.0,
+      "attention": 13272.590659,
+      "gdn": 714.035128,
+      "h2d_exposed": 366.894362,
+      "copies_other": 95.37490799999999,
+      "norm_sampling_misc": 217.419145,
+      "idle": 274.889829
+     },
+     "decode_steps_in_chain": 62,
+     "decode_step_period_ms_p50": 9.160603,
+     "decode_step_critical_ms": 9.437146419354839,
+     "decode_buckets_ms_per_step": {
+      "moe": 1.448161,
+      "fp8_dense_oproj": 2.5538970322580647,
+      "gather": 1.2394820967741937,
+      "attention": 3.0879136774193547,
+      "gdn": 0.28355600000000003,
+      "h2d_exposed": 0.0038301612903225805,
+      "copies_other": 0.057434064516129035,
+      "norm_sampling_misc": 0.2765898387096774,
+      "idle": 0.4862825483870968
+     },
+     "transport": {
+      "prefill": {
+       "kernel_union_ms": 19957.283359,
+       "h2d": {
+        "count": 3221,
+        "bytes": 18251025922,
+        "union_ms": 416.875488,
+        "overlapped_with_kernels_ms": 359.829793,
+        "overlap_percent": 86.31589128118753
+       },
+       "d2d": {
+        "count": 3737,
+        "bytes": 39632274943,
+        "union_ms": 41.766049,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      },
+      "decode": {
+       "kernel_union_ms": 562.435056,
+       "h2d": {
+        "count": 189,
+        "bytes": 62622,
+        "union_ms": 0.241214,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       },
+       "d2d": {
+        "count": 378,
+        "bytes": 30254868,
+        "union_ms": 0.275007,
+        "overlapped_with_kernels_ms": 0.0,
+        "overlap_percent": 0.0
+       }
+      }
+     },
+     "unmapped_categories_ms": {
+      "prefill": {},
+      "decode": {}
+     }
+    }
+   }
+  }
+ ]
+}
