@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 1000" width="1180" height="1000" font-family="IBM Plex Sans, Segoe UI, Arial, sans-serif" role="img" aria-label="MoE decode: GEMV по NVFP4-экспертам, раскладка по блокам и потокам">
+<title>MoE decode: GEMV по NVFP4-экспертам, раскладка по блокам и потокам</title>
+<rect width="1180" height="1000" fill="#0f141a"/>
+<defs>
+<marker id="m-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8a99"/></marker>
+<marker id="m-xfer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+<marker id="m-sync" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b794f4"/></marker>
+<marker id="m-lever" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5fb3cf"/></marker>
+<marker id="m-old" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f08a7a"/></marker>
+<marker id="m-a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6aaef0"/></marker>
+<marker id="m-a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5cc489"/></marker>
+<marker id="m-a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+</defs>
+<text x="20" y="32" font-size="20" font-weight="600" fill="#e4e9ef">MoE decode: GEMV по NVFP4-экспертам, раскладка по блокам и потокам</text>
+<text x="20" y="54" font-size="12.5" fill="#97a3b2">Те же операции и тот же порядок накопления, что у Triton-ядра; меняется только перемещение данных. Показан M = 1 (один токен, 8 экспертов), вариант ядра для M ≤ 2: 128</text>
+<text x="20" y="71" font-size="12.5" fill="#97a3b2">потоков, по 2 строки на команду.</text>
+<rect x="20" y="90" width="1140" height="154" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="112" font-size="13.5" font-weight="600" fill="#97a3b2">Routed-часть MoE-блока на шаге decode</text>
+<rect x="20" y="258" width="560" height="372" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="280" font-size="13.5" font-weight="600" fill="#97a3b2">Строка весов: куски по 16 байт и четыре потока команды</text>
+<rect x="600" y="258" width="560" height="372" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="614" y="280" font-size="13.5" font-weight="600" fill="#97a3b2">Что делает поток r с куском c (порядок как у Triton)</text>
+<rect x="20" y="644" width="1140" height="338" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="666" font-size="13.5" font-weight="600" fill="#97a3b2">Редукция 16 частичных сумм: то же дерево, что у Triton, через shfl.xor</text>
+<rect x="36" y="124" width="124" height="64" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="98.0" y="153.6" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Вход x</text>
+<text x="98.0" y="167.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">bf16 [2048]</text>
+<rect x="190" y="124" width="230" height="64" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="305.0" y="146.7" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">gate_up GEMV</text>
+<text x="305.0" y="161.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">N = 1024, K = 2048; сетка (8, 16) × 128</text>
+<text x="305.0" y="174.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">потоков</text>
+<rect x="444" y="124" width="150" height="64" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="519.0" y="146.7" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">SiLU·mul</text>
+<text x="519.0" y="161.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">Triton, без изменений;</text>
+<text x="519.0" y="174.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">[8 × 1024] → [8 × 512]</text>
+<rect x="618" y="124" width="250" height="64" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="743.0" y="146.7" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">down GEMV</text>
+<text x="743.0" y="161.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">N = 2048, K = 512, × вес роутера; сетка (8,</text>
+<text x="743.0" y="174.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">32) × 128 потоков</text>
+<rect x="892" y="124" width="150" height="64" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="967.0" y="146.7" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Σ по top-8</text>
+<text x="967.0" y="161.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">Triton, без изменений;</text>
+<text x="967.0" y="174.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">[8 × 2048] → [2048]</text>
+<rect x="1066" y="124" width="78" height="64" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="1105.0" y="153.6" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Выход</text>
+<text x="1105.0" y="167.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">bf16</text>
+<text x="36" y="209.5" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">Сетка: blockIdx.x = маршрут (токен × 8 + k), blockIdx.y = полоса из 64 выходов; слот эксперта берётся из topk_ids (его проставил ensure_experts). Для M ≥ 3 полоса 128 выходов: сетки (M</text>
+<text x="36" y="225.025" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">× 8, 8) и (M × 8, 16).</text>
+<rect x="36" y="292" width="30" height="30" rx="3" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="51.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">0</text>
+<rect x="67" y="292" width="30" height="30" rx="3" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="82.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">1</text>
+<rect x="98" y="292" width="30" height="30" rx="3" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="113.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">2</text>
+<rect x="129" y="292" width="30" height="30" rx="3" fill="#2c1f3a" stroke="#c08bea" stroke-width="1.6"/>
+<text x="144.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">3</text>
+<rect x="160" y="292" width="30" height="30" rx="3" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="175.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">4</text>
+<rect x="191" y="292" width="30" height="30" rx="3" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="206.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">5</text>
+<rect x="222" y="292" width="30" height="30" rx="3" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="237.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">6</text>
+<rect x="253" y="292" width="30" height="30" rx="3" fill="#2c1f3a" stroke="#c08bea" stroke-width="1.6"/>
+<text x="268.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">7</text>
+<rect x="284" y="292" width="30" height="30" rx="3" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="299.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">8</text>
+<rect x="315" y="292" width="30" height="30" rx="3" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="330.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">9</text>
+<rect x="346" y="292" width="30" height="30" rx="3" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="361.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">10</text>
+<rect x="377" y="292" width="30" height="30" rx="3" fill="#2c1f3a" stroke="#c08bea" stroke-width="1.6"/>
+<text x="392.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">11</text>
+<rect x="408" y="292" width="30" height="30" rx="3" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="423.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">12</text>
+<rect x="439" y="292" width="30" height="30" rx="3" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="454.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">13</text>
+<rect x="470" y="292" width="30" height="30" rx="3" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="485.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">14</text>
+<rect x="501" y="292" width="30" height="30" rx="3" fill="#2c1f3a" stroke="#c08bea" stroke-width="1.6"/>
+<text x="516.0" y="310.675" font-size="10.5" fill="#e4e9ef" text-anchor="middle">15</text>
+<text x="534" y="312" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">… 63</text>
+<text x="98" y="346" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">it = 0</text>
+<text x="222" y="346" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">it = 1</text>
+<text x="346" y="346" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">it = 2</text>
+<text x="470" y="346" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">it = 3</text>
+<text x="534" y="346" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="start">it = 15</text>
+<rect x="36" y="360" width="14" height="14" rx="3" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="56" y="372" font-size="11" font-weight="400" fill="#e4e9ef" text-anchor="start">r0: c = 4·it + 0</text>
+<rect x="162" y="360" width="14" height="14" rx="3" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="182" y="372" font-size="11" font-weight="400" fill="#e4e9ef" text-anchor="start">r1: c = 4·it + 1</text>
+<rect x="288" y="360" width="14" height="14" rx="3" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="308" y="372" font-size="11" font-weight="400" fill="#e4e9ef" text-anchor="start">r2: c = 4·it + 2</text>
+<rect x="414" y="360" width="14" height="14" rx="3" fill="#2c1f3a" stroke="#c08bea" stroke-width="1.6"/>
+<text x="434" y="372" font-size="11" font-weight="400" fill="#e4e9ef" text-anchor="start">r3: c = 4·it + 3</text>
+<rect x="36" y="388" width="252" height="108" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="162.0" y="417.8" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Кусок c = 16 Б весов + 2 Б</text>
+<text x="162.0" y="434.0" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">масштабов</text>
+<text x="162.0" y="448.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">32 кода e2m1 (4 слова по 8) = K от 32c до</text>
+<text x="162.0" y="461.9" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">32c + 31; 2 масштаба e4m3 на блоки по 16</text>
+<text x="162.0" y="475.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">значений</text>
+<rect x="298" y="388" width="270" height="108" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="433.0" y="419.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Кольцо предвыборки в регистрах</text>
+<text x="433.0" y="433.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">PF = 2 куска в полёте на поток: ld.global.nc.v4</text>
+<text x="433.0" y="447.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">(16 Б) и ld u16 для масштабов, без выделения в</text>
+<text x="433.0" y="460.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">L1; веса запрашиваются раньше, чем</text>
+<text x="433.0" y="474.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">активация попадает в shared</text>
+<rect x="36" y="508" width="532" height="110" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="302.0" y="545.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">CTA: 128 потоков = 32 команды × 4 потока</text>
+<text x="302.0" y="560.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">команда t считает строки n0 + t и n0 + t + 32 (2 строки на команду); поток r команды берёт</text>
+<text x="302.0" y="575.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">куски c = 4·it + r. Активация bf16 → fp32 кладётся в shared один раз на CTA (K × 4 Б = 8 КиБ</text>
+<text x="302.0" y="589.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">при K = 2048).</text>
+<rect x="616" y="292" width="528" height="56" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="880.0" y="317.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">1. Слово w = 8 кодов e2m1</text>
+<text x="880.0" y="332.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">cvt e2m1 → f16 → f32: точная таблица, код 8 = −0.0; активация a из shared (fp32)</text>
+<rect x="616" y="358" width="528" height="56" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="880.0" y="383.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">2. Цепочка FFMA от +0</text>
+<text x="880.0" y="398.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">acc = 0; acc = fma(a[8w + j], код_j, acc), j = 0…7; произведения точны</text>
+<rect x="616" y="424" width="528" height="56" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="880.0" y="449.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">3. Частичная сумма</text>
+<text x="880.0" y="464.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">P[4r + q] = fma(acc, масштаб блока, P[4r + q]), q = 0…3: 16 частичных сумм P на строку</text>
+<rect x="616" y="494" width="528" height="124" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="880.0" y="533.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Что было узким местом и что стало</text>
+<text x="880.0" y="547.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">Triton-ядро в f1 (Nsight Compute, базовые частоты): сетка (8, 64, 1) × 128 потоков, 23.1 мкс,</text>
+<text x="880.0" y="561.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">DRAM 48.6 %, заполнение 54 %, 40 регистров.</text>
+<text x="880.0" y="574.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">Микробенч на графе, M = 1: gate_up 18.5 → 12.5–12.9 мкс, down 9.4 → 7.4–7.8 мкс (~720 и ~600</text>
+<text x="880.0" y="588.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">ГБ/с).</text>
+<rect x="36" y="678" width="150" height="44" rx="6" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="111.0" y="697.5" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">поток r0</text>
+<text x="111.0" y="711.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">P[0] … P[3]</text>
+<rect x="36" y="738" width="150" height="50" rx="6" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="111.0" y="759.7" font-size="11" font-weight="600" fill="#e4e9ef" text-anchor="middle">s0 = P[0] + P[1]</text>
+<text x="111.0" y="774.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">s1 = P[2] + P[3]</text>
+<rect x="196" y="678" width="150" height="44" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="271.0" y="697.5" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">поток r1</text>
+<text x="271.0" y="711.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">P[4] … P[7]</text>
+<rect x="196" y="738" width="150" height="50" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="271.0" y="759.7" font-size="11" font-weight="600" fill="#e4e9ef" text-anchor="middle">s2 = P[4] + P[5]</text>
+<text x="271.0" y="774.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">s3 = P[6] + P[7]</text>
+<rect x="356" y="678" width="150" height="44" rx="6" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="431.0" y="697.5" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">поток r2</text>
+<text x="431.0" y="711.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">P[8] … P[11]</text>
+<rect x="356" y="738" width="150" height="50" rx="6" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="431.0" y="759.7" font-size="11" font-weight="600" fill="#e4e9ef" text-anchor="middle">s4 = P[8] + P[9]</text>
+<text x="431.0" y="774.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">s5 = P[10] + P[11]</text>
+<rect x="516" y="678" width="150" height="44" rx="6" fill="#2c1f3a" stroke="#c08bea" stroke-width="1.6"/>
+<text x="591.0" y="697.5" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">поток r3</text>
+<text x="591.0" y="711.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">P[12] … P[15]</text>
+<rect x="516" y="738" width="150" height="50" rx="6" fill="#2c1f3a" stroke="#c08bea" stroke-width="1.6"/>
+<text x="591.0" y="759.7" font-size="11" font-weight="600" fill="#e4e9ef" text-anchor="middle">s6 = P[12] + P[13]</text>
+<text x="591.0" y="774.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">s7 = P[14] + P[15]</text>
+<rect x="36" y="818" width="150" height="50" rx="6" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="111.0" y="839.7" font-size="11" font-weight="600" fill="#e4e9ef" text-anchor="middle">t0 = s0 + s4</text>
+<text x="111.0" y="854.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">t1 = s1 + s5</text>
+<rect x="196" y="818" width="150" height="50" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="271.0" y="839.7" font-size="11" font-weight="600" fill="#e4e9ef" text-anchor="middle">t0 = s2 + s6</text>
+<text x="271.0" y="854.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">t1 = s3 + s7</text>
+<rect x="36" y="898" width="310" height="56" rx="6" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="191.0" y="922.7" font-size="11" font-weight="600" fill="#e4e9ef" text-anchor="middle">u0 = (s0+s4) + (s2+s6)</text>
+<text x="191.0" y="937.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">u1 = (s1+s5) + (s3+s7)</text>
+<rect x="376" y="898" width="304" height="56" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="528.0" y="916.2" font-size="11" font-weight="600" fill="#e4e9ef" text-anchor="middle">v = u0 + u1, поток r0</text>
+<text x="528.0" y="930.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">out = bf16(v × global[слот, n]) (в down ещё × вес</text>
+<text x="528.0" y="943.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">роутера) → c[токен, k, n]</text>
+<text x="716" y="683.5" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">shfl.xor 2 складывает потоки r0 с r2 и r1 с r3, shfl.xor 1 — r0 с r1; итог</text>
+<text x="716" y="699.025" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">собирает поток r0. Каждое сложение, умножение и fma прописаны в</text>
+<text x="716" y="714.55" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">PTX с явным округлением (add.rn, mul.rn, fma.rn): ptxas не может ни</text>
+<text x="716" y="730.075" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">слить их, ни переставить. Произведение e2m1 × bf16 точно в fp32,</text>
+<text x="716" y="745.6" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">поэтому цепочка FFMA равна FMUL + FADD бит в бит.</text>
+<rect x="716" y="780" width="428" height="84" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="930.0" y="805.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Проверка</text>
+<text x="930.0" y="820.1" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">4284 сравнения GEMM, 0 расхождений; самопроверка при загрузке (каждый</text>
+<text x="930.0" y="833.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">код e2m1 и масштаб e4m3, M = 1…8, top_k 8) и проверка на реальных весах</text>
+<text x="930.0" y="847.4" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">каждого слоя.</text>
+<rect x="716" y="874" width="428" height="80" rx="6" fill="#3a1f1b" stroke="#f08a7a" stroke-width="1.6"/>
+<text x="930.0" y="904.7" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">При несовпадении</text>
+<text x="930.0" y="919.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">слой остаётся на Triton-ядре, событие пишется в лог; точность</text>
+<text x="930.0" y="932.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">сохраняется, выигрыш пропадает.</text>
+<polyline points="160,156 190,156" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="420,156 444,156" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="594,156 618,156" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="868,156 892,156" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="1042,156 1066,156" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="38,330 157,330" fill="none" stroke="#7d8a99" stroke-width="1.4"/>
+<polyline points="162,330 281,330" fill="none" stroke="#7d8a99" stroke-width="1.4"/>
+<polyline points="286,330 405,330" fill="none" stroke="#7d8a99" stroke-width="1.4"/>
+<polyline points="410,330 529,330" fill="none" stroke="#7d8a99" stroke-width="1.4"/>
+<polyline points="880,348 880,358" fill="none" stroke="#7d8a99" stroke-width="1.3" marker-end="url(#m-flow)"/>
+<polyline points="880,414 880,424" fill="none" stroke="#7d8a99" stroke-width="1.3" marker-end="url(#m-flow)"/>
+<polyline points="111,722 111,738" fill="none" stroke="#7d8a99" stroke-width="1.3" marker-end="url(#m-flow)"/>
+<polyline points="271,722 271,738" fill="none" stroke="#7d8a99" stroke-width="1.3" marker-end="url(#m-flow)"/>
+<polyline points="431,722 431,738" fill="none" stroke="#7d8a99" stroke-width="1.3" marker-end="url(#m-flow)"/>
+<polyline points="591,722 591,738" fill="none" stroke="#7d8a99" stroke-width="1.3" marker-end="url(#m-flow)"/>
+<polyline points="111,788 111,818" fill="none" stroke="#b794f4" stroke-width="1.4" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<rect x="43.3" y="799.0" width="61.3" height="15" rx="3" fill="#0f141a" fill-opacity="0.9"/>
+<text x="74" y="810" font-size="11" fill="#b794f4" text-anchor="middle">shfl.xor 2</text>
+<polyline points="431,788 431,808 140,808 140,818" fill="none" stroke="#b794f4" stroke-width="1.3" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<polyline points="591,788 591,800 260,800 260,818" fill="none" stroke="#b794f4" stroke-width="1.3" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<polyline points="271,788 271,818" fill="none" stroke="#b794f4" stroke-width="1.3" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<polyline points="111,868 111,898" fill="none" stroke="#b794f4" stroke-width="1.4" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<rect x="43.3" y="879.0" width="61.3" height="15" rx="3" fill="#0f141a" fill-opacity="0.9"/>
+<text x="74" y="890" font-size="11" fill="#b794f4" text-anchor="middle">shfl.xor 1</text>
+<polyline points="271,868 271,878 200,878 200,898" fill="none" stroke="#b794f4" stroke-width="1.3" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<polyline points="346,926 376,926" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+</svg>

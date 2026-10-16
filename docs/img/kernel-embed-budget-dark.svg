@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 612" width="1180" height="612" font-family="IBM Plex Sans, Segoe UI, Arial, sans-serif" role="img" aria-label="Эмбеддинги в pinned RAM и бюджет VRAM: откуда берутся лишние слоты экспертов">
+<title>Эмбеддинги в pinned RAM и бюджет VRAM: откуда берутся лишние слоты экспертов</title>
+<rect width="1180" height="612" fill="#0f141a"/>
+<defs>
+<marker id="m-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8a99"/></marker>
+<marker id="m-xfer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+<marker id="m-sync" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b794f4"/></marker>
+<marker id="m-lever" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5fb3cf"/></marker>
+<marker id="m-old" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f08a7a"/></marker>
+<marker id="m-a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6aaef0"/></marker>
+<marker id="m-a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5cc489"/></marker>
+<marker id="m-a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+</defs>
+<text x="20" y="32" font-size="20" font-weight="600" fill="#e4e9ef">Эмбеддинги в pinned RAM и бюджет VRAM: откуда берутся лишние слоты экспертов</text>
+<text x="20" y="54" font-size="12.5" fill="#97a3b2">Таблица эмбеддингов 248 320 × 2048 bf16 весит 0.95 ГиБ. Пока она в VRAM, эти байты вычитаются из бюджета слотов.</text>
+<rect x="20" y="82" width="560" height="330" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="104" font-size="13.5" font-weight="600" fill="#97a3b2">Строка эмбеддинга читается прямо из RAM</text>
+<rect x="600" y="82" width="560" height="330" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="614" y="104" font-size="13.5" font-weight="600" fill="#97a3b2">Бюджет VRAM → число слотов экспертов</text>
+<rect x="20" y="426" width="1140" height="160" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="448" font-size="13.5" font-weight="600" fill="#97a3b2">Что это дало (лесенка)</text>
+<rect x="36" y="118" width="160" height="58" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="116.0" y="144.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">ids токенов</text>
+<text x="116.0" y="159.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">int в VRAM</text>
+<rect x="228" y="118" width="330" height="58" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="393.0" y="144.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Triton host_gather_rows</text>
+<text x="393.0" y="159.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">одна программа на токен, 4 варпа</text>
+<rect x="36" y="214" width="260" height="84" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="166.0" y="246.7" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Таблица эмбеддингов в pinned RAM</text>
+<text x="166.0" y="261.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">248 320 × 2048 bf16 = 0.95 ГиБ, отображена в</text>
+<text x="166.0" y="274.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">адресное пространство GPU</text>
+<rect x="328" y="214" width="230" height="84" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="443.0" y="246.7" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Строки в VRAM</text>
+<text x="443.0" y="261.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">4096 Б на токен, байт в байт: целыми</text>
+<text x="443.0" y="274.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">8-байтными словами, без float</text>
+<text x="272" y="200" font-size="10.5" font-weight="400" fill="#e0a84a" text-anchor="start">по PCIe: 4096 Б на строку</text>
+<text x="36" y="327.5" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">Идентификатор вне таблицы даёт нули. Если lm_head читает ту же таблицу (tied),</text>
+<text x="36" y="343.025" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">перенос в RAM отклоняется: такая таблица нужна на GPU на каждом шаге.</text>
+<rect x="616" y="118" width="528" height="84" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="880.0" y="150.6" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">пул = memory_ratio × свободная VRAM до модели − веса − фиксированный кэш</text>
+<text x="880.0" y="164.7" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">остаток (1 − memory_ratio) — запас под CUDA-графы и активации; эксперты берут пул первыми</text>
+<text x="880.0" y="178.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">(после резерва KV), KV получает остаток</text>
+<text x="1144" y="224" font-size="11.5" font-weight="600" fill="#e4e9ef" text-anchor="end">итого 4611 слотов</text>
+<rect x="616" y="232" width="351.3268271524615" height="40" rx="3" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="791.6634135762307" y="256.2" font-size="12" fill="#e4e9ef" text-anchor="middle">f1: 3164 слота</text>
+<rect x="967.3268271524614" y="232" width="62.73693342008241" height="40" rx="3" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<rect x="1030.063760572544" y="232" width="97.93623942745607" height="40" rx="3" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="1079.031880286272" y="256.2" font-size="12" fill="#e4e9ef" text-anchor="middle">+882</text>
+<text x="958" y="297.5" font-size="11.5" font-weight="600" fill="#5fb3cf" text-anchor="end">+565 слотов: таблица эмбеддингов ушла в RAM,</text>
+<text x="958" y="313.025" font-size="11.5" font-weight="600" fill="#5fb3cf" text-anchor="end">освободилось 0.95 ГиБ</text>
+<text x="1038.063760572544" y="291.5" font-size="11.5" font-weight="600" fill="#5cc489" text-anchor="start">memory_ratio</text>
+<text x="1038.063760572544" y="307.025" font-size="11.5" font-weight="600" fill="#5cc489" text-anchor="start">0.75 → 0.85</text>
+<text x="616" y="357.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">В main128 слотов 4603: самопроверки ядер при финализации весов оставляют ≈ 14 МиБ в кэше</text>
+<text x="616" y="371.85" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">аллокатора, и бюджет засчитывает их как веса. Плотные веса FP8 и attention ≈ 1.57 ГиБ,</text>
+<text x="616" y="386.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">KV-кэш на 128K ≈ 2.5 ГиБ.</text>
+<rect x="36" y="462" width="270" height="108" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="171.0" y="506.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Промахи кэша на токен, 16K</text>
+<text x="171.0" y="520.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">27.7 → 19.9 → 12.3 при слотах 3164 → 3729 →</text>
+<text x="171.0" y="535.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">4611</text>
+<rect x="318" y="462" width="270" height="108" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="453.0" y="506.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Эмбеддинги в RAM</text>
+<text x="453.0" y="520.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">декод 16K +5.2 ток/с (148.6 → 153.8); TTFT в</text>
+<text x="453.0" y="535.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">пределах шума</text>
+<rect x="600" y="462" width="270" height="108" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="735.0" y="506.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">memory_ratio 0.85</text>
+<text x="735.0" y="520.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">декод 16K +5.7 ток/с (153.8 → 159.5); TTFT 64</text>
+<text x="735.0" y="535.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">токена 0.314 → 0.259 с</text>
+<rect x="882" y="462" width="262" height="108" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="1013.0" y="506.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Windows не подкачивает</text>
+<text x="1013.0" y="520.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">за 2-часовой soak shared-память Windows</text>
+<text x="1013.0" y="535.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">выросла на 30 МиБ</text>
+<polyline points="196,147 228,147" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="262,214 262,176" fill="none" stroke="#e0a84a" stroke-width="1.7" stroke-dasharray="7 4" marker-end="url(#m-xfer)"/>
+<polyline points="443,176 443,214" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="969.3268271524614,272 969.3268271524614,300" fill="none" stroke="#7d8a99" stroke-width="1.2"/>
+<polyline points="1032.063760572544,272 1032.063760572544,292" fill="none" stroke="#7d8a99" stroke-width="1.2"/>
+</svg>

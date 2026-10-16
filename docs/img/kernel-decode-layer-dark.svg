@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 810" width="1180" height="810" font-family="IBM Plex Sans, Segoe UI, Arial, sans-serif" role="img" aria-label="Шаг decode одного MoE-слоя по потокам: было (f1) и стало (main128)">
+<title>Шаг decode одного MoE-слоя по потокам: было (f1) и стало (main128)</title>
+<rect width="1180" height="810" fill="#0f141a"/>
+<defs>
+<marker id="m-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8a99"/></marker>
+<marker id="m-xfer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+<marker id="m-sync" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b794f4"/></marker>
+<marker id="m-lever" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5fb3cf"/></marker>
+<marker id="m-old" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f08a7a"/></marker>
+<marker id="m-a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6aaef0"/></marker>
+<marker id="m-a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5cc489"/></marker>
+<marker id="m-a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+</defs>
+<text x="20" y="32" font-size="20" font-weight="600" fill="#e4e9ef">Шаг decode одного MoE-слоя по потокам: было (f1) и стало (main128)</text>
+<text x="20" y="54" font-size="12.5" fill="#97a3b2">Один токен, один из 40 MoE-слоёв. Ширина блоков условная: схема показывает порядок и перекрытие, а не длительности. Весь шаг decode записан в один CUDA-граф, вилка и</text>
+<text x="20" y="71" font-size="12.5" fill="#97a3b2">соединение потоков становятся рёбрами графа.</text>
+<rect x="20" y="98" width="1140" height="188" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="120" font-size="13.5" font-weight="600" fill="#97a3b2">Было (f1): всё на одном потоке, подряд</text>
+<rect x="20" y="300" width="1140" height="352" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="322" font-size="13.5" font-weight="600" fill="#97a3b2">Стало (main128): подкачка идёт на побочном потоке, пока считается shared-эксперт</text>
+<rect x="20" y="664" width="1140" height="132" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="686" font-size="13.5" font-weight="600" fill="#97a3b2">Что внутри routed: какие ядра наши, какие без изменений</text>
+<text x="34" y="168" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">основной</text>
+<text x="34" y="184" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">поток</text>
+<rect x="150" y="128" width="100" height="92" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="200.0" y="164.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Роутер</text>
+<text x="200.0" y="178.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">gate bf16 →</text>
+<text x="200.0" y="193.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">softmax, top-8</text>
+<rect x="264" y="128" width="160" height="92" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="344.0" y="164.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Shared-эксперт</text>
+<text x="344.0" y="178.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">gate_up → SiLU·mul →</text>
+<text x="344.0" y="193.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">down; линейка σ-гейта</text>
+<rect x="438" y="128" width="120" height="92" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="498.0" y="156.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">ensure_experts</text>
+<text x="498.0" y="171.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">LRU: попадание</text>
+<text x="498.0" y="186.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">или слот</text>
+<text x="498.0" y="200.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">вытеснения</text>
+<rect x="572" y="128" width="180" height="92" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="662.0" y="156.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Подкачка промахов</text>
+<text x="662.0" y="171.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">ядро копирования: pinned</text>
+<text x="662.0" y="186.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">RAM → слоты VRAM, ждёт</text>
+<text x="662.0" y="200.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">PCIe</text>
+<rect x="766" y="128" width="220" height="92" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="876.0" y="164.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Routed-эксперты</text>
+<text x="876.0" y="178.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">Triton: gate_up → SiLU·mul → down →</text>
+<text x="876.0" y="193.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">Σ по top-8</text>
+<rect x="1000" y="128" width="150" height="92" rx="6" fill="#3a1f1b" stroke="#f08a7a" stroke-width="1.6"/>
+<text x="1075.0" y="156.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Эпилог</text>
+<text x="1075.0" y="171.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">3 мелких bf16-ядра:</text>
+<text x="1075.0" y="186.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">σ(gate), shared·σ,</text>
+<text x="1075.0" y="200.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">routed + prod</text>
+<text x="1150" y="258" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="end">время →</text>
+<text x="508" y="258" font-size="11.5" font-weight="400" fill="#f08a7a" text-anchor="middle">shared, затем подкачка: время слоя = сумма</text>
+<rect x="142" y="326" width="1008" height="108" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<rect x="142" y="444" width="1008" height="84" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<rect x="142" y="538" width="1008" height="44" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="34" y="376" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">основной</text>
+<text x="34" y="392" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">поток</text>
+<text x="34" y="484" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">побочный</text>
+<text x="34" y="500" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">поток</text>
+<text x="34" y="564" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">канал PCIe</text>
+<rect x="152" y="336" width="100" height="88" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="202.0" y="370.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Роутер</text>
+<text x="202.0" y="384.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">gate bf16 →</text>
+<text x="202.0" y="399.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">softmax, top-8</text>
+<rect x="264" y="336" width="120" height="88" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="324.0" y="362.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">ensure_experts</text>
+<text x="324.0" y="377.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">LRU: слоты для</text>
+<text x="324.0" y="392.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">промахов, topk_ids</text>
+<text x="324.0" y="406.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">→ слоты</text>
+<rect x="414" y="336" width="290" height="88" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="559.0" y="370.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Shared-эксперт</text>
+<text x="559.0" y="384.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">gate_up → SiLU·mul → down и линейка σ-гейта:</text>
+<text x="559.0" y="399.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">считается, пока идёт подкачка</text>
+<rect x="744" y="336" width="244" height="88" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="866.0" y="370.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Routed: наше CUDA-ядро MoE</text>
+<text x="866.0" y="384.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">gate_up → SiLU·mul → down (× вес</text>
+<text x="866.0" y="399.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">роутера) → Σ по top-8</text>
+<rect x="998" y="336" width="142" height="88" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="1069.0" y="370.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Слитый эпилог</text>
+<text x="1069.0" y="384.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">σ(gate)·shared +</text>
+<text x="1069.0" y="399.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">routed одним ядром</text>
+<rect x="414" y="452" width="290" height="68" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="559.0" y="476.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Подкачка промахов (TMA-ядро)</text>
+<text x="559.0" y="490.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">cp.async.bulk: 8 CTA × 3 стадии × 16 КиБ, pinned</text>
+<text x="559.0" y="505.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">RAM → слоты</text>
+<rect x="414" y="546" width="290" height="28" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="559.0" y="564.0" font-size="11.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">PCIe ≈ 42–49 ГБ/с: RAM → слоты VRAM</text>
+<text x="150" y="603.5" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">До соединения потоков слой ждёт max(shared, подкачка), а не их сумму. Если промахов нет, ядро подкачки выходит сразу: число промахов читается на устройстве,</text>
+<text x="150" y="619.025" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">форма запуска фиксирована.</text>
+<text x="1140" y="322" font-size="11" font-weight="400" fill="#b794f4" text-anchor="end">пунктир с «ready» и «done» — события между потоками</text>
+<rect x="36" y="696" width="250" height="56" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="161.0" y="714.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">gate_up GEMV (наше ядро)</text>
+<text x="161.0" y="728.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">N = 1024, K = 2048, NVFP4 → bf16</text>
+<text x="161.0" y="743.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">[8 × 1024]</text>
+<rect x="312" y="696" width="250" height="56" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="437.0" y="721.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">SiLU·mul</text>
+<text x="437.0" y="736.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">ядро Triton, без изменений</text>
+<rect x="588" y="696" width="250" height="56" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="713.0" y="714.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">down GEMV (наше ядро)</text>
+<text x="713.0" y="728.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">N = 2048, K = 512, × вес роутера →</text>
+<text x="713.0" y="743.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">[8 × 2048]</text>
+<rect x="864" y="696" width="250" height="56" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="989.0" y="721.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Σ по top-8</text>
+<text x="989.0" y="736.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">ядро Triton, без изменений</text>
+<text x="36" y="780" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="start">Nsight Systems, 16K (под профайлером): подкачка 1.08 → 0.64 мс из 7.07 → 5.78 мс на шаг decode; эпилог: −2 запуска на слой, −80 на шаг.</text>
+<polyline points="250,174 264,174" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="424,174 438,174" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="558,174 572,174" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="752,174 766,174" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="986,174 1000,174" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="150,240 1150,240" fill="none" stroke="#7d8a99" stroke-width="1.2" marker-end="url(#m-flow)"/>
+<polyline points="264,232 752,232" fill="none" stroke="#f08a7a" stroke-width="2"/>
+<polyline points="252,380 264,380" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="384,380 414,380" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="704,380 744,380" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="988,380 998,380" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="324,424 324,486 414,486" fill="none" stroke="#b794f4" stroke-width="1.7" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<rect x="346.4" y="469.0" width="39.1" height="15" rx="3" fill="#0f141a" fill-opacity="0.9"/>
+<text x="366" y="480" font-size="11" fill="#b794f4" text-anchor="middle">ready</text>
+<polyline points="704,486 766,486 766,424" fill="none" stroke="#b794f4" stroke-width="1.7" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<rect x="718.4" y="469.0" width="33.2" height="15" rx="3" fill="#0f141a" fill-opacity="0.9"/>
+<text x="735" y="480" font-size="11" fill="#b794f4" text-anchor="middle">done</text>
+<polyline points="559,520 559,546" fill="none" stroke="#e0a84a" stroke-width="1.7" stroke-dasharray="7 4" marker-end="url(#m-xfer)"/>
+<polyline points="286,724 312,724" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="562,724 588,724" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="838,724 864,724" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+</svg>

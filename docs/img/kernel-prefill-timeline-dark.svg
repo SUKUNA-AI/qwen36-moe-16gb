@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 800" width="1180" height="800" font-family="IBM Plex Sans, Segoe UI, Arial, sans-serif" role="img" aria-label="Копия слоя L+1 вместе с GEMM слоя L: что изменили приоритет потока и инвалидация раз за эпоху">
+<title>Копия слоя L+1 вместе с GEMM слоя L: что изменили приоритет потока и инвалидация раз за эпоху</title>
+<rect width="1180" height="800" fill="#0f141a"/>
+<defs>
+<marker id="m-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8a99"/></marker>
+<marker id="m-xfer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+<marker id="m-sync" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b794f4"/></marker>
+<marker id="m-lever" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5fb3cf"/></marker>
+<marker id="m-old" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f08a7a"/></marker>
+<marker id="m-a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6aaef0"/></marker>
+<marker id="m-a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5cc489"/></marker>
+<marker id="m-a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+</defs>
+<text x="20" y="32" font-size="20" font-weight="600" fill="#e4e9ef">Копия слоя L+1 вместе с GEMM слоя L: что изменили приоритет потока и инвалидация раз за эпоху</text>
+<text x="20" y="54" font-size="12.5" fill="#97a3b2">Двойной буфер: слой L+1 едет в буфер, который освободил слой L−1, пока считается слой L. Масштаб условный, показана механика. На коротком запросе копия слоя дольше</text>
+<text x="20" y="71" font-size="12.5" fill="#97a3b2">счёта, поэтому задержка старта копии видна в TTFT.</text>
+<rect x="20" y="96" width="1140" height="244" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="118" font-size="13.5" font-weight="600" fill="#97a3b2">Было: перед каждой копией на потоке копирования стоят 6 мелких ядер инвалидации</text>
+<rect x="20" y="354" width="1140" height="244" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="376" font-size="13.5" font-weight="600" fill="#97a3b2">Стало: приоритет потока копирования, инвалидация буферов раз за эпоху на потоке вычислений</text>
+<rect x="20" y="612" width="1140" height="176" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="634" font-size="13.5" font-weight="600" fill="#97a3b2">Что именно изменено и почему это работает</text>
+<text x="34" y="174" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">поток</text>
+<text x="34" y="190" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">вычислений</text>
+<text x="34" y="272" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">поток</text>
+<text x="34" y="288" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">копирования</text>
+<rect x="140" y="142" width="1010" height="66" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<rect x="140" y="240" width="1010" height="66" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<rect x="150" y="148" width="90" height="54" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="195.0" y="179.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">GEMM L−1</text>
+<rect x="240" y="148" width="90" height="54" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="285.0" y="179.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">GEMM L</text>
+<rect x="330" y="148" width="190" height="54" rx="5" fill="none" stroke="#f08a7a" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="425.0" y="171.7" font-size="11" fill="#f08a7a" text-anchor="middle">ждёт ready: копия L+1 ещё не</text>
+<text x="425.0" y="186.0" font-size="11" fill="#f08a7a" text-anchor="middle">закончена</text>
+<rect x="520" y="148" width="90" height="54" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="565.0" y="179.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">GEMM L+1</text>
+<rect x="610" y="148" width="190" height="54" rx="5" fill="none" stroke="#f08a7a" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="705.0" y="178.8" font-size="11" fill="#f08a7a" text-anchor="middle">ждёт ready</text>
+<rect x="800" y="148" width="90" height="54" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="845.0" y="179.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">GEMM L+2</text>
+<rect x="240" y="246" width="90" height="54" rx="5" fill="none" stroke="#f08a7a" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="285.0" y="269.9" font-size="10.5" fill="#f08a7a" text-anchor="middle">6 ядер ждут</text>
+<text x="285.0" y="283.5" font-size="10.5" fill="#f08a7a" text-anchor="middle">SM</text>
+<rect x="330" y="246" width="190" height="54" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="425.0" y="270.6" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">DMA слоя L+1</text>
+<text x="425.0" y="284.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">≈ 456 МБ</text>
+<rect x="520" y="246" width="90" height="54" rx="5" fill="none" stroke="#f08a7a" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="565.0" y="269.9" font-size="10.5" fill="#f08a7a" text-anchor="middle">6 ядер ждут</text>
+<text x="565.0" y="283.5" font-size="10.5" fill="#f08a7a" text-anchor="middle">SM</text>
+<rect x="610" y="246" width="190" height="54" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="705.0" y="270.6" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">DMA слоя L+2</text>
+<text x="705.0" y="284.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">≈ 456 МБ</text>
+<rect x="800" y="246" width="90" height="54" rx="5" fill="none" stroke="#f08a7a" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="845.0" y="269.9" font-size="10.5" fill="#f08a7a" text-anchor="middle">6 ядер ждут</text>
+<text x="845.0" y="283.5" font-size="10.5" fill="#f08a7a" text-anchor="middle">SM</text>
+<rect x="890" y="246" width="190" height="54" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="985.0" y="277.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">DMA слоя L+3</text>
+<text x="1146" y="328" font-size="12" font-weight="600" fill="#f08a7a" text-anchor="end">период слоя = счёт + копия</text>
+<text x="34" y="432" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">поток</text>
+<text x="34" y="448" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">вычислений</text>
+<text x="34" y="530" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">поток</text>
+<text x="34" y="546" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="start">копирования</text>
+<rect x="140" y="400" width="1010" height="66" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<rect x="140" y="498" width="1010" height="66" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="150" y="394" font-size="11" font-weight="400" fill="#5fb3cf" text-anchor="start">один раз на эпоху, до первой копии: инвалидация обоих буферов на потоке вычислений</text>
+<rect x="150" y="406" width="90" height="54" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="195.0" y="437.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">GEMM L−1</text>
+<rect x="240" y="406" width="90" height="54" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="285.0" y="437.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">GEMM L</text>
+<rect x="330" y="406" width="100" height="54" rx="5" fill="none" stroke="#f08a7a" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="380.0" y="436.9" font-size="11" fill="#f08a7a" text-anchor="middle">ждёт ready</text>
+<rect x="430" y="406" width="90" height="54" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="475.0" y="437.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">GEMM L+1</text>
+<rect x="520" y="406" width="100" height="54" rx="5" fill="none" stroke="#f08a7a" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="570.0" y="436.9" font-size="11" fill="#f08a7a" text-anchor="middle">ждёт ready</text>
+<rect x="620" y="406" width="90" height="54" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="665.0" y="437.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">GEMM L+2</text>
+<rect x="240" y="504" width="190" height="54" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="335.0" y="528.5" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">DMA слоя L+1</text>
+<text x="335.0" y="542.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">≈ 456 МБ</text>
+<rect x="430" y="504" width="190" height="54" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="525.0" y="535.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">DMA слоя L+2</text>
+<rect x="620" y="504" width="190" height="54" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="715.0" y="535.2" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">DMA слоя L+3</text>
+<text x="1146" y="586" font-size="12" font-weight="600" fill="#5cc489" text-anchor="end">период слоя = max(счёт, копия)</text>
+<text x="840" y="528" font-size="11.5" font-weight="400" fill="#5cc489" text-anchor="start">копии идут подряд,</text>
+<text x="840" y="544" font-size="11.5" font-weight="400" fill="#5cc489" text-anchor="start">PCIe не простаивает</text>
+<rect x="36" y="644" width="270" height="130" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="171.0" y="686.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Двойной буфер</text>
+<text x="171.0" y="700.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">буфер 0 — слои 0, 2, 4, …; буфер 1 — слои 1, 3, 5,</text>
+<text x="171.0" y="714.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">… Копия слоя L+1 пишет в буфер, который</text>
+<text x="171.0" y="727.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">прочитал слой L−1: ей ждать нужно только</text>
+<text x="171.0" y="741.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">release после GEMM слоя L−1.</text>
+<rect x="318" y="644" width="270" height="130" rx="6" fill="#3a1f1b" stroke="#f08a7a" stroke-width="1.6"/>
+<text x="453.0" y="686.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Причина задержки</text>
+<text x="453.0" y="700.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">перед DMA на потоке копирования шли 6 мелких</text>
+<text x="453.0" y="714.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">ядер инвалидации карты слотов. Им нужны SM,</text>
+<text x="453.0" y="727.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">а GEMM слоя L занимает GPU; DMA стоит за</text>
+<text x="453.0" y="741.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">ними в том же потоке.</text>
+<rect x="600" y="644" width="270" height="130" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="735.0" y="686.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Что сделали</text>
+<text x="735.0" y="700.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">поток копирования получил высший приоритет</text>
+<text x="735.0" y="714.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">(−1); оба буфера инвалидируются один раз на</text>
+<text x="735.0" y="727.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">эпоху на потоке вычислений, в потоке</text>
+<text x="735.0" y="741.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">копирования остаётся чистый DMA.</text>
+<rect x="882" y="644" width="262" height="130" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="1013.0" y="692.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Эффект в лесенке</text>
+<text x="1013.0" y="707.1" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">TTFT 64 токена 0.270 → 0.252 с, 2K 0.419 →</text>
+<text x="1013.0" y="720.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">0.383 с. На 16K и 120K копия и так спрятана за</text>
+<text x="1013.0" y="734.4" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">счётом слоя, TTFT не меняется.</text>
+<polyline points="240,202 240,246" fill="none" stroke="#b794f4" stroke-width="1.3" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<rect x="242.6" y="217.0" width="46.9" height="15" rx="3" fill="#0f141a" fill-opacity="0.9"/>
+<text x="266" y="228" font-size="11" fill="#b794f4" text-anchor="middle">release</text>
+<polyline points="520,246 520,202" fill="none" stroke="#b794f4" stroke-width="1.3" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<rect x="526.4" y="217.0" width="39.1" height="15" rx="3" fill="#0f141a" fill-opacity="0.9"/>
+<text x="546" y="228" font-size="11" fill="#b794f4" text-anchor="middle">ready</text>
+<polyline points="240,460 240,504" fill="none" stroke="#b794f4" stroke-width="1.3" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<rect x="242.6" y="475.0" width="46.9" height="15" rx="3" fill="#0f141a" fill-opacity="0.9"/>
+<text x="266" y="486" font-size="11" fill="#b794f4" text-anchor="middle">release</text>
+<polyline points="430,504 430,460" fill="none" stroke="#b794f4" stroke-width="1.3" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<rect x="436.4" y="475.0" width="39.1" height="15" rx="3" fill="#0f141a" fill-opacity="0.9"/>
+<text x="456" y="486" font-size="11" fill="#b794f4" text-anchor="middle">ready</text>
+</svg>

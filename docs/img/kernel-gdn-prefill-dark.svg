@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 972" width="1180" height="972" font-family="IBM Plex Sans, Segoe UI, Arial, sans-serif" role="img" aria-label="GDN в prefill: четыре ядра Triton → одно CUDA-ядро по чанкам">
+<title>GDN в prefill: четыре ядра Triton → одно CUDA-ядро по чанкам</title>
+<rect width="1180" height="972" fill="#0f141a"/>
+<defs>
+<marker id="m-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8a99"/></marker>
+<marker id="m-xfer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+<marker id="m-sync" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b794f4"/></marker>
+<marker id="m-lever" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5fb3cf"/></marker>
+<marker id="m-old" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f08a7a"/></marker>
+<marker id="m-a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6aaef0"/></marker>
+<marker id="m-a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5cc489"/></marker>
+<marker id="m-a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+</defs>
+<text x="20" y="32" font-size="20" font-weight="600" fill="#e4e9ef">GDN в prefill: четыре ядра Triton → одно CUDA-ядро по чанкам</text>
+<text x="20" y="54" font-size="12.5" fill="#97a3b2">Слой Gated DeltaNet: 32 головы значений, 16 голов ключей, размер головы 128, чанк 64 токена. Ядра conv + L2, gate + cumsum и gated norm + FP8 остались как в f1, kkt_solve</text>
+<text x="20" y="71" font-size="12.5" fill="#97a3b2">остался на Triton.</text>
+<rect x="20" y="90" width="1140" height="214" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="112" font-size="13.5" font-weight="600" fill="#97a3b2">Было: цепочка FLA на Triton, промежуточные тензоры проходят через память</text>
+<rect x="20" y="318" width="1140" height="168" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="340" font-size="13.5" font-weight="600" fill="#97a3b2">Стало (вариант wu): kkt_solve и одно слитое CUDA-ядро</text>
+<rect x="20" y="500" width="1140" height="458" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="522" font-size="13.5" font-weight="600" fill="#97a3b2">Внутри одного CTA: он идёт по чанкам своей последовательности подряд, по 64 токена</text>
+<rect x="36" y="126" width="190" height="56" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="131.0" y="158.6" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">kkt_solve</text>
+<rect x="36" y="206" width="190" height="82" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="131.0" y="250.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">пишет A_wy [T, 32, 64] bf16</text>
+<rect x="262" y="126" width="190" height="56" rx="6" fill="#3a1f1b" stroke="#f08a7a" stroke-width="1.6"/>
+<text x="357.0" y="158.6" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">recompute_w_u</text>
+<rect x="262" y="206" width="190" height="82" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="357.0" y="243.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">читает A_wy, k, v; пишет w и u</text>
+<text x="357.0" y="258.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">[T, 32, 128] bf16</text>
+<rect x="488" y="126" width="190" height="56" rx="6" fill="#3a1f1b" stroke="#f08a7a" stroke-width="1.6"/>
+<text x="583.0" y="158.6" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">chunk_h</text>
+<rect x="488" y="206" width="190" height="82" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="583.0" y="243.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">читает k, w, u; пишет h (bf16</text>
+<text x="583.0" y="258.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">на каждый чанк) и v_new</text>
+<rect x="714" y="126" width="190" height="56" rx="6" fill="#3a1f1b" stroke="#f08a7a" stroke-width="1.6"/>
+<text x="809.0" y="158.6" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">chunk_o</text>
+<rect x="714" y="206" width="190" height="82" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="809.0" y="243.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">читает q, k, v_new, h; пишет o</text>
+<text x="809.0" y="258.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">[T, 32, 128]</text>
+<rect x="940" y="126" width="204" height="162" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="1042.0" y="189.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Итог</text>
+<text x="1042.0" y="204.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">4 запуска; w, u, h и v_new</text>
+<text x="1042.0" y="219.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">пишутся в память и читаются</text>
+<text x="1042.0" y="233.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">обратно</text>
+<rect x="36" y="354" width="190" height="56" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="131.0" y="379.4" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">kkt_solve</text>
+<text x="131.0" y="394.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">Triton, без изменений</text>
+<rect x="262" y="354" width="628" height="56" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="576.0" y="379.4" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">chunk_wu_ho_fused: recompute_w_u + chunk_h + chunk_o</text>
+<text x="576.0" y="394.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">сетка (2 блока V по 64, 32 головы, N последовательностей), 128 потоков (4 варпа), shared 99 328 Б</text>
+<rect x="262" y="420" width="628" height="54" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="576.0" y="443.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">читает q, k, v, A_wy, β, g; пишет только o и итоговое состояние H в пул состояний; w, u, h и v_new в</text>
+<text x="576.0" y="458.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">глобальную память не попадают</text>
+<rect x="940" y="354" width="204" height="120" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="1042.0" y="396.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Итог</text>
+<text x="1042.0" y="411.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">2 запуска вместо 4; результат</text>
+<text x="1042.0" y="426.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">побитово равен цепочке Triton</text>
+<text x="1042.0" y="440.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">(teacher 125/125 на ступени)</text>
+<rect x="36" y="536" width="340" height="112" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="206.0" y="574.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Регистры: состояние H (fp32)</text>
+<text x="206.0" y="589.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">варп w держит строки V [16w, 16w + 16) × K = 128: 64</text>
+<text x="206.0" y="604.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">регистра на поток, H^T лежит как аккумуляторы MMA;</text>
+<text x="206.0" y="618.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">читается из пула один раз и пишется в конце</text>
+<rect x="36" y="660" width="340" height="142" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="206.0" y="708.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Shared, ≈ 97 КиБ</text>
+<text x="206.0" y="722.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">w [64 × 128] (он же буфер для o); q [64 × 128]; k ×2; A_wy ×2;</text>
+<text x="206.0" y="736.0" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">v [64 × 64]; Ag [64 × 64]; g и β ×2. k, A_wy, g, β — двойная</text>
+<text x="206.0" y="749.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">буферизация cp.async; q и v — одинарная, перезаливаются</text>
+<text x="206.0" y="763.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">сразу после использования.</text>
+<rect x="36" y="814" width="340" height="128" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="206.0" y="861.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Условия применения</text>
+<text x="206.0" y="876.1" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">головы 16/32/128, T &gt; 32, FP32-пул состояний; иначе</text>
+<text x="206.0" y="889.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">остаётся Triton. Пустая последовательность в батче</text>
+<text x="206.0" y="903.4" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">отправляет батч на старый путь.</text>
+<rect x="400" y="536" width="744" height="58" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="408" y="562.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="start">Фаза 0</text>
+<text x="408" y="577.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">w = A_wy · (k · β · e^g): цепочка MMA по 64 токенам, округление в bf16, w остаётся в shared</text>
+<rect x="400" y="602" width="744" height="58" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="408" y="628.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="start">Фаза 1</text>
+<text x="408" y="643.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">Ag = маска и затухание от q · kᵀ; v_dot = Hb · wᵀ и qh = Hb · qᵀ по K = 128, где Hb = bf16(H)</text>
+<rect x="400" y="668" width="744" height="58" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="408" y="694.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="start">Фаза 2</text>
+<text x="408" y="709.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">u = A_wy · (v · β); vn = u − v_dot; v_new = bf16(vn); vs = bf16(vn · e^(g_last − g))</text>
+<rect x="400" y="734" width="744" height="58" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="408" y="760.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="start">Фаза 3</text>
+<text x="408" y="775.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">o = bf16(fma(scale, qh · e^g, scale · (Ag · v_new))) → shared → запись; D = kᵀ · vs; H = fma(H, e^g_last, D)</text>
+<rect x="400" y="800" width="744" height="48" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="408" y="821.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="start">Следующий чанк</text>
+<text x="408" y="836.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">q, v и k / A_wy / g / β уже загружены cp.async; H остался в регистрах</text>
+<rect x="400" y="862" width="744" height="90" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="408" y="897.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="start">Что это дало</text>
+<text x="408" y="911.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">GDN в prefill 16K: 67 → 51 мс (Nsight Systems); TTFT 16K 1.343 → 1.316 с (−2 %). Порядок операций в чанке не меняется: каждый</text>
+<text x="408" y="926.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="start">выход видит те же наборы K и ту же цепочку, что в Triton.</text>
+<polyline points="131,182 131,206" fill="none" stroke="#e0a84a" stroke-width="1.7" stroke-dasharray="7 4" marker-end="url(#m-xfer)"/>
+<polyline points="357,182 357,206" fill="none" stroke="#e0a84a" stroke-width="1.7" stroke-dasharray="7 4" marker-end="url(#m-xfer)"/>
+<polyline points="583,182 583,206" fill="none" stroke="#e0a84a" stroke-width="1.7" stroke-dasharray="7 4" marker-end="url(#m-xfer)"/>
+<polyline points="809,182 809,206" fill="none" stroke="#e0a84a" stroke-width="1.7" stroke-dasharray="7 4" marker-end="url(#m-xfer)"/>
+<polyline points="226,154 262,154" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="452,154 488,154" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="678,154 714,154" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="904,154 940,154" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="226,382 262,382" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="890,382 940,382" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="772,594 772,602" fill="none" stroke="#7d8a99" stroke-width="1.3" marker-end="url(#m-flow)"/>
+<polyline points="772,660 772,668" fill="none" stroke="#7d8a99" stroke-width="1.3" marker-end="url(#m-flow)"/>
+<polyline points="772,726 772,734" fill="none" stroke="#7d8a99" stroke-width="1.3" marker-end="url(#m-flow)"/>
+<polyline points="772,792 772,800" fill="none" stroke="#7d8a99" stroke-width="1.3" marker-end="url(#m-flow)"/>
+</svg>

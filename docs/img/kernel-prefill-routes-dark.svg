@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 920" width="1180" height="920" font-family="IBM Plex Sans, Segoe UI, Arial, sans-serif" role="img" aria-label="Prefill: как эксперты слоя попадают в двойной буфер (три маршрута)">
+<title>Prefill: как эксперты слоя попадают в двойной буфер (три маршрута)</title>
+<rect width="1180" height="920" fill="#0f141a"/>
+<defs>
+<marker id="m-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8a99"/></marker>
+<marker id="m-xfer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+<marker id="m-sync" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b794f4"/></marker>
+<marker id="m-lever" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5fb3cf"/></marker>
+<marker id="m-old" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f08a7a"/></marker>
+<marker id="m-a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6aaef0"/></marker>
+<marker id="m-a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5cc489"/></marker>
+<marker id="m-a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0a84a"/></marker>
+</defs>
+<text x="20" y="32" font-size="20" font-weight="600" fill="#e4e9ef">Prefill: как эксперты слоя попадают в двойной буфер (три маршрута)</text>
+<text x="20" y="54" font-size="12.5" fill="#97a3b2">Слой экспертов NVFP4 весит ≈ 456 МБ (256 экспертов). Двойной буфер занимает первые 2 × 256 слотов кэша экспертов; GEMM слоя L читает буфер L mod 2. Маршрут выбирает</text>
+<text x="20" y="71" font-size="12.5" fill="#97a3b2">число некэшированных токенов запроса; цвет стрелок совпадает с цветом карточек ниже.</text>
+<rect x="20" y="96" width="300" height="316" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="118" font-size="13.5" font-weight="600" fill="#97a3b2">RAM хоста (pinned)</text>
+<rect x="436" y="96" width="724" height="316" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="450" y="118" font-size="13.5" font-weight="600" fill="#97a3b2">VRAM: кэш слотов экспертов (4603 слота)</text>
+<rect x="20" y="428" width="1140" height="148" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="450" font-size="13.5" font-weight="600" fill="#6aaef0">1. Короткий кусок, меньше 160 токенов: только выбранные роутером эксперты (раньше: слой целиком)</text>
+<rect x="20" y="586" width="1140" height="148" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="608" font-size="13.5" font-weight="600" fill="#5cc489">2. Чанк 160…2048 токенов: попадания копируются внутри GPU, промахи по PCIe (раньше: весь слой по PCIe)</text>
+<rect x="20" y="744" width="1140" height="148" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="766" font-size="13.5" font-weight="600" fill="#e0a84a">3. Длинный запрос, от 2049 токенов: послойный prefill (в исходном FreeToken слой копировался заново для каждого чанка)</text>
+<rect x="36" y="134" width="268" height="110" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="170.0" y="179.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Банки экспертов NVFP4</text>
+<text x="170.0" y="193.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">40 слоёв × 256 экспертов; слой ≈ 456 МБ,</text>
+<text x="170.0" y="208.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">всего 18.25 ГБ</text>
+<rect x="36" y="262" width="268" height="120" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="170.0" y="312.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Снимок карты слотов</text>
+<text x="170.0" y="326.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">[40, 256] int32 в pinned-памяти: один на чанк,</text>
+<text x="170.0" y="341.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">нужен маршруту 2</text>
+<rect x="338" y="134" width="78" height="248" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="377.0" y="240.6" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">PCIe 5.0</text>
+<text x="377.0" y="256.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">x16</text>
+<text x="377.0" y="271.1" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">≈ 41–49</text>
+<text x="377.0" y="284.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">ГБ/с</text>
+<rect x="452" y="134" width="160" height="80" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="532.0" y="164.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Буфер 0</text>
+<text x="532.0" y="178.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">слоты 0…255: слои 0, 2, 4,</text>
+<text x="532.0" y="193.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">…</text>
+<rect x="452" y="226" width="160" height="80" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="532.0" y="256.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Буфер 1</text>
+<text x="532.0" y="270.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">слоты 256…511: слои 1, 3,</text>
+<text x="532.0" y="285.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">5, …</text>
+<rect x="648" y="134" width="250" height="172" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="773.0" y="210.1" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">«Горячие» эксперты decode</text>
+<text x="773.0" y="224.8" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">слоты 512…4602: то, что осталось в кэше</text>
+<text x="773.0" y="239.1" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">после decode; источник копий внутри GPU</text>
+<rect x="914" y="134" width="230" height="172" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="1029.0" y="202.9" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">Хвост слотов (layer-major)</text>
+<text x="1029.0" y="217.7" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">hidden + residual окна чанков: 8 КиБ на</text>
+<text x="1029.0" y="232.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">токен; слоты на это время</text>
+<text x="1029.0" y="246.3" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">размечаются как пустые</text>
+<rect x="452" y="322" width="692" height="76" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="798.0" y="357.2" font-size="12.5" font-weight="600" fill="#e4e9ef" text-anchor="middle">GEMM экспертов слоя L</text>
+<text x="798.0" y="372.0" font-size="11" font-weight="400" fill="#97a3b2" text-anchor="middle">читает буфер L mod 2; номер строки буфера = номер эксперта, поэтому ids роутера не переписываются</text>
+<text x="630" y="144" font-size="10.5" font-weight="600" fill="#97a3b2" text-anchor="middle">D2D</text>
+<text x="630" y="236" font-size="10.5" font-weight="600" fill="#97a3b2" text-anchor="middle">D2D</text>
+<rect x="36" y="464" width="262" height="100" rx="6" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="167.0" y="497.7" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">Роутер слоя L</text>
+<text x="167.0" y="511.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">выбранные эксперты известны только после</text>
+<text x="167.0" y="525.5" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">роутера, поэтому копия начинается после</text>
+<text x="167.0" y="539.1" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">него</text>
+<rect x="318" y="464" width="262" height="100" rx="6" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="449.0" y="497.7" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">Два небольших ядра</text>
+<text x="449.0" y="511.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">помечают выбранных и делят на попадания</text>
+<text x="449.0" y="525.5" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">(слот ≥ 512) и промахи; списки остаются на</text>
+<text x="449.0" y="539.1" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">устройстве</text>
+<rect x="600" y="464" width="262" height="100" rx="6" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="731.0" y="497.7" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">Попадания и промахи</text>
+<text x="731.0" y="511.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">попадания: fast_index_copy на потоке</text>
+<text x="731.0" y="525.5" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">вычислений; промахи: TMA-gather</text>
+<text x="731.0" y="539.1" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">(cp.async.bulk) на потоке копирования</text>
+<rect x="882" y="464" width="262" height="100" rx="6" fill="#172a3f" stroke="#6aaef0" stroke-width="1.6"/>
+<text x="1013.0" y="504.6" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">GEMM после события ready</text>
+<text x="1013.0" y="518.7" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">читает только выбранные строки буфера;</text>
+<text x="1013.0" y="532.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">байты остальных строк не читаются</text>
+<rect x="36" y="622" width="262" height="100" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="167.0" y="662.5" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">Снимок карты слотов</text>
+<text x="167.0" y="676.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">в начале чанка, в pinned-память: одна</text>
+<text x="167.0" y="690.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">синхронизация на чанк</text>
+<rect x="318" y="622" width="262" height="100" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="449.0" y="662.5" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">Старт слоя L: заказ слоя L+1</text>
+<text x="449.0" y="676.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">по снимку хост делит экспертов на попадания</text>
+<text x="449.0" y="690.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">(слот ≥ 512) и промахи</text>
+<rect x="600" y="622" width="262" height="100" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="731.0" y="655.7" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">Попадания и промахи</text>
+<text x="731.0" y="669.8" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">fast_index_copy (64 блока на банк) на потоке</text>
+<text x="731.0" y="683.5" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">вычислений; отрезки подряд идущих</text>
+<text x="731.0" y="697.1" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">экспертов — один cudaMemcpyBatchAsync</text>
+<rect x="882" y="622" width="262" height="100" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="1.6"/>
+<text x="1013.0" y="662.5" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">События release и ready</text>
+<text x="1013.0" y="676.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">release после GEMM освобождает буфер;</text>
+<text x="1013.0" y="690.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">ready разрешает GEMM следующего слоя</text>
+<rect x="36" y="780" width="262" height="100" rx="6" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="167.0" y="820.5" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">Чанк 0 слоя L</text>
+<text x="167.0" y="834.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">заказывает копию слоя L+1 целиком в</text>
+<text x="167.0" y="848.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">свободный буфер</text>
+<rect x="318" y="780" width="262" height="100" rx="6" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="449.0" y="820.5" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">cudaMemcpyAsync по банкам</text>
+<text x="449.0" y="834.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">copy engine, один раз на запрос: на 120K 18</text>
+<text x="449.0" y="848.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">ГБ вместо 1076 ГБ</text>
+<rect x="600" y="780" width="262" height="100" rx="6" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="731.0" y="820.5" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">Все чанки слоя L</text>
+<text x="731.0" y="834.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">читают один буфер; hidden и residual окна</text>
+<text x="731.0" y="848.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">лежат в хвосте слотов</text>
+<rect x="882" y="780" width="262" height="100" rx="6" fill="#3a2c12" stroke="#e0a84a" stroke-width="1.6"/>
+<text x="1013.0" y="820.5" font-size="12" font-weight="600" fill="#e4e9ef" text-anchor="middle">release после последнего чанка</text>
+<text x="1013.0" y="834.6" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">копия слоя L+2 ждёт это событие; попаданий</text>
+<text x="1013.0" y="848.3" font-size="10.5" font-weight="400" fill="#97a3b2" text-anchor="middle">нет, горячие эксперты не используются</text>
+<polyline points="304,188 338,188" fill="none" stroke="#e0a84a" stroke-width="1.7" stroke-dasharray="7 4" marker-end="url(#m-xfer)"/>
+<polyline points="416,150 452,150" fill="none" stroke="#6aaef0" stroke-width="2.2" marker-end="url(#m-a0)"/>
+<polyline points="416,166 452,166" fill="none" stroke="#5cc489" stroke-width="2.2" marker-end="url(#m-a1)"/>
+<polyline points="416,182 452,182" fill="none" stroke="#e0a84a" stroke-width="2.2" marker-end="url(#m-a2)"/>
+<polyline points="416,242 452,242" fill="none" stroke="#6aaef0" stroke-width="2.2" marker-end="url(#m-a0)"/>
+<polyline points="416,258 452,258" fill="none" stroke="#5cc489" stroke-width="2.2" marker-end="url(#m-a1)"/>
+<polyline points="416,274 452,274" fill="none" stroke="#e0a84a" stroke-width="2.2" marker-end="url(#m-a2)"/>
+<polyline points="648,150 612,150" fill="none" stroke="#6aaef0" stroke-width="2.2" marker-end="url(#m-a0)"/>
+<polyline points="648,166 612,166" fill="none" stroke="#5cc489" stroke-width="2.2" marker-end="url(#m-a1)"/>
+<polyline points="648,242 612,242" fill="none" stroke="#6aaef0" stroke-width="2.2" marker-end="url(#m-a0)"/>
+<polyline points="648,258 612,258" fill="none" stroke="#5cc489" stroke-width="2.2" marker-end="url(#m-a1)"/>
+<polyline points="298,514 318,514" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="580,514 600,514" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="862,514 882,514" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="298,672 318,672" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="580,672 600,672" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="862,672 882,672" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="298,830 318,830" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="580,830 600,830" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="862,830 882,830" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+</svg>

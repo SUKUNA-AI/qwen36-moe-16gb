@@ -12,7 +12,7 @@
  "table": [
   {
    "kernel": "moe_decode",
-   "variant": "f1",
+   "variant": "f1L0",
    "category": "moe_decode_nvfp4",
    "duration_us": 23.1,
    "dram_pct": 48.6,
@@ -38,7 +38,7 @@
   },
   {
    "kernel": "fp8_gemv",
-   "variant": "f1",
+   "variant": "f1L0",
    "category": "dense_fp8_gemv",
    "duration_us": 36.4,
    "dram_pct": 79.37,
@@ -64,7 +64,7 @@
   },
   {
    "kernel": "oproj",
-   "variant": "f1",
+   "variant": "f1L0",
    "category": "other_dense_gemm_gemv_reduction",
    "duration_us": 16.3,
    "dram_pct": 59.58,
@@ -90,7 +90,7 @@
   },
   {
    "kernel": "attention_decode",
-   "variant": "f1",
+   "variant": "f1L0",
    "category": "full_attention",
    "duration_us": 10.4,
    "dram_pct": 7.85,
@@ -116,7 +116,7 @@
   },
   {
    "kernel": "gather",
-   "variant": "f1",
+   "variant": "f1L0",
    "category": "expert_mapped_host_gather",
    "duration_us": 2.5,
    "dram_pct": 0.54,
@@ -248,7 +248,7 @@
    }
   },
   {
-   "variant": "f1",
+   "variant": "f1L0",
    "kernel": "moe_decode",
    "category": "moe_decode_nvfp4",
    "phase": "decode",
@@ -269,7 +269,7 @@
    }
   },
   {
-   "variant": "f1",
+   "variant": "f1L0",
    "kernel": "oproj",
    "category": "other_dense_gemm_gemv_reduction",
    "phase": "decode",
@@ -290,7 +290,7 @@
    }
   },
   {
-   "variant": "f1",
+   "variant": "f1L0",
    "kernel": "attention_decode",
    "category": "full_attention",
    "phase": "decode",
@@ -311,7 +311,7 @@
    }
   },
   {
-   "variant": "f1",
+   "variant": "f1L0",
    "kernel": "fp8_gemv",
    "category": "dense_fp8_gemv",
    "phase": "decode",
@@ -332,7 +332,7 @@
    }
   },
   {
-   "variant": "f1",
+   "variant": "f1L0",
    "kernel": "gather",
    "category": "expert_mapped_host_gather",
    "phase": "decode",
@@ -355,5 +355,10 @@
  ],
  "not_captured": [
   "moe_prefill_gemm (both variants)"
- ]
+ ],
+ "variant_names": {
+  "f1L0": "main-release on the current overlay (f1 configuration on the new tree)",
+  "main128": "main-release-next-d5 profiled without the shared/gather overlap",
+  "f1": "installed f1 runtime (overlay optimization-f1old): not captured yet"
+ }
 }

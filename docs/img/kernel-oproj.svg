@@ -1,0 +1,231 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 960" width="1180" height="960" font-family="IBM Plex Sans, Segoe UI, Arial, sans-serif" role="img" aria-label="o-проекция в decode: split-K = 3 у cuBLASLt и наше ядро в один запуск">
+<title>o-проекция в decode: split-K = 3 у cuBLASLt и наше ядро в один запуск</title>
+<rect width="1180" height="960" fill="#f6f7f9"/>
+<defs>
+<marker id="m-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8a99"/></marker>
+<marker id="m-xfer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b7791f"/></marker>
+<marker id="m-sync" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b46c1"/></marker>
+<marker id="m-lever" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f6f8b"/></marker>
+<marker id="m-old" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b3402f"/></marker>
+<marker id="m-a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2b6cb0"/></marker>
+<marker id="m-a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1d7a46"/></marker>
+<marker id="m-a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b7791f"/></marker>
+</defs>
+<text x="20" y="32" font-size="20" font-weight="600" fill="#17202b">o-проекция в decode: split-K = 3 у cuBLASLt и наше ядро в один запуск</text>
+<text x="20" y="54" font-size="12.5" fill="#5b6675">Y[M, 2048] = bf16((X[M, 4096] · W[2048, 4096]ᵀ) · sa · sb) в FP8 e4m3, M = 1…8. 40 таких проекций на шаг: 30 out_proj слоёв GDN и 10 o_proj слоёв attention.</text>
+<rect x="20" y="90" width="1140" height="124" rx="8" fill="#ffffff" stroke="#d3d9e1" stroke-dasharray="5 4"/>
+<text x="34" y="112" font-size="13.5" font-weight="600" fill="#5b6675">K = 4096 байт строки = 64 тайла по 64 байта; тайл t получает сплит z = t mod 3, по кругу</text>
+<rect x="20" y="228" width="565" height="566" rx="8" fill="#ffffff" stroke="#d3d9e1" stroke-dasharray="5 4"/>
+<text x="34" y="250" font-size="13.5" font-weight="600" fill="#5b6675">Было: memset + GEMM xmma, split-K внутри ядра cuBLASLt</text>
+<rect x="595" y="228" width="565" height="566" rx="8" fill="#ffffff" stroke="#d3d9e1" stroke-dasharray="5 4"/>
+<text x="609" y="250" font-size="13.5" font-weight="600" fill="#5b6675">Стало: libqwen_oproj_gemv, один запуск без memset и семафора</text>
+<rect x="611" y="336" width="533" height="258" rx="8" fill="#ffffff" stroke="#d3d9e1" stroke-dasharray="5 4"/>
+<text x="625" y="358" font-size="13.5" font-weight="600" fill="#5b6675">Один CTA: полоса из 16 строк W</text>
+<rect x="20" y="808" width="1140" height="138" rx="8" fill="#ffffff" stroke="#d3d9e1" stroke-dasharray="5 4"/>
+<text x="34" y="830" font-size="13.5" font-weight="600" fill="#5b6675">Как гарантируется бит-в-бит и что будет при несовпадении</text>
+<rect x="36" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="53" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="70" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="87" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="104" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="121" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="138" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="155" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="172" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="189" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="206" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="223" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="240" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="257" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="274" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="291" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="308" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="325" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="342" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="359" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="376" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="393" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="410" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="427" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="444" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="461" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="478" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="495" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="512" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="529" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="546" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="563" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="580" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="597" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="614" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="631" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="648" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="665" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="682" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="699" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="716" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="733" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="750" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="767" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="784" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="801" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="818" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="835" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="852" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="869" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="886" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="903" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="920" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="937" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="954" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="971" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="988" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="1005" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="1022" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="1039" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="1056" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<rect x="1073" y="120" width="16" height="26" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<rect x="1090" y="120" width="16" height="26" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<rect x="1107" y="120" width="16" height="26" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<text x="44" y="162" font-size="10" font-weight="400" fill="#5b6675" text-anchor="middle">0</text>
+<text x="61" y="162" font-size="10" font-weight="400" fill="#5b6675" text-anchor="middle">1</text>
+<text x="78" y="162" font-size="10" font-weight="400" fill="#5b6675" text-anchor="middle">2</text>
+<text x="95" y="162" font-size="10" font-weight="400" fill="#5b6675" text-anchor="middle">3</text>
+<text x="112" y="162" font-size="10" font-weight="400" fill="#5b6675" text-anchor="middle">4</text>
+<text x="129" y="162" font-size="10" font-weight="400" fill="#5b6675" text-anchor="middle">5</text>
+<text x="1098" y="162" font-size="10" font-weight="400" fill="#5b6675" text-anchor="middle">62</text>
+<text x="1115" y="162" font-size="10" font-weight="400" fill="#5b6675" text-anchor="middle">63</text>
+<text x="597" y="162" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">…</text>
+<rect x="36" y="178" width="16" height="16" rx="3" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<text x="60" y="191" font-size="12" font-weight="400" fill="#17202b" text-anchor="start">сплит 0: тайлы 0, 3, …, 63 (22 тайла)</text>
+<rect x="360" y="178" width="16" height="16" rx="3" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<text x="384" y="191" font-size="12" font-weight="400" fill="#17202b" text-anchor="start">сплит 1: тайлы 1, 4, …, 61 (21)</text>
+<rect x="660" y="178" width="16" height="16" rx="3" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<text x="684" y="191" font-size="12" font-weight="400" fill="#17202b" text-anchor="start">сплит 2: тайлы 2, 5, …, 62 (21)</text>
+<text x="940" y="191" font-size="12" font-weight="600" fill="#b3402f" text-anchor="start">не непрерывные куски</text>
+<rect x="36" y="262" width="534" height="44" rx="6" fill="#fbe9e7" stroke="#b3402f" stroke-width="1.6"/>
+<text x="303.0" y="281.2" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">1. memset 384 Б</text>
+<text x="303.0" y="296.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">семафоры split-K</text>
+<rect x="36" y="316" width="534" height="62" rx="6" fill="#fbe9e7" stroke="#b3402f" stroke-width="1.6"/>
+<text x="303.0" y="337.1" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">2. ядро xmma e4m3 → bf16, плитка 32×64×64</text>
+<text x="303.0" y="351.8" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">сетка (1, 32, 3) = 96 CTA × 128 потоков: 32 блока по выходам (2048 / 32 = 64 выхода на блок)</text>
+<text x="303.0" y="366.1" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">× 3 сплита K</text>
+<rect x="36" y="400" width="174" height="112" rx="6" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<text x="123.0" y="438.9" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">сплит 0</text>
+<text x="123.0" y="453.7" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">тайлы 0, 3, 6, …</text>
+<text x="123.0" y="468.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">цепочка QMMA k32: 2 штуки</text>
+<text x="123.0" y="482.3" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">на тайл, от +0 → p0</text>
+<rect x="216" y="400" width="174" height="112" rx="6" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<text x="303.0" y="438.9" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">сплит 1</text>
+<text x="303.0" y="453.7" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">тайлы 1, 4, 7, …</text>
+<text x="303.0" y="468.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">цепочка QMMA k32: 2 штуки</text>
+<text x="303.0" y="482.3" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">на тайл, от +0 → p1</text>
+<rect x="396" y="400" width="174" height="112" rx="6" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<text x="483.0" y="438.9" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">сплит 2</text>
+<text x="483.0" y="453.7" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">тайлы 2, 5, 8, …</text>
+<text x="483.0" y="468.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">цепочка QMMA k32: 2 штуки</text>
+<text x="483.0" y="482.3" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">на тайл, от +0 → p2</text>
+<rect x="36" y="540" width="534" height="74" rx="6" fill="#fbe9e7" stroke="#b3402f" stroke-width="1.6"/>
+<text x="303.0" y="567.1" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">3. редукция внутри ядра, по очереди</text>
+<text x="303.0" y="581.8" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">ожидание LDG.STRONG → семафор ATOMG.ADD → последовательные FADD; порядок (p0 + p2)</text>
+<text x="303.0" y="596.1" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">+ p1</text>
+<rect x="36" y="624" width="534" height="46" rx="6" fill="#fbe9e7" stroke="#b3402f" stroke-width="1.6"/>
+<text x="303.0" y="644.2" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">4. эпилог</text>
+<text x="303.0" y="659.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">alpha = sa·sb; FFMA(acc, alpha, 0); BF16 с округлением к чётному</text>
+<rect x="36" y="684" width="534" height="96" rx="6" fill="#f1f3f6" stroke="#b5bfcb" stroke-width="1.2"/>
+<text x="303.0" y="722.1" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Что показал замер</text>
+<text x="303.0" y="736.8" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">Nsight Compute (f1, частоты зафиксированы на базовых): 16.3 мкс, DRAM 59.6 %, SM 21 %,</text>
+<text x="303.0" y="751.1" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">заполнение 11 %, 74 регистра на поток. На CUDA-графе вместе с memset: 17.4 мкс.</text>
+<rect x="611" y="262" width="533" height="62" rx="6" fill="#e3f0f5" stroke="#1f6f8b" stroke-width="2"/>
+<text x="877.5" y="283.1" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Сетка: полоса = 16 строк весов</text>
+<text x="877.5" y="297.8" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">128 полос (2048 / 16). M = 1…3: 128 CTA × 96 потоков; M = 4…8: 64 CTA × 192 потока, по две</text>
+<text x="877.5" y="312.1" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">полосы в CTA</text>
+<rect x="623" y="366" width="113" height="96" rx="6" fill="#e5f3ea" stroke="#1d7a46" stroke-width="2"/>
+<text x="679.5" y="396.8" font-size="12" font-weight="600" fill="#17202b" text-anchor="middle">Веса W</text>
+<text x="679.5" y="412.4" font-size="12" font-weight="600" fill="#17202b" text-anchor="middle">(VRAM)</text>
+<text x="679.5" y="426.5" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">на тайл 16 строк ×</text>
+<text x="679.5" y="440.1" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">64 Б</text>
+<rect x="754" y="366" width="113" height="96" rx="6" fill="#f1f3f6" stroke="#b5bfcb" stroke-width="1.2"/>
+<text x="810.5" y="383.1" font-size="12" font-weight="600" fill="#17202b" text-anchor="middle">Кольца</text>
+<text x="810.5" y="398.7" font-size="12" font-weight="600" fill="#17202b" text-anchor="middle">cp.async</text>
+<text x="810.5" y="412.8" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">3 кольца, по</text>
+<text x="810.5" y="426.5" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">одному на варп: 12</text>
+<text x="810.5" y="440.1" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">стадий (M ≤ 3) или</text>
+<text x="810.5" y="453.8" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">8 (M ≥ 4) × 1 КиБ</text>
+<rect x="885" y="366" width="113" height="96" rx="6" fill="#f1f3f6" stroke="#b5bfcb" stroke-width="1.2"/>
+<text x="941.5" y="390.9" font-size="12" font-weight="600" fill="#17202b" text-anchor="middle">Активация X</text>
+<text x="941.5" y="405.0" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">M × (K+64) Б в</text>
+<text x="941.5" y="418.6" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">shared,</text>
+<text x="941.5" y="432.3" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">переставлена под</text>
+<text x="941.5" y="445.9" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">фрагменты MMA</text>
+<rect x="1016" y="366" width="113" height="96" rx="6" fill="#f1f3f6" stroke="#b5bfcb" stroke-width="1.2"/>
+<text x="1072.5" y="396.8" font-size="12" font-weight="600" fill="#17202b" text-anchor="middle">Частичные p1,</text>
+<text x="1072.5" y="412.4" font-size="12" font-weight="600" fill="#17202b" text-anchor="middle">p2</text>
+<text x="1072.5" y="426.5" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">в shared; их пишут</text>
+<text x="1072.5" y="440.1" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">варпы 1 и 2</text>
+<rect x="623" y="476" width="160" height="84" rx="6" fill="#dcebfa" stroke="#2b6cb0" stroke-width="1.6"/>
+<text x="703.0" y="501.7" font-size="12" font-weight="600" fill="#17202b" text-anchor="middle">варп 0 (z = 0)</text>
+<text x="703.0" y="515.8" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">тайлы 0, 3, …: ldmatrix + 2</text>
+<text x="703.0" y="529.5" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">× QMMA k32; acc = строки</text>
+<text x="703.0" y="543.1" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">n0…n0+7 и n0+8…n0+15</text>
+<rect x="797" y="476" width="160" height="84" rx="6" fill="#e1f3e8" stroke="#1d7a46" stroke-width="1.6"/>
+<text x="877.0" y="501.7" font-size="12" font-weight="600" fill="#17202b" text-anchor="middle">варп 1 (z = 1)</text>
+<text x="877.0" y="515.8" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">тайлы 1, 4, …: ldmatrix + 2</text>
+<text x="877.0" y="529.5" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">× QMMA k32; acc = строки</text>
+<text x="877.0" y="543.1" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">n0…n0+7 и n0+8…n0+15</text>
+<rect x="971" y="476" width="160" height="84" rx="6" fill="#fdebd0" stroke="#b7791f" stroke-width="1.6"/>
+<text x="1051.0" y="501.7" font-size="12" font-weight="600" fill="#17202b" text-anchor="middle">варп 2 (z = 2)</text>
+<text x="1051.0" y="515.8" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">тайлы 2, 5, …: ldmatrix + 2</text>
+<text x="1051.0" y="529.5" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">× QMMA k32; acc = строки</text>
+<text x="1051.0" y="543.1" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">n0…n0+7 и n0+8…n0+15</text>
+<rect x="611" y="604" width="533" height="50" rx="6" fill="#e3f0f5" stroke="#1f6f8b" stroke-width="2"/>
+<text x="877.5" y="626.2" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Варп 0 после __syncthreads</text>
+<text x="877.5" y="641.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">out = BF16(FFMA((p0 + p2) + p1, sa·sb, 0)) → Y[m, n0…n0+15]</text>
+<rect x="611" y="668" width="533" height="112" rx="6" fill="#e5f3ea" stroke="#1d7a46" stroke-width="2"/>
+<text x="877.5" y="706.9" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Результат</text>
+<text x="877.5" y="721.7" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">нет memset, семафора и рабочего буфера. Микробенч на графе, M = 1: 17.4 → 12.1–12.5 мкс на</text>
+<text x="877.5" y="736.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">проекцию (≈ 0.2 мс на шаг). Ядро читает 8 МиБ весов ≈ 690 ГБ/с. Арифметика совпадает с</text>
+<text x="877.5" y="750.3" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">cuBLASLt бит в бит.</text>
+<rect x="36" y="838" width="208" height="94" rx="6" fill="#ffffff" stroke="#9aa6b4" stroke-width="1.2"/>
+<text x="140.0" y="862.1" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Выведено пробами</text>
+<text x="140.0" y="876.3" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">probe_splitk.py: слагаемые</text>
+<text x="140.0" y="890.0" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">±448·448 и 2⁻¹⁸ показывают, какие</text>
+<text x="140.0" y="903.6" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">тайлы делят цепочку и в каком</text>
+<text x="140.0" y="917.3" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">порядке складываются</text>
+<rect x="260" y="838" width="208" height="94" rx="6" fill="#ffffff" stroke="#9aa6b4" stroke-width="1.2"/>
+<text x="364.0" y="868.9" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Загрузка</text>
+<text x="364.0" y="883.1" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">библиотека из запечатанного</text>
+<text x="364.0" y="896.8" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">memfd только при совпадении</text>
+<text x="364.0" y="910.4" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">sha256 и ABI</text>
+<rect x="484" y="838" width="208" height="94" rx="6" fill="#ffffff" stroke="#9aa6b4" stroke-width="1.2"/>
+<text x="588.0" y="868.9" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Самопроверка</text>
+<text x="588.0" y="883.1" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">M = 1…8: коды, гауссовы,</text>
+<text x="588.0" y="896.8" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">граничные, −0, масштабы; побитово</text>
+<text x="588.0" y="910.4" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">с torch._scaled_mm</text>
+<rect x="708" y="838" width="208" height="94" rx="6" fill="#ffffff" stroke="#9aa6b4" stroke-width="1.2"/>
+<text x="812.0" y="875.7" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Проверка весов</text>
+<text x="812.0" y="890.0" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">реальные веса каждого слоя, для</text>
+<text x="812.0" y="903.6" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">каждого включённого M</text>
+<rect x="932" y="838" width="208" height="94" rx="6" fill="#fbe9e7" stroke="#b3402f" stroke-width="1.6"/>
+<text x="1036.0" y="875.7" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Несовпадение</text>
+<text x="1036.0" y="890.0" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">этот M остаётся на cuBLASLt,</text>
+<text x="1036.0" y="903.6" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">событие пишется в лог</text>
+<polyline points="123,378 123,400" fill="none" stroke="#7d8a99" stroke-width="1.2" marker-end="url(#m-flow)"/>
+<polyline points="123,512 123,540" fill="none" stroke="#7d8a99" stroke-width="1.4" marker-end="url(#m-flow)"/>
+<polyline points="303,378 303,400" fill="none" stroke="#7d8a99" stroke-width="1.2" marker-end="url(#m-flow)"/>
+<polyline points="303,512 303,540" fill="none" stroke="#7d8a99" stroke-width="1.4" marker-end="url(#m-flow)"/>
+<polyline points="483,378 483,400" fill="none" stroke="#7d8a99" stroke-width="1.2" marker-end="url(#m-flow)"/>
+<polyline points="483,512 483,540" fill="none" stroke="#7d8a99" stroke-width="1.4" marker-end="url(#m-flow)"/>
+<polyline points="736,414 754,414" fill="none" stroke="#b7791f" stroke-width="1.7" stroke-dasharray="7 4" marker-end="url(#m-xfer)"/>
+<polyline points="703,560 703,604" fill="none" stroke="#7d8a99" stroke-width="1.4" marker-end="url(#m-flow)"/>
+<polyline points="877,560 877,604" fill="none" stroke="#6b46c1" stroke-width="1.4" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<rect x="879.5" y="579.0" width="21.0" height="15" rx="3" fill="#f6f7f9" fill-opacity="0.9"/>
+<text x="890" y="590" font-size="11" fill="#6b46c1" text-anchor="middle">p1</text>
+<polyline points="1051,560 1051,604" fill="none" stroke="#6b46c1" stroke-width="1.4" stroke-dasharray="2 4" marker-end="url(#m-sync)"/>
+<rect x="1053.5" y="579.0" width="21.0" height="15" rx="3" fill="#f6f7f9" fill-opacity="0.9"/>
+<text x="1064" y="590" font-size="11" fill="#6b46c1" text-anchor="middle">p2</text>
+<polyline points="244,885 260,885" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="468,885 484,885" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="692,885 708,885" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="916,885 932,885" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+</svg>

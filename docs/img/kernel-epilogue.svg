@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 500" width="1180" height="500" font-family="IBM Plex Sans, Segoe UI, Arial, sans-serif" role="img" aria-label="Слитый эпилог MoE-блока: три мелких ядра → одно">
+<title>Слитый эпилог MoE-блока: три мелких ядра → одно</title>
+<rect width="1180" height="500" fill="#f6f7f9"/>
+<defs>
+<marker id="m-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8a99"/></marker>
+<marker id="m-xfer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b7791f"/></marker>
+<marker id="m-sync" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b46c1"/></marker>
+<marker id="m-lever" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f6f8b"/></marker>
+<marker id="m-old" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b3402f"/></marker>
+<marker id="m-a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2b6cb0"/></marker>
+<marker id="m-a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1d7a46"/></marker>
+<marker id="m-a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b7791f"/></marker>
+</defs>
+<text x="20" y="32" font-size="20" font-weight="600" fill="#17202b">Слитый эпилог MoE-блока: три мелких ядра → одно</text>
+<text x="20" y="54" font-size="12.5" fill="#5b6675">out = routed + shared · σ(gate). Те же операции и те же округления, что у torch; fp-contraction выключен.</text>
+<rect x="20" y="78" width="1140" height="134" rx="8" fill="#ffffff" stroke="#d3d9e1" stroke-dasharray="5 4"/>
+<text x="34" y="100" font-size="13.5" font-weight="600" fill="#5b6675">Было: три bf16-ядра PyTorch, каждое читает и пишет [M, 2048] в память</text>
+<rect x="20" y="226" width="1140" height="262" rx="8" fill="#ffffff" stroke="#d3d9e1" stroke-dasharray="5 4"/>
+<text x="34" y="248" font-size="13.5" font-weight="600" fill="#5b6675">Стало: одно ядро Triton, 4 варпа; сетка (M, ⌈2048 / 1024⌉), при M = 1 это (1, 2)</text>
+<rect x="36" y="112" width="156" height="80" rx="6" fill="#f1f3f6" stroke="#b5bfcb" stroke-width="1.2"/>
+<text x="114.0" y="142.1" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">gate</text>
+<text x="114.0" y="156.8" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">линейка σ-гейта, bf16</text>
+<text x="114.0" y="171.1" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">[M, 1]</text>
+<rect x="216" y="112" width="270" height="80" rx="6" fill="#fbe9e7" stroke="#b3402f" stroke-width="1.6"/>
+<text x="351.0" y="149.2" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">ядро 1: torch.sigmoid</text>
+<text x="351.0" y="164.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">sig = bf16(σ(gate))</text>
+<rect x="510" y="112" width="300" height="80" rx="6" fill="#fbe9e7" stroke="#b3402f" stroke-width="1.6"/>
+<text x="660.0" y="149.2" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">ядро 2: shared · sig</text>
+<text x="660.0" y="164.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">prod = bf16(shared × sig)</text>
+<rect x="834" y="112" width="310" height="80" rx="6" fill="#fbe9e7" stroke="#b3402f" stroke-width="1.6"/>
+<text x="989.0" y="149.2" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">ядро 3: routed + prod</text>
+<text x="989.0" y="164.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">out = bf16(routed + prod)</text>
+<rect x="36" y="260" width="200" height="76" rx="6" fill="#f1f3f6" stroke="#b5bfcb" stroke-width="1.2"/>
+<text x="136.0" y="288.7" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Читает</text>
+<text x="136.0" y="303.0" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">gate (скаляр на строку), shared[h],</text>
+<text x="136.0" y="316.6" font-size="10.5" font-weight="400" fill="#5b6675" text-anchor="middle">routed[h]; всё bf16</text>
+<rect x="256" y="260" width="270" height="76" rx="6" fill="#e3f0f5" stroke="#1f6f8b" stroke-width="2"/>
+<text x="391.0" y="294.9" font-size="11.5" font-weight="600" fill="#17202b" text-anchor="middle">sig = bf16(1 / (1 + exp(−gate)))</text>
+<text x="391.0" y="309.3" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">IEEE-деление div.rn, expf из libdevice</text>
+<rect x="546" y="260" width="270" height="76" rx="6" fill="#e3f0f5" stroke="#1f6f8b" stroke-width="2"/>
+<text x="681.0" y="287.7" font-size="11.5" font-weight="600" fill="#17202b" text-anchor="middle">prod = bf16(shared × sig)</text>
+<text x="681.0" y="302.2" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">одно умножение fp32, затем округление в</text>
+<text x="681.0" y="316.5" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">bf16</text>
+<rect x="836" y="260" width="308" height="76" rx="6" fill="#e3f0f5" stroke="#1f6f8b" stroke-width="2"/>
+<text x="990.0" y="287.7" font-size="11.5" font-weight="600" fill="#17202b" text-anchor="middle">out = bf16(routed + prod)</text>
+<text x="990.0" y="302.2" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">одно сложение fp32, затем округление; запись</text>
+<text x="990.0" y="316.5" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">[M, 2048]</text>
+<rect x="36" y="352" width="560" height="120" rx="6" fill="#fbe9e7" stroke="#b3402f" stroke-width="1.6"/>
+<text x="316.0" y="394.9" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Почему enable_fp_fusion = False</text>
+<text x="316.0" y="409.7" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">С настройкой Triton по умолчанию умножение и сложение сливаются в один fma.rn.bf16: одно</text>
+<text x="316.0" y="424.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">округление вместо двух, и результат расходится с torch. Здесь два округления остаются</text>
+<text x="316.0" y="438.3" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">раздельными, как в трёх ядрах torch.</text>
+<rect x="616" y="352" width="528" height="120" rx="6" fill="#e5f3ea" stroke="#1d7a46" stroke-width="2"/>
+<text x="880.0" y="394.9" font-size="12.5" font-weight="600" fill="#17202b" text-anchor="middle">Самопроверка до первого вызова</text>
+<text x="880.0" y="409.7" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">σ сверяется побитово с torch.sigmoid на всех 65 536 значениях bf16; затем случайные M =</text>
+<text x="880.0" y="424.0" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">1, 3, 8 и H = 2048, 1000 на трёх масштабах. Несовпадение, или вызов внутри захвата графа</text>
+<text x="880.0" y="438.3" font-size="11" font-weight="400" fill="#5b6675" text-anchor="middle">до проверки, оставляет путь torch.</text>
+<polyline points="192,152 216,152" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="486,152 510,152" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="810,152 834,152" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="236,298 256,298" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="526,298 546,298" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+<polyline points="816,298 836,298" fill="none" stroke="#7d8a99" stroke-width="1.7" marker-end="url(#m-flow)"/>
+</svg>
