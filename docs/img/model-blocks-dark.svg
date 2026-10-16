@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 1010" width="1180" height="1010" font-family="IBM Plex Sans, Segoe UI, Arial, sans-serif">
+<rect width="1180" height="1010" fill="#0f141a"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5c6978"/></marker></defs>
+<text x="20" y="34" font-size="20" font-weight="600" fill="#e4e9ef">Qwen3.6-35B-A3B NVFP4 на 16 ГБ: как проходит токен и где лежат веса (main128)</text>
+<rect x="20" y="240" width="370" height="560" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="34" y="266" font-size="14" font-weight="600" fill="#97a3b2">× 40 слоёв декодера</text>
+<rect x="460" y="60" width="330" height="360" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="474" y="86" font-size="14" font-weight="600" fill="#97a3b2">VRAM 16 ГБ  (RTX 5070 Ti)</text>
+<rect x="460" y="560" width="330" height="224" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="474" y="586" font-size="14" font-weight="600" fill="#97a3b2">RAM хоста</text>
+<rect x="840" y="60" width="320" height="440" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="854" y="86" font-size="14" font-weight="600" fill="#97a3b2">Prefill: два маршрута</text>
+<rect x="840" y="560" width="320" height="224" rx="8" fill="#151c24" stroke="#2a3440" stroke-dasharray="5 4"/>
+<text x="854" y="586" font-size="14" font-weight="600" fill="#97a3b2">Обозначения</text>
+<line x1="205.0" y1="114" x2="205.0" y2="140" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="205.0" y1="204" x2="205.0" y2="290" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="119.0" y1="330" x2="119.0" y2="350" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="291.0" y1="330" x2="291.0" y2="350" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="119.0" y1="434" x2="119.0" y2="454" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="291.0" y1="434" x2="291.0" y2="454" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="205.0" y1="494" x2="205.0" y2="514" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="205.0" y1="564" x2="205.0" y2="584" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="119.0" y1="634" x2="119.0" y2="654" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="291.0" y1="634" x2="291.0" y2="654" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="119.0" y1="724" x2="119.0" y2="744" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="291.0" y1="724" x2="291.0" y2="744" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="205.0" y1="784" x2="205.0" y2="830" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="205.0" y1="884" x2="205.0" y2="910" stroke="#5c6978" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="625.0" y1="320" x2="205.0" y2="584" stroke="#e0a84a" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="421.0" y="446.0" font-size="12" fill="#e0a84a">попадания</text>
+<line x1="625.0" y1="606" x2="625.0" y2="516" stroke="#e0a84a" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<line x1="625.0" y1="452" x2="625.0" y2="394" stroke="#e0a84a" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="631.0" y="417.0" font-size="12" fill="#e0a84a">prefill</text>
+<line x1="625.0" y1="452" x2="625.0" y2="320" stroke="#e0a84a" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="631.0" y="380.0" font-size="12" fill="#e0a84a">промахи</text>
+<line x1="625.0" y1="690" x2="205.0" y2="204" stroke="#e0a84a" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<rect x="40" y="60" width="330" height="54" rx="6" fill="#e4e9ef" stroke="#e4e9ef" stroke-width="1.2"/>
+<text x="205.0" y="75.0" font-size="13" font-weight="600" fill="#0f141a" text-anchor="middle">Токены запроса</text>
+<text x="205.0" y="91.0" font-size="11.5" font-weight="400" fill="#0f141a" text-anchor="middle">chat-шаблон; prefix-кэш отрезает уже</text>
+<text x="205.0" y="107.0" font-size="11.5" font-weight="400" fill="#0f141a" text-anchor="middle">посчитанное</text>
+<rect x="40" y="140" width="330" height="64" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="205.0" y="160.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Эмбеддинги  248 320 × 2048, BF16</text>
+<text x="205.0" y="176.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">таблица в pinned RAM, строки копируются на</text>
+<text x="205.0" y="192.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">GPU побайтно</text>
+<rect x="40" y="290" width="330" height="40" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="205.0" y="314.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">RMSNorm</text>
+<rect x="40" y="350" width="158" height="84" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="119.0" y="380.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">30 × GDN</text>
+<text x="119.0" y="396.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">линейное внимание;</text>
+<text x="119.0" y="412.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">CUDA-ядра FLA (T2)</text>
+<rect x="212" y="350" width="158" height="84" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="291.0" y="380.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">10 × attention</text>
+<text x="291.0" y="396.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">полное внимание, KV</text>
+<text x="291.0" y="412.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">BF16</text>
+<rect x="40" y="454" width="330" height="40" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="205.0" y="478.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">o-proj FP8 GEMV (S3) + residual → RMSNorm</text>
+<rect x="40" y="514" width="330" height="50" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="205.0" y="535.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Роутер: top-8 из 256 экспертов</text>
+<text x="205.0" y="551.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">bf16</text>
+<rect x="40" y="584" width="330" height="50" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="205.0" y="605.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Карта слотов (LRU)</text>
+<text x="205.0" y="621.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">попадание → слот VRAM, промах → gather из RAM</text>
+<rect x="40" y="654" width="158" height="70" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="119.0" y="685.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Routed GEMM NVFP4</text>
+<text x="119.0" y="701.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">decode: CUDA MoE (S3)</text>
+<rect x="212" y="654" width="158" height="70" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="291.0" y="677.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Shared-эксперт</text>
+<text x="291.0" y="693.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">параллельно с gather</text>
+<text x="291.0" y="709.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">(T3)</text>
+<rect x="40" y="744" width="330" height="40" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="205.0" y="768.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Эпилог: routed + σ(gate)·shared — одно ядро (D5)</text>
+<rect x="40" y="830" width="330" height="54" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="205.0" y="861.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Финальная норма → lm_head NVFP4</text>
+<rect x="40" y="910" width="330" height="54" rx="6" fill="#e4e9ef" stroke="#e4e9ef" stroke-width="1.2"/>
+<text x="205.0" y="933.0" font-size="13" font-weight="600" fill="#0f141a" text-anchor="middle">Сэмплер → токен ответа</text>
+<text x="205.0" y="949.0" font-size="11.5" font-weight="400" fill="#0f141a" text-anchor="middle">декод в CUDA-графе</text>
+<rect x="480" y="106" width="290" height="40" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="625.0" y="130.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Windows — ровно 1 ГиБ</text>
+<rect x="480" y="156" width="290" height="40" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="625.0" y="180.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Плотные веса FP8 и attention  ≈ 1,8 ГиБ</text>
+<rect x="480" y="206" width="290" height="40" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="625.0" y="230.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">KV-кэш BF16 + пул GDN  ≈ 3 ГиБ</text>
+<rect x="480" y="256" width="290" height="64" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="625.0" y="276.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Слоты экспертов: 4603</text>
+<text x="625.0" y="292.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">≈ 7,6 ГиБ, «горячие» эксперты всех слоёв</text>
+<text x="625.0" y="308.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">(f1: 3164)</text>
+<rect x="480" y="330" width="290" height="64" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="625.0" y="358.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Двойной буфер слоя для prefill</text>
+<text x="625.0" y="374.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">сюда приходит банк следующего слоя</text>
+<rect x="480" y="606" width="290" height="64" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="625.0" y="634.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Банки экспертов NVFP4  18,25 ГБ</text>
+<text x="625.0" y="650.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">все 256 × 40, закреплённая память</text>
+<rect x="480" y="690" width="290" height="40" rx="6" fill="#1b232d" stroke="#3a4654" stroke-width="1.2"/>
+<text x="625.0" y="714.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Таблица эмбеддингов  0,95 ГиБ</text>
+<rect x="520" y="452" width="210" height="64" rx="6" fill="#33290f" stroke="#e0a84a" stroke-width="2"/>
+<text x="625.0" y="480.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">PCIe  ~41–49 ГБ/с</text>
+<text x="625.0" y="496.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">copy engine и TMA-gather</text>
+<rect x="860" y="106" width="280" height="118" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="1000.0" y="145.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Короткий кусок  &lt; 2049 новых токенов</text>
+<text x="1000.0" y="161.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">резидентные эксперты — D2D внутри GPU</text>
+<text x="1000.0" y="177.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">(T1); &lt; 160 токенов — только выбранные</text>
+<text x="1000.0" y="193.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">роутером (C1)</text>
+<rect x="860" y="244" width="280" height="118" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="1000.0" y="283.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Длинный документ  ≥ 2049</text>
+<text x="1000.0" y="299.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">layer-major: банк слоя целиком в</text>
+<text x="1000.0" y="315.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">двойной буфер, копия идёт внахлёст с</text>
+<text x="1000.0" y="331.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">GEMM (C0)</text>
+<rect x="860" y="382" width="280" height="98" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="1000.0" y="419.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">Decode</text>
+<text x="1000.0" y="435.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">промахи: TMA-gather в графе, спрятан</text>
+<text x="1000.0" y="451.0" font-size="11.5" font-weight="400" fill="#97a3b2" text-anchor="middle">за shared-экспертом (T3)</text>
+<rect x="860" y="606" width="280" height="40" rx="6" fill="#16303b" stroke="#5fb3cf" stroke-width="2"/>
+<text x="1000.0" y="630.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">рычаг этого релиза</text>
+<rect x="860" y="656" width="280" height="40" rx="6" fill="#1b232d" stroke="#5c6978" stroke-width="1.2"/>
+<text x="1000.0" y="680.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">без изменений</text>
+<rect x="860" y="706" width="280" height="40" rx="6" fill="#17311f" stroke="#5cc489" stroke-width="2"/>
+<text x="1000.0" y="730.0" font-size="13" font-weight="600" fill="#e4e9ef" text-anchor="middle">память, которую мы отдали модели</text>
+</svg>

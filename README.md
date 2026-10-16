@@ -325,9 +325,16 @@ flowchart LR
 
 ## main128 next — кандидат следующего релиза
 
-> **Статус: кандидат, не релиз.** В `serving/profiles.json` профиль `main128` пока `qualified: false`, установлен f1. Цифры лесенки появятся после teacher-лесенки и релизного A/B против f1 (5 пар). Решение принимает владелец. До этого места под цифры ниже пустые («—»).
+> **Статус: установлен 16.10.2026** (метка `main128-s5r1`, f1 сохранён для отката). Все релизные гейты пройдены: teacher 125/125, релизный A/B против f1 на 5 пар — PASS, контекст 131072, soak 2 ч, long256 на новом дереве.
 
-Кандидат — это f1 плюс рычаги ниже. Каждый рычаг включается своим флагом и по умолчанию выключен. Каждый проверен на побитовую точность: teacher 125/125, `max_abs` 0. Конфиг прогонов — [`harness/main-release-next-candidate.json`](harness/main-release-next-candidate.json), профиль — `main128` в [`serving/profiles.json`](serving/profiles.json).
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/model-blocks-dark.svg">
+  <img alt="Схема модели по блокам: путь токена через 40 слоёв, где лежат веса и эксперты, где работают рычаги релиза" src="docs/img/model-blocks.svg" width="100%">
+</picture>
+
+Схема редактируется в draw.io: [`docs/model-blocks.drawio`](docs/model-blocks.drawio), генератор — [`tools/model-diagram.py`](tools/model-diagram.py).
+
+Релиз — это f1 плюс рычаги ниже. Каждый рычаг включается своим флагом и по умолчанию выключен. Каждый проверен на побитовую точность: teacher 125/125, `max_abs` 0. Конфиг прогонов — [`harness/main-release-next-d5.json`](harness/main-release-next-d5.json), профиль — `main128` в [`serving/profiles.json`](serving/profiles.json).
 
 | Рычаг | Профиль → переменная окружения | Что делает |
 |---|---|---|
@@ -340,18 +347,51 @@ flowchart LR
 | MoE decode | `cuda_moe_decode` → `QWEN36_MOE_DECODE_CUDA=1` + `libqwen_moe_decode.so` | CUDA GEMV вместо Triton для gate_up/down в decode |
 | C0 | `prefill_copy_priority` → `QWEN36_PREFILL_COPY_PRIORITY=1`, `QWEN36_PREFILL_EPOCH_INVALIDATE=1` | поток копирования prefill с высшим приоритетом, одна инвалидация буферов на эпоху |
 | C1 | `prefill_selected: 160` → `QWEN36_PREFILL_SELECTED=160` (нужен `decode_gather`) | чанк короче 160 токенов везёт только выбранных роутером экспертов |
+| D5 | `decode_shared_epilogue` → `QWEN36_DECODE_SHARED_EPILOGUE=1` | эпилог MoE-блока (σ(gate)·shared + routed) одним ядром с теми же округлениями, что у torch |
+
+Проверены и не вошли: D3b (предвыборка слоя вперёд, декод −4 %), D6 (прогрев слотов из prefill, без выигрыша), C2 (TMA вместо copy engine, медленнее).
 
 Полный список модулей и флагов — в [`freetoken/MODIFICATIONS.md`](freetoken/MODIFICATIONS.md).
 
 **Память.** Правило владельца: ровно 1 ГиБ VRAM остаётся Windows, всё остальное отдаётся модели. Валидатор ограничивает `memory_ratio < 0.95`. Ступень 0.85 выбрана по soak: на 0.90 decode и TTFT хуже из-за давления памяти.
 
-**Лесенка** (заполняется по итогам прогонов; графики строит `tools/ladder-charts.py`):
+**Релизный A/B: f1 против main128** (5 пар в одной сессии, ответ 128 токенов, медианы; `compare-ab` — PASS):
 
-| Шаг | TTFT 64 | TTFT 16K | decode 64 | decode 16K | teacher |
-|---|---:|---:|---:|---:|---|
-| f1 | — | — | — | — | 125/125 |
-| + каждый рычаг по очереди | — | — | — | — | — |
-| кандидат main128 next | — | — | — | — | — |
+| Случай | TTFT f1 → main128 | Декод f1 → main128, ток/с | Весь запрос |
+|---|---:|---:|---:|
+| Промпт 64 токена | 0.389 → **0.199 с** (−49%) | 153 → 182 (+19%) | ×1.37 |
+| 4K | 0.407 → 0.388 с | 150 → 189 (+25%) | ×1.18 |
+| 16K | 1.343 → 1.315 с | 143 → **176** (+23%) | ×1.10 |
+| 120K | 20.52 → 20.37 с | 106 → 121 (+14%) | ×1.015 |
+| Продолжение диалога, 4K | 0.391 → 0.255 с (−35%) | 154 → 191 (+24%) | ×1.33 |
+| Правка последнего сообщения, 16K | 0.400 → 0.298 с (−26%) | 137 → 169 (+24%) | ×1.29 |
+| Правка результата инструмента, 16K | 0.400 → **0.152 с** (−62%) | 138 → 175 (+27%) | ×1.51 |
+
+Длинный свежий prefill почти не изменился: attention и MoE GEMM там уже упираются в тензорные ядра.
+
+**Лесенка** (накопительно, каждая ступень — предыдущая плюс один рычаг; 3 пары, медианы; все ступени teacher 125/125):
+
+| Шаг | TTFT 64 | TTFT 16K | Декод 16K | Декод 120K | Слоты |
+|---|---:|---:|---:|---:|---:|
+| f1 | 0.390 | 1.344 | 143.4 | 103.1 | 3164 |
+| + hit-D2D (T1) | 0.315 | 1.343 | 143.9 | 103.5 | 3164 |
+| + FLA на CUDA (T2) | 0.317 | 1.316 | 143.6 | 103.4 | 3164 |
+| + T3 | 0.304 | 1.330 | 148.6 | 106.1 | 3164 |
+| + эмбеддинги на хосте | 0.314 | 1.319 | 153.8 | 108.9 | 3729 |
+| + `memory_ratio` 0.85 | 0.259 | 1.315 | 159.5 | 112.1 | 4611 |
+| + o-proj и MoE decode (CUDA) | 0.270 | 1.321 | 170.3 | 118.4 | 4603 |
+| + C0 | 0.252 | 1.315 | 171.7 | 118.4 | 4603 |
+| + C1 | 0.207 | 1.323 | 173.8 | 119.5 | 4603 |
+| **+ D5 = main128** | **0.201** | 1.318 | **176.4** | **120.5** | 4603 |
+
+Шаг decode на 16K по Nsight Systems: 7.07 → 5.78 мс (MoE 1.60 → 1.26, gather промахов 1.08 → 0.64, простои графа 0.59 → 0.36).
+
+**Длинный контекст.** long256 на новом дереве: 250K — TTFT 72.7 с, декод 67.3 ток/с (f1: 77.4 с / 60.8). С рычагами main128 при контексте 262 144: декод 76.0 ток/с.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="results/ladder/charts/waterfall-decode16k-dark.svg">
+  <img alt="Вклад каждого рычага в декод на 16K" src="results/ladder/charts/waterfall-decode16k.svg" width="100%">
+</picture>
 
 Графики: [`results/ladder/charts/ttft-steps.svg`](results/ladder/charts/ttft-steps.svg), [`decode-steps.svg`](results/ladder/charts/decode-steps.svg), [`memory-steps.svg`](results/ladder/charts/memory-steps.svg), [`teacher-steps.svg`](results/ladder/charts/teacher-steps.svg); таблица — [`results/ladder/charts/ladder-table.md`](results/ladder/charts/ladder-table.md). Разбор — [`docs/RELEASE-MAIN128.md`](docs/RELEASE-MAIN128.md).
 
@@ -363,7 +403,7 @@ flowchart LR
 
 | Профиль | Контекст | Слотов экспертов | Назначение |
 |---|---:|---:|---|
-| `main128` (по умолчанию) | 131 072 | 3164 | повседневная работа, все переключатели f1 |
+| `main128` (по умолчанию) | 131 072 | 4603 | повседневная работа: f1 плюс рычаги main128 next |
 | `long256` | 262 144 | 1481 | длинные документы: те же переключатели, но больше KV и меньше слотов, поэтому decode медленнее (~97 ток/с на 16K против ~130) |
 | `baseline64` | 65 536 | 3917 | неизменный запасной вариант (исходная механика с FP32-масштабами) |
 

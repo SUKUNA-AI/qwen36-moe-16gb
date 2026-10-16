@@ -107,9 +107,16 @@ The soak ran for 7212 s: 741/741 checks passed with 0 errors and 0 stalls. Host 
 
 ## main128 next (release candidate)
 
-> **Status: candidate, not a release.** In `serving/profiles.json` the `main128` profile is still `qualified: false`, and f1 stays installed. The ladder numbers arrive after the teacher ladder and the release A/B against f1 (5 pairs). The owner decides. Until then the number cells below are empty ("—").
+> **Status: installed on 2026-10-16** (label `main128-s5r1`; f1 is kept for rollback). All release gates passed: teacher 125/125, release A/B against f1 with 5 pairs (PASS), 131072 context, a 2 h soak, and long256 on the new tree.
 
-The candidate is f1 plus the levers below. Each lever has its own switch and is off by default. Each is bit-exact: teacher 125/125, `max_abs` 0. Run configuration: [`harness/main-release-next-candidate.json`](harness/main-release-next-candidate.json). Profile: `main128` in [`serving/profiles.json`](serving/profiles.json).
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/model-blocks-dark.svg">
+  <img alt="Block diagram of the model: a token's path through 40 layers, where weights and experts live, where the release levers act" src="docs/img/model-blocks.svg" width="100%">
+</picture>
+
+The diagram labels are in Russian; edit it in draw.io: [`docs/model-blocks.drawio`](docs/model-blocks.drawio), generator [`tools/model-diagram.py`](tools/model-diagram.py).
+
+The release is f1 plus the levers below. Each lever has its own switch and is off by default. Each is bit-exact: teacher 125/125, `max_abs` 0. Run configuration: [`harness/main-release-next-d5.json`](harness/main-release-next-d5.json). Profile: `main128` in [`serving/profiles.json`](serving/profiles.json).
 
 | Lever | Profile → environment | What it does |
 |---|---|---|
@@ -122,18 +129,42 @@ The candidate is f1 plus the levers below. Each lever has its own switch and is 
 | decode MoE | `cuda_moe_decode` → `QWEN36_MOE_DECODE_CUDA=1` + `libqwen_moe_decode.so` | CUDA GEMV instead of Triton for decode gate_up/down |
 | C0 | `prefill_copy_priority` → `QWEN36_PREFILL_COPY_PRIORITY=1`, `QWEN36_PREFILL_EPOCH_INVALIDATE=1` | top-priority prefill copy stream, one buffer invalidation per epoch |
 | C1 | `prefill_selected: 160` → `QWEN36_PREFILL_SELECTED=160` (needs `decode_gather`) | a chunk under 160 tokens moves only the experts its router selected |
+| D5 | `decode_shared_epilogue` → `QWEN36_DECODE_SHARED_EPILOGUE=1` | the MoE block epilogue (σ(gate)·shared + routed) in one kernel, with torch's roundings |
+
+Tested and left out: D3b (one-layer-ahead prefetch, decode −4%), D6 (warming slots from prefill, no gain), C2 (TMA instead of the copy engine, slower).
 
 Modules and switches: [`freetoken/MODIFICATIONS.md`](freetoken/MODIFICATIONS.md).
 
 **Memory.** Owner rule: exactly 1 GiB of VRAM stays with Windows and the model gets the rest. The validator caps `memory_ratio < 0.95`. The 0.85 step won the soaks; at 0.90, decode and TTFT were worse from memory pressure.
 
-**Ladder** (filled from the runs; charts by `tools/ladder-charts.py`):
+**Release A/B, f1 vs main128** (5 pairs in one session, 128 output tokens, medians; `compare-ab` PASS):
 
-| Step | TTFT 64 | TTFT 16K | decode 64 | decode 16K | teacher |
-|---|---:|---:|---:|---:|---|
-| f1 | — | — | — | — | 125/125 |
-| + one lever at a time | — | — | — | — | — |
-| main128 next candidate | — | — | — | — | — |
+| Case | TTFT f1 → main128 | Decode f1 → main128, tok/s | Whole request |
+|---|---:|---:|---:|
+| 64-token prompt | 0.389 → **0.199 s** (−49%) | 153 → 182 (+19%) | ×1.37 |
+| 4K | 0.407 → 0.388 s | 150 → 189 (+25%) | ×1.18 |
+| 16K | 1.343 → 1.315 s | 143 → **176** (+23%) | ×1.10 |
+| 120K | 20.52 → 20.37 s | 106 → 121 (+14%) | ×1.015 |
+| History continuation, 4K | 0.391 → 0.255 s (−35%) | 154 → 191 (+24%) | ×1.33 |
+| Last-message edit, 16K | 0.400 → 0.298 s (−26%) | 137 → 169 (+24%) | ×1.29 |
+| Tool-result edit, 16K | 0.400 → **0.152 s** (−62%) | 138 → 175 (+27%) | ×1.51 |
+
+**Ladder** (cumulative, one lever per step; 3 pairs, medians; every step teacher 125/125):
+
+| Step | TTFT 64 | TTFT 16K | Decode 16K | Decode 120K | Slots |
+|---|---:|---:|---:|---:|---:|
+| f1 | 0.390 | 1.344 | 143.4 | 103.1 | 3164 |
+| + hit-D2D (T1) | 0.315 | 1.343 | 143.9 | 103.5 | 3164 |
+| + CUDA FLA (T2) | 0.317 | 1.316 | 143.6 | 103.4 | 3164 |
+| + T3 | 0.304 | 1.330 | 148.6 | 106.1 | 3164 |
+| + host embeddings | 0.314 | 1.319 | 153.8 | 108.9 | 3729 |
+| + `memory_ratio` 0.85 | 0.259 | 1.315 | 159.5 | 112.1 | 4611 |
+| + CUDA o-proj and MoE decode | 0.270 | 1.321 | 170.3 | 118.4 | 4603 |
+| + C0 | 0.252 | 1.315 | 171.7 | 118.4 | 4603 |
+| + C1 | 0.207 | 1.323 | 173.8 | 119.5 | 4603 |
+| **+ D5 = main128** | **0.201** | 1.318 | **176.4** | **120.5** | 4603 |
+
+Decode step at 16K (Nsight Systems): 7.07 → 5.78 ms. long256 on the new tree, 250K: TTFT 72.7 s, decode 67.3 tok/s (f1: 77.4 s / 60.8); with the main128 levers at 262,144: 76.0 tok/s.
 
 Charts: [`results/ladder/charts/ttft-steps.svg`](results/ladder/charts/ttft-steps.svg), [`decode-steps.svg`](results/ladder/charts/decode-steps.svg), [`memory-steps.svg`](results/ladder/charts/memory-steps.svg), [`teacher-steps.svg`](results/ladder/charts/teacher-steps.svg). Table: [`results/ladder/charts/ladder-table.en.md`](results/ladder/charts/ladder-table.en.md). Write-up: [`docs/RELEASE-MAIN128.en.md`](docs/RELEASE-MAIN128.en.md).
 
@@ -143,7 +174,7 @@ Charts: [`results/ladder/charts/ttft-steps.svg`](results/ladder/charts/ttft-step
 
 | Profile | Context | Expert slots on GPU | Use |
 |---|---:|---:|---|
-| `main128` (default) | 131,072 | 3164 | everyday use; all f1 switches |
+| `main128` (default) | 131,072 | 4603 | everyday use: f1 plus the main128 next levers |
 | `long256` | 262,144 | 1481 | long documents; same switches, more KV and fewer slots (slower decode) |
 | `baseline64` | 65,536 | 3917 | unchanged fallback (original mechanics, FP32 globals) |
 
