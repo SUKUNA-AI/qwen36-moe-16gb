@@ -276,8 +276,10 @@ GDN_BASELINE = {'SGLANG_GDN_CHUNK_H_BV': '32',
 # profile runs must therefore be a verified prebuilt (kernel provenance; KERNEL_MODULE_SWITCHES).
 KERNEL_LOADER_ENV = {'FREETOKEN_DISABLE_JIT': '1', 'FREETOKEN_STRICT_PROVENANCE': '1'}
 # The profile is the complete behavior configuration. Inherited experiment,
-# kernel and allocator knobs are removed; only the unit's persistent key stays.
-PRESERVED_ENV = frozenset({'QWEN36_API_KEY'})
+# kernel and allocator knobs are removed; only the unit's persistent key and the
+# owner's admission-queue settings (config/runtime.env; guard.py validates them,
+# they never reach the engine) stay.
+PRESERVED_ENV = frozenset({'QWEN36_API_KEY', 'QWEN36_QUEUE_DEPTH', 'QWEN36_QUEUE_WAIT'})
 CLEARED_ENV_PREFIXES = ('QWEN36_', 'FREETOKEN_', 'SGLANG_', 'FLA_', 'LIGHTLLM_', 'DSV4_', 'TVM_FFI_')
 CLEARED_ENV_NAMES = frozenset({'CPATH', 'GDN_RECOMPUTE_SUPPRESS_LEVEL',
                                'PYTORCH_CUDA_ALLOC_CONF', 'PYTORCH_ALLOC_CONF'})

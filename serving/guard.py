@@ -1,8 +1,11 @@
 """Owner-controlled admission/authentication for the pinned FreeToken 0.1.3 app.
-The runtime package is not edited. All HTTP routes require the same persistent key.
+The runtime package is not edited. All HTTP routes require the persistent owner key
+or a per-user key from secrets/users.env (KeyRing).
 Only the two public API routes and authenticated local diagnostics are admitted.
+The engine runs one generation at a time; QWEN36_QUEUE_DEPTH (default 0: reject
+with 429) lets that many further requests wait in FIFO order instead.
 """
-import asyncio, contextlib, hmac, json, math, os, time
+import asyncio, collections, contextlib, hmac, json, math, os, re, stat, time
 
 MAX_BODY = 2 * 1024 * 1024
 MAX_SECONDS = 900
@@ -11,10 +14,110 @@ CLEANUP_SECONDS = 2
 PROTOCOL_FAILURE_AT = None
 _ABORT_TASKS = {}
 CONTEXT = int(os.environ.get('QWEN36_CONTEXT', '65536'))
+# Ingress admits 8 HTTP requests: one generation plus at most 6 waiting leaves
+# a connection for diagnostics. Queue wait counts toward MAX_SECONDS (the edge
+# allows 910 s), so at least 60 s of generation always remains.
+QUEUE_DEPTH_MAX = 6
+QUEUE_WAIT_MAX = MAX_SECONDS - 60
+USER_KEYS_MAX = 64
+USER_NAME = re.compile(r'[a-z0-9][a-z0-9_-]{0,31}')
+USER_KEY = re.compile(r'[A-Za-z0-9_-]{43,128}')
 ALLOWED = {
     ('GET','/v1/models'), ('POST','/v1/chat/completions'),
     ('GET','/health'), ('GET','/v1/stats'), ('GET','/v1/cache/status'),
 }
+
+def bounded_setting(name, default, low, high, environ=None):
+    """Owner serving setting (config/runtime.env); absent or empty means the default."""
+    raw = (os.environ if environ is None else environ).get(name, '')
+    if raw == '': return default
+    if not (raw.isascii() and raw.isdigit() and len(raw) <= 4 and low <= int(raw) <= high):
+        raise RuntimeError(f'{name} must be an integer in {low}..{high}')
+    return int(raw)
+
+def queue_settings(environ=None):
+    """(depth, wait seconds) for the admission queue; serve_guarded checks them before model load."""
+    return (bounded_setting('QWEN36_QUEUE_DEPTH', 0, 0, QUEUE_DEPTH_MAX, environ),
+            bounded_setting('QWEN36_QUEUE_WAIT', 600, 1, QUEUE_WAIT_MAX, environ))
+
+def parse_user_keys(text, owner):
+    """name=key lines; blank and # lines ignored. Names and keys are unique, owner is reserved."""
+    users, keys = {}, {owner}
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith('#'): continue
+        name, sep, key = line.partition('=')
+        if not sep or not USER_NAME.fullmatch(name) or name == 'owner' or name in users:
+            raise ValueError('Invalid user key entry')
+        if not USER_KEY.fullmatch(key) or key.encode('ascii') in keys:
+            raise ValueError('Invalid user key entry')
+        users[name] = key.encode('ascii')
+        keys.add(users[name])
+    if len(users) > USER_KEYS_MAX: raise ValueError('Too many user keys')
+    return users
+
+class KeyRing:
+    """The unit's owner key plus optional per-user keys.
+
+    The file is re-read whenever its identity changes, so keys are issued or
+    revoked without a restart. A symlink, group/other access or any bad line
+    fails closed to the owner key alone.
+    """
+    def __init__(self, owner, path=None):
+        self.owner = owner
+        self.path = path
+        self.identity = None
+        self.users = {}
+        self.invalid = False
+
+    def refresh(self):
+        if self.path is None: return
+        try:
+            info = os.lstat(self.path)
+        except FileNotFoundError:
+            self.identity, self.users, self.invalid = None, {}, False
+            return
+        except OSError:
+            info = None
+        identity = None if info is None else (info.st_ino, info.st_mtime_ns, info.st_size, info.st_mode)
+        if identity is not None and identity == self.identity: return
+        self.identity = identity
+        try:
+            if info is None: raise ValueError('Unreadable user key file')
+            descriptor = os.open(self.path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
+            with os.fdopen(descriptor, 'rb') as handle:
+                opened = os.fstat(handle.fileno())
+                if not stat.S_ISREG(opened.st_mode) or opened.st_mode & 0o077:
+                    raise ValueError('Unsafe user key file')
+                data = handle.read(65537)
+            if len(data) > 65536: raise ValueError('User key file too large')
+            # A Windows editor may prepend a UTF-8 BOM; nothing else non-ASCII is accepted.
+            data = data.removeprefix(b'\xef\xbb\xbf')
+            self.users, self.invalid = parse_user_keys(data.decode('ascii'), self.owner), False
+        except (OSError, ValueError, UnicodeError):
+            self.users = {}
+            if not self.invalid: print('QWEN36_USER_KEYS_INVALID', flush=True)
+            self.invalid = True
+
+    def lookup(self, header):
+        """Client name whose Bearer key matches, else None. Every key is compared."""
+        self.refresh()
+        found = 'owner' if hmac.compare_digest(header, b'Bearer ' + self.owner) else None
+        for name, key in self.users.items():
+            if hmac.compare_digest(header, b'Bearer ' + key) and found is None: found = name
+        return found
+
+_KEYRING = None
+
+def keyring():
+    """Process-wide KeyRing shared by Ingress and APIGuard."""
+    global _KEYRING
+    owner = os.environ['QWEN36_API_KEY'].encode('ascii')
+    if len(owner) < 43: raise RuntimeError('API key has insufficient encoded length')
+    if _KEYRING is None or _KEYRING.owner != owner:
+        root = os.environ.get('QWEN36_DATA_ROOT')
+        _KEYRING = KeyRing(owner, os.path.join(root, 'secrets', 'users.env') if root else None)
+    return _KEYRING
 
 def validate_json_depth(body, maximum=64):
     depth, quoted, escaped = 0, False, False
@@ -123,11 +226,16 @@ def validate_payload(payload):
             raise ValueError('Message content must be text')
 
 class APIGuard:
-    def __init__(self, app, state_getter=None):
+    def __init__(self, app, state_getter=None, queue_depth=None, queue_wait=None):
         self.app = app
-        self.key = os.environ['QWEN36_API_KEY'].encode('ascii')
-        if len(self.key) < 43: raise RuntimeError('API key has insufficient encoded length')
+        self.keys = keyring()
         self.state_getter = state_getter
+        depth, wait = queue_settings()
+        self.queue_depth = depth if queue_depth is None else queue_depth
+        self.queue_wait = wait if queue_wait is None else queue_wait
+        if not (0 <= self.queue_depth <= QUEUE_DEPTH_MAX and 0 < self.queue_wait <= QUEUE_WAIT_MAX):
+            raise RuntimeError('Invalid queue settings')
+        self.waiters = collections.deque()
         self.busy = False
         self.cleanup_failed = False
         self.bucket = 60.0
@@ -144,14 +252,57 @@ class APIGuard:
         try: return self.state_getter().stats.active
         except (AssertionError,AttributeError): return 0
 
+    def dispatch(self):
+        """Hand the single generation slot to the oldest waiter (no await inside)."""
+        if self.cleanup_failed:
+            while self.waiters:
+                waiter=self.waiters.popleft()
+                if not waiter.done(): waiter.set_result(False)
+            return
+        if self.busy or not self.waiters or self.active(): return
+        self.busy=True
+        self.waiters.popleft().set_result(True)
+
+    async def wait_turn(self, receive, deadline):
+        """FIFO wait for the slot. Returns (outcome, pending disconnect probe)."""
+        waiter=asyncio.get_running_loop().create_future()
+        self.waiters.append(waiter)
+        probe=asyncio.create_task(receive())
+        outcome=None
+        try:
+            while outcome is None:
+                # Polling also covers a slot freed while the engine was still
+                # acknowledging an abort, when no request is left to dispatch.
+                self.dispatch()
+                if probe.done():
+                    if probe.cancelled() or probe.exception() is not None or probe.result().get('type')=='http.disconnect':
+                        outcome='disconnected'
+                        break
+                    probe=asyncio.create_task(receive())
+                if waiter.done():
+                    outcome='admitted' if waiter.result() else 'failed'
+                    break
+                remaining=deadline-time.monotonic()
+                if remaining<=0:
+                    outcome='timeout'
+                    break
+                await asyncio.wait({waiter,probe},timeout=min(.25,remaining),return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            if waiter in self.waiters: self.waiters.remove(waiter)
+            if outcome!='admitted':
+                if waiter.done() and not waiter.cancelled() and waiter.result(): self.busy=False
+                elif not waiter.done(): waiter.cancel()
+                if not probe.done(): probe.cancel()
+                self.dispatch()
+        return outcome, probe
+
     async def __call__(self, scope, receive, send):
         if scope['type'] == 'websocket': return await send({'type':'websocket.close','code':1008})
         if scope['type'] != 'http': return await self.app(scope, receive, send)
         route=(scope['method'],scope['path'])
         if route not in ALLOWED: return await self.reject(send,404,'Route unavailable')
         auth=[v for k,v in scope['headers'] if k.lower()==b'authorization']
-        expected=b'Bearer '+self.key
-        if len(auth)!=1 or not hmac.compare_digest(auth[0],expected):
+        if len(auth)!=1 or self.keys.lookup(auth[0]) is None:
             return await self.reject(send,401,'Invalid or missing Bearer token')
         now=time.monotonic()
         self.bucket=min(60.0,self.bucket+(now-self.refilled))
@@ -161,8 +312,10 @@ class APIGuard:
         generation=route==('POST','/v1/chat/completions')
         if self.cleanup_failed and (generation or route==('GET','/health')):
             return await self.reject(send,503,'Protocol cleanup failed; service recovery pending',True)
-        if generation and (self.busy or self.active()):
-            return await self.reject(send,429,'One inference request is already active; no waiting queue',True)
+        if generation and (self.busy or self.active()) and len(self.waiters)>=self.queue_depth:
+            if not self.queue_depth:
+                return await self.reject(send,429,'One inference request is already active; no waiting queue',True)
+            return await self.reject(send,429,'Inference queue is full',True)
         headers=dict(scope['headers'])
         if sum(k.lower()==b'content-length' for k,v in scope['headers']) > 1:
             return await self.reject(send,400,'Duplicate content length')
@@ -173,6 +326,8 @@ class APIGuard:
         if content_length < 0: return await self.reject(send,400,'Invalid content length')
         if content_length>MAX_BODY: return await self.reject(send,413,'HTTP body exceeds 2 MiB')
         body=bytearray()
+        probe=None
+        budget=MAX_SECONDS
         try:
             async with asyncio.timeout(BODY_SECONDS):
                 while True:
@@ -195,9 +350,24 @@ class APIGuard:
             metrics=scope.get('qwen36.metrics')
             if metrics is not None: metrics.configure(payload)
             # No await between the admission check and this assignment.
-            if self.busy or self.active():
-                return await self.reject(send,429,'Inference is busy; no waiting queue',True)
-            self.busy=True
+            if self.busy or self.active() or self.waiters:
+                if len(self.waiters)>=self.queue_depth:
+                    if not self.queue_depth:
+                        return await self.reject(send,429,'Inference is busy; no waiting queue',True)
+                    return await self.reject(send,429,'Inference queue is full',True)
+                queued=time.monotonic()
+                outcome,probe=await self.wait_turn(receive,queued+self.queue_wait)
+                if outcome=='disconnected': return
+                if outcome=='failed':
+                    return await self.reject(send,503,'Protocol cleanup failed; service recovery pending',True)
+                if outcome=='timeout':
+                    return await self.reject(send,429,'Inference queue wait exceeded',True)
+                waited=time.monotonic()-queued
+                # The whole request, queue included, stays inside MAX_SECONDS.
+                budget=max(1.0,MAX_SECONDS-waited)
+                if metrics is not None: metrics.row['queue_wait_s']=waited
+            else:
+                self.busy=True
         first=True
         disconnected=asyncio.Event()
         started=False
@@ -211,8 +381,12 @@ class APIGuard:
             return {'type':'http.disconnect'}
 
         async def watch_disconnect():
+            nonlocal probe
             while True:
-                m=await receive()
+                if probe is not None:
+                    pending,probe=probe,None
+                    m=await pending
+                else: m=await receive()
                 if m['type']=='http.disconnect':
                     disconnected.set()
                     return
@@ -226,7 +400,7 @@ class APIGuard:
         watcher=asyncio.create_task(watch_disconnect())
         normal_completion=False
         try:
-            done,_=await asyncio.wait({app_task,watcher},timeout=MAX_SECONDS,return_when=asyncio.FIRST_COMPLETED)
+            done,_=await asyncio.wait({app_task,watcher},timeout=budget,return_when=asyncio.FIRST_COMPLETED)
             if app_task in done:
                 await app_task
                 normal_completion=True
@@ -270,6 +444,7 @@ class APIGuard:
                     deadline=time.monotonic()+5
                     while self.active() and time.monotonic()<deadline: await asyncio.sleep(.05)
                     self.busy=self.cleanup_failed
+                    self.dispatch()
             task=asyncio.create_task(cleanup())
             # A second server cancellation must not abandon the cleanup task.
             try: await asyncio.shield(task)

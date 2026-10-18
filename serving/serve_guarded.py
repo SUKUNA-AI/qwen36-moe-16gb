@@ -1,6 +1,6 @@
 import asyncio, logging, os
 os.environ.pop('FREETOKEN_API_LOG_DIR',None)
-from guard import APIGuard, CLEANUP_SECONDS, start_abort
+from guard import APIGuard, CLEANUP_SECONDS, keyring, queue_settings, start_abort
 from ingress import Ingress
 from request_metrics import CURRENT, RequestMetrics, install_native_observers
 from placement import install
@@ -12,6 +12,9 @@ def main(run_id=None):
     # it has just generated so its immutable source receipt identifies this run.
     import uuid
     os.environ['QWEN36_RUN_ID'] = uuid.UUID(run_id).hex if run_id is not None else uuid.uuid4().hex
+    # Invalid owner settings refuse start here, not at the first request.
+    queue_settings()
+    keyring()
     from freetoken.server import api_server, openai_api
     from freetoken.cli import main as ft_main
     api_server.app.add_middleware(APIGuard,state_getter=api_server.get_global_state)
