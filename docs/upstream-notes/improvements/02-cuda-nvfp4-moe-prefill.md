@@ -123,3 +123,16 @@ Questions for maintainers:
 3. If you want it, should it ship as a prebuilt library pinned by hash (as in our fork) or as a
    JIT/tvm-ffi module like the existing `kernel/csrc/jit` kernels?
 4. We would first rerun our suites against main's Triton 3.8 kernels; is that a reasonable precondition?
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`moe/cuda_nvfp4.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/moe/cuda_nvfp4.py)
+- [`layers/quantization/moe/nvfp4.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/layers/quantization/moe/nvfp4.py)
+- [`kernels/README.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/README.md)
+- [`kernels/nvfp4-moe/py/bench.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/nvfp4-moe/py/bench.py)
+- [`kernels/nvfp4-moe`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/tree/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/nvfp4-moe)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`docs/ARCHITECTURE.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/ARCHITECTURE.md)
+- [`results/nsight/levers.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/nsight/levers.json)

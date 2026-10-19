@@ -59,3 +59,16 @@ admitting through the slot cache gives you for free. It was bit-exact but showed
 16K 173.7 vs 176.4 tok/s, 64-token TTFT 0.205 vs 0.201 s.
 
 Limits: sm_120 only, one model, batch 1. The screens use 2-3 pairs. Not run on your Qwen3.8 / 512-expert setup.
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`moe/offload_cache.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/moe/offload_cache.py)
+- [`moe/offload_kernels.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/moe/offload_kernels.py)
+- [`kernel/decode_gather.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/decode_gather.py)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`docs/RESULTS.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/RESULTS.md)
+- [`next-update/transport/results/ab-c1-threshold.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/next-update/transport/results/ab-c1-threshold.json)
+- [`results/ladder/summary.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/ladder/summary.json)
+- [`next-update/transport/results/ab-ttft.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/next-update/transport/results/ab-ttft.json)

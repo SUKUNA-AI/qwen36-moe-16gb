@@ -124,3 +124,19 @@ works for any "drop-in kernel must match the incumbent bit for bit" case. Open q
 2. For the o-projection, would a non-split-K GEMV under the existing W8A8 contract be acceptable instead of
    reproducing cuBLASLt's order?
 3. Should the libraries be built through the prebuilt kernel cache instead of ctypes `.so` files?
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`kernel/cuda_oproj_gemv.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/cuda_oproj_gemv.py)
+- [`layers/quantization/linear/fp8_tensor.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/layers/quantization/linear/fp8_tensor.py)
+- [`kernel/cuda_moe_decode.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/cuda_moe_decode.py)
+- [`layers/quantization/moe/nvfp4.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/layers/quantization/moe/nvfp4.py)
+- [`kernels/decode-oproj/README.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/decode-oproj/README.md)
+- [`kernels/decode-moe/README.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/decode-moe/README.md)
+- [`kernels/decode-oproj`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/tree/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/decode-oproj)
+- [`kernels/decode-moe`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/tree/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/decode-moe)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`results/ladder/ncu-kernels.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/ladder/ncu-kernels.json)
+- [`results/ladder/summary.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/ladder/summary.json)

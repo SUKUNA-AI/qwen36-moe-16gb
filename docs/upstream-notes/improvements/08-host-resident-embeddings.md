@@ -96,3 +96,15 @@ We can send a PR: a `HostIndexingEmbeddingKernel` (or a `--embed-on-host` flag) 
 Triton row-copy kernel, the call before `weights_bytes` is measured, and the tests above, default off. Open
 questions: should it be offered only when `--moe-strategy offload` is active, and should it refuse
 automatically for tied heads (as we do) or warn?
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`engine/host_embeddings.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/engine/host_embeddings.py)
+- [`layers/embedding.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/layers/embedding.py)
+- [`kernel/triton/host_rows.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/triton/host_rows.py)
+- [`engine/engine.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/engine/engine.py)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`results/ladder/summary.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/ladder/summary.json)
+- [`docs/RESULTS.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/RESULTS.md)

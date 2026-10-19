@@ -124,3 +124,18 @@ Questions for maintainers:
 2. Would you prefer a generic skinny W8A8 GEMV with its own (non-bit-identical) numerics, selected for the
    whole deployment rather than per M, as your docstring requires?
 3. Prebuilt library pinned by hash, or JIT under `kernel/csrc/jit`?
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`kernel/cuda_fp8_gemv.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/cuda_fp8_gemv.py)
+- [`layers/quantization/linear/fp8_tensor.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/layers/quantization/linear/fp8_tensor.py)
+- [`kernel/triton/fp8_pertensor_linear.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/triton/fp8_pertensor_linear.py)
+- [`kernels/README.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/README.md)
+- [`kernels/fp8-gemv/scripts/step4_speed.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/fp8-gemv/scripts/step4_speed.py)
+- [`kernels/fp8-gemv`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/tree/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/fp8-gemv)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`docs/ARCHITECTURE.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/ARCHITECTURE.md)
+- [`results/nsight/levers.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/nsight/levers.json)
+- [`results/metrics/metrics.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/metrics/metrics.json)

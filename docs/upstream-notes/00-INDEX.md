@@ -23,6 +23,13 @@ Checkpoint: `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0
 | (reply) thanks to the collaborator on #743 | comment on #743 | https://github.com/FlashML-org/FreeToken/issues/743#issuecomment-6276206996 |
 | (closing note) #746 closed as completed: Triton 3.8 emits `.shared::cta`, so the upgrade removes the reservation | comment + close #746 | https://github.com/FlashML-org/FreeToken/issues/746 |
 | CCCL PR follow-up: commit 22e672d scopes the runtime observation (CodeRabbit review); tensor-form data from #743 | review reply + PR comment | https://github.com/NVIDIA/cccl/pull/12081#discussion_r4318319684, https://github.com/NVIDIA/cccl/pull/12081#issuecomment-6276231597 |
+| `improvements/11-context-admission-streamed-overflow.md` (+ links to our code) | new issue | https://github.com/FlashML-org/FreeToken/issues/749 |
+| `improvements/11-comment-issue-644.md` | comment on #644 | https://github.com/FlashML-org/FreeToken/issues/644#issuecomment-6276436135 |
+| `improvements/11-comment-issue-567.md` | comment on #567 | https://github.com/FlashML-org/FreeToken/issues/567#issuecomment-6276437733 |
+| `improvements/11-comment-issue-693.md` | comment on #693 | https://github.com/FlashML-org/FreeToken/issues/693#issuecomment-6276439324 |
+
+The unposted improvement drafts now end with "Our implementation, for reference": permalinks to our code and evidence
+at the pushed commit `745b28a` of `SUKUNA-AI/qwen36-moe-16gb`.
 
 Everything else in this folder is still unposted.
 

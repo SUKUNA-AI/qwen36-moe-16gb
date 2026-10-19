@@ -115,3 +115,14 @@ We can send a PR with both switches default off (names up to you), ported to the
 `_invalidate_prefill_buffer`. Open questions: should epoch invalidation become the default whenever no slot
 writer can run mid-prefill? And do you want the masked-index host sync at `:845` replaced by a sync-free
 `masked_fill_`? We have a flag-off variant of that, but did not measure it separately as part of C0.
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`moe/offload_cache.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/moe/offload_cache.py)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`docs/RESULTS.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/RESULTS.md)
+- [`next-update/transport/results/ab-ttft.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/next-update/transport/results/ab-ttft.json)
+- [`results/ladder/summary.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/ladder/summary.json)
+- [`results/experiments/short-route-summary.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/experiments/short-route-summary.json)

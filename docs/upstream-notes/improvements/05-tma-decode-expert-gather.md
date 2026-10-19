@@ -121,3 +121,14 @@ example `FREETOKEN_DECODE_GATHER=tma`), selected only on sm_90+ with the fused c
 1. Should the CTA count and stage depth come from a per-link setting like `FREETOKEN_H2D_BLOCKS_PER_BANK`, or from
    a small startup probe? Our sweep suggests targeting bytes in flight (~256-384 KiB on PCIe 5.0), not threads.
 2. Would you take a CI or compile-time check that rejects `.shared::cluster` bulk copies in sm_120 builds?
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`kernel/decode_gather.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/decode_gather.py)
+- [`kernel/csrc/jit/decode_gather.cuh`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/csrc/jit/decode_gather.cuh)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`docs/ARCHITECTURE.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/ARCHITECTURE.md)
+- [`docs/RESULTS.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/RESULTS.md)
+- [`next-update/gather-prefetch/results/ceiling-verdict.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/next-update/gather-prefetch/results/ceiling-verdict.json)

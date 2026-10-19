@@ -65,3 +65,14 @@ We could contribute:
 
 Questions: is a GPU- and stack-specific bitwise reference acceptable for CI, or should the gate default to a
 tolerance with bitwise as an opt-in? Should telemetry be a separate issue?
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`engine/qualification.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/engine/qualification.py)
+- [`engine/telemetry.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/engine/telemetry.py)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`docs/METHODOLOGY.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/METHODOLOGY.md)
+- [`results/ladder/teacher.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/ladder/teacher.json)
+- [`docs/RESULTS.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/RESULTS.md)

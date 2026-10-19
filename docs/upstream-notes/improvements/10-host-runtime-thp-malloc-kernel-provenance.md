@@ -95,3 +95,14 @@ Three host-side changes from our long-running single-GPU deployment, each small 
 3. Provenance: we can upstream a recipe-digest check as an extension of `_load_prebuilt`. The kernel-cache wheel
    would ship the manifest it was built from, and `FREETOKEN_DISABLE_JIT=1` would refuse mismatches. Does this fit
    the current wheel versioning, or should the digest go into the cache layout instead?
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`moe/host_banks.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/moe/host_banks.py)
+- [`kernel/kernel_provenance.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/kernel_provenance.py)
+- [`kernel/utils.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/utils.py)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`docs/ARCHITECTURE.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/ARCHITECTURE.md)
+- [`results/metrics/metrics.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/metrics/metrics.json)

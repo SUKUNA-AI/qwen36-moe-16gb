@@ -41,3 +41,12 @@ compute stream (`QWEN36_DECODE_SHARED_OVERLAP=1`):
 
 One practical note: Nsight Compute hung while capturing the two-stream graph (ncu serialises kernels). We profile
 with the overlap switched off.
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`decode_overlap.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/decode_overlap.py)
+- [`layers/moe.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/layers/moe.py)
+- [`models/qwen3_5_moe/moe.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/models/qwen3_5_moe/moe.py)
+- [`moe/offload_cache.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/moe/offload_cache.py)
+- [`freetoken/tests/moe/test_decode_overlap_gpu.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/tests/moe/test_decode_overlap_gpu.py)
+- [`harness/test-decode-overlap-cpu.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/harness/test-decode-overlap-cpu.py)

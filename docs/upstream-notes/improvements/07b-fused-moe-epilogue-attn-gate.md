@@ -107,3 +107,18 @@ We can send two independent PRs, both default off: D5 as a Triton kernel with it
 gate as a JIT CUDA module, or a Triton port if you prefer, with the same fixtures. Open question: would you
 take a lint or test that flags Triton elementwise kernels claiming torch parity but not compiled with
 `enable_fp_fusion=False`?
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`moe/shared_epilogue.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/moe/shared_epilogue.py)
+- [`models/qwen3_5_moe/moe.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/models/qwen3_5_moe/moe.py)
+- [`kernel/cuda_attention_gate.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/cuda_attention_gate.py)
+- [`kernel/csrc/qwen36_attention_gate.cu`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/kernel/csrc/qwen36_attention_gate.cu)
+- [`kernels/README.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/README.md)
+- [`kernels/attention-gate`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/tree/745b28a34fc5b68439a34cc7efbefa55209c660f/kernels/attention-gate)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`next-update/next-candidate/results/microbench-w2.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/next-update/next-candidate/results/microbench-w2.json)
+- [`results/ladder/summary.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/ladder/summary.json)
+- [`docs/RESULTS.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/RESULTS.md)

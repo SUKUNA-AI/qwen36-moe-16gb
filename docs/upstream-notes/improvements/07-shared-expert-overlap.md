@@ -111,3 +111,18 @@ tokens, no profiler). Each step adds one change to the previous one. Values are 
 We can send a PR: the `DecodeSharedOverlap` helper, a `forward_with_shared` path in `OffloadMoELayer`, and a
 default-off server flag, with the GPU byte test and its negative control. If you prefer #678's split (shared
 expert on the side stream), we are happy to run that variant through the same teacher gate and A/B on our setup.
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`layers/moe.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/layers/moe.py)
+- [`models/qwen3_5_moe/moe.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/models/qwen3_5_moe/moe.py)
+- [`moe/offload_cache.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/moe/offload_cache.py)
+- [`harness/test-decode-overlap-cpu.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/harness/test-decode-overlap-cpu.py)
+- [`decode_overlap.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/decode_overlap.py)
+- [`freetoken/tests/moe/test_decode_overlap_gpu.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/tests/moe/test_decode_overlap_gpu.py)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`results/ladder/summary.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/results/ladder/summary.json)
+- [`docs/RESULTS.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/docs/RESULTS.md)
+- [`next-update/gather-prefetch/OVERLAP-DESIGN.md`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/next-update/gather-prefetch/OVERLAP-DESIGN.md)

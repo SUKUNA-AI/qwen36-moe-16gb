@@ -43,3 +43,12 @@ lost 4% at 16K. Peak process memory grew by 46 MiB.
 This matches your choice of a dedicated high-priority stream. Your +22% is measured on a link-bound baseline
 (the copies are about half of the step), while our gather was already a small part of the step (0.64 of 5.78 ms in
 Nsight). That may explain the different outcome.
+
+**Our implementation, for reference** (fork of FreeToken 0.1.3, Apache-2.0, pinned commit; feel free to reuse):
+
+- [`moe/pregate.py`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/freetoken/python/freetoken/moe/pregate.py)
+
+Evidence and write-ups (`docs/RESULTS.md` is in Russian):
+
+- [`next-update/transport/results/d3a-route-trace.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/next-update/transport/results/d3a-route-trace.json)
+- [`next-update/next-candidate/results/microbench-w2.json`](https://github.com/SUKUNA-AI/qwen36-moe-16gb/blob/745b28a34fc5b68439a34cc7efbefa55209c660f/next-update/next-candidate/results/microbench-w2.json)
