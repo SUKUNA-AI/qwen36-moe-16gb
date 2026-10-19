@@ -27,6 +27,16 @@ Checkpoint: `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0
 | `improvements/11-comment-issue-644.md` | comment on #644 | https://github.com/FlashML-org/FreeToken/issues/644#issuecomment-6276436135 |
 | `improvements/11-comment-issue-567.md` | comment on #567 | https://github.com/FlashML-org/FreeToken/issues/567#issuecomment-6276437733 |
 | `improvements/11-comment-issue-693.md` | comment on #693 | https://github.com/FlashML-org/FreeToken/issues/693#issuecomment-6276439324 |
+| `improvements/01-layer-major-prefill.md` | new issue | https://github.com/FlashML-org/FreeToken/issues/750 |
+| `improvements/05-tma-decode-expert-gather.md` | new issue | https://github.com/FlashML-org/FreeToken/issues/751 |
+| `improvements/05b-comment-issue-579.md` | comment on #579 | https://github.com/FlashML-org/FreeToken/issues/579#issuecomment-6276576160 |
+| `improvements/06-prefill-copy-stream-priority-epoch-invalidate.md` | new issue | https://github.com/FlashML-org/FreeToken/issues/752 |
+| `improvements/07-shared-expert-overlap.md` | new issue | https://github.com/FlashML-org/FreeToken/issues/753 |
+| `improvements/07-comment-issue-678.md` | comment on #678 | https://github.com/FlashML-org/FreeToken/issues/678#issuecomment-6276596471 |
+| `improvements/07c-comment-issue-677.md` | comment on #677 | https://github.com/FlashML-org/FreeToken/issues/677#issuecomment-6276603440 |
+| `improvements/08-host-resident-embeddings.md` | new issue | https://github.com/FlashML-org/FreeToken/issues/754 |
+
+Still unposted: improvements 02, 03, 04, 07b, 09, 10, 12 and the #280 comment.
 
 The unposted improvement drafts now end with "Our implementation, for reference": permalinks to our code and evidence
 at the pushed commit `745b28a` of `SUKUNA-AI/qwen36-moe-16gb`.

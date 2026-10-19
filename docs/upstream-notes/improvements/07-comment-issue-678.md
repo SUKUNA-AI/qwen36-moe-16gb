@@ -1,7 +1,7 @@
 <!-- READY, NOT POSTED. Target: FlashML-org/FreeToken, comment on issue #678. Paste everything below this line. Checked against upstream main 4d2e2e2 (2026-10-19): no shared-expert/miss-copy overlap on main. Full write-up: our new issue 07-shared-expert-overlap.md (post it first and replace "<our issue>" below with its number). -->
 
 Independent confirmation from a downstream fork, with a different split of the streams. Details and a PR offer
-are in <our issue>.
+are in #753.
 
 **Setup:** RTX 5070 Ti 16 GB (sm_120), PCIe 5.0 x16 under WSL2, `nvidia/Qwen3.6-35B-A3B-NVFP4` (40 MoE layers x 256
 experts + gated shared expert), FreeToken 0.1.3 `cac247a8` + our changes, LRU slot cache (3164 slots, ~28 misses
