@@ -1,4 +1,4 @@
-<!-- READY, NOT POSTED. Target: NVIDIA/cccl pull request from a fork. -->
+<!-- POSTED 2026-10-19 as https://github.com/NVIDIA/cccl/pull/12081. Target: NVIDIA/cccl pull request from a fork. -->
 
 # Title
 

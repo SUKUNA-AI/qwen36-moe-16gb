@@ -19,6 +19,7 @@ Checkpoint: `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0
 | `02-freetoken-qwen35-gemma-norm-bf16-fold.md` (+ patch inline) | new issue | https://github.com/FlashML-org/FreeToken/issues/747 |
 | `01-comment-pr-739.md` | comment on PR #739 | https://github.com/FlashML-org/FreeToken/pull/739#issuecomment-6276005205 |
 | `03-freetoken-prefix-cache-history-dependence.md` | new issue | https://github.com/FlashML-org/FreeToken/issues/748 |
+| `cccl-pr/PR.md` + patch (commit author `SUKUNA-AI` noreply, fork `SUKUNA-AI/cccl`, branch `docs/cp-async-bulk-sm120-shared-cta`) | PR on NVIDIA/cccl | https://github.com/NVIDIA/cccl/pull/12081 |
 
 Everything else in this folder is still unposted.
 
