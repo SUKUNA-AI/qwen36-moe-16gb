@@ -1,4 +1,4 @@
-<!-- DRAFT ONLY, NOT POSTED. Local file; the owner decides the repository and whether to post. Suggested target: FlashML-org/FreeToken (issue). -->
+<!-- READY, NOT POSTED. Target: FlashML-org/FreeToken, new issue (engine bug). Paste from the "# " title line down; the title line is the issue title. Refs re-checked on upstream main 4d2e2e2 (2026-10-19). -->
 
 # NVFP4: per-tensor global scale (`weight_scale_2`) is stored as fp16, so ~94% of ModelOpt globals become fp16 subnormals
 
@@ -21,7 +21,9 @@ about 63 MB of pinned host memory for a 256-expert x 40-layer model.
 
 ## Environment
 
-- FreeToken 0.1.3, commit `cac247a860e316e06580d05aeb05f2e647bde214`
+- Measured on FreeToken 0.1.3, commit `cac247a860e316e06580d05aeb05f2e647bde214`. The cast is still present on
+  `main` at `4d2e2e2104ab104fa17aa41710cd11afbf604588` (2026-10-19); the file:line references below are for that
+  commit.
 - Checkpoint `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0f2c3c5` (ModelOpt mixed precision:
   NVFP4 W4A16 for the routed experts, the shared expert and `lm_head`; FP8 for the attention and GDN projections)
 - RTX 5070 Ti 16 GB (sm_120), Linux (WSL2), torch 2.11.0+cu130, triton 3.6.0, flashinfer-python 0.6.18.post1,
@@ -68,22 +70,22 @@ global has error 1.8e-4.
    Loading any expert through `nvfp4_expert_spec -> iter_nvfp4_expert_pieces -> TritonNvfp4MoEKernel.pack` shows
    `gate_up_global.dtype == torch.float16`, and the values equal `g.half()`, not `g`.
 
-## Root cause (file:line at `cac247a8`)
+## Root cause (file:line at `main` `4d2e2e2`)
 
 | Location | Code |
 |---|---|
 | `python/freetoken/models/qwen3_5_moe/weight.py:230` (`_DenseReader._check`) | `out["weight_global"] = g.to(torch.float16).expand(rows).contiguous()` |
-| `python/freetoken/layers/quantization/linear/nvfp4.py:122` (`Nvfp4LinearMethod.create_weights`) | `layer.weight_global = torch.empty(g.out_features, dtype=torch.float16)` |
-| `python/freetoken/models/nvfp4_banks.py:36-39` (`_ingest_global`) | `return tensor.to(torch.float16)` |
-| `python/freetoken/layers/quantization/moe/base.py:94-96` (`global_rows`) | `flat = piece.reshape(piece.shape[0], -1).to(torch.float16)` |
+| `python/freetoken/layers/quantization/linear/nvfp4.py:304` (`Nvfp4LinearMethod.create_weights`) | `layer.weight_global = torch.empty(g.out_features, dtype=torch.float16)` |
+| `python/freetoken/models/nvfp4_banks.py:39` (`_ingest_global`) | `return tensor.to(torch.float16)` |
+| `python/freetoken/layers/quantization/moe/base.py:100` (`global_rows`) | `flat = piece.reshape(piece.shape[0], -1).to(torch.float16)` |
 | `python/freetoken/layers/quantization/moe/nvfp4.py:55,58` (bank layout) | `"gate_up_global": BankSpec((2 * i,), torch.float16)`, `"down_global": BankSpec((h,), torch.float16)` |
-| same pattern, other loaders | `models/gemma4/weight.py:72`, `models/glm4_moe/weight.py:86`, `models/loader.py:215` (compressed-tensors `1 / weight_global_scale`) |
+| same pattern, other loaders | `models/gemma4/weight.py:72`, `models/glm4_moe/weight.py:86`, `models/loader.py:215` (compressed-tensors `1 / weight_global_scale`, also used by `models/muse_glimmer`) |
 
 The consumers already work in fp32 after the load. Examples are
-`kernel/triton/nvfp4_fused_moe.py:122,219,314`, `kernel/triton/nvfp4_linear.py:220,305,472,519`,
+`kernel/triton/nvfp4_fused_moe.py:125,286,503`, the NVFP4 linear kernels in `kernel/triton/nvfp4_linear.py`,
 `kernel/triton/nvfp4_dequant.py:52` (`tl.load(...).to(tl.float32)`) and
-`kernel/csrc/cpu_moe/cpu_moe_ext.cpp:1500-1524` (`fp16_to_f32(gu_global_l[r])` / `fp16_to_f32(dn_global_l[r])`).
-The comment at `nvfp4_dequant.py:50-51` says the global is kept separate so that it does not underflow. The
+`kernel/csrc/cpu_moe/kernels/nvfp4.cpp:408-435` (`fp16_to_f32(global[r])` / `fp16_to_f32(global[row])`).
+The comment at `nvfp4_dequant.py:51` says the global is kept separate so that it does not underflow. The
 fp16 storage reintroduces that underflow for real checkpoints, because their globals are around 1e-4.
 
 ## Measured impact
@@ -121,7 +123,8 @@ Keep the global in fp32 from the reader to the kernel. The Triton kernels need n
 already `tl.load(...).to(tl.float32)` the global. Only the pointer dtype changes, and Triton specialises on it
 automatically. The C++ CPU-MoE path must read `const float*`.
 
-Excerpt (full patch: `patches/nvfp4-global-fp32.upstream.diff`, 14 files, applies to `cac247a8`):
+Excerpt (full patch attached: `nvfp4-global-fp32.main-4d2e2e2.diff`, 15 files, passes `git apply --check` on
+`main` `4d2e2e2`; the C++ part now lives in `kernel/csrc/cpu_moe/kernels/nvfp4.cpp`):
 
 ```diff
 --- a/python/freetoken/models/nvfp4_banks.py
@@ -150,25 +153,26 @@ Excerpt (full patch: `patches/nvfp4-global-fp32.upstream.diff`, 14 files, applie
 +++ b/python/freetoken/layers/quantization/linear/nvfp4.py
 -        layer.weight_global = torch.empty(g.out_features, dtype=torch.float16)
 +        layer.weight_global = torch.empty(g.out_features, dtype=torch.float32)
---- a/python/freetoken/kernel/csrc/cpu_moe/cpu_moe_ext.cpp
-+++ b/python/freetoken/kernel/csrc/cpu_moe/cpu_moe_ext.cpp
--                         const uint8_t* gu_scale_l, const uint16_t* gu_global_l, int e, int row,
-+                         const uint8_t* gu_scale_l, const float* gu_global_l, int e, int row,
--                     fp16_to_f32(gu_global_l[r]), xi8, H, e4m3_lut, xas);
-+                     gu_global_l[r], xi8, H, e4m3_lut, xas);
-   (same for down / dn_global_l, plus an `nvfp4_global_bits() == 32` ABI marker that
-    CpuMoeExecutor probes, mirroring the existing `max_generic_act_id` probe)
+--- a/python/freetoken/kernel/csrc/cpu_moe/kernels/nvfp4.cpp
++++ b/python/freetoken/kernel/csrc/cpu_moe/kernels/nvfp4.cpp
+-    const uint16_t* global = static_cast<const uint16_t*>(tbl_at(gu_global_, layer));
++    const float* global = static_cast<const float*>(tbl_at(gu_global_, layer));
+-                        fp16_to_f32(global[r]), xi8, H, e4m3_lut_, xas);
++                        global[r], xi8, H, e4m3_lut_, xas);
+  (same for down / dn_global_, plus an `nvfp4_global_bits() == 32` ABI marker in cpu_moe_ext.cpp that
+   CpuMoeExecutor probes, mirroring the existing `max_generic_act_id` probe)
 ```
 
 The same one-line change applies to the gemma4, glm4_moe and compressed-tensors (`models/loader.py`) NVFP4
-loaders. Tests that hard-code fp16 globals need updating: `tests/models/test_qwen3_5_moe_weight.py:447,515,519,562`,
-`tests/moe/test_nvfp4_backends.py:64,66,481,484` and `tests/moe/test_offload.py:571,574`. `moe/benchbw.py:347-353`
-also builds fp16 globals.
+loaders; all are in the patch. Tests that hard-code fp16 globals need updating and are **not** in the patch:
+`tests/models/test_qwen3_5_moe_weight.py:447,517,521,566`, `tests/moe/test_nvfp4_backends.py:67,69,624,627`,
+`tests/moe/test_offload.py:571,574`, `tests/moe/test_mixed_expert_formats.py:65,68` and
+`tests/kernels/test_nvfp4_w4a4_linear.py:89,152`. `moe/benchbw.py:406-412` also builds fp16 globals.
 
 If fp16 storage has to stay, an alternative is to store `g * 2**16` in fp16 and multiply by `2**-16` in the
 epilogue. That keeps the values out of the subnormal range (error at most ~4.9e-4), but it is still not exact.
 
-Not covered: the Marlin NVFP4 paths (`linear/nvfp4.py:64`, `moe/nvfp4.py:164-172`) hand the global to vLLM's
+Not covered: the Marlin NVFP4 paths (`linear/nvfp4.py:218-246`, `moe/nvfp4.py:175-222`) hand the global to vLLM's
 Marlin helpers as bf16. That is a separate constraint of those helpers, and we did not evaluate it.
 
 ## Verification we did (on a downstream build of `cac247a8` with the equivalent change)
@@ -182,5 +186,6 @@ Marlin helpers as bf16. That is a separate constraint of those helpers, and we d
    was checked.
 3. **Whole model**: teacher-forced logits and perplexity, the 60-case functional eval, a seed study (10 seeds greedy
    plus 40 seeds T=0.6 per prompt) and the high-precision reference, with the numbers above.
-4. The attached upstream patch is a port of that change to the clean base. It passes `git apply --check` on
-   `cac247a8`. The port itself has **not** been re-run on an unmodified checkout.
+4. The attached patch is a port of that change to the clean upstream tree, rebased onto `main` `4d2e2e2`
+   (the CPU-MoE refactor moved the C++ part). It passes `git apply --check` there. The port itself has **not**
+   been built or run (no pytest, no GPU run, CPU-MoE extension not rebuilt).

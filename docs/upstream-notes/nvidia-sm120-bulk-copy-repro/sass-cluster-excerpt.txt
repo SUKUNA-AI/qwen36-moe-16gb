@@ -1,0 +1,12 @@
+        /*0320*/                   MOV R11, RZ                                                              ?t
+        /*0330*/                   CS2R R12, SRZ                                                            ?W
+        /*0340*/                   LEPC R20, 0x360                                                          ?W
+        /*0350*/                   CALL.ABS.NOINC R14                              &req={2,1,0}             ?t
+        /*0360*/                   BRA 0x3e0                                                                ?t
+        /*0370*/                   PLOP3.LUT P0, PT, PT, PT, PT, 0x80, 0x8                                  ?t
+        /*0380*/                   UMOV UR6, 0x100                                 &req={1,0}               ?W
+        /*0390*/               @P0 ELECT P1, URZ, PT                                                        ?t
+        /*03a0*/                   UBLKCP.S.G [UR8], [UR4], UR6                    &req={1} &rd=0x1         ?W
+        /*03b0*/               @P1 PLOP3.LUT P0, PT, P1, PT, PT, 0x8, 0x80                                  ?t
+        /*03c0*/                   PLOP3.LUT P1, PT, PT, PT, PT, 0x8, 0x80                                  ?W
+        /*03d0*/               @P0 BRA.U.ANY 0x390                                                          ?t

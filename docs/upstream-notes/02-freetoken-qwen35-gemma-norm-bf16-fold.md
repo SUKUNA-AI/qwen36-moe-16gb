@@ -1,4 +1,4 @@
-<!-- DRAFT ONLY, NOT POSTED. Local file; the owner decides the repository and whether to post. Suggested target: FlashML-org/FreeToken (issue). -->
+<!-- READY, NOT POSTED. Target: FlashML-org/FreeToken, new issue (engine bug). Paste from the "# " title line down; the title line is the issue title. Refs re-checked on upstream main 4d2e2e2 (2026-10-19). -->
 
 # Qwen3.5/3.6: Gemma-style `(1 + w)` RMSNorm weights are folded into bf16 at load time; transformers applies `(1 + w)` in fp32
 
@@ -14,7 +14,7 @@ FreeToken's Qwen3.5 loader instead yields `tensor + 1.0` on the bf16 checkpoint 
 **77.4% of the 171,008 norm multipliers change**. The per-channel relative error is on average 1.4e-3 and at most
 3.9e-3 (half a bf16 ulp). The error is systematic per channel and the same for every token.
 
-FreeToken already documents this pitfall elsewhere. The `GemmaPlusOneRMSNorm` docstring (`layers/norm.py:80-82`)
+FreeToken already documents this pitfall elsewhere. The `GemmaPlusOneRMSNorm` docstring (`layers/norm.py:79-83`)
 says the `+1` must be added in fp32 at runtime and must not be folded into the bf16 weight. The `qwen4_exp`
 loader comment (`models/qwen4_exp/weight.py:63-66`) explains that folding would round away small |w|. As far as
 we can see, only the `qwen3_5_moe` path folds.
@@ -22,7 +22,8 @@ we can see, only the `qwen3_5_moe` path folds.
 ## Environment
 
 Same as the NVFP4-global report:
-- FreeToken 0.1.3 `cac247a860e316e06580d05aeb05f2e647bde214`
+- Measured on FreeToken 0.1.3 `cac247a860e316e06580d05aeb05f2e647bde214`; the fold is unchanged on `main` at
+  `4d2e2e2104ab104fa17aa41710cd11afbf604588` (2026-10-19), and the file:line references below are for that commit.
 - `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0f2c3c5`
 - RTX 5070 Ti (sm_120), torch 2.11.0+cu130, sgl-kernel 0.4.5, flashinfer-python 0.6.18.post1, transformers 5.16.1
 
@@ -81,19 +82,19 @@ attention, router top-k, NVFP4 experts and `lm_head`. Apart from the NVFP4-globa
 were all at output-rounding level (relative L2 1.6e-3 to 6e-3) or explained by bf16 intermediates that the
 kernels use by design. Router top-k sets matched the reference on 100% of tokens.
 
-## Root cause (file:line at `cac247a8`)
+## Root cause (file:line at `main` `4d2e2e2`)
 
-- `python/freetoken/models/qwen3_5_moe/weight.py:279-280`:
+- `python/freetoken/models/qwen3_5_moe/weight.py:277-278`:
 
   ```python
   elif _is_gemma_norm(name):
       yield name, tensor + 1.0  # (1 + weight) baked into the stored norm weight
   ```
 
-  The suffix list is at `weight.py:39-44`, and `_is_gemma_norm` at `weight.py:66-67`.
+  The suffix list is at `weight.py:38-44`, and `_is_gemma_norm` at `weight.py:66-67`.
 - `python/freetoken/layers/norm.py:29-76`: `GemmaRMSNorm` multiplies by the stored weight with plain
   `rmsnorm`/`fused_add_rmsnorm` (lines 63 and 75).
-- Used at `models/qwen3_5_moe/model.py:59-60` (input/post-attention), `model.py:89` (final norm) and
+- Used at `models/qwen3_5_moe/model.py:61-62` (input/post-attention), `model.py:93` (final norm) and
   `models/qwen3_5_moe/attention.py:44-47` (q/k norm; the comment at 44-45 documents the fold).
 
 ## Measured impact
@@ -115,7 +116,8 @@ kernels use by design. Router top-k sets matched the reference on 100% of tokens
 Stop folding. Keep the raw `w`, and use the `(1 + w)`-in-fp32 kernels that the existing dependencies already ship
 (`sgl_kernel.gemma_rmsnorm` / `gemma_fused_add_rmsnorm`, with the Triton fallbacks in
 `freetoken/kernel/triton/norm.py`). This is the smallest change that keeps the `forward_add_residual` call sites
-unchanged. Full patch: `patches/gemma-norm-plus-one-fp32.upstream.diff` (5 files, applies to `cac247a8`).
+unchanged. Full patch attached: `gemma-norm-plus-one-fp32.upstream.diff` (5 files incl. 1 test; passes `git apply --check` on both
+`cac247a8` and `main` `4d2e2e2`).
 
 ```diff
 --- a/python/freetoken/models/qwen3_5_moe/weight.py
@@ -156,5 +158,5 @@ norm (`linear_attn.norm`) is a plain `w * x` norm and is correctly left out of t
    `sgl_kernel` on real activations from 6 layers and the final norm).
 2. The high-precision CPU reference that produced the margin numbers was validated against the transformers
    Qwen3.5-MoE modules: RMSNorm, attention layer and GDN layer all at max |diff| 0.0.
-3. The patch passes `git apply --check` on `cac247a8`. **Not run**: an end-to-end GPU run of the patched model, and
+3. The patch passes `git apply --check` on `cac247a8` and on `main` `4d2e2e2`. **Not run**: an end-to-end GPU run of the patched model, and
    PPL or eval with the fix.

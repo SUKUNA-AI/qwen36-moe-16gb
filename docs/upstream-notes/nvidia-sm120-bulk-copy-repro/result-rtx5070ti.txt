@@ -1,0 +1,19 @@
+Build cuda_13.4.r13.4/compiler.38657139_0
+== cluster
+0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, used 1 barriers, 4104 bytes smem
+SASS: CALL.ABS=1 UBLKCP=1 syscall_refs=3
+variant=shared::cluster gpu="NVIDIA GeForce RTX 5070 Ti" sm_120 sms=70 maxThreads/SM=1536 driver=13040 runtime=13040 blocks=420
+stack_limit_bytes before=1024 after=14416
+free_vram_MiB before=14955.0 after_1st=13581.0 after_2nd=13581.0 delta=1374.0
+after cudaDeviceSetLimit(1024): stack_limit=1024 free_vram_MiB=14955.0; after 3rd launch: stack_limit=14416 free_vram_MiB=13581.0
+checksum OK
+== cta
+0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, used 1 barriers, 4104 bytes smem
+SASS: CALL.ABS=0 UBLKCP=1 syscall_refs=0
+variant=shared::cta gpu="NVIDIA GeForce RTX 5070 Ti" sm_120 sms=70 maxThreads/SM=1536 driver=13040 runtime=13040 blocks=420
+stack_limit_bytes before=1024 after=1024
+free_vram_MiB before=15007.0 after_1st=15007.0 after_2nd=15007.0 delta=0.0
+after cudaDeviceSetLimit(1024): stack_limit=1024 free_vram_MiB=15007.0; after 3rd launch: stack_limit=1024 free_vram_MiB=15007.0
+checksum OK

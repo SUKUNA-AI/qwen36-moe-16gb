@@ -1,4 +1,4 @@
-<!-- DRAFT ONLY, NOT POSTED. Local file; the owner decides the repository and whether to post. Suggested target: FlashML-org/FreeToken (issue labelled question/feature, or a discussion). Informational: no correctness bug claimed. -->
+<!-- READY, NOT POSTED. Target: FlashML-org/FreeToken, new issue (feature request / question; no bug claimed). Paste from the "# " title line down. Refs re-checked on upstream main 4d2e2e2 (2026-10-19). -->
 
 # Hybrid radix cache: greedy outputs depend on request history even when `cached_tokens` is 0 (request: cache flush endpoint / deterministic mode)
 
@@ -25,7 +25,8 @@ the KV pool. We would like an opt-in **deterministic mode** and/or a cheap **cac
 
 ## Environment
 
-- FreeToken 0.1.3 `cac247a860e316e06580d05aeb05f2e647bde214`, `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a`
+- Measured on FreeToken 0.1.3 `cac247a860e316e06580d05aeb05f2e647bde214`, `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a`.
+  The code paths below are unchanged in behaviour on `main` `4d2e2e2` (2026-10-19); file:line refs are for that commit.
 - RTX 5070 Ti (sm_120), torch 2.11.0+cu130, flashinfer-python 0.6.18.post1, Linux (WSL2)
 - `ft serve ... --cache-type radix --max-running-requests 1 --max-prefill-length 2048 --moe-strategy offload`.
   The scheduler is the default overlap scheduler, `page_size` is 1, and `--max-seq-len-override` was 131072 or
@@ -71,25 +72,25 @@ boundaries at 64/128 tokens), the stored snapshot differs from the fp32 state at
 1.66e-3 (max abs 9.8e-4). A variant that copies the fp32 accumulator directly is bit-equal to it. Outputs and live
 state are unaffected; only prefix-hit continuations start from the rounded state.
 
-## Where it happens (file:line at `cac247a8`)
+## Where it happens (file:line at `main` `4d2e2e2`)
 
-- `python/freetoken/scheduler/cache.py:394-397`: the hybrid prefill-chunk commit calls `prefix_cache.insert(...)`
+- `python/freetoken/scheduler/cache.py:399-402`: the hybrid prefill-chunk commit calls `prefix_cache.insert(...)`
   and then `self._free(page_indices[old_handle.cached_len : prefix_len])` (frees the request's own pages for the
   deduped span).
-- `python/freetoken/scheduler/cache.py:401-406`: `match_prefix`, then
+- `python/freetoken/scheduler/cache.py:406-411`: `match_prefix`, then
   `self.page_table[req.table_idx, old_handle.cached_len : prefix_len].copy_(m.kv_indices[...])` (re-point to the
-  canonical pages). The generic radix path does the same at `cache.py:300-308` and `320-323`.
+  canonical pages). The generic radix path does the same at `cache.py:305-313` and `327-328`.
 - `python/freetoken/kvcache/hybrid_radix_cache.py:90-112`: `insert` returns `prefix_len` over existing nodes,
   including KV-only nodes without a snapshot. At `:76-88`, `match_prefix` truncates to the deepest node with a
   live snapshot, which is why the hit is reported as 0.
 - `python/freetoken/kernel/fla/chunk_delta_h.py:324`: `h = k.new_empty(B, NT, H, V, K)`, so `h` is bf16 for bf16
-  `k`. `python/freetoken/models/qwen3_5_moe/gdn.py:117-118` copies `h[0, track_h_row].to(rec.dtype)` into the fp32
+  `k`. `python/freetoken/models/qwen3_5_moe/gdn.py:119` copies `h[0, track_h_row].to(rec.dtype)` into the fp32
   state pool.
 - No cheap way to drop the tree today:
-  - `kvcache/radix_cache.py:205-206`: `reset()` raises `NotImplementedError`.
-  - `scheduler/cache.py:551-563`: `rebuild()` builds a new prefix cache, but it is reached only through a pool
+  - `kvcache/radix_cache.py:208-209`: `reset()` raises `NotImplementedError`.
+  - `scheduler/cache.py:556`: `rebuild()` builds a new prefix cache, but it is reached only through a pool
     resize in `scheduler.py:183-188` (`POST /v1/cache/rebuild`), which also re-captures CUDA graphs.
-  - `--cache-type naive` (`server/args.py:434-441`) disables reuse entirely.
+  - `--cache-type naive` (`server/args.py:482`) disables reuse entirely.
 
 ## Measured impact
 

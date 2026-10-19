@@ -1,0 +1,401 @@
+diff --git a/python/freetoken/kernel/csrc/cpu_moe/cpu_moe_ext.cpp b/python/freetoken/kernel/csrc/cpu_moe/cpu_moe_ext.cpp
+index 8162138..bc42519 100644
+--- a/python/freetoken/kernel/csrc/cpu_moe/cpu_moe_ext.cpp
++++ b/python/freetoken/kernel/csrc/cpu_moe/cpu_moe_ext.cpp
+@@ -576,6 +576,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+   // (act_apply falls through to gelu_tanh); the probe turns a stale extension
+   // into a loud rebuild instruction instead of wrong model outputs.
+   m.def("max_generic_act_id", []() { return static_cast<int>(freetoken::cpu_moe::ACT_SWIGLU_CLAMP); });
++  // NVFP4 row globals are read as fp32 (CpuMoeExecutor probes this before serving NVFP4).
++  m.def("nvfp4_global_bits", []() { return 32; });
+   // The ggml-cpu variant the gguf format calls: the kernel table address that freetoken.kernel.ggml_cpu.select() returns.
+   m.def("set_ggml_cpu", &freetoken::cpu_moe::set_ggml_cpu, py::arg("api"));
+   m.def("weight_formats", []() {
+diff --git a/python/freetoken/kernel/csrc/cpu_moe/kernels/nvfp4.cpp b/python/freetoken/kernel/csrc/cpu_moe/kernels/nvfp4.cpp
+index 429955f..3c5a56d 100644
+--- a/python/freetoken/kernel/csrc/cpu_moe/kernels/nvfp4.cpp
++++ b/python/freetoken/kernel/csrc/cpu_moe/kernels/nvfp4.cpp
+@@ -7,7 +7,7 @@ namespace {
+ 
+ // --------------------------- NVFP4 (W4A16) dequant ---------------------------
+ // Weights: e2m1 4-bit codes (2/byte, low nibble first), per-16 block scale in
+-// fp8-e4m3, per-output-row global scale in fp16. Dequant matches the GPU kernels
++// fp8-e4m3, per-output-row global scale in fp32. Dequant matches the GPU kernels
+ // (freetoken/kernel/triton/nvfp4_dequant.py): w = E2M1[code] * e4m3(scale) * global.
+ // Activations stay bf16 (W4A16); the GEMV dequantizes weights inside the K-loop.
+ 
+@@ -405,7 +405,7 @@ class Nvfp4Format final : public MoeFormat {
+     const int H = p.H;
+     const uint8_t* packed = static_cast<const uint8_t*>(tbl_at(gate_up_, layer));
+     const uint8_t* scale = static_cast<const uint8_t*>(tbl_at(gu_scale_, layer));
+-    const uint16_t* global = static_cast<const uint16_t*>(tbl_at(gu_global_, layer));
++    const float* global = static_cast<const float*>(tbl_at(gu_global_, layer));
+     const float* xe = xe_.data() + (size_t)tok * (H / 2);
+     const float* xo = xo_.data() + (size_t)tok * (H / 2);
+     const int8_t* xi8 = nvi8dot_ != nullptr ? xi8_.data() + (size_t)tok * H : nullptr;
+@@ -414,9 +414,9 @@ class Nvfp4Format final : public MoeFormat {
+       const size_t r = (size_t)e * (2 * p.I) + row;
+       if (nvi8dot_ != nullptr)
+         return nvi8dot_(packed + r * (size_t)(H / 2), scale + r * (size_t)(H / 16),
+-                        fp16_to_f32(global[r]), xi8, H, e4m3_lut_, xas);
++                        global[r], xi8, H, e4m3_lut_, xas);
+       return nvdot_(packed + r * (size_t)(H / 2), scale + r * (size_t)(H / 16),
+-                    fp16_to_f32(global[r]), xe, xo, H, e2m1_lut_, e4m3_lut_);
++                    global[r], xe, xo, H, e2m1_lut_, e4m3_lut_);
+     });
+   }
+ 
+@@ -424,15 +424,15 @@ class Nvfp4Format final : public MoeFormat {
+     const int I = p.I;
+     const uint8_t* packed = static_cast<const uint8_t*>(tbl_at(down_, layer));
+     const uint8_t* scale = static_cast<const uint8_t*>(tbl_at(dn_scale_, layer));
+-    const uint16_t* global = static_cast<const uint16_t*>(tbl_at(dn_global_, layer));
++    const float* global = static_cast<const float*>(tbl_at(dn_global_, layer));
+     for (int h = h0; h < h1; ++h) {
+       for (int j = 0; j < n; ++j) {
+         const size_t r = (size_t)routes[j].r;
+         const size_t row = (size_t)routes[j].e * p.H + h;
+         out[j * kRowBlock + h - h0] = nvi8dot_ != nullptr
+-            ? nvi8dot_(packed + row * (size_t)(I / 2), scale + row * (size_t)(I / 16), fp16_to_f32(global[row]),
++            ? nvi8dot_(packed + row * (size_t)(I / 2), scale + row * (size_t)(I / 16), global[row],
+                        gi8_.data() + r * I, I, e4m3_lut_, gas_.data() + r * (I / 16))
+-            : nvdot_(packed + row * (size_t)(I / 2), scale + row * (size_t)(I / 16), fp16_to_f32(global[row]),
++            : nvdot_(packed + row * (size_t)(I / 2), scale + row * (size_t)(I / 16), global[row],
+                      ge_.data() + r * (I / 2), go_.data() + r * (I / 2), I, e2m1_lut_, e4m3_lut_);
+       }
+     }
+@@ -441,7 +441,7 @@ class Nvfp4Format final : public MoeFormat {
+  private:
+   nvdot_fn nvdot_;
+   nvi8dot_fn nvi8dot_;  // AVX-VNNI W4A8 nvfp4 dot (nullptr -> use fp32 nvdot)
+-  // ModelOpt rows: packed e2m1 [E,2I,H/2], e4m3 scales per 16 along K [E,2I,H/16], fp16 row globals [E,2I]; down likewise with K = I.
++  // ModelOpt rows: packed e2m1 [E,2I,H/2], e4m3 scales per 16 along K [E,2I,H/16], fp32 row globals [E,2I]; down likewise with K = I.
+   const uint64_t* gate_up_ = nullptr;
+   const uint64_t* gu_scale_ = nullptr;
+   const uint64_t* gu_global_ = nullptr;
+diff --git a/python/freetoken/kernel/triton/nvfp4_dequant.py b/python/freetoken/kernel/triton/nvfp4_dequant.py
+index a949e7f..214e6ab 100644
+--- a/python/freetoken/kernel/triton/nvfp4_dequant.py
++++ b/python/freetoken/kernel/triton/nvfp4_dequant.py
+@@ -26,7 +26,7 @@ def _e2m1_lut(device_index: int) -> torch.Tensor:
+ def _dequant_nvfp4_kernel(
+     packed_ptr,      # [S, OUT, IN // 2] uint8
+     scale_ptr,       # [S, OUT, IN // 16] fp8-e4m3 per-block scale (checkpoint native)
+-    global_ptr,      # [S, OUT] fp16 per-output-row global scale (weight_scale_2)
++    global_ptr,      # [S, OUT] fp32 per-output-row global scale (weight_scale_2)
+     slots_ptr,       # [N] int32 -> cache slot for each output expert
+     out_ptr,         # [N, OUT, IN] compute dtype
+     lut_ptr,         # [16] float32 E2M1 values
+diff --git a/python/freetoken/kernel/triton/nvfp4_fused_moe.py b/python/freetoken/kernel/triton/nvfp4_fused_moe.py
+index 61e867b..08f2f77 100644
+--- a/python/freetoken/kernel/triton/nvfp4_fused_moe.py
++++ b/python/freetoken/kernel/triton/nvfp4_fused_moe.py
+@@ -1,14 +1,14 @@
+ """Inline-dequant NVFP4 fused-MoE Triton kernels.
+ 
+ These kernels read the NVFP4 expert cache (packed FP4 codes + fp8 block scales +
+-fp16 per-row global scale) *directly* and dequantize inside the GEMM K-loop, so the
++fp32 per-row global scale) *directly* and dequantize inside the GEMM K-loop, so the
+ grouped MoE GEMM never materializes a BF16 copy of the experts (no separate dequant
+ pass, no HBM round-trip of the 4x larger BF16 weights).
+ 
+ Layout, for an expert weight ``W[N, K]``:
+   - ``packed[slot, n, k//2]`` uint8: two FP4 codes per byte, low nibble = even k.
+   - ``scale[slot, n, k//16]`` fp8-e4m3: per 16-wide block scale.
+-  - ``global[slot, n]`` fp16: per-output-row scale (``weight_scale_2``).
++  - ``global[slot, n]`` fp32: per-output-row scale (``weight_scale_2``).
+   - ``W[n, k] = E2M1[code] * scale[n, k//16] * global[n]``.
+ 
+ The global scale is constant along K, so it is applied once after the K-loop.
+@@ -52,7 +52,7 @@ def _decode_nvfp4_moe_kernel(
+     a_ptr,             # [M, K] activations (compute dtype)
+     packed_ptr,        # [S, N, K // 2] uint8
+     scale_ptr,         # [S, N, K // 16] fp8-e4m3
+-    global_ptr,        # [S, N] fp16
++    global_ptr,        # [S, N] fp32
+     c_ptr,             # [M, TOP_K, N] output (compute dtype)
+     topk_weights_ptr,  # [M, TOP_K] fp32
+     topk_ids_ptr,      # [M, TOP_K] int32 -> cache slot
+@@ -163,7 +163,7 @@ def _decode_nvfp4_marlin_kernel(
+     a_ptr,             # [M, K] activations (compute dtype)
+     packed_ptr,        # [S, N, K // 8] int32 (8 fp4 codes per word, nibble j -> k=8*w+j)
+     scale_ptr,         # [S, N, K // 16] fp8-e4m3
+-    global_ptr,        # [S, N] fp16
++    global_ptr,        # [S, N] fp32
+     c_ptr,             # [M, TOP_K, N] output (compute dtype)
+     topk_weights_ptr,  # [M, TOP_K] fp32
+     topk_ids_ptr,      # [M, TOP_K] int32 -> cache slot
+@@ -357,7 +357,7 @@ def _prefill_nvfp4_moe_kernel(
+     a_ptr,             # [M, K] activations
+     packed_ptr,        # [S, N, K // 2] uint8
+     scale_ptr,         # [S, N, K // 16] fp8-e4m3 (uint8 view before sm_89)
+-    global_ptr,        # [S, N] fp16
++    global_ptr,        # [S, N] fp32
+     c_ptr,             # [num_valid_tokens, N] output (flat over M*top_k)
+     topk_weights_ptr,
+     sorted_token_ids_ptr,
+diff --git a/python/freetoken/kernel/triton/nvfp4_linear.py b/python/freetoken/kernel/triton/nvfp4_linear.py
+index 53abded..a3fb1bb 100644
+--- a/python/freetoken/kernel/triton/nvfp4_linear.py
++++ b/python/freetoken/kernel/triton/nvfp4_linear.py
+@@ -158,7 +158,7 @@ def _nvfp4_gemv_kernel(
+     a_ptr,        # [K] activation (compute dtype), contiguous
+     packed_ptr,   # [N, K // 8] int32 (8 fp4 codes per word, nibble j -> k = 8*w + j)
+     scale_ptr,    # [N, K // 16] fp8-e4m3 per-16 block scale
+-    gscale_ptr,   # [N] fp16 per-output-row global scale (weight_scale_2)
++    gscale_ptr,   # [N] fp32 per-output-row global scale (weight_scale_2)
+     out_ptr,      # [N] out dtype
+     N, K,
+     stride_pn, stride_pkw,
+@@ -226,7 +226,7 @@ def _nvfp4_gemv_splitk_kernel(
+     a_ptr,        # [K] activation (compute dtype), contiguous
+     packed_ptr,   # [N, K // 8] int32
+     scale_ptr,    # [N, K // 16] fp8-e4m3
+-    gscale_ptr,   # [N] fp16 per-output-row global scale
++    gscale_ptr,   # [N] fp32 per-output-row global scale
+     part_ptr,     # [SPLIT_K, N] fp32 partial sums (pre-global-scale)
+     counter_ptr,  # [cdiv(N, BLOCK_N)] int32 arrival counters, zeroed (self-resetting)
+     out_ptr,      # [N] out dtype
+@@ -389,7 +389,7 @@ def _nvfp4_gemm_kernel(
+     a_ptr,        # [M, K] activations
+     packed_ptr,   # logical [N, K // 8] int32 (row- or K-major via strides)
+     scale_ptr,    # logical [N, K // 16] fp8-e4m3
+-    gscale_ptr,   # [N] fp16
++    gscale_ptr,   # [N] fp32
+     c_ptr,        # [M, N] output (written when SPLIT_K == 1)
+     part_ptr,     # [SPLIT_K, M, N] fp32 partials (written when SPLIT_K > 1)
+     M, N, K, K_WORDS, tiles_per,
+@@ -612,7 +612,7 @@ def _gemm_inkernel(a: torch.Tensor, packed_i32: torch.Tensor, scale: torch.Tenso
+ def _nvfp4_dequant_rows_kernel(
+     packed_ptr,   # [N, K // 8] int32
+     scale_ptr,    # [N, K // 16] fp8-e4m3
+-    gscale_ptr,   # [N] fp16
++    gscale_ptr,   # [N] fp32
+     out_ptr,      # [N, K] compute dtype
+     K_WORDS,
+     stride_pn, stride_pkw,
+@@ -646,7 +646,7 @@ def _nvfp4_dequant_rows_kernel(
+ def _nvfp4_dequant_cols_kernel(
+     packed_ptr,   # K-major: element (n, kw) at kw * stride_pkw + n (stride_pn == 1)
+     scale_ptr,
+-    gscale_ptr,   # [N] fp16
++    gscale_ptr,   # [N] fp32
+     out_ptr,      # [n_rows, K] compute dtype, row-major
+     N, K_WORDS,
+     stride_pn, stride_pkw,
+@@ -781,7 +781,7 @@ def nvfp4_dense_linear(
+     weight_global: torch.Tensor, bias: torch.Tensor | None = None,
+ ) -> torch.Tensor:
+     """``y = x @ dequant(weight)^T`` on the checkpoint-native row-major layout.
+-    ``weight`` [N, K//2] uint8, ``weight_scale`` [N, K//16] fp8-e4m3, ``weight_global`` [N] fp16."""
++    ``weight`` [N, K//2] uint8, ``weight_scale`` [N, K//16] fp8-e4m3, ``weight_global`` [N] fp32."""
+     return _linear_impl(
+         x, weight.view(torch.int32), weight_scale, weight_global, bias, x.dtype, transposed=False
+     )
+diff --git a/python/freetoken/layers/quantization/linear/nvfp4.py b/python/freetoken/layers/quantization/linear/nvfp4.py
+index 6a13165..1002a70 100644
+--- a/python/freetoken/layers/quantization/linear/nvfp4.py
++++ b/python/freetoken/layers/quantization/linear/nvfp4.py
+@@ -1,4 +1,4 @@
+-"""e2m1 weight packed two per byte, e4m3 scales per 16 input elements, one fp16 global per output row."""
++"""e2m1 weight packed two per byte, e4m3 scales per 16 input elements, one fp32 global per output row."""
+ 
+ from __future__ import annotations
+ 
+@@ -256,7 +256,7 @@ class MarlinNvfp4LinearKernel(LinearKernel):
+         dev = layer.weight.device
+         layer.weight = torch.empty(0, dtype=torch.uint8, device=dev)
+         layer.weight_scale = torch.empty(0, dtype=FP8, device=dev)
+-        layer.weight_global = torch.empty(0, dtype=torch.float16, device=dev)
++        layer.weight_global = torch.empty(0, dtype=torch.float32, device=dev)
+ 
+     def apply(self, layer: Any, x: torch.Tensor) -> torch.Tensor:
+         from vllm.model_executor.layers.quantization.utils.marlin_utils_fp4 import apply_fp4_marlin_linear
+@@ -301,6 +301,6 @@ class Nvfp4LinearMethod(LinearMethod):
+             raise ValueError(f"nvfp4 needs in_features divisible by {GROUP}, got {g.in_features}")
+         layer.weight = torch.empty(g.out_features, g.in_features // 2, dtype=torch.uint8)
+         layer.weight_scale = torch.empty(g.out_features, g.in_features // GROUP, dtype=FP8)
+-        layer.weight_global = torch.empty(g.out_features, dtype=torch.float16)
++        layer.weight_global = torch.empty(g.out_features, dtype=torch.float32)
+         # no W4A16 kernel reads it; declared so a W4A4 checkpoint loads complete and a W4A4 kernel finds it in place
+         layer.input_scale = torch.empty((), dtype=torch.float32) if self.scheme.has("input_scale") else None
+diff --git a/python/freetoken/layers/quantization/moe/base.py b/python/freetoken/layers/quantization/moe/base.py
+index 5ae89c9..b17a913 100644
+--- a/python/freetoken/layers/quantization/moe/base.py
++++ b/python/freetoken/layers/quantization/moe/base.py
+@@ -96,8 +96,8 @@ def fused_piece(pieces: dict[str, torch.Tensor], role: str) -> torch.Tensor:
+ 
+ 
+ def global_rows(piece: torch.Tensor, rows: int) -> torch.Tensor:
+-    """Per-expert global scale as one fp16 value per output row (a scalar per expert is broadcast)."""
+-    flat = piece.reshape(piece.shape[0], -1).to(torch.float16)
++    """Per-expert global scale as one fp32 value per output row (a scalar per expert is broadcast)."""
++    flat = piece.reshape(piece.shape[0], -1).to(torch.float32)
+     if flat.shape[1] == rows:
+         return flat
+     assert flat.shape[1] == 1, (flat.shape, rows)
+diff --git a/python/freetoken/layers/quantization/moe/nvfp4.py b/python/freetoken/layers/quantization/moe/nvfp4.py
+index 0dce399..315fca4 100644
+--- a/python/freetoken/layers/quantization/moe/nvfp4.py
++++ b/python/freetoken/layers/quantization/moe/nvfp4.py
+@@ -52,10 +52,10 @@ class TritonNvfp4MoEKernel(MoEKernel):
+         return {
+             "gate_up": BankSpec((2 * i, h // 2), torch.uint8),
+             "gate_up_scale": BankSpec((2 * i, h // GROUP), FP8),
+-            "gate_up_global": BankSpec((2 * i,), torch.float16),
++            "gate_up_global": BankSpec((2 * i,), torch.float32),
+             "down": BankSpec((h, i // 2), torch.uint8),
+             "down_scale": BankSpec((h, i // GROUP), FP8),
+-            "down_global": BankSpec((h,), torch.float16),
++            "down_global": BankSpec((h,), torch.float32),
+         }
+ 
+     def pack(self, pieces, cfg: MoEConfig, out):
+diff --git a/python/freetoken/models/gemma4/weight.py b/python/freetoken/models/gemma4/weight.py
+index 08293c7..7797c78 100644
+--- a/python/freetoken/models/gemma4/weight.py
++++ b/python/freetoken/models/gemma4/weight.py
+@@ -66,15 +66,15 @@ _NVFP4_DENSE_MLP_RE = re.compile(r"\.mlp\.(gate_proj|up_proj|down_proj)\.weight$
+ 
+ 
+ def _nvfp4_dense_parts(reader: ShardReader, raw_base: str):
+-    """Load an NVFP4 dense weight as the NVFP4 linear method's buffers: weight uint8 [O, IN//2], weight_scale fp8-e4m3 block [O, IN//16], weight_global fp16 [O] (the per-tensor weight_scale_2 per output row), input_scale fp32 scalar or None when the export has none."""
++    """Load an NVFP4 dense weight as the NVFP4 linear method's buffers: weight uint8 [O, IN//2], weight_scale fp8-e4m3 block [O, IN//16], weight_global fp32 [O] (the per-tensor weight_scale_2 per output row), input_scale fp32 scalar or None when the export has none."""
+     w = reader.get_tensor(raw_base + ".weight")
+     s = reader.get_tensor(raw_base + ".weight_scale")
+-    g = reader.get_tensor(raw_base + ".weight_scale_2").reshape(1).to(torch.float16)
++    g = reader.get_tensor(raw_base + ".weight_scale_2").reshape(1).to(torch.float32)
+     g = g.expand(w.shape[0]).contiguous()
+     assert (
+         w.dtype is torch.uint8
+         and s.dtype is torch.float8_e4m3fn
+-        and g.dtype is torch.float16
++        and g.dtype is torch.float32
+     ), f"unexpected NVFP4 dense dtypes at {raw_base}: {w.dtype}/{s.dtype}/{g.dtype}"
+     a = reader.get_tensor(raw_base + ".input_scale").reshape(()).to(torch.float32) if reader.has(raw_base + ".input_scale") else None
+     return w, s, g, a
+diff --git a/python/freetoken/models/glm4_moe/weight.py b/python/freetoken/models/glm4_moe/weight.py
+index aa6538d..0ca79ef 100644
+--- a/python/freetoken/models/glm4_moe/weight.py
++++ b/python/freetoken/models/glm4_moe/weight.py
+@@ -78,12 +78,12 @@ def _iter_nvfp4_resident(
+     """Yield native NVFP4 buffers for an always-resident Linear.
+ 
+     ``weight`` (packed fp4) + ``weight_scale`` (fp8 block scale) verbatim; per-tensor
+-    ``weight_scale_2`` broadcast to per-row fp16 ``weight_global`` as the NVFP4 linear
++    ``weight_scale_2`` broadcast to per-row fp32 ``weight_global`` as the NVFP4 linear
+     method / dequant_nvfp4 expect. lossless vs checkpoint; same dequant math as routed experts.
+     """
+     packed = reader.get(f"{src_prefix}.weight")  # [OUT, IN//2] uint8
+     scale = reader.get(f"{src_prefix}.weight_scale")  # [OUT, IN//16] fp8-e4m3
+-    g = reader.get(f"{src_prefix}.weight_scale_2").reshape(()).to(torch.float16)  # scalar
++    g = reader.get(f"{src_prefix}.weight_scale_2").reshape(()).to(torch.float32)  # scalar
+     yield f"{dst_prefix}.weight", packed
+     yield f"{dst_prefix}.weight_scale", scale
+     yield f"{dst_prefix}.weight_global", g.expand(packed.shape[0]).contiguous()
+diff --git a/python/freetoken/models/loader.py b/python/freetoken/models/loader.py
+index 0f310cc..4a9ac94 100644
+--- a/python/freetoken/models/loader.py
++++ b/python/freetoken/models/loader.py
+@@ -208,11 +208,11 @@ class ShardReader:
+ 
+ 
+ def nvfp4_parts_ct(f, raw_base: str) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None]:
+-    """compressed-tensors NVFP4 -> ``(packed uint8 [O, IN//2], block scale fp8 [O, IN//16], per-output-row global fp16 [O], dequant-side input_scale fp32 scalar or None)`` for the NVFP4 linear method."""
++    """compressed-tensors NVFP4 -> ``(packed uint8 [O, IN//2], block scale fp8 [O, IN//16], per-output-row global fp32 [O], dequant-side input_scale fp32 scalar or None)`` for the NVFP4 linear method."""
+     w = f.get_tensor(raw_base + ".weight_packed")
+     s = f.get_tensor(raw_base + ".weight_scale")
+     wg = f.get_tensor(raw_base + ".weight_global_scale").reshape(1).to(torch.float32)
+-    g = (1.0 / wg).to(torch.float16).expand(w.shape[0]).contiguous()
++    g = (1.0 / wg).expand(w.shape[0]).contiguous()
+     a = None
+     if f.has(raw_base + ".input_global_scale"):
+         a = (1.0 / f.get_tensor(raw_base + ".input_global_scale").reshape(()).to(torch.float32))
+diff --git a/python/freetoken/models/muse_glimmer/weight.py b/python/freetoken/models/muse_glimmer/weight.py
+index 3b8eb6d..11a1817 100644
+--- a/python/freetoken/models/muse_glimmer/weight.py
++++ b/python/freetoken/models/muse_glimmer/weight.py
+@@ -131,7 +131,7 @@ def _iter_weights_compressed_tensors(
+ 
+     Every text Linear (q/k/v/o, the attention gate, the MLP) is kept native NVFP4
+     (W4A16): ``.weight`` (uint8 packed) + ``.weight_scale`` (fp8 block) + ``.weight_global``
+-    (fp16 per-row, the reciprocal of the stored quant-side global). q/k/v fuse into
++    (fp32 per-row, the reciprocal of the stored quant-side global). q/k/v fuse into
+     ``qkv_proj`` and gate/up into ``gate_up_proj`` on the output dim, each part keeping
+     its own scales, so the fused FP4 weights are exact. Embeddings, norms, lm_head and the
+     vision tower are bf16 (the checkpoint's ignore list). Scale lookups go through the
+diff --git a/python/freetoken/models/nvfp4_banks.py b/python/freetoken/models/nvfp4_banks.py
+index e30429c..9276771 100644
+--- a/python/freetoken/models/nvfp4_banks.py
++++ b/python/freetoken/models/nvfp4_banks.py
+@@ -36,7 +36,8 @@ def _canon_kind(spec: "Nvfp4ExpertSourceSpec", kind: str) -> str:
+ def _ingest_global(spec: "Nvfp4ExpertSourceSpec", tensor: torch.Tensor) -> torch.Tensor:
+     if spec.global_reciprocal:
+         tensor = 1.0 / tensor.float()
+-    return tensor.to(torch.float16)
++    # fp32, exactly as stored: in fp16 most real globals (~1e-5..3e-4) are subnormal
++    return tensor.to(torch.float32)
+ 
+ 
+ def _activation_scale():
+diff --git a/python/freetoken/models/qwen3_5_moe/weight.py b/python/freetoken/models/qwen3_5_moe/weight.py
+index 724ad15..d5f8d23 100644
+--- a/python/freetoken/models/qwen3_5_moe/weight.py
++++ b/python/freetoken/models/qwen3_5_moe/weight.py
+@@ -227,7 +227,7 @@ class _DenseReader:
+             g = part["weight_global"].reshape(-1).to(torch.float32)
+             if g.numel() != 1:
+                 raise ValueError(f"{target}: weight_global has {g.numel()} elements, expected one per-tensor scale")
+-            out["weight_global"] = g.to(torch.float16).expand(rows).contiguous()
++            out["weight_global"] = g.expand(rows).contiguous()  # fp32 as stored (ModelOpt globals are mostly fp16 subnormals)
+         if "input_scale" in part:
+             out["input_scale"] = part["input_scale"].reshape(()).to(torch.float32)
+         return out
+diff --git a/python/freetoken/moe/cpu_executor.py b/python/freetoken/moe/cpu_executor.py
+index bb65146..d860263 100644
+--- a/python/freetoken/moe/cpu_executor.py
++++ b/python/freetoken/moe/cpu_executor.py
+@@ -219,6 +219,15 @@ class CpuMoeExecutor:
+                     "wheel) before serving this model on the cpu/hybrid backend."
+                 )
+ 
++        # ABI probe: a pre-fp32 _cpu_moe build reads the NVFP4 row globals as fp16 and would
++        # silently misread the fp32 banks -- fail loudly with the rebuild instruction instead.
++        if "nvfp4" in names and getattr(_cpu_moe, "nvfp4_global_bits", lambda: 16)() != 32:
++            raise RuntimeError(
++                "the compiled _cpu_moe extension reads fp16 NVFP4 row globals but the banks "
++                "hold fp32; rebuild it with `python setup.py build_ext --inplace` (or reinstall "
++                "the wheel) before serving NVFP4 experts on the cpu/hybrid backend."
++            )
++
+         self.num_layers = int(cache.num_layers)
+         self.num_experts = int(cache.num_experts)
+         self.top_k = int(top_k)
+@@ -448,12 +457,12 @@ class CpuMoeExecutor:
+         if fmt == "fp8_block":
+             return self._resolve_fp8_block_banks(banks, rep)
+ 
+-        # nvfp4: packed e2m1 (2/byte) + fp8-e4m3 per-16 block scales + fp16 row globals.
++        # nvfp4: packed e2m1 (2/byte) + fp8-e4m3 per-16 block scales + fp32 row globals.
+         gup, gus, gug = banks["gate_up"], banks["gate_up_scale"], banks["gate_up_global"]
+         dnp, dns, dng = banks["down"], banks["down_scale"], banks["down_global"]
+         assert gup[rep].dtype == torch.uint8 and dnp[rep].dtype == torch.uint8, (gup[rep].dtype, dnp[rep].dtype)
+         assert gus[rep].element_size() == 1 and dns[rep].element_size() == 1, "block scales must be 1 byte"
+-        assert gug[rep].dtype == torch.float16 and dng[rep].dtype == torch.float16, (gug[rep].dtype, dng[rep].dtype)
++        assert gug[rep].dtype == torch.float32 and dng[rep].dtype == torch.float32, (gug[rep].dtype, dng[rep].dtype)
+         I = int(gup[rep].shape[1] // 2)
+         H = int(gup[rep].shape[2] * 2)
+         assert gup[rep].shape[1] == 2 * I
+diff --git a/python/freetoken/moe/offload_cache.py b/python/freetoken/moe/offload_cache.py
+index 6b428c4..227a2a3 100644
+--- a/python/freetoken/moe/offload_cache.py
++++ b/python/freetoken/moe/offload_cache.py
+@@ -51,7 +51,7 @@ _BANK_SCHEMAS: dict[str, tuple[str, ...]] = {
+     # GGUF experts whose NVFP4 tensors carry per-expert scales: global [L*E, 4] fp32 (gate, up, down, 1) weight_scale_2
+     "gguf_scaled": ("gate_up", "down", "global"),
+     # native ModelOpt rows for the Triton inline-dequant kernels: packed e2m1 codes +
+-    # fp8-e4m3 per-16 block scales + per-output-row fp16 globals (w1/w3 carry distinct
++    # fp8-e4m3 per-16 block scales + per-output-row fp32 globals (w1/w3 carry distinct
+     # globals, and folding them into the e4m3 block scales would underflow)
+     "nvfp4": (
+         "gate_up_packed",
