@@ -1,4 +1,4 @@
-<!-- READY, NOT POSTED. Target: NVIDIA Developer bug portal (developer.nvidia.com/bugs, needs an NVIDIA Developer Program login; private). Optional public copy: NVIDIA Developer Forums, "CUDA Programming and Performance". Attach the folder nvidia-sm120-bulk-copy-repro/ (bulk_stack_repro.cu, run.sh, result-rtx5070ti.txt, sass-cluster-excerpt.txt). Paste from the "# " title line down; the title line is the summary. -->
+<!-- READY, NOT POSTED. Target: NVIDIA Developer bug portal (developer.nvidia.com/bugs, needs an NVIDIA Developer Program login; private). Optional public copy: NVIDIA Developer Forums, "CUDA Programming and Performance". Attach the folder nvidia-sm120-bulk-copy-repro/ (bulk_stack_repro.cu, run.sh, triton_desc_stack.py, result-rtx5070ti.txt, result-triton-desc-rtx5070ti.txt, sass-cluster-excerpt.txt). Paste from the "# " title line down; the title line is the summary. -->
 
 # sm_120: `cp.async.bulk.shared::cluster` compiles to a driver syscall, and its first launch raises the per-thread stack limit to 14416 B (1.37 GiB VRAM on RTX 5070 Ti)
 
@@ -68,6 +68,15 @@ the native branch. The stack reservation seems to come from the syscall merely b
 Lowering the limit by hand gives the memory back, but the next launch raises it again. So `cudaDeviceSetLimit` is
 not a workaround.
 
+### The tensor (TMA) form is affected too
+
+`triton_desc_stack.py` (attached) launches a Triton 3.6.0 kernel that loads one 128x128 bf16 tile through a host
+`TensorDescriptor` (torch 2.11.0+cu130). Its SASS has `UTMALDG.2D` plus one `CALL.ABS.NOINC`, and the ELF lists
+`__cuda_syscall_cp_async_bulk_tensor_2d_tile_unicast`. The first launch raises the stack limit 1024 -> 14432 B and
+free VRAM drops by 1376 MiB, kept after the second launch (`result-triton-desc-rtx5070ti.txt`). An independent
+user report against an open-source inference engine describes about 3.7 GiB lost on the first launch of a Triton
+TMA kernel on an RTX 5090 (170 SMs). The same formula gives (14432 - 1024) x 170 x 1536 B = 3.26 GiB there.
+
 ## Expected behaviour
 
 One of:
@@ -81,8 +90,9 @@ One of:
 ## Questions
 
 1. Is the 14416 B/thread stack raise intended for `__cuda_syscall_cp_async_bulk_unicast` on sm_120?
-2. Does the same happen for the `cp.async.bulk.tensor` (TMA) forms with a `.shared::cluster` destination, and on
-   sm_100 / sm_121? We did not test those.
+2. The 2D tile TMA load is affected as well (see above). Is there a destination form or compiler option that
+   keeps `cp.async.bulk.tensor` native on sm_120, so that compilers such as Triton can emit it? Does the same
+   happen on sm_100 / sm_121? We did not test those.
 3. Is `.shared::cta` the recommended destination for single-CTA bulk copies on sm_120, so that libraries such as
    CCCL and CUTLASS should prefer it there?
 

@@ -15,7 +15,7 @@ of the post). The title line is the issue title.
 
 | # | File | Where | Title (short) | Type | Status |
 |---|---|---|---|---|---|
-| 1 | `01-freetoken-nvfp4-global-scale-fp16.md` | FreeToken, new issue, attach `patches/nvfp4-global-fp32.main-4d2e2e2.diff` | NVFP4 `weight_scale_2` stored as fp16, 94% subnormal | bug / precision | **Ready.** Patch rebased on main and apply-checked; not built or run. Caveat stated: 2 of 5 smoke prompts flip the other way (near-ties). |
+| 1 | `01-comment-pr-739.md` (long version: `01-freetoken-nvfp4-global-scale-fp16.md`) | FreeToken, comment on PR #739 | NVFP4 globals in fp32: our measurements | comment | **Ready.** Upstream fixed it independently in #739 (merged 2026-10-19, main `0db5023`), so **do not post the new issue**; the rebased patch is obsolete. |
 | 2 | `02-freetoken-qwen35-gemma-norm-bf16-fold.md` | FreeToken, new issue, attach `patches/gemma-norm-plus-one-fp32.upstream.diff` | Qwen3.5 `(1+w)` RMSNorm folded into bf16 at load | bug / precision | **Ready, with a stated gap.** Applies to main unchanged; whole-model PPL/eval of the fix NOT run. |
 | 3 | `03-freetoken-prefix-cache-history-dependence.md` | FreeToken, new issue (feature/question) | Greedy outputs depend on cache history; ask for a flush endpoint and a deterministic mode | feature / informational | **Ready.** No bug claimed; options 1, 2 and 4 are not implemented. |
 | 4c | `04c-comment-issue-280.md` | FreeToken, comment on #280 | FP8 KV on the FlashInfer path: our evidence | comment | **Ready.** Replaces a new issue: #280 and PR #354 (open, not merged) already cover the feature. `04c-fp8-kv-cache.md` stays as the long version. |
@@ -23,7 +23,12 @@ of the post). The title line is the issue title.
 | 4a | `04a-mtp-speculative-decoding.md` | - | MTP / speculative decoding prototype notes | discussion | **Do not post.** Upstream has no MTP; component-level, synthetic-activation evidence only. |
 | 4b | `04b-ram-complement-residency.md` | - | "RAM complement" residency, 2-3x slower | negative result | **Do not post.** Not an upstream feature; one screening series. |
 
-Suggested order: 1 and 2 first (bugs with patches), then 5 (independent), then 3 and the #280 comment.
+| 6 | `06-comment-issue-743.md` | FreeToken, comment on #743 | Root cause of the 3.7 GiB TMA OOM: driver stack-limit raise | comment | **Ready.** Reproduced with Triton 3.6 on the 5070 Ti (`result-triton-desc-rtx5070ti.txt`). |
+| 7 | `cccl-pr/PR.md` + `cccl-pr/0001-docs-cp-async-bulk-sm120.patch` | NVIDIA/cccl, PR from a fork | Docs note: prefer `.shared::cta` on sm_120 | docs PR | **Ready.** No DCO/CLA for outside contributors; refs NVIDIA/cccl#6302. |
+| 8+ | `improvements/*.md` | FreeToken: 14 new issues + 7 comments (#579, #678, #677, #567, #644, #693) | Downstream performance work, one issue per lever | feature proposals / bugs | **Ready.** Written 2026-10-19 from repo evidence, refs at main `4d2e2e2`. `07-comment-issue-678.md` needs the number of our issue 07 filled in. |
+
+Suggested order: #743 comment and issue 13 first (fresh OOM report, we have the cause), then 02 (bug with patch), the #739
+comment, 03, then the improvement issues in small batches, each comment right after its related issue.
 
 ## Item 5: why it goes to NVIDIA, not FreeToken
 

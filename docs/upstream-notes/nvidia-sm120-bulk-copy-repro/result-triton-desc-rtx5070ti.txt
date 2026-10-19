@@ -1,0 +1,5 @@
+gpu=NVIDIA GeForce RTX 5070 Ti cc=(12, 0) torch=2.11.0+cu130 triton=3.6.0
+stack_limit before=1024 after_1st=14432
+free_MiB before=14933.0 after_1st=13557.0 after_2nd=13557.0 delta=1376.0
+sass: CALL.ABS=1 __cuda_syscall=3 UTMALDG=1 (empty if sass unavailable: False)
+copy OK
