@@ -10,6 +10,18 @@ On 2026-10-19 every FreeToken finding was re-checked on upstream **`main` `4d2e2
 (68 commits after 0.1.3): all are still present, and the file:line references in drafts 1-3 now point to that commit.
 Checkpoint: `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0f2c3c5`.
 
+## Posted (2026-10-19, account SUKUNA-AI)
+
+| Draft | Where | Link |
+|---|---|---|
+| `06-comment-issue-743.md` | comment on #743 | https://github.com/FlashML-org/FreeToken/issues/743#issuecomment-6275992081 |
+| `improvements/13-sm120-tma-stack-budget.md` | new issue | https://github.com/FlashML-org/FreeToken/issues/746 |
+| `02-freetoken-qwen35-gemma-norm-bf16-fold.md` (+ patch inline) | new issue | https://github.com/FlashML-org/FreeToken/issues/747 |
+| `01-comment-pr-739.md` | comment on PR #739 | https://github.com/FlashML-org/FreeToken/pull/739#issuecomment-6276005205 |
+| `03-freetoken-prefix-cache-history-dependence.md` | new issue | https://github.com/FlashML-org/FreeToken/issues/748 |
+
+Everything else in this folder is still unposted.
+
 How to post: copy the file from its `# ` title line down (the HTML comment on line 1 is the routing note, not part
 of the post). The title line is the issue title.
 
