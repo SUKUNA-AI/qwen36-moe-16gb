@@ -20,6 +20,9 @@ Checkpoint: `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0
 | `01-comment-pr-739.md` | comment on PR #739 | https://github.com/FlashML-org/FreeToken/pull/739#issuecomment-6276005205 |
 | `03-freetoken-prefix-cache-history-dependence.md` | new issue | https://github.com/FlashML-org/FreeToken/issues/748 |
 | `cccl-pr/PR.md` + patch (commit author `SUKUNA-AI` noreply, fork `SUKUNA-AI/cccl`, branch `docs/cp-async-bulk-sm120-shared-cta`) | PR on NVIDIA/cccl | https://github.com/NVIDIA/cccl/pull/12081 |
+| (reply) thanks to the collaborator on #743 | comment on #743 | https://github.com/FlashML-org/FreeToken/issues/743#issuecomment-6276206996 |
+| (closing note) #746 closed as completed: Triton 3.8 emits `.shared::cta`, so the upgrade removes the reservation | comment + close #746 | https://github.com/FlashML-org/FreeToken/issues/746 |
+| CCCL PR follow-up: commit 22e672d scopes the runtime observation (CodeRabbit review); tensor-form data from #743 | review reply + PR comment | https://github.com/NVIDIA/cccl/pull/12081#discussion_r4318319684, https://github.com/NVIDIA/cccl/pull/12081#issuecomment-6276231597 |
 
 Everything else in this folder is still unposted.
 

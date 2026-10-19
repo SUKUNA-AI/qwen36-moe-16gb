@@ -90,9 +90,13 @@ One of:
 ## Questions
 
 1. Is the 14416 B/thread stack raise intended for `__cuda_syscall_cp_async_bulk_unicast` on sm_120?
-2. The 2D tile TMA load is affected as well (see above). Is there a destination form or compiler option that
-   keeps `cp.async.bulk.tensor` native on sm_120, so that compilers such as Triton can emit it? Does the same
-   happen on sm_100 / sm_121? We did not test those.
+2. The 2D tile TMA load is affected as well (see above). A FreeToken maintainer measured independently on an RTX PRO
+   6000 Blackwell Server Edition (sm_120, 188 SMs, driver 595.91.07): Triton 3.6.0 emits
+   `cp.async.bulk.tensor.2d.shared::cluster`, which becomes the syscall (stack limit 1024 -> 14608 B, -3.78 GiB),
+   while Triton 3.8.0 emits `.shared::cta`, which is native and reserves nothing. So the `.shared::cta`
+   destination avoids it for the tensor form too, and the issue reproduces on a native Linux driver, not only under
+   WSL2. Is the stack raise for the `.shared::cluster` syscall intended, and does it also happen on sm_100 /
+   sm_121? We did not test those.
 3. Is `.shared::cta` the recommended destination for single-CTA bulk copies on sm_120, so that libraries such as
    CCCL and CUTLASS should prefer it there?
 
