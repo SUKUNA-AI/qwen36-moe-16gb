@@ -38,6 +38,9 @@ Checkpoint: `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0
 | (reply) thanks for the fix in #755 | comment on #747 | https://github.com/FlashML-org/FreeToken/issues/747#issuecomment-6295500587 |
 | (reply) WDDM note to ender2007225 | comment on #678 | https://github.com/FlashML-org/FreeToken/issues/678#issuecomment-6295503128 |
 | CCCL: reviewer suggestion applied (d6f6bea) + reply | PR review thread | https://github.com/NVIDIA/cccl/pull/12081#discussion_r4327257698 |
+| CCCL: tensor note on `cp_async_bulk_tensor.rst` (9c56127) + PR comment | PR #12081 | https://github.com/NVIDIA/cccl/pull/12081#issuecomment-6295540062 |
+| CCCL: second PR, deprecated `<cuda/barrier>` helpers → `.shared::cta` (sm_120 SASS syscalls 6 → 0) | new PR | https://github.com/NVIDIA/cccl/pull/12095 |
+| CodeRabbit replies: copy direction (#12095); wording and link (#12081) | review threads | https://github.com/NVIDIA/cccl/pull/12095#discussion_r4329019072, https://github.com/NVIDIA/cccl/pull/12081#discussion_r4329021288, https://github.com/NVIDIA/cccl/pull/12081#discussion_r4329021686 |
 
 Still unposted: improvements 02, 03, 04, 07b, 09, 10, 12 and the #280 comment.
 
