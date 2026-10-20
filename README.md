@@ -1060,7 +1060,7 @@ flowchart LR
 
 | Что | Ссылка |
 |---|---|
-| Веса RMSNorm `(1 + w)` у Qwen3.5/3.6 округляются в bf16 при загрузке (77% множителей неточны), с патчем | [#747](https://github.com/FlashML-org/FreeToken/issues/747) |
+| Веса RMSNorm `(1 + w)` у Qwen3.5/3.6 округляются в bf16 при загрузке (77% множителей неточны), с патчем. **Исправлено в upstream** 20.10 в [PR #755](https://github.com/FlashML-org/FreeToken/pull/755) («thanks @SUKUNA-AI for the analysis») | [#747](https://github.com/FlashML-org/FreeToken/issues/747) |
 | Слишком длинный стриминговый запрос получает 200 и ошибку внутри потока, большой `max_tokens` молча урезается | [#749](https://github.com/FlashML-org/FreeToken/issues/749) |
 | Ответы при temperature 0 зависят от истории кэша префиксов: просьба о сбросе кэша и детерминированном режиме | [#748](https://github.com/FlashML-org/FreeToken/issues/748) |
 | Наши решения к их открытым ошибкам: генерация после отключения клиента, отмена во время длинного prefill, `seed` | [#644](https://github.com/FlashML-org/FreeToken/issues/644#issuecomment-6276436135), [#567](https://github.com/FlashML-org/FreeToken/issues/567#issuecomment-6276437733), [#693](https://github.com/FlashML-org/FreeToken/issues/693#issuecomment-6276439324) |
@@ -1076,9 +1076,11 @@ flowchart LR
 | Поток копирования prefill с высшим приоритетом и одна инвалидация на prefill: H2D 21 → 42 ГБ/с | [#752](https://github.com/FlashML-org/FreeToken/issues/752) |
 | Shared-эксперт параллельно с подкачкой внутри CUDA-графа, побитово точно | [#753](https://github.com/FlashML-org/FreeToken/issues/753), [#678](https://github.com/FlashML-org/FreeToken/issues/678#issuecomment-6276596471) |
 | Эмбеддинги в памяти хоста: ~1 ГБ VRAM под 565 лишних слотов экспертов | [#754](https://github.com/FlashML-org/FreeToken/issues/754) |
+
+Уже на следующий день сторонний разработчик перенёс #751, #752 и #753 в свой форк FreeToken ([pretor/FreeToken](https://github.com/pretor/FreeToken)), а автор #678 написал, что наша работа подсказала ему ещё один путь оптимизации.
 | Только выбранные роутером эксперты для коротких кусков; отрицательный результат предвыборки на слой вперёд | [#579](https://github.com/FlashML-org/FreeToken/issues/579#issuecomment-6276576160), [#677](https://github.com/FlashML-org/FreeToken/issues/677#issuecomment-6276603440) |
 
-**NVIDIA:** PR в документацию CCCL — на sm_120 для bulk-копий в shared-память своего блока использовать `.shared::cta`, а не `.shared::cluster` ([NVIDIA/cccl#12081](https://github.com/NVIDIA/cccl/pull/12081)). Отчёт в баг-портал NVIDIA с минимальным repro подготовлен в [docs/upstream-notes/](docs/upstream-notes/05-nvidia-sm120-bulk-copy-stack.md).
+**NVIDIA:** PR в документацию CCCL — на sm_120 для bulk-копий в shared-память своего блока использовать `.shared::cta`, а не `.shared::cluster` ([NVIDIA/cccl#12081](https://github.com/NVIDIA/cccl/pull/12081)). 20.10 его посмотрел ревьюер NVIDIA; предложенная им короткая формулировка применена, PR ждёт одобрения. Отчёт в баг-портал NVIDIA с минимальным repro подготовлен в [docs/upstream-notes/](docs/upstream-notes/05-nvidia-sm120-bulk-copy-stack.md).
 
 **Что дальше с форком.** Форк сделан от релиза 0.1.3 (torch 2.11, Triton 3.6). Upstream с 10.10.2026 работает на torch 2.14 и Triton 3.8, ядра NVFP4 и кэш экспертов там переписаны, поэтому наши побитово точные копии их ядер к новой версии напрямую не подходят. Переносить всё не планируется: main128 продолжает работать как есть, а находки отданы upstream. Когда выйдет следующий релиз FreeToken, его достаточно сравнить с main128 той же A/B-матрицей и выбрать более быстрый.
 
