@@ -41,6 +41,7 @@ Checkpoint: `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0
 | CCCL: tensor note on `cp_async_bulk_tensor.rst` (9c56127) + PR comment | PR #12081 | https://github.com/NVIDIA/cccl/pull/12081#issuecomment-6295540062 |
 | CCCL: second PR, deprecated `<cuda/barrier>` helpers → `.shared::cta` (sm_120 SASS syscalls 6 → 0) | new PR | https://github.com/NVIDIA/cccl/pull/12095 |
 | CodeRabbit replies: copy direction (#12095); wording and link (#12081) | review threads | https://github.com/NVIDIA/cccl/pull/12095#discussion_r4329019072, https://github.com/NVIDIA/cccl/pull/12081#discussion_r4329021288, https://github.com/NVIDIA/cccl/pull/12081#discussion_r4329021686 |
+| Reply to Bernhard Gruber (NVIDIA) on #12095: peer-CTA destinations are valid with `.shared::cluster` and UB with `.shared::cta`; only a debug assertion rejects them (verified `__isShared`=0 for a peer address on sm_120); asked how to proceed, PR left open | review thread | https://github.com/NVIDIA/cccl/pull/12095#discussion_r4329905320 |
 
 Still unposted: improvements 02, 03, 04, 07b, 09, 10, 12 and the #280 comment.
 
