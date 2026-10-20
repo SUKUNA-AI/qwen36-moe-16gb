@@ -35,6 +35,9 @@ Checkpoint: `nvidia/Qwen3.6-35B-A3B-NVFP4` @ `1355db6a052410cfd62085d94b58866fd0
 | `improvements/07-comment-issue-678.md` | comment on #678 | https://github.com/FlashML-org/FreeToken/issues/678#issuecomment-6276596471 |
 | `improvements/07c-comment-issue-677.md` | comment on #677 | https://github.com/FlashML-org/FreeToken/issues/677#issuecomment-6276603440 |
 | `improvements/08-host-resident-embeddings.md` | new issue | https://github.com/FlashML-org/FreeToken/issues/754 |
+| (reply) thanks for the fix in #755 | comment on #747 | https://github.com/FlashML-org/FreeToken/issues/747#issuecomment-6295500587 |
+| (reply) WDDM note to ender2007225 | comment on #678 | https://github.com/FlashML-org/FreeToken/issues/678#issuecomment-6295503128 |
+| CCCL: reviewer suggestion applied (d6f6bea) + reply | PR review thread | https://github.com/NVIDIA/cccl/pull/12081#discussion_r4327257698 |
 
 Still unposted: improvements 02, 03, 04, 07b, 09, 10, 12 and the #280 comment.
 
