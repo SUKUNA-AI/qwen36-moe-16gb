@@ -37,6 +37,7 @@
 |---|---|
 | [NVIDIA/cccl#12081](https://github.com/NVIDIA/cccl/pull/12081) | PR в документацию: на sm_120 для копирования в shared-память своего блока используйте `.shared::cta`, иначе первый запуск отнимает ~1.4 ГиБ VRAM. Ждёт ревьюера NVIDIA. |
 | [ответ ревьюеру NVIDIA](https://github.com/NVIDIA/cccl/pull/12081#discussion_r4327257698) | 20.10 Bernhard Gruber (NVIDIA) попросил сократить заметку и дал свой текст; применили как есть (коммит d6f6bea). |
+| [NVIDIA/cccl#12095](https://github.com/NVIDIA/cccl/pull/12095) | Второй PR, с кодом: устаревшие хелперы в `<cuda/barrier>` тоже переведены на `.shared::cta` (как в #6362). Проверено nvcc 13.4: на sm_120 вызовов драйвера в SASS было 6, стало 0; sm_90 без изменений. В первый PR добавлена такая же короткая заметка для `cp_async_bulk_tensor`. |
 | [ответ боту](https://github.com/NVIDIA/cccl/pull/12081#discussion_r4318319684) и [дополнение](https://github.com/NVIDIA/cccl/pull/12081#issuecomment-6276231597) | По замечанию бота-ревьюера уточнили, на какой конфигурации мерили; добавили данные мейнтейнера FreeToken: Triton 3.8 перешёл на `.shared::cta`, и проблема пропала. |
 
 Отклик 20.10: pretor перенёс #751, #752, #753 в свой форк [pretor/FreeToken](https://github.com/pretor/FreeToken).
